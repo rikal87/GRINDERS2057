@@ -1,0 +1,503 @@
+/* =============================================
+   SAFEHOUSE V4 — NET_TABLE_FINDER AESTHETIC
+   ============================================= */
+
+.v4 {
+  width: 100vw;
+  height: 100vh;
+  background: #141422;
+  color: #b0b8cc;
+  font-family: 'Share Tech Mono', 'Orbit', 'Courier New', monospace;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  --accent-red: #ff0055;
+  --accent-cyan: #00f0ff;
+  --accent-yellow: #ccff00;
+  --accent-white: #f0f0f0;
+  --panel-bg: #1a1a2e;
+  --panel-border: rgba(255, 0, 85, 0.35);
+  --panel-glow: 0 0 30px rgba(255, 0, 85, 0.15);
+}
+
+/* Outer red glowing frame like the reference */
+.v4-bg-border {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 2px solid var(--accent-red);
+  box-shadow:
+    inset 0 0 40px rgba(255, 0, 85, 0.08),
+    0 0 25px rgba(255, 0, 85, 0.3);
+  z-index: 200;
+}
+
+/* ─── HEADER ─────────────────────────────── */
+.v4-header {
+  flex: 0 0 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.v4-header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 6px;
+  color: var(--accent-white);
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+}
+
+/* ─── BODY GRID ──────────────────────────── */
+.v4-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px 1fr 360px;
+  gap: 0;
+  overflow: hidden;
+}
+
+.v4-panel {
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.v4-panel-right {
+  border-right: none;
+}
+
+.v4-inner {
+  padding: 1.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.v4-inner::-webkit-scrollbar {
+  width: 3px;
+}
+.v4-inner::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ─── TYPOGRAPHY ─────────────────────────── */
+.v4-label {
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  color: var(--accent-red);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.v4-sep-label {
+  font-size: 0.55rem;
+  letter-spacing: 2px;
+  color: rgba(255, 0, 85, 0.6);
+  border-top: 1px solid rgba(255, 0, 85, 0.15);
+  padding-top: 10px;
+  margin-top: 4px;
+}
+
+.v4-key {
+  font-size: 0.7rem;
+  color: #607080;
+  text-transform: uppercase;
+}
+
+.v4-val {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #c0ccd8;
+}
+.v4-val.yellow {
+  color: var(--accent-yellow);
+}
+.v4-val.cyan {
+  color: var(--accent-cyan);
+}
+.v4-val.white {
+  color: var(--accent-white);
+}
+
+/* ─── DATA BLOCKS ─────────────────────────── */
+.v4-card-block {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.v4-row-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ─── PROGRESS BAR ───────────────────────── */
+.v4-progress-row {
+  margin: -6px 0;
+}
+.v4-progress-track {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.v4-progress-fill {
+  height: 100%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+  transition: width 0.6s ease;
+}
+
+/* ─── SLOTS (LEFT PANEL) ─────────────────── */
+.v4-slot-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.v4-slot-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.v4-slot-entry:hover {
+  background: rgba(0, 240, 255, 0.05);
+  border-left-color: var(--accent-cyan);
+}
+.v4-slot-entry.t1 {
+  border-left-color: #555;
+}
+.v4-slot-entry.t2 {
+  border-left-color: #39ff14;
+}
+.v4-slot-entry.t3 {
+  border-left-color: var(--accent-cyan);
+}
+.v4-slot-entry.ult {
+  border-left-color: var(--accent-yellow);
+}
+
+.slot-tier {
+  font-size: 0.6rem;
+  color: #607080;
+  letter-spacing: 1px;
+}
+.slot-val {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-white);
+}
+.slot-val.empty {
+  color: #333;
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+}
+
+/* ─── TABS (CENTER PANEL) ────────────────── */
+.v4-tab-row {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  gap: 0;
+}
+.v4-tab-row button {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 8px 14px;
+  font-family: inherit;
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+  color: #506070;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.v4-tab-row button.active {
+  color: var(--accent-yellow);
+  border-bottom-color: var(--accent-yellow);
+}
+
+.v4-tab-content {
+  flex: 1;
+}
+
+/* ─── ITEM CARDS ─────────────────────────── */
+.v4-item-list,
+.v4-crypto-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.v4-item-card {
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s;
+}
+.v4-item-card:hover {
+  border-color: rgba(0, 240, 255, 0.2);
+}
+.v4-item-card.mounted {
+  border-color: rgba(0, 240, 255, 0.5);
+  background: rgba(0, 240, 255, 0.04);
+}
+
+.v4-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ─── BUTTONS ────────────────────────────── */
+.v4-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #a0b0c0;
+  font-family: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.v4-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.v4-btn.red {
+  background: rgba(255, 0, 85, 0.15);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+.v4-btn.red:hover {
+  background: var(--accent-red);
+  color: #fff;
+}
+
+.v4-btn.cyan {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+.v4-btn.cyan:hover {
+  background: var(--accent-cyan);
+  color: #000;
+}
+
+.v4-btn.active {
+  background: rgba(204, 255, 0, 0.15);
+  border-color: var(--accent-yellow);
+  color: var(--accent-yellow);
+}
+
+/* ─── AGENT TASKS ────────────────────────── */
+.v4-task-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border-left: 2px solid var(--accent-red);
+}
+
+.v4-task-launchers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+/* ─── INBOX (RIGHT PANEL) ─────────────────── */
+.v4-badge {
+  background: var(--accent-red);
+  color: #fff;
+  font-size: 0.6rem;
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-weight: 700;
+}
+
+.v4-msg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.v4-msg-entry {
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.v4-msg-entry:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.v4-msg-entry.active {
+  background: rgba(255, 0, 85, 0.08);
+  border-left-color: var(--accent-red);
+}
+.v4-msg-entry.unread .v4-msg-title {
+  color: var(--accent-white);
+  font-weight: 700;
+}
+
+.v4-msg-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.55rem;
+  color: #405060;
+  margin-bottom: 4px;
+}
+
+.v4-msg-title {
+  font-size: 0.8rem;
+  color: #8090a0;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.v4-msg-reader {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.v4-msg-body {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #90a0b0;
+}
+
+.v4-msg-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ─── EMPTY STATE ────────────────────────── */
+.v4-empty-state {
+  font-size: 0.65rem;
+  color: #2a3a4a;
+  letter-spacing: 3px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.reader-idle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* ─── FOOTER ACTION BAR ──────────────────── */
+.v4-footer {
+  flex: 0 0 56px;
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(255, 0, 85, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.5rem;
+}
+
+.footer-status {
+  font-size: 0.65rem;
+  color: #39ff14;
+  letter-spacing: 2px;
+}
+
+.v4-btn.footer-abort {
+  background: rgba(255, 0, 85, 0.2);
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+  padding: 9px 24px;
+  font-size: 0.8rem;
+}
+.v4-btn.footer-abort:hover {
+  background: var(--accent-red);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(255, 0, 85, 0.5);
+}
+
+/* ─── MODAL ──────────────────────────────── */
+.v4-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+
+.v4-modal {
+  width: 520px;
+  max-height: 80vh;
+  background: #141422;
+  border: 2px solid var(--accent-red);
+  box-shadow: 0 0 40px rgba(255, 0, 85, 0.3);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  gap: 1rem;
+}
+
+.v4-modal-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.v4-modal-list::-webkit-scrollbar {
+  width: 3px;
+}
+.v4-modal-list::-webkit-scrollbar-thumb {
+  background: var(--panel-border);
+}
+
+.v4-modal-footer {
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 14px;
+}
+
+/* ─── TRANSITION ─────────────────────────── */
+.v4-fade-enter-active,
+.v4-fade-leave-active {
+  transition: opacity 0.25s, transform 0.25s;
+}
+.v4-fade-enter-from,
+.v4-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.97);
+}
