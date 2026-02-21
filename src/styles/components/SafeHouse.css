@@ -5,7 +5,7 @@
 .safe-house.v5 {
   width: 100vw;
   height: 100vh;
-  background: #090e12;
+  /* background: #090e12; */
   color: #c4d0d9;
   display: flex;
   flex-direction: column;
@@ -617,6 +617,353 @@
   }
 }
 
-.safe-house.v5 {
-  animation: v5-flicker 0.15s infinite alternate;
+/* AI Agent Setup Button */
+.stats-btn,
+.set-up-agent-btn {
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  cursor: pointer;
+  margin-left: auto;
+  transition: all 0.2s;
+}
+.stats-btn:hover,
+.set-up-agent-btn:hover {
+  background: var(--neon-cyan);
+  color: #000;
+}
+
+/* Agent Selector Modal */
+.agent-selector {
+  width: 900px;
+  max-width: 95vw;
+}
+
+/* Agent Browser (Carousel) */
+.agent-browser {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 25px;
+  height: 380px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: var(--neon-cyan);
+  color: #000;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+}
+
+.nav-btn:disabled {
+  border-color: #333;
+  color: #333;
+  cursor: not-allowed;
+}
+
+.agent-display {
+  flex: 1;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--panel-border);
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  grid-template-rows: auto 1fr;
+  padding: 25px;
+}
+
+.agent-header {
+  grid-column: 1 / -1;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+}
+
+.agent-header .id-tag {
+  font-size: 0.6rem;
+  color: var(--neon-magenta);
+  letter-spacing: 2px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.agent-header .name {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.agent-visual {
+  background: #000;
+  border: 1px solid var(--panel-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  margin-right: 25px;
+}
+
+.agent-info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.agent-info .slogan {
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--neon-cyan);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.features-box .label {
+  font-size: 0.65rem;
+  color: var(--neon-magenta);
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.agent-info .features {
+  font-size: 0.85rem;
+  color: #a0b0c0;
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 18px;
+}
+
+/* Plan Selector */
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.plan-card {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.plan-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.plan-card.selected {
+  border-color: var(--neon-yellow);
+  background: rgba(248, 239, 0, 0.05);
+}
+
+.plan-card.current {
+  border-color: var(--neon-cyan);
+}
+
+.plan-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.plan-header .level {
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.plan-header .cost {
+  font-size: 0.7rem;
+  color: var(--neon-yellow);
+}
+
+.plan-stats {
+  font-size: 0.6rem;
+  color: #607080;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.status-tag {
+  position: absolute;
+  top: -8px;
+  right: 10px;
+  background: var(--neon-cyan);
+  color: #000;
+  font-size: 0.5rem;
+  font-weight: bold;
+  padding: 2px 6px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+/* Task Slots Enhancement */
+.v5-slot-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.v5-slot-item.locked {
+  opacity: 0.3;
+  cursor: not-allowed;
+  background: rgba(0, 0, 0, 0.5);
+  border-style: dashed;
+}
+
+.v5-slot-status.searching {
+  color: var(--neon-yellow);
+  animation: v5-blink 1s infinite;
+}
+
+.v5-slot-status.active {
+  color: var(--neon-green);
+  text-shadow: 0 0 5px var(--neon-green);
+}
+
+.v5-slot-status.cooldown {
+  color: #506070;
+}
+
+.long-press-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--neon-red);
+  transition: width 0.1s linear;
+}
+
+@keyframes v5-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Stats Modal UI */
+.stats-modal {
+  max-width: 600px;
+  width: 90vw;
+}
+
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 20px 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.stats-section {
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  margin-top: 15px;
+  position: relative;
+}
+
+.stats-section .section-label {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: #0d1117;
+  padding: 0 8px;
+  font-size: 0.7rem;
+  color: var(--neon-cyan);
+  letter-spacing: 2px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 4px;
+}
+
+.stat-entry .label {
+  font-size: 0.75rem;
+  color: #8090a0;
+}
+
+.stat-entry .val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.stat-entry .val.cyan {
+  color: var(--neon-cyan);
+}
+.stat-entry .val.yellow {
+  color: var(--neon-yellow);
+}
+.stat-entry .val.red {
+  color: var(--neon-red);
+}
+.stat-entry .val.green {
+  color: var(--neon-green);
+}
+.stat-entry .val.white {
+  color: #fff;
+}
+
+/* Stats Button in Panel Header */
+/* .stats-btn {
+  background: transparent;
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+} */
+
+/* .stats-btn:hover {
+  background: var(--neon-cyan);
+  color: #000;
+  box-shadow: 0 0 10px var(--neon-cyan);
+} */
+
+.v5-panel-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

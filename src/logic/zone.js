@@ -66,7 +66,7 @@ export const zones = [
           "borderColor": "#8B4513",
           "boxShadow": "0 0 20px rgba(139, 69, 19, 0.3)"
         },
-        'bgMusic': [TRACK_ENUM.DreamVector]
+        'bgMusic': [TRACK_ENUM.Placebo]
       },
       {
         "id": "micro_underground_bar",
@@ -89,7 +89,7 @@ export const zones = [
           "borderColor": "#9d00ff",
           "boxShadow": "0 0 25px rgba(157, 0, 255, 0.4)"
         },
-        'bgMusic': [TRACK_ENUM.DreamVector]
+        'bgMusic': [TRACK_ENUM.MalibuMoon]
       }
     ]
   },
@@ -119,7 +119,7 @@ export const zones = [
           "borderColor": "#00f0ff",
           "boxShadow": "0 0 30px rgba(0, 240, 255, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.Placebo, TRACK_ENUM.RemoteLocation]
+        'bgMusic': [TRACK_ENUM.Solitude]
       },
       {
         "id": "low_underground_club",
@@ -142,7 +142,7 @@ export const zones = [
           "borderColor": "#ff0080",
           "boxShadow": "0 0 30px rgba(255, 0, 128, 0.6)"
         },
-        'bgMusic': [TRACK_ENUM.VelvetShadows]
+        'bgMusic': [TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
       },
       {
         "id": "low_old_casino",
@@ -169,7 +169,7 @@ export const zones = [
           "borderColor": "#2e8b57",
           "boxShadow": "0 0 20px rgba(46, 139, 87, 0.4)"
         },
-        'bgMusic': [TRACK_ENUM.Placebo, TRACK_ENUM.RemoteLocation]
+        'bgMusic': [TRACK_ENUM.Solitude, TRACK_ENUM.MalibuMoon]
       }
     ]
   },
@@ -197,7 +197,7 @@ export const zones = [
           "borderColor": "#708090",
           "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.Placebo, TRACK_ENUM.RemoteLocation]
+        'bgMusic': [TRACK_ENUM.JourneyToTitan]
       },
 
       {

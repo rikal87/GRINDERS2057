@@ -45,7 +45,7 @@ class AudioManager {
     this.isTensionMode = ref(false);
     this.initialized = false;
     this.sfxBuffers = {};
-    this.currentTrackInfo = ref({ title: 'SYSTEM_TRACK', artist: 'SYSTEM_TRACK' });
+    this.currentTrackInfo = ref({ title: 'SYSTEM_TRACK', artist: 'SYSTEM_TRACK', license: null });
   }
 
   async init() {

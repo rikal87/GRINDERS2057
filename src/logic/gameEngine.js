@@ -210,9 +210,7 @@ export class GameEngine {
     // this.checkSkillTriggers('round_start');
     // this.checkSkillTriggers('preflop_start');
 
-    eventAdaptor.roundStart(this.players, 'ROUND_START');
-
-
+    eventAdaptor.roundStart(this.players, { sb: this.sb, bb: this.bb });
     // Initialize history for new hand
     this.currentHandHistory = {
       id: Date.now(),
@@ -234,31 +232,6 @@ export class GameEngine {
     };
 
     this.runoutInProgress = false;
-
-    // --- Item System Updates ---
-    // this.updateEquippedEffects();
-    // this.processCooldowns();
-
-    // --- Skill System Updates ---
-    this.globalEffects = { skillBlock: false, preventFold: false, potLimit: false };
-    this.players.forEach(p => {
-      if (p.skillCooldowns) {
-        for (const [sid, val] of Object.entries(p.skillCooldowns)) {
-          if (val > 0) p.skillCooldowns[sid]--;
-        }
-      }
-    });
-
-    // RAM Regen
-    const item = this.players[0].item;
-    const ramRegen = (item && item.effects)
-      ? item.effects.reduce((sum, e) => (e.effect && e.effect.type === 'ram_regen') ? sum + e.effect.value : sum, 0)
-      : 0;
-
-    if (ramRegen > 0) {
-      this.players[0].recoverRam(ramRegen);
-    }
-    // ---------------------------
 
     const playerCount = this.players.filter(p => !p.isEliminated).length;
     if (playerCount < 2) return; // Should not happen if game over check works, but safety first
@@ -298,7 +271,7 @@ export class GameEngine {
     }
     if (raised && !isBlind) {
       // If someone raises, others need a chance to respond
-      eventAdaptor.bet({ player, amount, pot: this.pot });
+      eventAdaptor.bet({ player, amount, pot: this.pot, street: this.state });
       this.playersActedCount = 0; // Reset to 0, handlePlayerAction will increment to 1
     }
     return raised;
@@ -338,7 +311,7 @@ export class GameEngine {
         player.stats.foldedToFlopBet++;
       }
 
-      eventAdaptor.fold({ player, amount: player.totalWagered, pot: this.pot, board: this.board });
+      eventAdaptor.fold({ player, amount: player.totalWagered, pot: this.pot, board: this.board, street: this.state });
       audioManager.playSFX('card-dealt&fold');
       const activePlayers = this.players.filter(p => !p.isFolded);
       if (activePlayers.length === 1) {
@@ -363,6 +336,7 @@ export class GameEngine {
       if (action.amount > 0) {
         audioManager.playSFX('puti-n-chip');
       } else {
+        action.type = 'check';
         audioManager.playSFX('check');
       }
     } else if (action.type === 'raise' || action.type === 'bet' || action.type === 'all_in') {
@@ -772,8 +746,6 @@ export class GameEngine {
 
     audioManager.enableTensionMode();
 
-    // [FIX] Removed this.pot from calculateEquity call - it was interpreted as iterations
-    // e.g. 1 Million chips = 1 Million iterations = Hang
     calculateEquity(this.players, this.board);
     // Notify System/UI
     // EventAdaptor.allInModeActivated(); // If exists

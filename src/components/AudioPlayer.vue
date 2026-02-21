@@ -7,7 +7,8 @@
         </div>
         <div class="track-title marquee">
           <span :class="{ 'scrolling': audioManager.isPlaying.value }">
-            {{ audioManager.currentTrackInfo.value.title }} // {{ audioManager.currentTrackInfo.value.artist }}
+            {{ audioManager.currentTrackInfo.value.title }} // {{ audioManager.currentTrackInfo.value.artist }} // {{
+              audioManager.currentTrackInfo.value.license }}
           </span>
         </div>
       </div>

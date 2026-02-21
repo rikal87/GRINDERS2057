@@ -136,10 +136,19 @@ const getNutStatus = (hand, board) => {
 export const getHandCategory = (hand, board, evalResult) => {
   const rank = evalResult.rank;
   const nutInfo = getNutStatus(hand, board);
+  const usedHoleCards = evalResult.cards ? evalResult.cards.filter(c => hand.includes(c)).length : 0;
 
   // Absolute Nuts Check (or near nuts)
-  if (nutInfo.isNuts) return 'NUTS';
-  if (nutInfo.isSecondNuts) return 'MONSTER'; // Second Nuts is Monster
+  if (nutInfo.isNuts) {
+    if (usedHoleCards === 0) return 'BOARD_CHOP'; // Board is nuts (guaranteed split)
+    if (usedHoleCards === 1) return 'STRONG'; // One card nuts is strong but vulnerable
+    return 'NUTS';
+  }
+  if (nutInfo.isSecondNuts) {
+    if (usedHoleCards === 0) return 'WEAK';
+    if (usedHoleCards === 1) return 'STRONG';
+    return 'MONSTER'; // Second Nuts is Monster if 2-cards
+  }
 
   // Get Rank Values
   const getRankVal = c => '23456789TJQKA'.indexOf(c[0]);
@@ -160,43 +169,48 @@ export const getHandCategory = (hand, board, evalResult) => {
   if (rank === 10) return 'NUTS';
 
   // 9: Straight Flush
-  if (rank === 9) return nutInfo.rank <= 3 ? 'MONSTER' : 'STRONG';
+  if (rank === 9) return nutInfo.rank <= 3 ? (usedHoleCards === 2 ? 'MONSTER' : 'STRONG') : 'STRONG';
 
   // 8: Quads
   if (rank === 8) {
+    if (usedHoleCards === 0) return 'WEAK';
     if (boardRanks.length >= 4 && boardRanks[0] === boardRanks[3]) {
       // Board is Quads. Kicker battle.
-      if (nutInfo.rank <= 3) return 'MONSTER'; // Ace/King kicker
+      if (nutInfo.rank <= 3) return usedHoleCards === 2 ? 'MONSTER' : 'STRONG'; // Ace/King kicker
       return 'WEAK'; // Playing board mostly
     }
-    return 'MONSTER';
+    return usedHoleCards === 2 ? 'MONSTER' : 'STRONG';
   }
 
   // 7: Full House
   if (rank === 7) {
-    if (nutInfo.rank <= 5) return 'MONSTER';
+    if (usedHoleCards === 0) return 'WEAK';
+    if (nutInfo.rank <= 5) return usedHoleCards === 2 ? 'MONSTER' : 'STRONG';
     if (nutInfo.rank <= 15) return 'STRONG';
     return 'MARGINAL'; // Bottom boat or playing board
   }
 
   // 6: Flush
   if (rank === 6) {
+    if (usedHoleCards === 0) return 'WEAK';
     if (isBoardPaired) return 'MARGINAL'; // Vulnerable to Full House
-    if (nutInfo.rank <= 5) return 'MONSTER'; // High Flush
+    if (nutInfo.rank <= 5) return usedHoleCards === 2 ? 'MONSTER' : 'STRONG'; // High Flush
     if (nutInfo.rank <= 15) return 'STRONG'; // Mid Flush
     return 'MARGINAL'; // Low Flush
   }
 
   // 5: Straight
   if (rank === 5) {
+    if (usedHoleCards === 0) return 'WEAK';
     if (isBoardFlushPossible) return 'MARGINAL'; // Vulnerable to Flush
     if (isBoardPaired) return 'MARGINAL'; // Vulnerable to FH
-    if (nutInfo.rank <= 3) return 'MONSTER'; // Nut Straight
+    if (nutInfo.rank <= 3) return usedHoleCards === 2 ? 'MONSTER' : 'STRONG'; // Nut Straight
     return 'STRONG';
   }
 
   // 4: Three of a Kind
   if (rank === 4) {
+    if (usedHoleCards === 0) return 'WEAK';
     if (isBoardTrips) {
       if (nutInfo.rank <= 5) return 'STRONG'; // Top Kicker
       return 'WEAK'; // Low Kicker or Chop
@@ -626,18 +640,28 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
   const isBoardFlushPossible = Object.values(boardSuitCounts).some(c => c >= 3);
   const isBoardStraightPossible = analyzeBoardTexture(board).score >= 5;
   const holeVal = hand.map(c => '23456789TJQKA'.indexOf(c[0])).sort((a, b) => b - a);
+  const usedHoleCards = evalResult.cards ? evalResult.cards.filter(c => hand.includes(c)).length : 0;
+
   // 10: Royal Flush
   // 9: Straight Flush
-  if (rank === 10 || rank === 9) return 'NUTS';
+  if (rank === 10 || rank === 9) {
+    if (usedHoleCards === 0) return 'BOARD_CHOP'; // Board is nuts
+    return 'NUTS';
+  }
 
   // 8: Quads
   if (rank === 8) {
-    if (boardRanks.length >= 4 && boardRanks[0] === boardRanks[3]) return 'WEAK'; // Board is Quads
+    if (usedHoleCards === 0) {
+      return getNutStatus(hand, board).isNuts ? 'BOARD_CHOP' : 'WEAK';
+    }
     return 'NUTS';
   }
 
   // 7: Full House
   if (rank === 7) {
+    if (usedHoleCards === 0) {
+      return getNutStatus(hand, board).isNuts ? 'BOARD_CHOP' : 'WEAK';
+    }
     if (isBoardTrips) {
       // Board AAA. If we have Pocket Pair -> Monster. Else -> Weak/Marginal
       const isPocketPair = hand[0][0] === hand[1][0];
@@ -649,14 +673,22 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
 
   // 6: Flush
   if (rank === 6) {
+    if (usedHoleCards === 0) {
+      return getNutStatus(hand, board).isNuts ? 'BOARD_CHOP' : 'WEAK';
+    }
     if (isBoardPaired) return 'STRONG';
-    return 'MONSTER';
+    return usedHoleCards === 2 ? 'MONSTER' : 'STRONG';
   }
 
   // 5: Straight
   if (rank === 5) {
+    if (usedHoleCards === 0) {
+      // If it's a Broadway straight on board, it's often the nuts (unless flush possible)
+      const isNuts = getNutStatus(hand, board).isNuts;
+      return isNuts ? 'BOARD_CHOP' : 'WEAK';
+    }
     if (isBoardFlushPossible || isBoardPaired) return 'STRONG';
-    return 'MONSTER';
+    return usedHoleCards === 2 ? 'MONSTER' : 'STRONG'; // One card straight is just Strong
   }
 
   // 4: Three of a Kind

@@ -1,10 +1,11 @@
 import { reactive, watch } from 'vue';
-import { AI_AGENT_MODEL_ENUM } from './aiAgentModelClasses';
+import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const defaultState = {
   bankroll: 999999999,
   chips: 0, // Chips on table
+  currentBB: 0,
   xp: 0,
   level: 25,
   selectedClass: 'VANGUARD',
@@ -13,6 +14,55 @@ const defaultState = {
   equippedSkills: [null, null, null], // 3 Slots
   ownedPortraits: ['p1', 'p2', 'p3'],
   selectedPortrait: 'p1',
+  boostRegenLT: 0,
+  play_stats: {
+    bust_enemy: {
+      'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
+      'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'Mafia_Boss': 0,
+      'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0
+    },
+    // Economy
+    paid_rake: 0,
+    paid_buy_item: 0,
+    paid_bribe_dealer: 0,
+    paid_penalty: 0,
+    max_level: 0,
+    total_earn_money: 0n,
+    total_lost_money: 0n,
+    // Behavior (VPIP/PFR)
+    played_hands: 0,
+    fold: 0,
+    check: 0,
+    call: 0,
+    raise: 0,
+    all_in: 0,
+    wtsd: 0, // Went To Showdown
+    w$sd: 0, // Won $ at Showdown
+    pfr: 0, // Pre-Flop Raise
+    c_bet_count: 0,
+    fold_to_3bet: 0,
+    fold_to_4bet_or_more: 0,
+    donk_bet_count: 0,
+    raise3bet: 0,
+    raise4bet_or_more: 0,
+    vpip_count: 0,
+    bankruptcy_count: 0,
+    // Luck & Probability
+    showdown_win: 0,
+    all_in_win: 0,
+    win_without_showdown: 0,
+    // Records
+    max_win_pot: 0,
+    max_lose_pot: 0,
+    max_win_streak: 0,
+    max_lose_streak: 0,
+    max_lose_equity: 0.0,
+    min_win_equity: 0.0,
+    // Backward compatibility or UI convenience
+    max_credit: 0,
+    max_bankroll: 0,
+    max_pot: 0,
+  },
   settings: {
     preflop: [
       { label: 'MIN', type: 'min' },
@@ -41,14 +91,39 @@ const defaultState = {
   ludusTokens: 0,
   gameTime: new Date('2057-10-20T09:00:00').getTime(), // Start Date
   aiAgent: {
-    model: AI_AGENT_MODEL_ENUM.VANGUARD,
+    model: AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD],
+    name: AI_AGENT_MODEL_ENUM.VANGUARD,
     price_plan_idx: 0,
     subscriptionExpireAt: 0,
-    activeTasks: [] // [{ taskId, startTime, lastProcessTime }]
   },
+  onWorkTasks: [], // [{ taskId, startTime, lastProcessTime }]
   messages: [], // [{ id, type, title, body, timestamp, isRead, actions?, expireAt? }]
   hasSave: false
 };
+
+// BigInt JSON helpers
+const bigIntReplacer = (key, value) => typeof value === 'bigint' ? `@BIGINT@:${value.toString()}` : value;
+const bigIntReviver = (key, value) => {
+  if (typeof value === 'string') {
+    if (value.startsWith('@BIGINT@:')) return BigInt(value.split(':')[1]);
+    if (value.endsWith('n') && !isNaN(value.slice(0, -1))) return BigInt(value.slice(0, -1)); // Legacy cleanup
+  }
+  return value;
+};
+
+export const getCurrentAgent = () => {
+  return store.aiAgent ? store.aiAgent.model : AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD];
+}
+export const getEffectiveMaxLT = () => {
+  const agent = store.aiAgent;
+  const planIdx = agent.price_plan_idx;
+  const baseMax = agent.model?.price_plan[planIdx]?.maxLt || 100;
+  const bonus = store.equippedProtector?.effects?.reduce((sum, e) => (e.id === 'lt_max_plus') ? sum + e.value : sum, 0) || 0;
+  return baseMax + bonus;
+}
+export const gainLT = (amount) => {
+  store.ludusTokens = Math.min(getEffectiveMaxLT(), store.ludusTokens + amount);
+}
 export const gainShopRefreshCount = (amount = 1) => {
   store.shop.manualRefreshCount = Math.max(0, store.shop.manualRefreshCount + amount);
 }
@@ -87,7 +162,7 @@ let initialState = { ...defaultState };
 
 if (savedData) {
   try {
-    const parsed = JSON.parse(savedData);
+    const parsed = JSON.parse(savedData, bigIntReviver);
     // Basic merge: ensure we have all keys from defaultState
     initialState = { ...defaultState, ...parsed, hasSave: true };
   } catch (e) {
@@ -110,7 +185,7 @@ export const initializeBankroll = () => {
 watch(store, (newState) => {
   const dataToSave = { ...newState };
   delete dataToSave.hasSave; // Don't persist this meta flag
-  localStorage.setItem(SAVE_KEY, JSON.stringify(dataToSave));
+  localStorage.setItem(SAVE_KEY, JSON.stringify(dataToSave, bigIntReplacer));
 }, { deep: true });
 
 export const resetStore = () => {

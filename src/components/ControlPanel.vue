@@ -60,11 +60,11 @@
         </div>
         <div v-if="player.item.effects && player.item.effects.length > 0" class="effect-hud">
           <div v-for="eff in player.item.effects" :key="eff.id" class="effect-item"
-            :class="{ 'cooldown': eff.maxCooldown > 0 && eff.cooldown > 0 }" :title="getEffectDesc(eff)">
+            :class="{ 'cooldown': eff.cooldown > 0 }" :title="getEffectDesc(eff)">
             <div class="eff-icon">{{ eff.icon }}</div>
             <!-- Cooldown Gauge Overlay -->
-            <div v-if="eff.maxCooldown > 0 && eff.cooldown > 0" class="cooldown-gauge"
-              :style="{ height: (eff.cooldown / eff.maxCooldown * 100) + '%' }">
+            <div v-if="eff.cooldown > 0" class="cooldown-gauge"
+              :style="{ height: (eff.maxCooldown ? (eff.cooldown / eff.maxCooldown * 100) : 100) + '%' }">
             </div>
             <div v-if="eff.stack >= 1" class="eff-stack">{{ eff.stack }}</div>
           </div>
@@ -390,7 +390,9 @@ button {
 }
 
 .effect-item.cooldown {
-  opacity: 0.6;
+  opacity: 0.45;
+  filter: grayscale(0.5);
+  border: 1px solid rgba(255, 230, 0, 0.3);
 }
 
 .eff-icon {
@@ -403,9 +405,11 @@ button {
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: rgba(255, 221, 0, 0.6);
+  background-color: var(--neon-yellow);
+  opacity: 0.6;
   z-index: 1;
   pointer-events: none;
+  box-shadow: 0 0 5px var(--neon-yellow);
 }
 
 .eff-stack {

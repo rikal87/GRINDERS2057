@@ -378,16 +378,16 @@ export const ITEM_DATA = [
     desc: '아주 먼 옛날에는 여기에 게임을 분할 압축하여 담았다고 합니다. 웃기죠?',
     effects: [getItemEffect('lt_max_plus'), getItemEffect('lt_max_plus')]
   },
-  {
-    id: 'deep_well_program',
-    name: '심층 연산 프로그램',
-    icon: '🔩',
-    class: 'Item',
-    tier: 'T3',
-    price: 76000,
-    desc: '심층 연산 프로그램으로 정제된 연산량입니다.',
-    effects: [getItemEffect('lt_regen_plus'), getItemEffect('lt_regen_plus')]
-  },
+  // {
+  //   id: 'deep_well_program',
+  //   name: '심층 연산 프로그램',
+  //   icon: '🔩',
+  //   class: 'Item',
+  //   tier: 'T3',
+  //   price: 76000,
+  //   desc: '심층 연산 프로그램으로 정제된 연산량입니다.',
+  //   effects: [getItemEffect('lt_regen_plus'), getItemEffect('lt_regen_plus')]
+  // },
   {
     id: 'cyber_pet_collar',
     name: '사이버 펫',
@@ -428,8 +428,8 @@ export const ITEM_DATA = [
     class: 'Item',
     tier: 'T3',
     price: 55000,
-    desc: '뇌파를 서버와 직접 동기화하여 연산 지연을 최소화합니다.',
-    effects: [getItemEffect('time_bank_plus'), getItemEffect('time_bank_plus')]
+    desc: '뇌파를 에이전트와 직접 동기화하여 LT를 빠르게 회복합니다.',
+    effects: [getItemEffect('lt_regen_plus'), getItemEffect('lt_regen_plus')]
   },
   {
     id: 'allin_insurance_plus',

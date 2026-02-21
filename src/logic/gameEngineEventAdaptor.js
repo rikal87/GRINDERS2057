@@ -1,5 +1,5 @@
 
-import { store, gainBankroll } from './store.js';
+import { store, gainBankroll, gainLT } from './store.js';
 import { evaluateHand } from './poker.js';
 export class EventAdaptor {
   updateEquippedEffects() {
@@ -8,12 +8,13 @@ export class EventAdaptor {
   chat({ players, playerId, message }) {
     console.info('chat', playerId, message);
   }
-  roundStart(players, street) {
+  roundStart(players, { sb, bb }) {
     console.info('roundStart');
+    store.play_stats.played_hands++; // Increment every new hand
     players.forEach(p => {
       p.item?.effects?.forEach(e => {
         if (e.trigger.includes('round_start')) {
-          this.executeItemEffect(p, e, { street });
+          this.executeItemEffect(p, e, { sb, bb });
         }
       });
     });
@@ -34,20 +35,42 @@ export class EventAdaptor {
         if (e.trigger.includes('round_end')) {
           this.executeItemEffect(p, e, { street });
         }
+        if (e.cooldown > 0) e.cooldown--;
       });
     });
+    // Update bankroll peaks
+    if (store.play_stats.max_bankroll < store.bankroll) {
+      store.play_stats.max_bankroll = store.bankroll;
+    }
   }
   gameOver({ winnerId }) {
     console.info('gameOver', winnerId);
   }
   playerEliminated(player) {
     console.info('playerEliminated', player.name);
+    // Track Human bankruptcy
+    if (player.isMe) {
+      store.play_stats.bankruptcy_count++;
+    } else {
+      // Track AI Agent "Bust"
+      const persona = player.persona || player.name;
+      if (store.play_stats.bust_enemy[persona] !== undefined) {
+        store.play_stats.bust_enemy[persona]++;
+      } else {
+        // Fallback for dynamic personas
+        store.play_stats.bust_enemy['Fish']++; // Default bucket
+      }
+    }
   }
   gameWon({ player, prize }) {
     console.info('gameWon', player.name, prize);
   }
-  bet({ player, amount, pot }) {
-    // console.info('bet', player, amount, pot);
+  bet({ player, amount, pot, street }) {
+    if (player.isMe) {
+      store.play_stats.raise++;
+      store.play_stats.vpip_count++;
+      if (street === 'PREFLOP') store.play_stats.pfr++;
+    }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('bet')) {
         this.executeItemEffect(player, e, { amount, pot });
@@ -63,7 +86,14 @@ export class EventAdaptor {
     });
   }
   showdown({ result, amount, pot, runoutInProgress, board }) {
-    // console.info('showdown', result);
+    const me = result.results.find(r => r.player.isMe);
+    if (me) {
+      store.play_stats.wtsd++;
+    }
+    if (result.rake) {
+      store.play_stats.paid_rake += result.rake;
+    }
+
     result.results.forEach(r => {
       if (r.id === result.winnerId) {
         if (runoutInProgress) this.winAtShowdownWithAllIn({ player: r.player, amount, pot, hand: r.hand, board });
@@ -73,8 +103,16 @@ export class EventAdaptor {
         else this.loseAtShowdown({ player: r.player, amount, pot, hand: r.hand, board });
       }
     });
+
+    if (me && result.winnerId === me.id) {
+      store.play_stats.w$sd++;
+    }
   }
   winAtShowdown({ player, amount, pot, hand, board }) {
+    if (player.isMe) {
+      store.play_stats.showdown_win++;
+      this.updateWinPost(pot);
+    }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('winAtShowdown') || e.trigger.includes('win')) {
         this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: true });
@@ -82,6 +120,11 @@ export class EventAdaptor {
     });
   }
   winAtShowdownWithAllIn({ player, amount, pot, hand, board }) {
+    if (player.isMe) {
+      store.play_stats.showdown_win++;
+      store.play_stats.all_in_win++;
+      this.updateWinPost(pot);
+    }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('winAtShowdownWithAllIn') || e.trigger.includes('win')) {
         this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: true });
@@ -89,6 +132,10 @@ export class EventAdaptor {
     });
   }
   winAtWithoutShowdown({ player, amount, pot, hand, board }) {
+    if (player.isMe) {
+      store.play_stats.win_without_showdown++;
+      this.updateWinPost(pot);
+    }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('winWithoutShowdown') || e.trigger.includes('win')) {
         this.executeItemEffect(player, e, { amount, pot, hand, board, isWin: true });
@@ -96,6 +143,9 @@ export class EventAdaptor {
     });
   }
   loseAtShowdownWithAllIn({ player, amount, pot, hand, board }) {
+    if (player.isMe) {
+      this.updateLosePost(pot, player.equity);
+    }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('loseAtShowdownWithAllIn') || e.trigger.includes('lose')) {
         this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: false });
@@ -104,6 +154,9 @@ export class EventAdaptor {
   }
 
   loseAtShowdown({ player, amount, pot, hand, board }) {
+    if (player.isMe) {
+      this.updateLosePost(pot, player.equity);
+    }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('loseAtShowdown') || e.trigger.includes('lose')) {
         this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: false });
@@ -111,7 +164,27 @@ export class EventAdaptor {
     });
   }
 
+  updateWinPost(pot) {
+    store.play_stats.total_earn_money += BigInt(pot);
+    if (store.play_stats.max_win_pot < pot) store.play_stats.max_win_pot = pot;
+    store.play_stats.max_win_streak++;
+    store.play_stats.max_lose_streak = 0;
+  }
+
+  updateLosePost(pot, equity) {
+    store.play_stats.total_lost_money += BigInt(pot);
+    if (store.play_stats.max_lose_pot < pot) store.play_stats.max_lose_pot = pot;
+    store.play_stats.max_lose_streak++;
+    store.play_stats.max_win_streak = 0;
+    if (equity > 50 && equity > store.play_stats.max_lose_equity) {
+      store.play_stats.max_lose_equity = equity;
+    }
+  }
+
   fold({ player, amount, pot, board }) {
+    if (player.isMe) {
+      store.play_stats.fold++;
+    }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('fold')) {
         this.executeItemEffect(player, e, { amount, pot, board });
@@ -139,6 +212,9 @@ export class EventAdaptor {
   }
   bankruptcy({ player }) {
     console.info('bankruptcy', player.item);
+    if (player.isMe) {
+      store.play_stats.bankruptcy_count++;
+    }
     let rescueFund = player.level * 2000;
     store.bankroll = rescueFund;
     player.item?.effects?.forEach(e => {
@@ -149,15 +225,55 @@ export class EventAdaptor {
 
     // store.xp = 0;
   }
+  action({ player, type, amount, street }) {
+    if (!player.isMe) return;
+
+    switch (type) {
+      case 'CHECK':
+        store.play_stats.check++;
+        break;
+      case 'CALL':
+        store.play_stats.call++;
+        store.play_stats.vpip_count++;
+        break;
+      case 'RAISE':
+        store.play_stats.raise++;
+        store.play_stats.vpip_count++;
+        if (street === 'PREFLOP') {
+          store.play_stats.pfr++;
+        }
+        break;
+      case 'ALLIN':
+        store.play_stats.all_in++;
+        break;
+    }
+  }
   useSkill({ player, skill }) {
 
   }
   executeItemEffect(player, effect, context) {
-    // Normalize effect structure: support both flattened (activeEffects) and raw (item.effects)
-    // const effect = e.effect ? { ...e, type: e.effect.type, value: e.effect.value } : e;
-    // console.info('executeItemEffect', player, effect, context);
-
+    if (effect.cooldown > 0 && effect.id !== 'synapse_reading') {
+      return;
+    }
     switch (effect.id) {
+      case 'last_stand':
+        if (player.chips <= context.bb * 25) {
+          gainLT(effect.value)
+        }
+        break;
+      case 'lt_regen_plus':
+        gainLT(effect.value)
+        break;
+      case 'joy_of_victory':
+        if (context.isWin) {
+          gainLT(effect.value)
+        }
+        break;
+      case 'tilt_recovery':
+        if (!context.isWin) {
+          gainLT(effect.value)
+        }
+        break;
       case 'synapse_reading':
         // Trigger: 'flop'
         if (context.street === 'ROUND_START') {
@@ -223,9 +339,12 @@ export class EventAdaptor {
       case 'allin_insurance':
         // Trigger: 'allin_lose'
         const equity = context.equity || 0;
-        const recovery = Math.ceil((player.totalWagered || 0) * (equity / 100) * effect.value.value);
-        if (recovery > 0) {
-          player.chips += recovery;
+        if (!context.isWin && equity <= 75) {
+          const recovery = Math.ceil((player.totalWagered || 0) * (equity / 100) * effect.value.value);
+          if (recovery > 0) {
+            player.chips += recovery;
+          }
+          effect.cooldown = effect.maxCooldown;
         }
         break;
 
@@ -337,6 +456,7 @@ export class EventAdaptor {
       case 'heart_collector':
       case 'spade_collector':
       case 'club_collector':
+        // Trigger: 'win'
         const suitMap = {
           'diamond_collector': 'd', 'heart_collector': 'h',
           'spade_collector': 's', 'club_collector': 'c'
@@ -349,44 +469,51 @@ export class EventAdaptor {
         if (collectionBonus > 0) {
           player.chips += collectionBonus;
         }
+        effect.cooldown = effect.maxCooldown;
         break;
 
       case 'lucky_7_collector':
+        // Trigger: 'win'
         let count7 = 0;
         [...player.hand, ...(context.board || [])].forEach(c => { if (c && c.rank === '7') count7++; });
         const bonus7 = Math.floor((player.totalWagered || 0) * count7 * effect.value);
         if (bonus7 > 0) {
           player.chips += bonus7;
         }
+        effect.cooldown = effect.maxCooldown;
         break;
 
       case 'omen':
+        // Trigger: 'lose'
         let count6 = 0;
         [...player.hand, ...(context.board || [])].forEach(c => { if (c && c.rank === '6') count6++; });
         const bonus6 = Math.floor((player.totalWagered || 0) * count6 * effect.value);
         if (bonus6 > 0) {
           player.chips += bonus6;
         }
+        effect.cooldown = effect.maxCooldown;
         break;
 
-      case 'ram_steal':
-        player.recoverRam(effect.value);
-        this.notifyEffect(effect, `Stole ${effect.value} RAM`);
-        break;
+      // case 'ram_steal':
+      //   player.recoverRam(effect.value);
+      //   this.notifyEffect(effect, `Stole ${effect.value} RAM`);
+      //   break;
 
       case 'quantum_luck':
-        const qBonus = Math.floor((player.totalWagered || 0) * (100.0 - context.equity || 100) * effect.value);
-        console.info('quantum_luck', qBonus);
-        if (qBonus > 0) {
-          player.chips += qBonus;
-        }
+        console.info('quantum_luck context', context.isWin, context.equity);
+        if (context.isWin && context.equity < 50) {
+          const qBonus = Math.floor((player.totalWagered || 0) * (50.0 - context.equity || 50.0) * effect.value);
+          effect.cooldown = effect.maxCooldown;
+          player.equity = 100.0;
+          console.info('quantum_luck', qBonus);
+          if (qBonus > 0) gainBankroll(qBonus);
+        };
         break;
-
-
       default:
         console.log(`[ITEMS] Effect ${effect.id} handled externally or passive.`);
         break;
     }
+    // if( effect.cooldown = effect.maxCooldown;)
   }
   notifyEffect(effect, message) {
     // Helper to show toast/log

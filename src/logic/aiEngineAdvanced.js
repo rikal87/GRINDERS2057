@@ -717,8 +717,9 @@ function getPostflopAction(player, engine, myPos) {
         return { action: 'raise', amount: currentBet * 3, insight: 'River Value Raise' };
       }
 
-      // 2. Strong hands Call (rarely fold to massive overbets)
-      if (category === 'STRONG') {
+      // 2. Strong hands or Board Chop Call
+      if (category === 'STRONG' || category === 'BOARD_CHOP') {
+        if (category === 'BOARD_CHOP') return { action: 'call', insight: 'River Call (Board Split)' };
         if (betRatio > 1.5 && Math.random() < 0.5) return { action: 'fold', insight: 'Fold Strong to Overbet' };
         return { action: 'call', insight: 'River Call (Strong)' };
       }
@@ -786,6 +787,10 @@ function getPostflopAction(player, engine, myPos) {
       if ((equity / 100) > potOdds) {
         return { action: 'call', insight: `Postflop Call Draw (Eq: ${equity}%)` };
       }
+    }
+
+    if (category === 'BOARD_CHOP') {
+      return { action: 'call', insight: 'Postflop Call (Board Split)' };
     }
 
     return { action: 'fold', insight: `Postflop Fold (${category})` };

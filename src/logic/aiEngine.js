@@ -66,6 +66,7 @@ function getHeuristicFallback(player, engine) {
   const pot = engine.pot;
   const AF = player.class?.AF || 1;
   const street = engine.state;
+  let handCategory = 'AIR';
   // const activePlayers = engine.players.filter(p => !p.isFolded).length;
   // const isHeadsUp = activePlayers === 2;
   const betRatio = pot > 0 ? (callAmt / pot) : 0;
@@ -116,7 +117,7 @@ function getHeuristicFallback(player, engine) {
     // Postflop
     const evaluation = evaluateHand([...player.hand, ...engine.board]);
     const drawCategory = getDrawCategory(player.hand, engine.board);
-    const handCategory = getSimpleHandCategory(player.hand, engine.board, evaluation);
+    handCategory = getSimpleHandCategory(player.hand, engine.board, evaluation);
     // Baseline Score from Rank
     // Pair (2) -> ~20-30, Sets (4) -> ~60, FullHouse (7) -> ~90
     // Category Adjustments
@@ -196,10 +197,11 @@ function getHeuristicFallback(player, engine) {
   if (callAmt >= player.chips) {
     bluffFreq = 0;
   }
+
   // 3. Decision
   let action = 'fold';
   // [HIGH STAKES AI] Enhanced Position & C-Bet Logic
-  console.info('player>>', player.name, 'bluffFreq', bluffFreq);
+  // console.info('player>>', player.name, 'bluffFreq', bluffFreq);
   if (isHighStakes) {
 
     // We want to see if the Human (or any specific opponent) is exploitable.
@@ -437,6 +439,10 @@ function getHeuristicFallback(player, engine) {
         amount = Math.max(amount, Math.floor(pot * potPct));
       }
     }
+  }
+  if (handCategory === 'BOARD_CHOP') {
+    action = 'call';
+    insight = "Board Chop";
   }
   // [PHASE 3] Timing Tells (Delay)
   let delay = 1000 + Math.random() * 2000; // Default 1-3s
