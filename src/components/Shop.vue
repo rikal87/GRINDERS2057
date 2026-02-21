@@ -300,6 +300,7 @@ const handleManualRefresh = () => {
 
 .market-header {
   margin-bottom: 2rem;
+  flex-direction: column;
 }
 
 .market-title {
@@ -484,23 +485,7 @@ const handleManualRefresh = () => {
   gap: 1.5rem;
 }
 
-.item-card {
-  background: #080808;
-  border: 1px solid #333;
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  transition: all 0.2s;
-  cursor: pointer;
-  overflow: hidden;
-}
 
-.item-card:hover {
-  border-color: #00ffcc;
-  transform: translateY(-5px);
-  box-shadow: 0 5px 20px rgba(0, 255, 204, 0.1);
-}
 
 .item-card.special-offer {
   border-color: #ffd700;
@@ -549,44 +534,6 @@ const handleManualRefresh = () => {
   display: flex;
   justify-content: space-between;
   margin-bottom: 1rem;
-}
-
-.tier-tag {
-  font-size: 0.7rem;
-  font-weight: bold;
-  padding: 2px 6px;
-  background: #222;
-  color: #888;
-}
-
-.tier-T1 {
-  color: #fff;
-  border: 1px solid #555;
-}
-.tier-T2 {
-  color: #39ff14;
-  border: 1px solid #39ff14;
-}
-.tier-T3 {
-  color: #00ffcc;
-  border: 1px solid #00ffcc;
-}
-.tier-T4 {
-  color: #ffd700;
-  border: 1px solid #ffd700;
-  box-shadow: 0 0 5px #ffd700;
-}
-.tier-T5 {
-  color: #bf00ff;
-  border: 1px solid #bf00ff;
-  box-shadow: 0 0 8px #bf00ff;
-}
-.tier-T6 {
-  color: #ff003c;
-  border: 1px solid #ff003c;
-  box-shadow: 0 0 10px #ff003c;
-  background: rgba(255, 0, 60, 0.1);
-  animation: pulse 2s infinite;
 }
 
 .special-tag {

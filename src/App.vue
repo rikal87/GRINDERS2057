@@ -18,7 +18,7 @@ import { audioManager } from './logic/audioManager';
 import { checkAutoRefresh } from './logic/shopLogic';
 
 // ... imports
-import { startTimeSystem, stopTimeSystem, formatGameTime, formatGameDate } from './logic/timeSystem';
+import { startTimeSystem, formatGameTime, formatGameDate } from './logic/timeSystem';
 import { processAiTasks } from './logic/aiTaskSystem';
 
 const currentView = ref('splash'); // splash, intro, lobby, table, shop, home
@@ -236,34 +236,19 @@ watch(() => engine.value?.gameOver, (isGameOver) => {
       <div :key="currentView">
         <header v-if="currentView !== 'intro' && currentView !== 'splash'" class="navbar">
           <div class="header-main">
-            <h1 class="glitch-text logo" data-text="GRINDERS 2057">GRINDERS 2057</h1>
-            <div class="header-controls">
-              <button class="btn-audio" @click="toggleSettings">SETTINGS</button>
+            <div class="row">
+              <h1 class="glitch-text logo" data-text="GRINDERS 2057">GRINDERS 2057</h1>
+              <div class="header-controls">
+                <button class="btn-audio" @click="toggleSettings">SETTINGS</button>
+              </div>
             </div>
-          </div>
-          <div class="system-status">
-
-            <div class="status-group">
-              <span class="status-label">DATE</span>
-              <span class="status-value neon-cyan">{{ formatGameDate(store.gameTime) }}</span>
+            <div class="row">
+              <div class="status-group">
+                <span class="status-value">{{ formatGameDate(store.gameTime) }}</span>
+                <span class="status-divider"></span>
+                <span class="status-value">{{ formatGameTime(store.gameTime) }}</span>
+              </div>
             </div>
-            <div class="status-group">
-              <span class="status-label">TIME</span>
-              <span class="status-value neon-cyan">{{ formatGameTime(store.gameTime) }}</span>
-            </div>
-            <div class="status-divider">|</div>
-            <div class="status-group">
-              <span class="status-label">CR</span>
-              <span class="status-value neon-yellow">{{ store.bankroll.toLocaleString() }}</span>
-            </div>
-            <div class="status-group">
-              <span class="status-label">LT</span>
-              <span class="status-value neon-magenta">{{ Math.floor(store.ludusTokens).toLocaleString() }}</span>
-            </div>
-
-            <span v-if="engine?.players?.[0]?.equippedProtectorIcon" class="protector-badge">
-              {{ engine.players[0].equippedProtectorIcon }}
-            </span>
           </div>
         </header>
         <!-- Splash Screen (Intro) -->

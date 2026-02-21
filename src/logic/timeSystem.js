@@ -16,7 +16,6 @@ export const startTimeSystem = () => {
 
     // Check for daily rollover or other time-based events here if needed
     // processTimeBasedEvents(store.gameTime);
-
   }, 1000 / TICKS_PER_SECOND);
 };
 
@@ -29,7 +28,7 @@ export const stopTimeSystem = () => {
 
 export const formatGameTime = (timestamp) => {
   const date = new Date(timestamp);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 };
 
 export const formatGameDate = (timestamp) => {

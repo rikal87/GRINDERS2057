@@ -42,7 +42,7 @@ const defaultState = {
   gameTime: new Date('2057-10-20T09:00:00').getTime(), // Start Date
   aiAgent: {
     model: AI_AGENT_MODEL_ENUM.VANGUARD,
-    tier: 0,
+    price_plan_idx: 0,
     subscriptionExpireAt: 0,
     activeTasks: [] // [{ taskId, startTime, lastProcessTime }]
   },
