@@ -175,7 +175,7 @@
   display: grid;
   grid-template-columns: 360px 1fr 420px;
   gap: 0;
-  padding: 0 40px 40px;
+  /* padding: 0 40px 40px; */
 }
 
 .v5-side-col,

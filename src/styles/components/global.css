@@ -100,7 +100,13 @@ a:hover {
   color: #ffffff;
   text-shadow: 0 0 15px var(--neon-cyan);
 }
-
+.btn-leave {
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s;
+}
 button {
   background: var(--neon-magenta);
   color: #fff;
@@ -138,6 +144,11 @@ button:active {
   overflow: hidden;
 }
 /* for item card */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
 .item-card {
   background: #080808;
   border: 1px solid #333;
@@ -154,9 +165,148 @@ button:active {
   transform: translateY(-5px);
   box-shadow: 0 5px 20px rgba(0, 255, 204, 0.1);
 }
+.item-card:hover .buy-overlay,
+.item-card:hover .equipped-overlay,
+.equipped-overlay.isEquipped,
+.item-card.isActived {
+  opacity: 1;
+}
+
+.buy-overlay,
+.equipped-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 255, 204, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.equipped-overlay span,
+.buy-overlay span {
+  background: #00ffcc;
+  color: #000;
+  padding: 5px 10px;
+  font-weight: bold;
+  transform: rotate(-5deg);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
 .item-details {
   flex: 1;
 }
+
+.item-icon {
+  font-size: 3rem;
+  text-align: center;
+  margin: 1rem 0;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.2));
+}
+
+.item-details {
+  flex: 1;
+}
+
+.item-details .name {
+  font-size: 1.1rem;
+  color: #e0e0e0;
+  margin: 0 0 5px 0;
+  height: 3rem;
+}
+
+.item-details .desc {
+  text-align: justify;
+  font-size: 0.8rem;
+  color: #888;
+  height: 8rem;
+  white-space: pre-line;
+}
+.sell-btn {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--neon-red);
+  color: #fff;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  /* height: 1rem; */
+  padding: 5px;
+}
+.sell-btn:hover {
+  background-color: var(--neon-red);
+  color: #fff;
+}
+.effects-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 15px;
+  align-items: flex-start;
+}
+
+.eff-badge {
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 240, 255, 0.05);
+  border-left: 2px solid var(--neon-cyan);
+  padding: 4px 8px;
+  /* width: 100%; */
+  text-align: left;
+}
+
+.eff-name {
+  color: var(--neon-cyan);
+  font-size: 0.6rem;
+  /* font-weight: bold; */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.eff-desc {
+  color: #ccc;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+/* Rarity Styles */
+.rarity-common {
+  border-left-color: #fff;
+}
+.rarity-common .eff-name {
+  color: #fff;
+}
+
+/* Default Neon Cyan for Uncommon */
+
+.rarity-rare {
+  border-left-color: #ffd700;
+}
+.rarity-rare .eff-name {
+  color: #ffd700;
+}
+
+.rarity-epic {
+  border-left-color: #bf00ff;
+}
+.rarity-epic .eff-name {
+  color: #bf00ff;
+}
+
+.rarity-unique {
+  border-left-color: #ff0000;
+}
+.rarity-unique .eff-name {
+  color: #ff0000;
+}
+
 
 .item-details .name {
   font-size: 1.1rem;

@@ -458,17 +458,11 @@ const handleManualRefresh = () => {
 }
 
 .btn-leave {
-  background: #111;
   border: none;
-  color: #666;
   padding: 10px;
   cursor: pointer;
   font-family: inherit;
   transition: color 0.2s;
-}
-
-.btn-leave:hover {
-  color: #fff;
 }
 
 /* RIGHT SIDE */
@@ -484,8 +478,6 @@ const handleManualRefresh = () => {
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5rem;
 }
-
-
 
 .item-card.special-offer {
   border-color: #ffd700;
@@ -600,37 +592,6 @@ const handleManualRefresh = () => {
   color: #ccc;
   font-size: 1rem;
   line-height: 1.2;
-}
-
-/* Rarity Styles */
-.rarity-common {
-  border-left-color: #fff;
-}
-.rarity-common .eff-name {
-  color: #fff;
-}
-
-/* Default Neon Cyan for Uncommon */
-
-.rarity-rare {
-  border-left-color: #ffd700;
-}
-.rarity-rare .eff-name {
-  color: #ffd700;
-}
-
-.rarity-epic {
-  border-left-color: #bf00ff;
-}
-.rarity-epic .eff-name {
-  color: #bf00ff;
-}
-
-.rarity-unique {
-  border-left-color: #ff0000;
-}
-.rarity-unique .eff-name {
-  color: #ff0000;
 }
 
 .item-price {

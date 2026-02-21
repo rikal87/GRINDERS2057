@@ -286,13 +286,13 @@ export const ITEM_DATA = [
 
   {
     id: 'illegal_system_miner',
-    name: '불법 시스템 자원 채굴 프로그램',
+    name: '불법 토큰 채굴 프로그램',
     icon: '⛏️',
     class: 'Item',
     tier: 'T2',
     price: 28000,
     desc: '공유 경제의 미래를 미리 만나보세요. 타인의 자원을 내 것처럼 쓰는 것, 그것이 이 도시에서 살아남는 유일한 규례입니다.',
-    effects: [getItemEffect('ram_thief')]
+    effects: [getItemEffect('joy_of_victory')]
   },
   {
     id: 'quick_fold_manual',
@@ -450,7 +450,7 @@ export const ITEM_DATA = [
     tier: 'T3',
     price: 93000,
     desc: '올인이라는 거친 파도 속에서도 당신을 건져 올립니다.',
-    effects: [getItemEffect('allin_insurance'), getItemEffect('cooler')]
+    effects: [getItemEffect('allin_insurance'), getItemEffect('tilt_recovery')]
   },
   {
     id: 'advanced_equity_calc',
@@ -523,7 +523,7 @@ export const ITEM_DATA = [
     tier: 'T4',
     price: 166000,
     desc: '계산된 손실의 일부를 즉시 복구합니다.',
-    effects: [getItemEffect('rake_reduction'), getItemEffect('quantum_fold')]
+    effects: [getItemEffect('tilt_recovery'), getItemEffect('tilt_recovery')]
   },
   // {
   //   id: 'bio_luminescence_chip',

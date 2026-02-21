@@ -487,7 +487,7 @@ export const ITEM_EFFECT_DATA = [
     trigger: ['winAtShowdown', 'winAtShowdownWithAllIn', 'lose'],
     get desc() { return `쇼다운에서 승리시 경험치 보너스 +${this.value * this.stack * 100}%\n(이 효과는 쇼다운에서 패배할 때마다 누적되며, 승리할때 초기화.)` },
     value: .2,
-    stack: 1,
+    stack: 0,
     isStackable: true
   },
   {
@@ -530,7 +530,7 @@ export const ITEM_EFFECT_DATA = [
     icon: '😃',
     id: 'joy_of_victory',
     name: '승리의 기쁨',
-    rarity: 'Rare',
+    rarity: 'Uncommon',
     cooldown: 0,
     editable: false,
     trigger: ['winAtShowdown', 'winAtShowdownWithAllIn'],
@@ -559,8 +559,8 @@ export const ITEM_EFFECT_DATA = [
     editable: false,
     trigger: ['win', 'lose'],
     get desc() { return `승리할때 마다 경험치 보너스 +${this.value * 100}% (이 효과는 승리할때 마다 누적되며, 쇼다운 패배시 초기화.)` },
-    value: 0.1,
-    stack: 1,
+    value: 0.03,
+    stack: 0,
     isStackable: true
   },
   {

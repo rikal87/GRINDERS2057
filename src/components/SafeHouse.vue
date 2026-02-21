@@ -54,7 +54,10 @@
           <!-- Program Setup -->
           <!-- Ai Agent Template -->
           <div class="v5-panel v5-neural-template">
-            <div class="v5-panel-label">DESCRIPTED_AI</div>
+            <div class="v5-panel-label">
+              <span>AI_AGENT</span>
+              <button>SETUP</button>
+            </div>
             <div class="v5-panel-inner">
               <div class="v5-neural-hero">
                 <span class="v5-class-title">{{ aiAgent.name }}</span>
@@ -86,6 +89,9 @@
                 </div>
               </div>
             </div>
+            <button class="btn-leave" @click="$emit('back')">
+              LEAVE_AREA
+            </button>
       </section>
 
       <!-- CENTER COLUMN: GEAR / STORAGE -->
@@ -100,29 +106,35 @@
           <div class="v5-item-container">
             <!-- Hardware View -->
             <template v-if="mainTab === 'hardware'">
-              <div v-for="p in store.ownedProtectors" :key="p.instanceId" class="item-card"
-                :class="{ equipped: store.equippedProtector?.instanceId === p.instanceId }">
-                <div class="v5-item-icon-box">
-                  <span :class="['tier-tag', 'tier-' + p.tier]">{{ p.tier || 'T1' }}</span>
-                  <span class="icon">{{ p.icon }}</span>
-                </div>
-                <div class="v5-item-h-body">
-                  <div class="v5-item-h-head">
-                    <span class="v5-item-h-name">{{ p.name }}</span>
-                    <span class="v5-item-h-status"
-                      v-if="store.equippedProtector?.instanceId === p.instanceId">ACTIVE_LINK</span>
+              <div class="items-grid">
+                <div v-for="item in store.ownedProtectors" :key="item.instanceId" class="item-card"
+                  @click="equipItem(item.instanceId)">
+                  <div class="card-header">
+                    <span class="tier-tag" :class="'tier-' + item.tier">{{ item.tier }}</span>
+                    <button class="sell-btn" @click="sellItem(item)">SELL</button>
                   </div>
-                  <p class="v5-item-h-desc">{{ p.desc || 'Standard issue hardware module. Reliability: High.' }}</p>
-                  <div class="v5-item-h-meta">
-                    <div class="v5-item-h-actions">
-                      <button v-if="store.equippedProtector?.instanceId !== p.instanceId" class="equip"
-                        @click="equip(p)">MOUNT</button>
-                      <button class="sell" @click="sellItem(p)">SELL {{ Math.floor(p.price * 0.25) }} CR</button>
+                  <div class="item-icon">{{ item.icon }}</div>
+                  <div class="item-details">
+                    <h3 class="name">{{ item.name }}</h3>
+                    <p class="desc">{{ item.desc }}</p>
+                    <div class="effects-mini">
+                      <div v-for="eff in item.effects" :key="eff?.name" class="eff-badge"
+                        :class="'rarity-' + (eff?.rarity ? eff.rarity.toLowerCase() : 'common')">
+                        <span class="eff-name">{{ eff?.name }}</span>
+                        <span class="eff-desc">{{ eff?.desc }}</span>
+                      </div>
+                    </div>
+                    <div
+                      :class="{ 'equipped-overlay': true, 'isEquipped': store.equippedProtector?.instanceId === item.instanceId }">
+                      <span>EQUIPPED</span>
                     </div>
                   </div>
                 </div>
               </div>
-              <div v-if="store.ownedProtectors.length === 0" class="v4-empty-state">CARGO_EMPTY</div>
+              <div v-if="store.ownedProtectors.length === 0" class="empty-stock">
+                <h2>OUT_OF_INVENTORY</h2>
+                <p>BUY AT THE SHOP</p>
+              </div>
             </template>
 
             <!-- Crypto View -->
@@ -158,8 +170,7 @@
         <div class="v5-panel v5-secure-comms" style="flex:1; overflow:hidden">
           <div class="v5-panel-label">SECURE_COMMS <small v-if="unreadCount" style="color:var(--accent-red)">[{{
             unreadCount
-          }} UNREAD]</small></div>
-
+              }} UNREAD]</small></div>
           <div class="v5-msg-list">
             <div v-for="msg in store.messages" :key="msg.id" class="v5-msg-card"
               :class="{ unread: !msg.isRead, active: selectedMessage?.id === msg.id }" @click="selectMessage(msg)">
@@ -281,6 +292,14 @@ let aiAgent = store.aiAgent.value;
 const currentSlots = computed(() => getSlotConfig(store.level));
 const xpPercent = computed(() => Math.min((store.xp / getNextLevelThreshold()) * 100, 100));
 
+const equipItem = (instanceId) => {
+  const item = store.ownedProtectors.find(p => p.instanceId === instanceId);
+  if (item) {
+    store.equippedProtector = item;
+    // audioManager.playSFX('click');
+    audioManager.playSFX('ui-click');
+  }
+}
 const openSkillSelector = (idx, type) => {
   activeSlotIdx.value = idx;
   activeSlotType.value = type;
@@ -321,30 +340,14 @@ const triggerMessageAction = (msgId, idx) => {
   selectedMessage.value = null;
 };
 
-const equip = (item) => {
-  store.equippedProtector = item;
-  audioManager.playSFX('action-confirm');
-};
-
 const sellItem = (item) => {
-  if (store.equippedProtector?.instanceId === item.instanceId) return;
   store.bankroll += Math.floor((item.price || 100) * 0.25);
   const idx = store.ownedProtectors.findIndex(p => p.instanceId === item.instanceId);
   if (idx !== -1) store.ownedProtectors.splice(idx, 1);
   audioManager.playSFX('coin-throw');
+  if (store.equippedProtector?.instanceId === item.instanceId) store.equippedProtector = null;
 };
 
-const formatFullTime = (ts) => {
-  const d = new Date(ts);
-  return d.toISOString().replace('T', ' ').split('.')[0];
-};
-
-const getItemIcon = (item) => {
-  // Simple emoji mapping for now, can be replaced with assets
-  if (item.name.includes('Phone') || item.name.includes('전화')) return '☎️';
-  if (item.name.includes('Chips') || item.name.includes('칩')) return '🍟';
-  return '📦';
-};
 </script>
 
 <style scoped src="../styles/components/SafeHouse.css"></style>

@@ -132,6 +132,7 @@ const handleJoinTable = async (payload) => {
 
 const handleView = (view) => {
   currentView.value = view;
+  audioManager.playSFX('ui-click');
 };
 
 const handleAction = async (payload) => {
@@ -155,6 +156,7 @@ const handleAction = async (payload) => {
     case 'reboot':
     case 'main_menu':
     case 'exit':
+      audioManager.playSFX('ui-click');
       showGameOverOverlay.value = false
       engine.value.exitGame();
       engine.value = null;
@@ -260,13 +262,13 @@ watch(() => engine.value?.gameOver, (isGameOver) => {
           <Lobby v-if="currentView === 'lobby'" @join="handleJoinTable" @view="handleView" />
 
           <!-- Shop View -->
-          <Shop v-else-if="currentView === 'shop'" @back="currentView = 'lobby'" />
+          <Shop v-else-if="currentView === 'shop'" @back="handleView('lobby')" />
 
           <!-- Safe House View -->
-          <SafeHouse v-else-if="currentView === 'home'" @back="currentView = 'lobby'" />
+          <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" />
 
           <!-- Crypto Exchange View -->
-          <CryptoExchange v-else-if="currentView === 'crypto'" @back="currentView = 'lobby'" />
+          <CryptoExchange v-else-if="currentView === 'crypto'" @back="handleView('lobby')" />
           <!-- Game Table View -->
           <div v-else-if="currentView === 'table'" class="game-container">
             <main>

@@ -315,9 +315,9 @@ export class EventAdaptor {
       case 'failure_is_mother_of_success': {
         // [FIX] effect is the flattened item object now
         if (context.isWin) {
-          effect.stack = 1; // Reset stack on win
+          effect.stack = 0; // Reset stack on win
         } else {
-          effect.stack = (effect.stack || 1) + 1; // Increment stack on lose
+          effect.stack = (effect.stack || 0) + 1; // Increment stack on lose
           player.tempXPBonus += effect.value
         }
         break;
@@ -325,10 +325,10 @@ export class EventAdaptor {
       case 'winner_master': {
         // [FIX] effect is the flattened item object
         if (context.isWin) {
-          effect.stack = (effect.stack || 1) + 1; // Increment stack on win
+          effect.stack = (effect.stack || 0) + 1; // Increment stack on win
           player.tempXPBonus += effect.value
         } else {
-          effect.stack = 1; // Reset stack on lose
+          effect.stack = 0; // Reset stack on lose
         }
         break;
       }
