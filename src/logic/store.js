@@ -98,6 +98,16 @@ const defaultState = {
   },
   onWorkTasks: [], // [{ taskId, startTime, lastProcessTime }]
   messages: [], // [{ id, type, title, body, timestamp, isRead, actions?, expireAt? }]
+  stamina: 100,
+  maxStamina: 100,
+  staminaLastUpdate: Date.now(),
+  statsAtWakeUp: {
+    bankroll: 999999999,
+    played_hands: 0,
+    total_earn_money: 0n,
+    total_lost_money: 0n,
+    max_win_pot: 0
+  },
   hasSave: false
 };
 
@@ -132,7 +142,7 @@ export const gainXP = (player, pot, bb = 1.0, isHighStakes = false, locationLV =
   const bbWon = pot / bb;
   let xp = bbWon * 1.0;
   // 티어 가산점: 높은 방일수록 경험치 기본값이 높음
-  xp += bb * (isHighStakes ? 10 : 5) * locationLV;
+  xp += bb * (isHighStakes ? 2 : 1) * locationLV;
   const bonus = player.tempXPBonus || 0;
   store.xp += Math.ceil(xp * (1 + bonus));
   console.info('player.tempXPBonus', player.tempXPBonus)

@@ -25,91 +25,100 @@
             <button class="stats-btn" @click="showStatsModal = true">STATS</button>
           </div>
           <div class="v5-panel-inner">
-            <div class="v5-stat-row">
+
+            <div class=" v5-stat-row">
               <div class="v5-stat-group">
                 <span class="label">BANKROLL</span>
-                <span class="bankroll">{{ store.bankroll.toLocaleString() }} <small ">CR</small></span>
+                <span class="bankroll">{{ store.bankroll.toLocaleString() }} <small>CR</small></span>
               </div>
             </div>
-            <div class=" v5-stat-row">
-              </div>
-              <div class="v5-xp-box">
-                <div class="v5-xp-text">
-                  <span class="label">LEVEL</span>
-                  <span class="val highlight">LV.{{ store.level }}</span>
-                </div>
-                <div class="v5-xp-text">
-                  <span>EXPERIENCE_GAINED</span>
-                  <span>{{ store.xp }} / {{ getNextLevelThreshold() }}</span>
-                </div>
-                <div class="v5-progress-track">
-                  <div class="v5-progress-fill" :style="{ width: xpPercent + '%' }"></div>
-                </div>
-              </div>
+            <div class="v5-stat-row">
             </div>
-          </div>
-
-          <!-- Program Setup -->
-          <!-- Ai Agent Template -->
-          <div class="v5-panel v5-neural-template">
-            <div class="v5-panel-label">
-              <span>AI_AGENT</span>
-              <button class="set-up-agent-btn" @click="showAgentModal = true">SETUP</button>
-            </div>
-            <div class="v5-panel-inner">
-              <div class="v5-neural-hero">
-                <span class="v5-class-title">{{ store.aiAgent.name }}</span>
-                <p class="v5-class-desc">
-                  {{ store.aiAgent.model?.slogan }}
-                </p>
-                <div class="v5-stat-row">
-                  <div class="v5-stat-group">
-                    <span class="label">LUDUS_TOKENS</span>
-                    <span class="val yellow">{{ Math.floor(store.ludusTokens).toLocaleString() }}
-                      <small>LT</small></span>
-                  </div>
-                </div>
-                <div class="v5-status-badges">
-                  <span class="v5-badge-mini"
-                    v-if="store.gameTime < store.aiAgent.subscriptionExpireAt">SYS_ACTIVE</span>
-                  <span class="v5-badge-mini" v-else style="color:var(--neon-red)">SYS_EXPIRED</span>
-                  <span class="v5-badge-mini">HUD_ACTIVE</span>
-                  <span class="v5-badge-mini">RAM_V1</span>
+            <div class="v5-xp-box">
+              <div class="v5-xp-text">
+                <span class="label">LEVEL</span>
+                <span class="val highlight">LV.{{ store.level }}</span>
+              </div>
+              <div class="v5-xp-text">
+                <span>EXPERIENCE_GAINED</span>
+                <span>{{ store.xp }} / {{ getNextLevelThreshold() }}</span>
+              </div>
+              <div class="v5-progress-track">
+                <div class="v5-progress-fill" :style="{ width: xpPercent + '%' }"></div>
+              </div>
+              <div class="v5-xp-text v5-stamina" :class="{ 'low-stamina': store.stamina < 25 }">
+                <span>STEMINA</span>
+                <span>{{ Math.floor(store.stamina) }} / {{ store.maxStamina }}</span>
+              </div>
+              <div class="v5-progress-track">
+                <div class="v5-progress-fill"
+                  :style="{ width: (store.stamina / store.maxStamina * 100) + '%', backgroundColor: getStaminaColor }">
                 </div>
               </div>
             </div>
 
-            <div class="v5-panel-inner" style="margin-top: 10px;">
-              <div class="v5-slot-list">
-                <div v-for="(slot, idx) in taskSlots" :key="idx" class="v5-slot-item" :class="{ locked: slot.isLocked }"
-                  @click="!slot.isLocked && !slot.task && openTaskSelector(idx)"
-                  @mousedown="!slot.isLocked && slot.task && startLongPress(idx)" @mouseup="cancelLongPress"
-                  @mouseleave="cancelLongPress" @touchstart="!slot.isLocked && slot.task && startLongPress(idx)"
-                  @touchend="cancelLongPress">
-                  <div class="v5-slot-meta">
-                    <span class="v5-slot-tier-tag"> {{ slot.tier }}</span>
-                    <span class="name">{{ slot.task ? slot.task.name : (slot.isLocked ? 'LOCKED' :
-                      'IDLE[CLICK_TO_ASSIGN]') }}</span>
-                  </div>
-                  <div class="v5-slot-status" :class="getTaskStatusClass(slot)">
-                    {{ slot.statusText }}
-                  </div>
-                  <!-- Progress bar for long press -->
-                  <div v-if="longPressIdx === idx" class="long-press-progress"
-                    :style="{ width: longPressProgress + '%' }"></div>
+          </div>
+        </div>
+        <button class="btn" @click="$emit('sleep')">REST</button>
+        <!-- Program Setup -->
+        <!-- Ai Agent Template -->
+        <div class="v5-panel v5-neural-template">
+          <div class="v5-panel-label">
+            <span>AI_AGENT</span>
+            <button class="set-up-agent-btn" @click="showAgentModal = true">SETUP</button>
+          </div>
+          <div class="v5-panel-inner">
+            <div class="v5-neural-hero">
+              <span class="v5-class-title">{{ store.aiAgent.name }}</span>
+              <p class="v5-class-desc">
+                {{ store.aiAgent.model?.slogan }}
+              </p>
+              <div class="v5-stat-row">
+                <div class="v5-stat-group">
+                  <span class="label">LUDUS_TOKENS</span>
+                  <span class="val yellow">{{ Math.floor(store.ludusTokens).toLocaleString() }}
+                    <small>LT</small></span>
                 </div>
+              </div>
+              <div class="v5-status-badges">
+                <span class="v5-badge-mini" v-if="store.gameTime < store.aiAgent.subscriptionExpireAt">SYS_ACTIVE</span>
+                <span class="v5-badge-mini" v-else style="color:var(--neon-red)">SYS_EXPIRED</span>
+                <span class="v5-badge-mini">HUD_ACTIVE</span>
+                <span class="v5-badge-mini">RAM_V1</span>
               </div>
             </div>
           </div>
-          <button class="btn-leave" @click="$emit('back')">
-            LEAVE_AREA
-          </button>
+
+          <div class="v5-panel-inner" style="margin-top: 10px;">
+            <div class="v5-slot-list">
+              <div v-for="(slot, idx) in taskSlots" :key="idx" class="v5-slot-item" :class="{ locked: slot.isLocked }"
+                @click="!slot.isLocked && !slot.task && openTaskSelector(idx)"
+                @mousedown="!slot.isLocked && slot.task && startLongPress(idx)" @mouseup="cancelLongPress"
+                @mouseleave="cancelLongPress" @touchstart="!slot.isLocked && slot.task && startLongPress(idx)"
+                @touchend="cancelLongPress">
+                <div class="v5-slot-meta">
+                  <span class="v5-slot-tier-tag"> {{ slot.tier }}</span>
+                  <span class="name">{{ slot.task ? slot.task.name : (slot.isLocked ? 'LOCKED' :
+                    'IDLE[CLICK_TO_ASSIGN]') }}</span>
+                </div>
+                <div class="v5-slot-status" :class="getTaskStatusClass(slot)">
+                  {{ slot.statusText }}
+                </div>
+                <!-- Progress bar for long press -->
+                <div v-if="longPressIdx === idx" class="long-press-progress"
+                  :style="{ width: longPressProgress + '%' }"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-leave" @click="$emit('back')">
+          LEAVE_AREA
+        </button>
       </section>
 
       <!-- CENTER COLUMN: GEAR / STORAGE -->
       <section class="v5-main-col">
         <div class="v5-panel v5-storage-unit" style="flex:1; overflow:hidden">
-          <div class="v5-panel-label">STORAGE_UNIT</div>
           <div class="v5-tabs">
             <button :class="{ active: mainTab === 'hardware' }" @click="mainTab = 'hardware'">HARDWARE</button>
             <button :class="{ active: mainTab === 'crypto' }" @click="mainTab = 'crypto'">CRYPTO</button>
@@ -180,9 +189,16 @@
       <!-- RIGHT COLUMN: COMMS / INBOX -->
       <section class="v5-msg-col">
         <div class="v5-panel v5-secure-comms" style="flex:1; overflow:hidden">
-          <div class="v5-panel-label">SECURE_COMMS <small v-if="unreadCount" style="color:var(--accent-red)">[{{
+          <!-- <div class="v5-panel-label">
+              <span>SECURE_COMMS</span>
+              <button class="set-up-agent-btn" @click="showAgentModal = true">SETUP</button>
+            </div> -->
+
+          <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-          }} UNREAD]</small></div>
+          }} UNREAD]</small>
+
+          </div>
           <div class="v5-msg-list">
             <div v-for="msg in store.messages" :key="msg.id" class="v5-msg-card"
               :class="{ unread: !msg.isRead, active: selectedMessage?.id === msg.id }" @click="selectMessage(msg)">
@@ -204,7 +220,7 @@
                 </button>
               </div>
             </div>
-            <div v-else class="v4-empty-state" style="margin-top:20px">SELECT_PACKET_TO_READ</div>
+            <div v-else class="v4-empty-state" style="margin-top:20px">NO_MESSAGES</div>
           </div>
         </div>
       </section>
@@ -415,11 +431,13 @@
         </div>
       </div>
     </transition>
+
+
   </div>
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+import { computed, ref } from 'vue';
 import { store, getNextLevelThreshold, getCurrentAgent } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
@@ -429,6 +447,7 @@ import { SKILL_DATA, getSlotConfig } from '../logic/skills';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAgentModelClasses';
 import { formatGameTime, formatGameDate } from '../logic/timeSystem';
 
+defineEmits(['sleep']);
 const mainTab = ref('hardware');
 const selectedMessage = ref(null);
 const showSkillSelector = ref(false);
@@ -438,6 +457,8 @@ const selectedModelId = ref(store.aiAgent.name);
 const selectedPlanIdx = ref(store.aiAgent.price_plan_idx);
 const activeSlotIdx = ref(null);
 const activeSlotType = ref(null);
+
+
 
 const availableModelIds = computed(() => Object.keys(AI_AGENT_MODEL_AND_PLAN_DATA));
 const currentModelIdx = computed(() => availableModelIds.value.indexOf(selectedModelId.value));
@@ -707,7 +728,11 @@ const wsd = computed(() => {
   return ((store.play_stats.w$sd / store.play_stats.wtsd) * 100).toFixed(1);
 });
 
+const getStaminaColor = computed(() => {
+  const s = store.stamina;
+  if (s > 50) return '#00f0ff';
+  if (s > 25) return '#f8ef00';
+  return '#ff003c';
+});
 </script>
-
 <style scoped src="../styles/components/SafeHouse.css"></style>
-```

@@ -33,7 +33,18 @@ export const ITEM_DATA = [
     price: 2800,
     editable: false,
     desc: '여기에 데이터를 담는다구요? 장난하십니까?',
-    effects: [getItemEffect('lt_max_plus')]
+    effects: [getItemEffect('lt_recovery')]
+  },
+  {
+    id: 'synthetic_coffee',
+    name: '합성 커피',
+    icon: '☕',
+    class: 'Item',
+    tier: 'T1',
+    price: 1200,
+    editable: false,
+    desc: '진짜 커피콩으로 만들었진 않지만 카페인 함량과 맛은 비슷합니다.',
+    effects: [getItemEffect('stemina_regen')]
   },
   {
     id: 'old_stopwatch',
@@ -41,7 +52,7 @@ export const ITEM_DATA = [
     icon: '⏱️',
     class: 'Item',
     tier: 'T1',
-    price: 1600,
+    price: 1000,
     editable: false,
     desc: '시간을 조금 더 벌어줄 수 있을 것 같습니다.',
     effects: [getItemEffect('time_bank_plus')]
@@ -107,16 +118,7 @@ export const ITEM_DATA = [
     desc: '보잘것 없는 원페어에 인생을 거는 사람들을 위한 유물입니다.',
     effects: [getItemEffect('pair_master')]
   },
-  {
-    id: 'luck_of_the_draw_coin',
-    name: '운명의 드로우 동전',
-    icon: '🪙',
-    class: 'Item',
-    tier: 'T1',
-    price: 4100,
-    desc: '마지막 카드 한 장의 운명을 당신의 편으로 끌어옵니다.',
-    effects: [getItemEffect('quantum_luck')]
-  },
+
 
 
   // --- T2 items (Uncommon, 10000 - 50000 CR) ---
@@ -284,16 +286,7 @@ export const ITEM_DATA = [
     effects: [getItemEffect('last_stand')]
   },
 
-  {
-    id: 'illegal_system_miner',
-    name: '불법 토큰 채굴 프로그램',
-    icon: '⛏️',
-    class: 'Item',
-    tier: 'T2',
-    price: 28000,
-    desc: '공유 경제의 미래를 미리 만나보세요. 타인의 자원을 내 것처럼 쓰는 것, 그것이 이 도시에서 살아남는 유일한 규례입니다.',
-    effects: [getItemEffect('joy_of_victory')]
-  },
+
   {
     id: 'quick_fold_manual',
     name: '쾌속 폴드 지침서',
@@ -345,7 +338,26 @@ export const ITEM_DATA = [
     desc: '진상 짓으로 암상인과의 관계를 최악으로 만들었습니다.',
     effects: [getItemEffect('black_consumer')]
   },
-
+  {
+    id: 'luck_of_the_draw_coin',
+    name: '운명의 드로우 동전',
+    icon: '🪙',
+    class: 'Item',
+    tier: 'T2',
+    price: 35000,
+    desc: '불가능할 것 같은 승리를 당신의 것으로 만듭니다.',
+    effects: [getItemEffect('quantum_luck')]
+  },
+  {
+    id: 'illegal_system_miner',
+    name: '불법 토큰 채굴 프로그램',
+    icon: '⛏️',
+    class: 'Item',
+    tier: 'T2',
+    price: 28000,
+    desc: '공유 경제의 미래를 미리 만나보세요. 타인의 자원을 내 것처럼 쓰는 것, 그것이 이 도시에서 살아남는 유일한 규례입니다.',
+    effects: [getItemEffect('joy_of_victory')]
+  },
   // --- T3 items (Rare, 50000 - 100000 CR) ---
   {
     id: 'noise_cancelling_headset',
@@ -376,7 +388,7 @@ export const ITEM_DATA = [
     price: 82000,
     editable: false,
     desc: '아주 먼 옛날에는 여기에 게임을 분할 압축하여 담았다고 합니다. 웃기죠?',
-    effects: [getItemEffect('lt_max_plus'), getItemEffect('lt_max_plus')]
+    effects: [getItemEffect('lt_recovery'), getItemEffect('lt_recovery')]
   },
   // {
   //   id: 'deep_well_program',
@@ -608,16 +620,15 @@ export const ITEM_DATA = [
     effects: [getItemEffect('quantum_fold'), getItemEffect('allin_insurance')]
   },
   {
-    id: 'forged_coupon_book',
-    name: '위조 쿠폰 북',
+    id: 'forged_coupon',
+    name: '위조 쿠폰',
     icon: '🎁',
     class: 'Item',
     tier: 'T4',
     price: 210000,
-    desc: '들키지만 않는다면 아주 유용한 할인 수단입니다.',
+    desc: '들키지만 않는다면 아주 유용한 수단입니다.',
     effects: [getItemEffect('loyalty_card'), getItemEffect('loyalty_card')]
   },
-
   {
     id: 'golden_mirror',
     name: '황금 거울',
@@ -738,7 +749,7 @@ export const ITEM_DATA = [
     tier: 'T4',
     price: 185000,
     desc: '시간과 운명이 겹치는 찰나의 순간을 포착합니다.',
-    effects: [getItemEffect('time_bank_plus'), getItemEffect('time_bank_plus')]
+    effects: [getItemEffect('quantum_luck'), getItemEffect('time_bank_plus')]
   },
   // {
   //   id: 'ram_thief_amplifier',
@@ -809,7 +820,7 @@ export const ITEM_DATA = [
     tier: 'T5',
     price: 332000,
     desc: '과거 파리의 상징이자 랜드마크"였"습니다. 이제는 초거대 기업의 고출력 송신 안테나로 쓰이고 있습니다.',
-    effects: [getItemEffect('quantum_luck'), getItemEffect('loyalty_card'), getItemEffect('pot_bonus')]
+    effects: [getItemEffect('stemina_regen'), getItemEffect('stemina_regen'), getItemEffect('stemina_regen')]
   },
   {
     id: 'statue_of_liberty',
@@ -829,7 +840,7 @@ export const ITEM_DATA = [
     tier: 'T5',
     price: 215000,
     desc: '뇌와 AI Agent 시스템을 직접 연결하여 한계를 돌파합니다.',
-    effects: [getItemEffect('lt_regen_plus'), getItemEffect('lt_max_plus'), getRndItemBucket]
+    effects: [getItemEffect('lt_regen_plus'), getItemEffect('lt_recovery'), getRndItemBucket]
   },
   {
     id: 'sailing_yacht',
@@ -839,7 +850,7 @@ export const ITEM_DATA = [
     tier: 'T5',
     price: 215000,
     desc: '요즘은 볼 수 없는 돛이 달린 여가용 요트, 느긋함을 느낄 수 있습니다.',
-    effects: [getItemEffect('four_of_a_kind_master'), getItemEffect('time_bank_plus'), getItemEffect('time_bank_plus')]
+    effects: [getItemEffect('four_of_a_kind_master'), getItemEffect('stemina_regen'), getItemEffect('time_bank_plus')]
   },
   {
     id: 'khamsa',
@@ -860,7 +871,7 @@ export const ITEM_DATA = [
     price: 213500,
     editable: false,
     desc: '이거 컵 받침대 아니였나요?',
-    effects: [getItemEffect('lt_max_plus'), getItemEffect('lt_max_plus'), getItemEffect('lt_max_plus')]
+    effects: [getItemEffect('lt_recovery'), getItemEffect('lt_recovery'), getItemEffect('lt_recovery')]
   },
   {
     id: 'titanium_insurance_policy',
@@ -1133,7 +1144,7 @@ export const ITEM_DATA = [
     class: 'Item',
     tier: 'T6',
     price: 2000000,
-    desc: '초고속 연산을 통해 모든 이득을 고부가 가치 정보를 선점합니다.',
+    desc: '초고속 연산을 통해 모든 고부가 가치 정보를 선점합니다.',
     effects: [getItemEffect('club_collector'), getItemEffect('spade_collector'), getItemEffect('heart_collector')]
   },
   {
@@ -1187,12 +1198,25 @@ export const materializeItem = (baseItem) => {
   const instance = { ...baseItem, instanceId: getinstanceId(baseItem) };
 
   if (instance.effects) {
-    instance.effects = instance.effects.map(eff => {
-      if (typeof eff === 'function') {
-        return eff();
+    const effectMap = {};
+    const merged = [];
+
+    instance.effects.forEach(eff => {
+      const resolved = (typeof eff === 'function') ? eff() : eff;
+      if (!resolved) return;
+
+      if (effectMap[resolved.id]) {
+        effectMap[resolved.id].value += resolved.value;
+      } else {
+        // Clone object and preserve getter descriptors (like 'desc')
+        const descriptors = Object.getOwnPropertyDescriptors(resolved);
+        const clone = Object.defineProperties({}, descriptors);
+        effectMap[resolved.id] = clone;
+        merged.push(clone);
       }
-      return eff;
-    }).filter(Boolean);
+    });
+
+    instance.effects = merged;
   }
 
   return instance;

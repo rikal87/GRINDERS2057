@@ -1,6 +1,6 @@
 
 import { store } from './store';
-
+import { consumeStamina } from './staminaSystem';
 import { processAiTasks } from './aiTaskSystem';
 
 // 1 second real time = 1 minute game time
@@ -18,6 +18,12 @@ export const startTimeSystem = () => {
 
     // Process AI Agent logic (LT regen, Task success check, etc.)
     processAiTasks();
+
+    // Consume player stamina
+    // We check if the player is currently at a table (this would require checking view state or engine status)
+    // For now, we can pass a simple flag or let the stamina system handle state check if possible.
+    // However, App.vue has currentView.
+    consumeStamina(window.isAtTable || false);
 
     // Check for daily rollover or other time-based events here if needed
     // processTimeBasedEvents(store.gameTime);
@@ -50,3 +56,7 @@ export const getGameDay = (timestamp) => {
   const date = new Date(timestamp);
   return date.getDate(); // 1-31
 }
+
+export const advanceTime = (hours) => {
+  store.gameTime += hours * 60 * 60 * 1000;
+};

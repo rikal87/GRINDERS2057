@@ -3,8 +3,9 @@
    ============================================= */
 
 .safe-house.v5 {
-  width: 100vw;
-  height: 100vh;
+  flex: 1;
+  /* width: 100vw; */
+  /* height: 100vh; */
   /* background: #090e12; */
   color: #c4d0d9;
   display: flex;
@@ -171,10 +172,11 @@
    3. MAIN DASHBOARD GRID
    ────────────────────────────────────────────────────────── */
 .v5-body {
-  flex: 1;
+  /* flex: 1; */
   display: grid;
-  grid-template-columns: 360px 1fr 420px;
+  grid-template-columns: 360px auto 360px;
   gap: 0;
+  /* max-height: 90vh; */
   /* padding: 0 40px 40px; */
 }
 
@@ -345,13 +347,14 @@
    ────────────────────────────────────────────────────────── */
 .v5-main-col {
   padding: 0 20px;
+  height: 80vh;
 }
 
 .v5-tabs {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 25px;
-  margin-bottom: 25px;
+  /* margin-bottom: 25px; */
 }
 .v5-tabs button {
   background: transparent;
@@ -362,12 +365,18 @@
   cursor: pointer;
   letter-spacing: 1px;
   padding-bottom: 6px;
-  border-bottom: 2px solid transparent;
+  border-top: 2px solid transparent;
   transition: all 0.2s;
+  clip-path: unset;
+  box-shadow: unset;
+}
+.v5-tabs button:hover {
+  color: var(--neon-cyan);
 }
 .v5-tabs button.active {
   color: var(--neon-cyan);
-  border-bottom-color: var(--neon-cyan);
+  border-top-color: var(--neon-cyan);
+
 }
 
 .v5-item-container {
@@ -541,6 +550,8 @@
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
 
+
+
 .v5-msg-h-reader {
   background: #0d1319;
   border: 1px solid rgba(255, 0, 85, 0.25);
@@ -569,53 +580,7 @@
   gap: 12px;
 }
 
-/* ──────────────────────────────────────────────────────────
-   7. MODALS & COMMON
-   ────────────────────────────────────────────────────────── */
-.v5-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(6, 9, 12, 0.94);
-  backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
 
-.v5-modal {
-  width: 650px;
-  background: #0d1319;
-  border: 1px solid var(--neon-cyan);
-  padding: 40px;
-  box-shadow: 0 0 50px rgba(0, 240, 255, 0.2);
-}
-
-.v5-modal-list {
-  max-height: 60vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin: 25px 0;
-  padding-right: 15px;
-}
-
-/* Animations */
-@keyframes v5-flicker {
-  0% {
-    opacity: 0.99;
-  }
-  5% {
-    opacity: 0.95;
-  }
-  10% {
-    opacity: 0.99;
-  }
-  100% {
-    opacity: 1;
-  }
-}
 
 /* AI Agent Setup Button */
 .stats-btn,
@@ -966,4 +931,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.v5-panel-label.inbox-label {
+  justify-content: flex-start;
 }

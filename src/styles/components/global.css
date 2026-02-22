@@ -100,6 +100,7 @@ a:hover {
   color: #ffffff;
   text-shadow: 0 0 15px var(--neon-cyan);
 }
+.btn,
 .btn-leave {
   border: none;
   padding: 10px;
@@ -121,7 +122,16 @@ button {
   border-left: 4px solid var(--neon-cyan);
   box-shadow: 5px 5px 0px rgba(0, 240, 255, 0.2);
 }
-
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(1);
+}
+button:disabled:hover {
+  transform: none;
+  box-shadow: none;
+  filter: grayscale(1);
+}
 button:hover {
   transform: translate(-2px, -2px);
   box-shadow: 8px 8px 0px var(--neon-cyan);
@@ -782,5 +792,115 @@ footer {
 
   .setting-item {
     padding: 0.8rem;
+  }
+}
+/* Sleep Report Modal */
+.sleep-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.98);
+  display: flex;
+  justify-content: center;
+  /* align-items: center; */
+}
+
+.sleep-modal {
+  margin: auto;
+  width: 50%;
+  border-color: var(--neon-cyan);
+  background-color: #06090c;
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+}
+
+.console-box {
+  background: #050a0e;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  padding: 20px;
+  height: 300px;
+  overflow-y: auto;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.console-line {
+  font-size: 0.9rem;
+  color: var(--neon-cyan);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.console-line .prompt {
+  color: var(--neon-magenta);
+  margin-right: 10px;
+}
+
+.report-actions {
+  height: 40px;
+  /* margin-top: 20px; */
+  display: flex;
+  justify-content: center;
+}
+
+.sleep-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  font-size: 1rem;
+}
+
+/* Low Stamina Colors */
+.low-stamina {
+  color: var(--neon-red) !important;
+  text-shadow: 0 0 5px var(--neon-red);
+}
+/* ──────────────────────────────────────────────────────────
+   7. MODALS & COMMON
+   ────────────────────────────────────────────────────────── */
+.v5-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(6, 9, 12, 0.94);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.v5-modal {
+  width: 650px;
+  background: #0d1319;
+  border: 1px solid var(--neon-cyan);
+  padding: 40px;
+  box-shadow: 0 0 50px rgba(0, 240, 255, 0.2);
+}
+
+.v5-modal-list {
+  max-height: 60vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 25px 0;
+  padding-right: 15px;
+}
+
+/* Animations */
+@keyframes v5-flicker {
+  0% {
+    opacity: 0.99;
+  }
+  5% {
+    opacity: 0.95;
+  }
+  10% {
+    opacity: 0.99;
+  }
+  100% {
+    opacity: 1;
   }
 }

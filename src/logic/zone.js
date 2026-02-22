@@ -304,7 +304,7 @@ export const zones = [
   {
     "id": "special",
     "name": "Special Tier (The Sanctuary)",
-    "description": "현실을 벗어난 공간. 운명을 건 승부.",
+    "description": "지구에서 벗어난 공간. 운명을 건 승부.",
     "locations": [
       {
         "id": "special_orbit_lounge",

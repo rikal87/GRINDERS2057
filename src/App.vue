@@ -14,12 +14,14 @@ import ControlPanel from './components/ControlPanel.vue';
 import AudioPlayer from './components/AudioPlayer.vue';
 import HistoryPopup from './components/HistoryPopup.vue';
 import { audioManager } from './logic/audioManager';
-
+import { performSleep, calculateSessionReport } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
 
 // ... imports
-import { startTimeSystem, formatGameTime, formatGameDate } from './logic/timeSystem';
+import { startTimeSystem, formatGameTime, formatGameDate, advanceTime } from './logic/timeSystem';
 import { processAiTasks } from './logic/aiTaskSystem';
+// Automated Hand Transition Logic
+import { watch, computed } from 'vue';
 
 const currentView = ref('splash'); // splash, intro, lobby, table, shop, home
 const engine = ref(null);
@@ -97,7 +99,6 @@ const handleStart = (mode) => {
 const handleJoinTable = async (payload) => {
   const { size, buyIn, rake, rakeCap, isHighStakes, sb, bb, locationId, locationLV } = payload;
   console.info('handleJoinTable', payload);
-
   // [CLEANUP] Ensure previous engine is destroyed
   if (engine.value) {
     engine.value.cleanup();
@@ -164,7 +165,48 @@ const handleAction = async (payload) => {
       break;
   }
 };
+// Sleep System Refs
+const showSleepModal = ref(false);
+const visibleReportLines = ref([]);
+const reportFinished = ref(false);
+const fullReportLines = ref([]);
+const handleSleepClick = () => {
+  const report = calculateSessionReport();
+  fullReportLines.value = [
+    `INITIALIZING_REST_PROTOCOL...`,
+    `ACCESSING_NEURAL_LOGS...`,
+    `--------------------------------`,
+    `SESSION_TOTAL_PROFIT: ${report.totalProfit} CR`,
+    `SESSION_ROI: ${report.roi}%`,
+    `NEW_HANDS_RECORDED: ${report.playTime}`,
+    `BIGGEST_WIN_POT: ${report.biggestWin} CR`,
+    `--------------------------------`,
+    `STAMINA_LEVEL: 100% RECOVERED`,
+    `TIME_SKIP_CALCULATED... DONE`,
+    `READY_FOR_REBOOT.`
+  ];
+  visibleReportLines.value = [];
+  reportFinished.value = false;
+  showSleepModal.value = true;
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < fullReportLines.value.length) {
+      visibleReportLines.value.push(fullReportLines.value[i]);
+      audioManager.playSFX('ui-click');
+      i++;
+    } else {
+      clearInterval(interval);
+      reportFinished.value = true;
+    }
+  }, 400); // 400ms per line
+};
 
+const wakeUp = () => {
+  performSleep()
+  showSleepModal.value = false;
+  audioManager.playSFX('action-confirm');
+
+};
 const handleSkill = (skillId) => {
   if (engine.value.useSkill(engine.value.players[0], skillId)) {
     console.log(`Program ${skillId} executed.`);
@@ -174,9 +216,6 @@ const handleSkill = (skillId) => {
 };
 
 
-
-// Automated Hand Transition Logic
-import { watch } from 'vue';
 const autoNextTimer = ref(null);
 
 watch(() => engine.value?.state, (newState, oldState) => {
@@ -228,6 +267,17 @@ watch(() => engine.value?.gameOver, (isGameOver) => {
     showVictoryOverlay.value = false;
   }
 });
+
+const staminaBlur = computed(() => {
+  const s = store.stamina;
+  if (s >= 25) return 0;
+  // Below 25%, blur increases from 0 to 5px
+  return ((25 - s) / 25) * 5;
+});
+
+watch(currentView, (newView) => {
+  window.isAtTable = (newView === 'table');
+});
 </script>
 
 <template>
@@ -257,7 +307,7 @@ watch(() => engine.value?.gameOver, (isGameOver) => {
         <Splash v-if="currentView === 'splash'" @finish="currentView = 'intro'" />
         <!-- Intro View(main-menu) -->
         <Intro v-else-if="currentView === 'intro'" @start="handleStart" />
-        <section class="game-container">
+        <section class="game-container" :style="{ filter: `blur(${staminaBlur}px)` }">
           <!-- Lobby View -->
           <Lobby v-if="currentView === 'lobby'" @join="handleJoinTable" @view="handleView" />
 
@@ -265,7 +315,7 @@ watch(() => engine.value?.gameOver, (isGameOver) => {
           <Shop v-else-if="currentView === 'shop'" @back="handleView('lobby')" />
 
           <!-- Safe House View -->
-          <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" />
+          <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" @sleep="handleSleepClick" />
 
           <!-- Crypto Exchange View -->
           <CryptoExchange v-else-if="currentView === 'crypto'" @back="handleView('lobby')" />
@@ -365,6 +415,23 @@ watch(() => engine.value?.gameOver, (isGameOver) => {
             </div>
           </div>
           <button class="btn-close" @click="toggleSettings">CLOSE_INTERFACE</button>
+        </div>
+      </div>
+    </Transition>
+    <!-- SLEEP REPORT MODAL -->
+    <Transition name="fade">
+      <div v-if="showSleepModal" class="v5-modal-overlay sleep-overlay">
+        <div class="v5-modal sleep-modal">
+          <div class="">NEURAL_DEFRAGMENTATION_REPORT</div>
+          <h2 class="glitch-text" data-text="SESSION_ANALYSIS">SESSION_ANALYSIS</h2>
+          <div class="console-box" ref="consoleBox">
+            <div v-for="(line, idx) in visibleReportLines" :key="idx" class="console-line">
+              <span class="prompt">></span> {{ line }}
+            </div>
+          </div>
+          <div class="report-actions">
+            <button class="btn" @click="wakeUp" :disabled="!reportFinished">WAKE_UP</button>
+          </div>
         </div>
       </div>
     </Transition>

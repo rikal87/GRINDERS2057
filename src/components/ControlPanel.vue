@@ -1,12 +1,21 @@
 <template>
   <footer class="control-panel" v-if="engine">
     <!-- Permanent Hand Rank Display (Always Visible) -->
-    <div class="permanent-hud">
-      <div class="hud-stat">
-        <span class="label">CURRENT_HAND:</span>
-        <span class="value">{{ currentHandRank }}</span>
+    <aside>
+      <div class="permanent-hud">
+        <div class="hud-stat">
+          <span class="label">CURRENT_HAND:</span>
+          <span class="value">{{ currentHandRank }}</span>
+        </div>
       </div>
-    </div>
+      <div class="permanent-hud">
+        <div class="hud-stat" :class="{ 'low-stamina': store.stamina < 25 }">
+          <span class="label">STEMINA:</span>
+          <span class="value" :style="{ color: getStaminaColor }">{{ Math.floor(store.stamina) }} / {{ store.maxStamina
+          }}</span>
+        </div>
+      </div>
+    </aside>
     <!-- Betting & Actions -->
     <div class="betting-interface">
       <!-- Shortcuts -->
@@ -106,6 +115,13 @@ const currentHandRank = computed(() => {
   const evalResult = evaluateHand([...player.value.hand, ...props.engine.board]);
   // Returning shorter rank name for HUD
   return evalResult.name;
+});
+
+const getStaminaColor = computed(() => {
+  const s = store.stamina;
+  if (s > 50) return '#00f0ff'; // neon-cyan
+  if (s > 25) return '#f8ef00'; // neon-yellow
+  return '#ff003c'; // neon-red
 });
 
 
@@ -458,7 +474,9 @@ button {
   background: var(--neon-cyan);
   box-shadow: 0 0 5px var(--neon-cyan);
 }
-
+aside {
+  flex: 1;
+}
 /* HUD Mini-Display */
 .permanent-hud {
   grid-column: span 2;
@@ -579,6 +597,57 @@ button:disabled {
   }
   .skill-cost {
     font-size: 1rem;
+  }
+}
+
+/* Stamina Glitch & Visuals */
+@keyframes stamina-glitch {
+  0% {
+    transform: translate(0);
+    opacity: 1;
+  }
+  20% {
+    transform: translate(-2px, 1px);
+    opacity: 0.8;
+  }
+  40% {
+    transform: translate(2px, -1px);
+    opacity: 0.9;
+  }
+  60% {
+    transform: translate(-1px, -1px);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(1px, 1px);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(0);
+    opacity: 1;
+  }
+}
+
+.glitch-active {
+  animation: stamina-glitch 0.2s infinite;
+  box-shadow: 0 0 15px currentColor;
+}
+
+.low-stamina {
+  color: #ff003c !important;
+  text-shadow: 0 0 5px #ff003c;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
   }
 }
 </style>

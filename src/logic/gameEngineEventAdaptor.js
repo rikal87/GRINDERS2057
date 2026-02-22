@@ -1,6 +1,7 @@
 
 import { store, gainBankroll, gainLT } from './store.js';
 import { evaluateHand } from './poker.js';
+import { recoverStamina } from './staminaSystem.js';
 export class EventAdaptor {
   updateEquippedEffects() {
 
@@ -256,6 +257,17 @@ export class EventAdaptor {
       return;
     }
     switch (effect.id) {
+      case 'lt_recovery':
+        gainLT(effect.value);
+        break;
+      case 'stemina_regen':
+        recoverStamina(effect.value);
+        effect.cooldown = effect.maxCooldown;
+        break;
+      case 'dopamine_addiction':
+        recoverStamina(effect.value);
+        effect.cooldown = effect.maxCooldown;
+        break;
       case 'last_stand':
         if (player.chips <= context.bb * 25) {
           gainLT(effect.value)
@@ -266,12 +278,12 @@ export class EventAdaptor {
         break;
       case 'joy_of_victory':
         if (context.isWin) {
-          gainLT(effect.value)
+          recoverStamina(effect.value);
         }
         break;
       case 'tilt_recovery':
         if (!context.isWin) {
-          gainLT(effect.value)
+          recoverStamina(effect.value);
         }
         break;
       case 'synapse_reading':
