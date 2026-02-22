@@ -61,6 +61,10 @@ body,
   width: 100%;
   height: 100%;
   min-width: 320px;
+  -webkit-user-drag: none;
+  /* 드래그 자체를 방지 */
+  user-select: none;
+  /* 선택 방지 */
 }
 
 #app {

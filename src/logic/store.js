@@ -5,9 +5,9 @@ const SAVE_KEY = 'cyberpoker_save_v1';
 const defaultState = {
   bankroll: 999999999,
   chips: 0, // Chips on table
-  currentBB: 0,
+  // currentBB: 0,
   xp: 0,
-  level: 25,
+  level: 30,
   selectedClass: 'VANGUARD',
   ownedProtectors: [], // Array of materialized item objects
   equippedProtector: null, // item object or null

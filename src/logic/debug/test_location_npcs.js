@@ -1,7 +1,7 @@
 
-import { GameEngine } from './gameEngine_node.js';
-import { zones } from './zone_node.js';
-import { CLASSES_ENEMY_BOSS } from './persona.js';
+import { GameEngine } from '../gameEngine_node.js';
+import { zones } from '../zone_node.js';
+import { CLASSES_ENEMY_BOSS } from '../persona.js';
 import fs from 'fs';
 
 const logFile = 'test_results.txt';

@@ -40,6 +40,10 @@ onMounted(() => {
     if (e.key === 'Escape') toggleSettings();
   });
 
+  window.addEventListener('join-table', (e) => {
+    handleJoinTable(e.detail);
+  });
+
   // Global shop refresh check every 10 seconds
   setInterval(checkAutoRefresh, 10000);
 

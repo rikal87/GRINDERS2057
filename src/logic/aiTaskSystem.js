@@ -12,10 +12,11 @@ export const AI_TASK_DATA = [
     desc: 'Host a rake-free home game with local fish.\n(RAKE 0% / SB 5 / BB 10 / base buy-in 200BB)',
     costPerTime: 1, // LT per hour
     probability: 0.1, // 10% per hour
-    duration: 4 * 60, // 4 hours in minutes
-    cooldown: 3 * 24 * 60, // 3 days in minutes
-    persona_pools: ['Fish', 'Broke', 'MR_CALL'],
-    constraints: { sb: 5, bb: 10, buyIn: 200 },
+    duration: 4 * 60, // 4 hours in minutes after expired
+    cooldown: 1 * 24 * 60,
+    action: {
+      type: 'ACCEPT_INVITE', zone: 'micro', location_id: 'micro_safte_house', available: 6 // only 6max
+    }, // for MessageSystem
   },
   {
     id: 'fish_finder',
@@ -309,7 +310,21 @@ const triggerTaskSuccess = (taskState, taskDef) => {
   taskState.effectEndTime = store.gameTime + (taskDef.duration * 60 * 1000); // duration is in minutes
   taskState.failureCount = 0;
 
-  sendMessage('SYSTEM', `Task Success: ${taskDef.name}`, `The task was successful! Effect active for ${taskDef.duration / 60} hours.`);
+  let actions = [];
+  if (taskDef.action) {
+    actions.push({
+      label: 'ACCEPT',
+      actionType: taskDef.action.type,
+      payload: taskDef.action
+    });
+    actions.push({
+      label: 'DEL',
+      actionType: 'DELETE_MESSAGE',
+      payload: {}
+    });
+  }
+
+  sendMessage('SYSTEM', `Task Success: ${taskDef.name}`, `The task was successful! Effect active for ${taskDef.duration / 60} hours.`, actions);
 
   // Specific Side Effects
   if (taskDef.risk && taskDef.risk.type === 'SHARK_ATTRACTION') {

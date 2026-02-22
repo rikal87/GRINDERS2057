@@ -142,6 +142,7 @@ const flatLocations = computed(() => {
   const locs = [];
   zones.forEach(zone => {
     zone.locations.forEach(loc => {
+      if (loc.isHidden) return true;
       locs.push({
         ...loc,
         zoneName: zone.name,
@@ -176,16 +177,13 @@ const currentTableConfig = computed(() => currentLocation.value.tables);
 const currentRake = computed(() => {
   if (!currentTableConfig.value) return 0;
   const base = currentTableConfig.value.baseRake;
-  // Level discount: 1% reduction per 100 levels? Or just simple formula
-  // Original: Math.max(0.01, rake - store.level / 100)
-  return Math.max(0.01, base - (store.level * 0.001)); // Adjusted to be more reasonable
+  return Math.max(0.01, base);
 });
 
 const canAfford = computed(() => {
   if (!currentTableConfig.value) return false;
-  return store.bankroll >= (currentTableConfig.value.amount * 0.5); // Min buy-in is usually 50%
+  return store.bankroll >= (currentTableConfig.value.amount * 0.5);
 });
-
 
 const currentMapKey = ref('DEFAULT');
 const mapPositions = {

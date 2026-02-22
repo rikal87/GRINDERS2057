@@ -2,6 +2,7 @@
 import { store } from './store';
 import { consumeStamina } from './staminaSystem';
 import { processAiTasks } from './aiTaskSystem';
+import { sendLoreAndSpamMessage } from './messageSystem';
 
 // 1 second real time = 1 minute game time
 const TICKS_PER_SECOND = 1;
@@ -18,7 +19,7 @@ export const startTimeSystem = () => {
 
     // Process AI Agent logic (LT regen, Task success check, etc.)
     processAiTasks();
-
+    if (Math.random() < 1 / (GAME_MINUTES_PER_TICK * 60 * 1000)) sendLoreAndSpamMessage();
     // Consume player stamina
     // We check if the player is currently at a table (this would require checking view state or engine status)
     // For now, we can pass a simple flag or let the stamina system handle state check if possible.

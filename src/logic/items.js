@@ -783,13 +783,13 @@ export const ITEM_DATA = [
   },
   {
     id: 'vip_lounge_keycard',
-    name: 'VIP 라운지 키카드',
+    name: 'VIP 키카드',
     icon: '💳',
     class: 'Item',
     tier: 'T4',
     price: 190000,
-    desc: '최고급 대우를 보장하는 신분 상징입니다.',
-    effects: [getItemEffect('loyalty_card'), getItemEffect('blind_discount')]
+    desc: '대부분의 카지노에서 최고급 대우를 보장하는 신분 상징입니다.',
+    effects: [getItemEffect('rake_reduction'), getItemEffect('blind_discount')]
   },
   {
     id: 'blind_folding_fan',

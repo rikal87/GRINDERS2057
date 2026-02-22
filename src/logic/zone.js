@@ -18,6 +18,33 @@ export const zones = [
     "description": "단순 오락거리를 위해 찾는 곳. 돈을 잃어도 타격이 적어 무모한 플레이가 빈번하지만, 가끔 절박한 플레이어도 존재.",
     "locations": [
       {
+        "id": "micro_safte_house",
+        "name": "안전가옥",
+        "englishName": "Safe House",
+        "imgSrc": null,
+        "description": "안전가옥으로 친구들을 초대하였습니다.",
+        "atmosphere": "다소 어두움, 가벼운 분위기, 가끔 절박함",
+        "requirements": null,
+        "isHidden": true,
+        "level": 0,
+        "npcs": [
+          "Fish",
+          "Broke",
+          "MR_CALL"
+        ],
+        "tables": {
+          amount: 2000, amount_fmt: '2K', amount_min_fmt: '1K', sb: 10, bb: 20, available: [
+            6
+          ], baseRake: 0.0, rakeCap: 0
+        },
+        "theme": {
+          "background": "radial-gradient(circle, #2c2c2c 0%, #1a1a1a 100%)",
+          "borderColor": "#3f6ae2ff",
+          "boxShadow": "0 0 20px rgba(146, 148, 255, 0.8)"
+        },
+        'bgMusic': [TRACK_ENUM.NeonDreams]
+      },
+      {
         "id": "micro_street_shop",
         "name": "길거리 상점 뒷편",
         "englishName": "Street Shop Backroom",
@@ -59,7 +86,7 @@ export const zones = [
           "Gangster",
         ],
         "tables": {
-          amount: 2500, amount_fmt: '2.5K', amount_min_fmt: '1.25K', sb: 10, bb: 25, available: [6, 9], baseRake: 0.1, rakeCap: 125
+          amount: 2500, amount_fmt: '2.5K', amount_min_fmt: '1.25K', sb: 10, bb: 25, available: [6, 9], baseRake: 0.08, rakeCap: 125
         },
         "theme": {
           "background": "radial-gradient(circle, #2a2a2a 0%, #0f0f0f 100%)",
@@ -136,7 +163,7 @@ export const zones = [
           "Gambler",
           "Gangster"
         ],
-        "tables": { amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 100, bb: 250, available: [6, 9], baseRake: 0.05, rakeCap: 1250 },
+        "tables": { amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 100, bb: 250, available: [6, 9], baseRake: 0.06, rakeCap: 1250 },
         "theme": {
           "background": "radial-gradient(circle, #2e001f 0%, #1a0011 100%)",
           "borderColor": "#ff0080",
@@ -163,7 +190,7 @@ export const zones = [
           "Rich_Guy",
           "Gangster"
         ],
-        "tables": { amount: 50000, amount_fmt: '50K', amount_min_fmt: '25K', sb: 250, bb: 500, available: [6, 9], baseRake: 0.09, rakeCap: 2500 },
+        "tables": { amount: 50000, amount_fmt: '50K', amount_min_fmt: '25K', sb: 250, bb: 500, available: [6, 9], baseRake: 0.05, rakeCap: 2500 },
         "theme": {
           "background": "radial-gradient(circle, #0f2e0f 0%, #051a05 100%)",
           "borderColor": "#2e8b57",
@@ -216,7 +243,7 @@ export const zones = [
           "Mafia_Boss",
           "Quant_Pro",
         ],
-        "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1000, bb: 2500, available: [6, 9], baseRake: 0.1, rakeCap: 12500, isHighStakes: true },
+        "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1000, bb: 2500, available: [6, 9], baseRake: 0.06, rakeCap: 12500, isHighStakes: true },
         "theme": {
           "background": "radial-gradient(circle, #001a33 0%, #000a14 100%)",
           "borderColor": "#ffd700",
@@ -238,7 +265,7 @@ export const zones = [
           "Quant_Pro",
           "Shark",
         ],
-        "tables": { amount: 500000, amount_fmt: '500K', amount_min_fmt: '250K', sb: 2500, bb: 5000, available: [6, 9], baseRake: 0.1, rakeCap: 25000, isHighStakes: true },
+        "tables": { amount: 500000, amount_fmt: '500K', amount_min_fmt: '250K', sb: 2500, bb: 5000, available: [6, 9], baseRake: 0.04, rakeCap: 25000, isHighStakes: true },
         "theme": {
           "background": "radial-gradient(circle, #1a2a3a 0%, #0d151d 100%)",
           "borderColor": "#4682b4",
@@ -268,7 +295,7 @@ export const zones = [
           "Old_Lion",
           "Named_Pro",
         ],
-        "tables": { amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.11, rakeCap: 50000, isHighStakes: true },
+        "tables": { amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.04, rakeCap: 50000, isHighStakes: true },
         "theme": {
           "background": "radial-gradient(circle, #3d0000 0%, #1a0000 100%)",
           "borderColor": "#ff4d4d",
@@ -291,7 +318,7 @@ export const zones = [
           "Mafia_Boss",
           "Rich_Guy",
         ],
-        "tables": { amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.11, rakeCap: 250000, isHighStakes: true },
+        "tables": { amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.06, rakeCap: 250000, isHighStakes: true },
         "theme": {
           "background": "radial-gradient(circle, #1a1a1a 0%, #000000 100%)",
           "borderColor": "#ffd700",

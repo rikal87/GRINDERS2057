@@ -1,7 +1,7 @@
 
-import { GameEngine } from './gameEngine.js';
-import { EventAdaptor } from './gameEngineEventAdaptor.js';
-import { store } from './store.js'; // Might fail if store uses browser globals, but let's try.
+import { GameEngine } from '../gameEngine.js';
+import { EventAdaptor } from '../gameEngineEventAdaptor.js';
+import { store } from '../store.js'; // Might fail if store uses browser globals, but let's try.
 
 // Mock store if needed (store.js uses vue reactivity which might require DOM or shim)
 // But let's assume imports work for logic check.

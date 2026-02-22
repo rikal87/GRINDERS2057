@@ -1,5 +1,5 @@
 
-import { calculateEquity, createDeck } from './poker.js';
+import { calculateEquity, createDeck } from '../poker.js';
 
 console.log('--- Equity Calculation Test ---');
 

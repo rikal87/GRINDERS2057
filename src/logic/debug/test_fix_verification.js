@@ -1,6 +1,6 @@
 
-import { GameEngine } from './gameEngine.js';
-import { store } from './store.js';
+import { GameEngine } from '../gameEngine.js';
+import { store } from '../store.js';
 
 // Minimal mock for store if needed
 store.bankroll = 10000;

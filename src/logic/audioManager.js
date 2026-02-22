@@ -9,7 +9,7 @@ const sfxModules = import.meta.glob('../assets/sfx/*.{mp3,wav}', { eager: true, 
 const DEFAULT_PLAYLIST = [
   TRACK_INFO[TRACK_ENUM.NeonDreams],
 ];
-export const playlist = DEFAULT_PLAYLIST;
+export let playlist = DEFAULT_PLAYLIST;
 // export const playlist = Object.entries(trackModules).map(([path, url]) => {
 //   const fileName = path.split('/').pop().replace('.mp3', '');
 
@@ -69,7 +69,7 @@ class AudioManager {
     this.initialized = true;
   }
 
-  async loadTrack(index = 0, trackInfo = DEFAULT_PLAYLIST) {
+  async loadTrack(index = 0, trackInfo = null) {
     await this.init();
 
     let track = null;
@@ -78,7 +78,10 @@ class AudioManager {
     // Handle different call signatures
     if (typeof index === 'number') {
       // Only index passed (likely for DEFAULT_PLAYLIST)
-      track = trackInfo[index];
+      if (trackInfo) {
+        playlist = trackInfo;
+      }
+      track = playlist[index];
       trackIndex = index;
     } else if (typeof index === 'string' && TRACK_INFO[index]) {
       // Enum key passed
@@ -388,16 +391,17 @@ class AudioManager {
       tracks = [TRACK_ENUM.Grainders2057];
     }
 
-    // Pick a random track from the zone's list
-    const randomTrackEnum = tracks[Math.floor(Math.random() * tracks.length)];
-    const trackInfo = TRACK_INFO[randomTrackEnum];
+    // Create a new playlist for the current zone
+    const newPlaylist = tracks.map(t => TRACK_INFO[t]).filter(t => t);
 
-    if (!trackInfo) {
-      console.warn(`Track info not found for ${randomTrackEnum}`);
+    if (newPlaylist.length === 0) {
+      console.warn(`Track info not found for zone tracks`);
       return;
     }
 
-    await this.loadTrack(randomTrackEnum, trackInfo);
+    const randomIdx = Math.floor(Math.random() * newPlaylist.length);
+
+    await this.loadTrack(randomIdx, newPlaylist);
 
     if (this.ctx.state === 'suspended') {
       await this.ctx.resume();

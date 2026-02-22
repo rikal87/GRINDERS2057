@@ -1,4 +1,4 @@
-import { evaluateHand, createDeck } from './poker.js';
+import { evaluateHand, createDeck } from '../poker.js';
 // import { getAIAction, AI_ARCHETYPES } from './aiEngine.js';
 // import { audioManager } from './audioManager.js';
 

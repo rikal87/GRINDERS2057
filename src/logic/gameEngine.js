@@ -43,7 +43,6 @@ export class GameEngine {
     this.locationLV = locationLV;
     // store.bankroll -= this.buyIn; // Deduct from bankroll
     this.turnTimer = null;
-    this.turnTimer = null;
     this.currentStreetRaises = 0;
     this.pot = 0; // [FIX] Reactive property for instant updates
     this.preflopAggressor = null; // Track who raised preflop for C-Bet logic
@@ -233,33 +232,49 @@ export class GameEngine {
 
     this.runoutInProgress = false;
 
-    const playerCount = this.players.filter(p => !p.isEliminated).length;
-    if (playerCount < 2) return; // Should not happen if game over check works, but safety first
+    // Filter active (non-eliminated) players
+    const activePlayersIndices = this.players
+      .map((p, idx) => ({ p, idx }))
+      .filter(item => !item.p.isEliminated)
+      .map(item => item.idx);
 
-    this.dealerIndex = (this.dealerIndex + 1) % playerCount;
+    const activeCount = activePlayersIndices.length;
+    if (activeCount < 2) return; // Should not happen if game over check works
 
-    // Heads-up (2 players) specific rules: Dealer is SB, other is BB
-    let sbIndex, bbIndex;
-    if (playerCount === 2) {
-      sbIndex = this.dealerIndex;
-      bbIndex = (this.dealerIndex + 1) % playerCount;
-    } else {
-      sbIndex = (this.dealerIndex + 1) % playerCount;
-      bbIndex = (this.dealerIndex + 2) % playerCount;
+    // Increment dealer index within the subset of active players
+    let currentActiveDealerIdx = activePlayersIndices.indexOf(this.dealerIndex);
+    if (currentActiveDealerIdx === -1) {
+      // If previous dealer was eliminated, pick the next available
+      currentActiveDealerIdx = 0;
     }
 
-    // eventAdaptor.blindPay({ player: this.players[sbIndex], amount: this.sb, pot: this.pot });
+    // Move dealer to next active person
+    currentActiveDealerIdx = (currentActiveDealerIdx + 1) % activeCount;
+    this.dealerIndex = activePlayersIndices[currentActiveDealerIdx];
+
+    // Assign blinds based on active list
+    let sbIndex, bbIndex, firstToActIndex;
+    if (activeCount === 2) {
+      // Heads-up: Dealer is SB, other is BB
+      sbIndex = activePlayersIndices[currentActiveDealerIdx];
+      bbIndex = activePlayersIndices[(currentActiveDealerIdx + 1) % activeCount];
+      firstToActIndex = sbIndex; // SB acts first preflop in HU
+    } else {
+      sbIndex = activePlayersIndices[(currentActiveDealerIdx + 1) % activeCount];
+      bbIndex = activePlayersIndices[(currentActiveDealerIdx + 2) % activeCount];
+      firstToActIndex = activePlayersIndices[(currentActiveDealerIdx + 3) % activeCount];
+    }
+
     this.placeBet(this.players[sbIndex], this.sb, true);
     this.players[sbIndex].isBlind = true;
 
-    // eventAdaptor.blindPay({ player: this.players[bbIndex], amount: this.bb, pot: this.pot });
     this.placeBet(this.players[bbIndex], this.bb, true);
     this.players[bbIndex].isBlind = true;
-    this.currentPlayerIndex = (bbIndex + 1) % playerCount;
+
+    this.currentPlayerIndex = firstToActIndex;
     this.state = 'PREFLOP';
     eventAdaptor.startStreet('PREFLOP');
 
-    // await this.processAITurns();
     this.processTurns();
   }
 

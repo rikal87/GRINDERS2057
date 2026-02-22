@@ -233,7 +233,7 @@
   font-size: 2.2rem;
   font-weight: 900;
   color: var(--accent-red);
-  letter-spacing: 6px;
+  letter-spacing: 4px;
   margin-bottom: 12px;
   display: block;
   color: var(--neon-red);
@@ -387,9 +387,11 @@
   gap: 20px;
   padding-right: 15px;
 }
+.v5-msg-list::-webkit-scrollbar,
 .v5-item-container::-webkit-scrollbar {
   width: 3px;
 }
+.v5-msg-list::-webkit-scrollbar-thumb,
 .v5-item-container::-webkit-scrollbar-thumb {
   background: rgba(0, 240, 255, 0.2);
 }
@@ -510,9 +512,9 @@
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
-  flex: 1;
   overflow-y: auto;
-  padding-right: 15px;
+  height: 60vh;
+  padding-right: 10px;
 }
 
 .v5-msg-card {
@@ -556,9 +558,12 @@
   background: #0d1319;
   border: 1px solid rgba(255, 0, 85, 0.25);
   padding: 24px;
-  margin-top: 20px;
+  /* padding-right: 10px; */
+  margin-bottom: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  height: 20vh;
   position: relative;
+
 }
 .v5-reader-title {
   display: block;
@@ -572,8 +577,10 @@
   font-size: 0.8rem;
   line-height: 1.8;
   color: #b0c0d0;
-  white-space: pre-wrap;
+  white-space: pre-line;
   margin-bottom: 25px;
+  text-align: left;
+
 }
 .v5-reader-actions {
   display: flex;

@@ -182,13 +182,13 @@ export class EventAdaptor {
     }
   }
 
-  fold({ player, amount, pot, board }) {
+  fold({ player, amount, pot, board, street }) {
     if (player.isMe) {
       store.play_stats.fold++;
     }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('fold')) {
-        this.executeItemEffect(player, e, { amount, pot, board });
+        this.executeItemEffect(player, e, { amount, pot, board, street });
       }
     });
   }
@@ -253,7 +253,7 @@ export class EventAdaptor {
 
   }
   executeItemEffect(player, effect, context) {
-    if (effect.cooldown > 0 && effect.id !== 'synapse_reading') {
+    if (effect.cooldown > 0) {
       return;
     }
     switch (effect.id) {
@@ -275,6 +275,7 @@ export class EventAdaptor {
         break;
       case 'lt_regen_plus':
         gainLT(effect.value)
+        effect.cooldown = effect.maxCooldown;
         break;
       case 'joy_of_victory':
         if (context.isWin) {
@@ -287,34 +288,20 @@ export class EventAdaptor {
         }
         break;
       case 'synapse_reading':
-        // Trigger: 'flop'
-        if (context.street === 'ROUND_START') {
-          if (effect.cooldown === 0) {
-            console.log('[EFFECT] Synapse Reading ACTIVATED!');
-            effect.isActivated = true;
-            effect.cooldown = effect.maxCooldown;
-          }
-          else {
-            // console.log(`[EFFECT] Synapse Cooldown: ${effect.cooldown}`);
-            effect.cooldown--;
-          }
-        } else if (context.street === 'ROUND_END') {
+        if (!effect.isActivated) {
+          console.log('[EFFECT] Synapse Reading ACTIVATED!');
+          effect.isActivated = true;
+        } else {
           console.log('[EFFECT] Synapse Reading DEACTIVATED');
-          effect.isActivated = false; // for debug
+          effect.isActivated = false;
+          effect.cooldown = effect.maxCooldown;
         }
-
         break;
       case 'initial_bankroll_bonus':
-        store.bankroll += Math.floor(context.amount * effect.value);
+        // store.bankroll += Math.floor(context.amount * effect.value);
+        gainBankroll(Math.floor(context.amount * effect.value));
+        effect.cooldown = effect.maxCooldown;
         break;
-      case 'ram_max':
-        // Passive
-        break;
-
-      case 'ram_regen':
-        // Passive
-        break;
-
       case 'ghost_bet':
         // Trigger: 'bet'
         if (context.amount > 0 && Math.random() < effect.value) {
@@ -324,7 +311,6 @@ export class EventAdaptor {
           console.log(`[ITEM EFFECT] Bet Refund triggered! +${refund}`);
         }
         break;
-
       case 'pre_flop_fold_refund':
         // Trigger: 'fold'
         if (this.state === 'PREFLOP') {
@@ -335,7 +321,6 @@ export class EventAdaptor {
           }
         }
         break;
-
       case 'blind_discount':
         // Trigger: 'blind_pay'
         const discount = Math.ceil(context.amount * effect.value);
@@ -345,7 +330,9 @@ export class EventAdaptor {
       case 'pot_bonus':
         // Trigger: 'win'
         const bonus = Math.ceil(player.totalWagered * effect.value.value);
-        player.chips += bonus;
+        // player.chips += bonus;
+        gainBankroll(bonus);
+        effect.cooldown = effect.maxCooldown;
         break;
 
       case 'allin_insurance':
@@ -359,13 +346,13 @@ export class EventAdaptor {
           effect.cooldown = effect.maxCooldown;
         }
         break;
-
       case 'showdown_lose_refund':
         // Trigger: 'showdown_lose'
         const wagered = player.totalWagered || 0;
-        const refundShowdown = Math.ceil(wagered * effect.value.value);
+        const refundShowdown = Math.ceil(wagered * effect.value);
         console.info('showdown_refund', player, refundShowdown);
         player.chips += refundShowdown;
+        effect.cooldown = effect.maxCooldown;
         break;
       case 'chip_rounding':
         const unit = player.chipRounding;
@@ -510,7 +497,12 @@ export class EventAdaptor {
       //   player.recoverRam(effect.value);
       //   this.notifyEffect(effect, `Stole ${effect.value} RAM`);
       //   break;
-
+      case 'quantum_fold':
+        if (context.street === 'PREFLOP') {
+          player.chips += Math.ceil((player.totalWagered || 0) * effect.value);
+          effect.cooldown = effect.maxCooldown;
+        }
+        break;
       case 'quantum_luck':
         console.info('quantum_luck context', context.isWin, context.equity);
         if (context.isWin && context.equity < 50) {

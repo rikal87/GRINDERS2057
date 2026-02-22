@@ -196,9 +196,25 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-          }} UNREAD]</small>
-
+              }} UNREAD]</small>
           </div>
+          <!-- Message Reader Integrated -->
+          <div v-if="selectedMessage" class="v5-msg-h-reader">
+            <div style="text-align: right;"><button class="sell-btn"
+                @click="deleteMessageBtn(selectedMessage.id)">DELETE</button></div>
+            <span class="v5-reader-title">{{ selectedMessage.title }}</span>
+            <div class="v5-reader-body">
+              <header></header>
+              <article v-html="selectedMessage.body"></article>
+            </div>
+            <div class="v5-reader-actions">
+              <button v-for="(act, idx) in selectedMessage.actions" :key="idx" class="v4-btn cyan"
+                @click="triggerMessageAction(selectedMessage.id, idx)">
+                {{ act.label }}
+              </button>
+            </div>
+          </div>
+          <div v-else class="v4-empty-state" style="margin-top:20px">NO_MESSAGES</div>
           <div class="v5-msg-list">
             <div v-for="msg in store.messages" :key="msg.id" class="v5-msg-card"
               :class="{ unread: !msg.isRead, active: selectedMessage?.id === msg.id }" @click="selectMessage(msg)">
@@ -209,24 +225,12 @@
               <div class="title">{{ msg.title }}</div>
             </div>
 
-            <!-- Message Reader Integrated -->
-            <div v-if="selectedMessage" class="v5-msg-h-reader">
-              <span class="v5-reader-title">DECIPHERED_CONTENT:</span>
-              <div class="v5-reader-body">{{ selectedMessage.body }}</div>
-              <div class="v5-reader-actions">
-                <button v-for="(act, idx) in selectedMessage.actions" :key="idx" class="v4-btn cyan"
-                  @click="triggerMessageAction(selectedMessage.id, idx)">
-                  {{ act.label }}
-                </button>
-              </div>
-            </div>
-            <div v-else class="v4-empty-state" style="margin-top:20px">NO_MESSAGES</div>
+
+
           </div>
         </div>
       </section>
-
     </div>
-
     <!-- AI AGENT SELECTION MODAL -->
     <transition name="v4-fade">
       <div v-if="showAgentModal" class="v5-modal-overlay" @click.self="showAgentModal = false">
@@ -445,7 +449,8 @@ import { AI_TASK_DATA, validateTaskSlots, isTaskUnlocked, startTask } from '../l
 import { audioManager } from '../logic/audioManager';
 import { SKILL_DATA, getSlotConfig } from '../logic/skills';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAgentModelClasses';
-import { formatGameTime, formatGameDate } from '../logic/timeSystem';
+import { deleteMessage } from '../logic/messageSystem';
+// import { formatGameTime, formatGameDate } from '../logic/timeSystem';
 
 defineEmits(['sleep']);
 const mainTab = ref('hardware');
@@ -558,7 +563,7 @@ const taskSlots = computed(() => {
   const slots = [];
   const allowedSlots = currentAgentSlots.value;
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 4; i++) {
     const taskState = store.onWorkTasks.find(t => t.slotIndex === i);
     const taskDef = taskState ? AI_TASK_DATA.find(t => t.id === taskState.taskId) : null;
     const isLocked = i >= allowedSlots.length;
@@ -690,6 +695,10 @@ const equipSkill = (skill) => {
 };
 
 const unreadCount = computed(() => store.messages.filter(m => !m.isRead).length);
+const deleteMessageBtn = (id) => {
+  deleteMessage(id);
+  if (store.messages.length > 0) selectedMessage.value = store.messages[0];
+};
 const selectMessage = (msg) => {
   selectedMessage.value = msg;
   if (!msg.isRead) markAsRead(msg.id);

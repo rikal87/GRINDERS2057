@@ -8,7 +8,7 @@ export const ITEM_EFFECT_DATA = [
     maxCooldown: 20,
     trigger: ['round_start'],
     editable: false,
-    get desc() { return `라운드 시작시 스테미나 회복 +${this.value}` },
+    get desc() { return `라운드 시작시 스테미나 회복 +${this.value} (쿨타임 ${this.maxCooldown} 라운드)` },
     value: 10,
     isStackable: true
   },
@@ -21,7 +21,7 @@ export const ITEM_EFFECT_DATA = [
     maxCooldown: 60,
     trigger: ['winAtShowdownWithAllIn', 'loseAtShowdownWithAllIn'],
     editable: false,
-    get desc() { return `올인 쇼다운에서 승리 또는 패배시 스테미나 +${this.value}` },
+    get desc() { return `올인 쇼다운에서 승리 또는 패배시 스테미나 +${this.value} (쿨타임 ${this.maxCooldown} 라운드)` },
     value: 50,
     isStackable: true
   },
@@ -136,9 +136,10 @@ export const ITEM_EFFECT_DATA = [
     name: '손실 보존',
     rarity: 'Common',
     cooldown: 0,
+    maxCooldown: 20,
     editable: false,
     trigger: ['loseAtShowdown', 'loseAtShowdownWithAllIn'],
-    get desc() { return `쇼다운 패배 시 손실액 ${Math.floor(this.value * 100)} % 환급` },
+    get desc() { return `쇼다운 패배 시 손실액 ${Math.floor(this.value * 100)} % 환급 (쿨타임: ${this.maxCooldown} 라운드)` },
     value: .1,
     isStackable: true
   },
@@ -174,7 +175,7 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     trigger: ['win'],
     editable: false,
-    get desc() { return `승리 시 본인 배팅 총액을 ${this.value * 10}단위로 올림하여 획득합니다.` },
+    get desc() { return `승리 시 본인 배팅 총액을 ${Math.pow(10, this.value)}단위로 올림하여 획득합니다.` },
     value: 1,
     isStackable: true
   },
@@ -187,7 +188,7 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     trigger: ['bankrupt'],
     editable: false,
-    get desc() { return `파산 시 다음 초기 자금 +${Math.floor(this.value * 100)}%` },
+    get desc() { return `파산 시 다음 초기 자금 +${Math.floor(this.value * 100)}% (쿨타임: ${this.maxCooldown} 라운드)` },
     value: 1.0,
     isStackable: true
   },
@@ -212,7 +213,7 @@ export const ITEM_EFFECT_DATA = [
     maxCooldown: 5,
     trigger: ['round_start'],
     editable: false,
-    get desc() { return `라운드시 시작시 LT +${Math.floor(this.value)} 회복` },
+    get desc() { return `라운드시 시작시 LT +${Math.floor(this.value)} 회복 (쿨타임: ${this.maxCooldown} 라운드)` },
     value: 1,
     isStackable: true
   },
@@ -261,7 +262,7 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     trigger: ['win'],
     editable: false,
-    get desc() { return `승리 시 본인 지분의 ${Math.floor(this.value * 100)}% 만큼 보너스` },
+    get desc() { return `승리 시 본인 지분의 ${Math.floor(this.value * 100)}% 만큼 뱅크롤로 입금 (쿨타임: ${this.maxCooldown} 라운드)` },
     value: .05,
     isStackable: true
   },
@@ -270,11 +271,10 @@ export const ITEM_EFFECT_DATA = [
     id: 'allin_insurance',
     name: '인슈어런스',
     rarity: 'Rare',
-    maxCooldown: 300,
     cooldown: 0,
     trigger: ['showdownLoseWithAllIn', 'winAtShowdownWithAllIn'],
     editable: false,
-    get desc() { return `올인 쇼다운 시점 승률이 75% 이상일때 발동되며, 올인 패배시 쇼다운 시점 기준 승률의 ${Math.floor(this.value * 100)}% 만큼 CR 보전` },
+    get desc() { return `올인 쇼다운 시점 승률이 75% 이상일때, 패배시 승률의 ${Math.floor(this.value * 100)}% 만큼 CR 보전` },
     value: .3,
     isStackable: true
   },
@@ -295,11 +295,11 @@ export const ITEM_EFFECT_DATA = [
     id: 'quantum_luck',
     name: '양자 행운',
     rarity: 'Rare',
-    maxCooldown: 300,
+    maxCooldown: 100,
     cooldown: 0,
     editable: false,
     trigger: ['winAtShowdownWithAllIn'],
-    get desc() { return `올인 쇼다운 시점 승률이 50% 미만일때 발동되며, 승리시 부족한 승률 만큼의 팟 보너스` },
+    get desc() { return `올인 쇼다운 시점 승률이 50% 미만일때 발동되며, 승리시 부족한 승률 만큼의 팟 보너스 ${Math.floor(this.value * 100)}% (쿨타임: ${this.maxCooldown} 라운드)` },
     value: 1.0,
     isStackable: true
   },
@@ -313,7 +313,7 @@ export const ITEM_EFFECT_DATA = [
     editable: false,
     unique: true,
     trigger: ['win'],
-    get desc() { return `승리시 커뮤니티 보드와 자신의 손패에서 (다이아 문양 수 * ${Math.floor(this.value * 100)})% 만큼 본인 지분의 팟 보너스` },
+    get desc() { return `승리시 본인 지분의 팟 보너스 ${Math.floor(this.value * 100)} * (보드+핸드 다이아 문양 수)% (쿨타임: ${this.maxCooldown} 라운드)` },
     value: 0.05,
     isStackable: false
   },
@@ -327,7 +327,7 @@ export const ITEM_EFFECT_DATA = [
     editable: false,
     unique: true,
     trigger: ['win'],
-    get desc() { return `승리시 커뮤니티 보드와 자신의 손패에서 (하트 문양 수 * ${Math.floor(this.value * 100)})% 만큼 본인 지분의 팟 보너스` },
+    get desc() { return `승리시 본인 지분의 팟 보너스 ${Math.floor(this.value * 100)} * (보드+핸드 하트 문양 수)% (쿨타임: ${this.maxCooldown} 라운드)` },
     value: 0.05,
     isStackable: false
   },
@@ -341,7 +341,7 @@ export const ITEM_EFFECT_DATA = [
     unique: true,
     editable: false,
     trigger: ['win'],
-    get desc() { return `승리시 커뮤니티 보드와 자신의 손패에서 (스페이드 문양 수 * ${Math.floor(this.value * 100)})% 만큼 본인 지분의 팟 보너스` },
+    get desc() { return `승리시 본인 지분의 팟 보너스 ${Math.floor(this.value * 100)} * (보드+핸드 스페이드 문양 수)% (쿨타임: ${this.maxCooldown} 라운드)` },
     value: 0.05,
     isStackable: false
   },
@@ -355,7 +355,7 @@ export const ITEM_EFFECT_DATA = [
     unique: true,
     editable: false,
     trigger: ['win'],
-    get desc() { return `승리시 커뮤니티 보드와 자신의 손패에서 (클럽 문양 수 * ${Math.floor(this.value * 100)})% 만큼 본인 지분의 팟 보너스` },
+    get desc() { return `승리시 본인 지분의 팟 보너스 ${Math.floor(this.value * 100)} * (보드+핸드 클럽 문양 수)% (쿨타임: ${this.maxCooldown} 라운드)` },
     value: 0.05,
     isStackable: false
   },
@@ -369,7 +369,7 @@ export const ITEM_EFFECT_DATA = [
     unique: true,
     editable: false,
     trigger: ['win'],
-    get desc() { return `승리시 커뮤니티 보드 + 자신의 손패의 (7의 개수 * ${Math.floor(this.value * 100)})% 만큼 본인 지분 팟 보너스` },
+    get desc() { return `승리시 본인 지분의 팟 보너스 ${Math.floor(this.value * 100)} * (보드+핸드 7의 개수)% (쿨타임: ${this.maxCooldown} 라운드)` },
     value: 0.1,
     isStackable: false
   },
@@ -383,7 +383,7 @@ export const ITEM_EFFECT_DATA = [
     unique: true,
     editable: false,
     trigger: ['lose'],
-    get desc() { return `패배시 커뮤니티 보드 + 자신의 손패의 (6의 개수 * ${Math.floor(this.value * 100)})% 만큼 본인 지분 팟 보너스` },
+    get desc() { return `패배시 본인 지분의 팟 보너스 ${Math.floor(this.value * 100)} * (보드+핸드 6의 개수)% (쿨타임: ${this.maxCooldown} 라운드)` },
     value: 0.1,
     isStackable: false
   },
@@ -522,7 +522,7 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     editable: false,
     trigger: ['winAtShowdown', 'winAtShowdownWithAllIn', 'lose'],
-    get desc() { return `쇼다운에서 승리시 경험치 보너스 +${Math.floor((this.value + 1) * this.stack * 100)}%\n(이 효과는 쇼다운에서 패배할 때마다 누적되며, 승리할때 초기화.)` },
+    get desc() { return `쇼다운에서 승리시 경험치 보너스 +${Math.floor(this.value * (this.stack + 1) * 100)}%\n(이 효과는 쇼다운에서 패배할 때마다 누적되며, 승리할때 초기화.)` },
     value: .2,
     stack: 0,
     isStackable: true
@@ -570,7 +570,6 @@ export const ITEM_EFFECT_DATA = [
     name: '승리의 기쁨',
     rarity: 'Uncommon',
     cooldown: 0,
-    // maxCooldown: 5,
     editable: false,
     trigger: ['winAtShowdown', 'winAtShowdownWithAllIn'],
     get desc() { return `쇼다운에서 승리시 스테미나 +${this.value}` },
@@ -583,11 +582,11 @@ export const ITEM_EFFECT_DATA = [
     name: '배수의 진',
     rarity: 'Uncommon',
     cooldown: 0,
-    maxCooldown: 10,
+    // maxCooldown: 0,
     editable: false,
     trigger: ['round_start'],
-    get desc() { return `라운드 시작시, 보유 칩이 25BB 이하일 때 LT 회복량 +${this.value}` },
-    value: 5,
+    get desc() { return `라운드 시작시, 보유 칩이 25BB 이하일 때 LT +${this.value} 회복` },
+    value: 1,
     isStackable: true
   },
   {
@@ -598,7 +597,7 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     editable: false,
     trigger: ['win', 'lose'],
-    get desc() { return `승리할때 마다 경험치 보너스 +${Math.floor((this.stack + 1) * this.value * 100)}% (이 효과는 승리할때 마다 누적되며, 쇼다운 패배시 초기화.)` },
+    get desc() { return `승리할때 마다 경험치 보너스 +${Math.floor(this.value * (this.stack + 1) * 100)}% (이 효과는 승리할때 마다 누적되며, 쇼다운 패배시 초기화.)` },
     value: 0.03,
     stack: 0,
     isStackable: true
@@ -621,10 +620,10 @@ export const ITEM_EFFECT_DATA = [
     name: '양자 폴드',
     rarity: 'Uncommon',
     cooldown: 0,
-    maxCooldown: 20,
+    maxCooldown: 25,
     editable: false,
     trigger: ['fold'],
-    get desc() { return `프리플랍에서 폴드 시 배팅한 칩의 ${Math.floor(this.value * 100)}% 환급` },
+    get desc() { return `프리플랍에서 폴드 시 배팅한 칩의 ${Math.floor(this.value * 100)}% 환급 (쿨타임: ${this.maxCooldown} 라운드)` },
     value: 0.25,
     isStackable: true
   },
@@ -637,8 +636,8 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     isActivated: false,
     editable: false,
-    trigger: ['round_start', 'round_end'],
-    get desc() { return `해당 라운드에서 CPU 플레이어들의 생각을 훔쳐볼 수 있다.` },
+    trigger: ['round_start'],
+    get desc() { return `해당 라운드에서 CPU 플레이어들의 생각을 훔쳐볼 수 있다. (쿨타임: ${this.maxCooldown} 라운드)` },
     value: 1,
     isStackable: false
   },

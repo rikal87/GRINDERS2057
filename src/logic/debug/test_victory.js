@@ -1,6 +1,6 @@
 
-import { GameEngine } from './gameEngine.js';
-import { EventAdaptor } from './gameEngineEventAdaptor.js';
+import { GameEngine } from '../gameEngine.js';
+import { EventAdaptor } from '../gameEngineEventAdaptor.js';
 
 console.log('--- Victory Logic Verification ---');
 
