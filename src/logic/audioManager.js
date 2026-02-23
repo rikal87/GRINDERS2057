@@ -7,7 +7,7 @@ import { TRACK_ENUM, TRACK_INFO } from './audioTracks.js';
 const sfxModules = import.meta.glob('../assets/sfx/*.{mp3,wav}', { eager: true, import: 'default' });
 
 const DEFAULT_PLAYLIST = [
-  TRACK_INFO[TRACK_ENUM.NeonDreams],
+  TRACK_INFO[TRACK_ENUM.NeonDreams, TRACK_ENUM.Dystopia, TRACK_ENUM.Lucid],
 ];
 export let playlist = DEFAULT_PLAYLIST;
 // export const playlist = Object.entries(trackModules).map(([path, url]) => {

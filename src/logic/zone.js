@@ -42,7 +42,7 @@ export const zones = [
           "borderColor": "#3f6ae2ff",
           "boxShadow": "0 0 20px rgba(146, 148, 255, 0.8)"
         },
-        'bgMusic': [TRACK_ENUM.NeonDreams]
+        'bgMusic': [TRACK_ENUM.BGM_Kinetic, TRACK_ENUM.VelvetShadows, TRACK_ENUM.Nightscape, TRACK_ENUM.DreamVector]
       },
       {
         "id": "micro_street_shop",
@@ -69,7 +69,7 @@ export const zones = [
           "borderColor": "#555",
           "boxShadow": "0 0 20px rgba(0,0,0,0.8)"
         },
-        'bgMusic': [TRACK_ENUM.Placebo]
+        'bgMusic': [TRACK_ENUM.Nightscape]
       },
       {
         "id": "micro_warehouse",
@@ -146,7 +146,7 @@ export const zones = [
           "borderColor": "#00f0ff",
           "boxShadow": "0 0 30px rgba(0, 240, 255, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.Solitude]
+        'bgMusic': [TRACK_ENUM.Dystopia, TRACK_ENUM.BeThere]
       },
       {
         "id": "low_underground_club",
@@ -196,7 +196,7 @@ export const zones = [
           "borderColor": "#2e8b57",
           "boxShadow": "0 0 20px rgba(46, 139, 87, 0.4)"
         },
-        'bgMusic': [TRACK_ENUM.Solitude, TRACK_ENUM.MalibuMoon]
+        'bgMusic': [TRACK_ENUM.Solitude, TRACK_ENUM.DustyDay]
       }
     ]
   },
@@ -249,7 +249,7 @@ export const zones = [
           "borderColor": "#ffd700",
           "boxShadow": "0 0 30px rgba(255, 215, 0, 0.4)"
         },
-        'bgMusic': [TRACK_ENUM.Placebo, TRACK_ENUM.RemoteLocation]
+        'bgMusic': [TRACK_ENUM.Nightscape]
       },
       {
         "id": "middle_holdem_house",
@@ -271,7 +271,7 @@ export const zones = [
           "borderColor": "#4682b4",
           "boxShadow": "0 0 25px rgba(70, 130, 180, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.Placebo, TRACK_ENUM.RemoteLocation]
+        'bgMusic': [TRACK_ENUM.BGM_Kinetic, TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
       },
     ]
   },
@@ -301,7 +301,7 @@ export const zones = [
           "borderColor": "#ff4d4d",
           "boxShadow": "0 0 40px rgba(255, 0, 0, 0.6)"
         },
-        'bgMusic': [TRACK_ENUM.Grainders2057]
+        'bgMusic': [TRACK_ENUM.Grainders2057, TRACK_ENUM.Dystopia, TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
       },
       {
         "id": "high_grand_casino",
@@ -324,7 +324,7 @@ export const zones = [
           "borderColor": "#ffd700",
           "boxShadow": "0 0 50px rgba(255, 215, 0, 0.7)"
         },
-        'bgMusic': [TRACK_ENUM.Placebo, TRACK_ENUM.RemoteLocation]
+        'bgMusic': [TRACK_ENUM.Placebo, TRACK_ENUM.DustyDay, TRACK_ENUM.Dystopia, TRACK_ENUM.BeThere]
       }
     ]
   },

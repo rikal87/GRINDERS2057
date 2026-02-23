@@ -7,7 +7,15 @@ import BGM_VelvetShadows from '../assets/music/MellowFields_VelvetShadows.ogg';
 import BGM_DreamVector from '../assets/music/MellowFields_DreamVector.ogg';
 import BGM_JourneyToTitan from '../assets/music/WBA_JourneyToTitan.mp3';
 import BGM_MalibuMoon from '../assets/music/WBA_MalibuMoon.ogg';
+import BGM_Lucid from '../assets/music/meloddict_Lucid.ogg';
+import BGM_Nightscape from '../assets/music/FiloStarquez_Nightscape.mp3';
+import BGM_DustyDay from '../assets/music/FiloStarquez_DustyDay.mp3';
+import BGM_Dystopia from '../assets/music/tubebackr_Dystopia.mp3';
+import BGM_BeThere from '../assets/music/tubebackr_BeThere.mp3';
+// import BGM_DuskHorizonBy from '../assets/music/fsm-team-escp-dusk-horizon.mp3';
+import BGM_Kinetic from '../assets/music/fsm-team-escp-kinetics.mp3';
 
+// Dusk Horizon by | escp | https://www.escp.space https://escp-music.bandcamp.com
 export const TRACK_ENUM = {
   Placebo: "Placebo",
   RemoteLocation: "RemoteLocation",
@@ -17,10 +25,57 @@ export const TRACK_ENUM = {
   DreamVector: "DreamVector",
   Solitude: "Solitude",
   JourneyToTitan: "JourneyToTitan",
-  MalibuMoon: "MalibuMoon"
+  MalibuMoon: "MalibuMoon",
+  Lucid: "Lucid",
+  Nightscape: "Nightscape",
+  DustyDay: "DustyDay",
+  Dystopia: "Dystopia",
+  BeThere: "BeThere"
 };
 //  Karl Casey @ White Bat Audio"
 export const TRACK_INFO = {
+  [TRACK_ENUM.BGM_Kinetic]: {
+    "title": "Kinetic",
+    "artist": "FSM Team & < e s c p >",
+    "license": "CC BY 4.0 [https://www.escp.space]",
+    "file": BGM_Kinetic
+  },
+  // [TRACK_ENUM.DuskHorizonBy]: {
+  //   "title": "Dusk Horizon By",
+  //   "artist": "< e s c p >",
+  //   "license": "CC BY 4.0 [https://www.escp.space]",
+  //   "file": BGM_DuskHorizonBy
+  // },
+  [TRACK_ENUM.Nightscape]: {
+    "title": "Nightscape",
+    "artist": "FiloStarquez",
+    "license": "CC BY 4.0 [https://www.tubebackrmusic.com]",
+    "file": BGM_Nightscape
+  },
+  [TRACK_ENUM.DustyDay]: {
+    "title": "Dusty Day",
+    "artist": "FiloStarquez",
+    "license": "CC BY 4.0 [https://www.tubebackrmusic.com]",
+    "file": BGM_DustyDay
+  },
+  [TRACK_ENUM.Dystopia]: {
+    "title": "Dystopia",
+    "artist": "tubebackr",
+    "license": "CC BY 4.0 [https://www.tubebackrmusic.com]",
+    "file": BGM_Dystopia
+  },
+  [TRACK_ENUM.BeThere]: {
+    "title": "Be There",
+    "artist": "tubebackr",
+    "license": "CC BY 4.0 [https://www.tubebackrmusic.com]",
+    "file": BGM_BeThere
+  },
+  [TRACK_ENUM.Lucid]: {
+    "title": "Lucid",
+    "artist": "meloddict",
+    "license": "CC BY 4.0 [https://meloddict.com]",
+    "file": BGM_Lucid
+  },
   [TRACK_ENUM.MalibuMoon]: {
     "title": "Malibu Moon",
     "artist": "Karl Casey @ White Bat Audio",
@@ -36,19 +91,19 @@ export const TRACK_INFO = {
   [TRACK_ENUM.Placebo]: {
     "title": "Placebo",
     "artist": "FiloStarquez",
-    "license": "CC BY 4.0 [https://creativecommons.org/licenses/by/4.0]",
+    "license": "CC BY 4.0 [https://www.tubebackrmusic.com]",
     "file": BGM_Placebo
   },
   [TRACK_ENUM.Solitude]: {
     "title": "Solitude",
     "artist": "FiloStarquez",
-    "license": "CC BY 4.0 [https://creativecommons.org/licenses/by/4.0]",
+    "license": "CC BY 4.0 [https://www.tubebackrmusic.com]",
     "file": BGM_Solitude
   },
   [TRACK_ENUM.RemoteLocation]: {
     "title": "Remote Location",
     "artist": "FiloStarquez",
-    "license": "CC BY 4.0 [https://creativecommons.org/licenses/by/4.0]",
+    "license": "CC BY 4.0 [https://www.tubebackrmusic.com]",
     "file": BGM_RemoteLocation
   },
   [TRACK_ENUM.Grainders2057]: {
