@@ -5,9 +5,8 @@ export const CHAT_TRIGGERS = {
   LOSE_HUGE: 'LOSE_HUGE',
   BLUFF_CAUGHT: 'BLUFF_CAUGHT',
   ALL_IN: 'ALL_IN',
-  FOLD_WEAK: 'FOLD_WEAK',
+  FOLD: 'FOLD',
   WAITING: 'WAITING',
-  DEAL_ITEM: 'DEAL_ITEM',
   BET: 'BET',
   RAISE: 'RAISE',
   CALL: 'CALL',
@@ -30,10 +29,10 @@ export const CLASSES_ENEMY = [
   { name: 'Rich_Guy', philosophy: 'LAP', vPIP: .6, AF: 1.5, WTSD: .6, chipMultiply: 3, maxRam: 150, skills: [], note: '기업의 꽤 높은 분이거나 운 좋게 코인 대박이 터진 부자입니다.' },
   { name: 'Gangster', philosophy: 'TAG', vPIP: .38, AF: 4, WTSD: .44, chipMultiply: 1, maxRam: 150, skills: [], note: '눈에 힘주고 베팅하는 게 버릇입니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.' },
   { name: 'Nit', philosophy: 'NIT', vPIP: .09, AF: 2.5, WTSD: .35, chipMultiply: 1, maxRam: 150, skills: [], note: '혹시라도 그가 레이즈를 한다면 무조건 도망치세요, AA가 확실합니다.' },
-  { name: 'Quant_Pro', philosophy: 'TAG', vPIP: .22, AF: 2.5, WTSD: .30, chipMultiply: 1.5, maxRam: 150, skills: [], note: '금융권 퀀트 출신이었으나, 지금은 포커에 미쳐버린 친구입니다.' },
+  { name: 'Quant_Pro', philosophy: 'TAP', vPIP: .22, AF: 2, WTSD: .25, chipMultiply: 1.5, maxRam: 150, skills: [], note: '금융권 퀀트 출신이었으나, 지금은 포커에 미쳐버린 친구입니다.' },
   { name: 'Mafia_Boss', philosophy: 'LAG', vPIP: .35, AF: 5, WTSD: .35, chipMultiply: 2, maxRam: 150, skills: [], note: '포커를 "전쟁"으로 생각합니다. 상대가 기권할 때까지 돈과 위압감으로 밀어붙이며, 테이블 전체의 분위기를 공포로 몰아넣는 것을 즐깁니다.' },
   { name: 'The_Whale', philosophy: 'LAP', vPIP: .70, AF: 2, WTSD: .75, chipMultiply: 8, maxRam: 150, skills: [], note: '그에게 칩은 숫자에 불과합니다. 판돈이 커질수록 아드레날린을 느끼며, 지고 있어도 "재미있네"라며 웃으며 칩을 더 던집니다. 사실상 테이블의 스폰서나 다름없습니다.' },
-  { name: 'Old_Lion', philosophy: 'TAG', vPIP: .20, AF: 2.5, WTSD: .25, chipMultiply: 1.2, maxRam: 150, skills: [], note: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.' },
+  { name: 'Old_Lion', philosophy: 'TAG', vPIP: .20, AF: 3, WTSD: .25, chipMultiply: 1.2, maxRam: 150, skills: [], note: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.' },
   { name: 'Shark', philosophy: 'TAG', vPIP: .24, AF: 3.5, WTSD: .27, chipMultiply: 1.2, maxRam: 150, skills: [], note: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.' },
   { name: 'Named_Pro', note: '이곳에선 전설적인 플레이어를 만날 가능성이있습니다.' },
 ];
@@ -82,7 +81,7 @@ export const PERSONALITIES = {
       "Committing all resources.",
       "Finality sequence initiated."
     ],
-    [CHAT_TRIGGERS.FOLD_WEAK]: [
+    [CHAT_TRIGGERS.FOLD]: [
       "Suboptimal hand detected. Aborting.",
       "Minimizing losses.",
       "Strategic withdrawal.",
@@ -168,7 +167,7 @@ export const PERSONALITIES = {
       "WITNESS ME!",
       "ALL THE CHIPS IN THE MIDDLE!"
     ],
-    [CHAT_TRIGGERS.FOLD_WEAK]: [
+    [CHAT_TRIGGERS.FOLD]: [
       "Boring... Next hand!",
       "Trash cards. I sleep.",
       "Fine, take it.",
@@ -225,7 +224,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["Keeps the lights on.", "Better than losing.", "Small wins add up.", "Nice.", "Decent."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Ouch... that stung.", "Bad beat!", "Unlucky river.", "Variance is cruel.", "I'll get it back."],
     [CHAT_TRIGGERS.ALL_IN]: ["One time!", "Here goes nothing!", "Gambol!", "Pushing it all!", "Do you feel lucky?"],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["No gamble today.", "Too boring.", "Next hand.", "Saving my ammo.", "Fold."],
+    [CHAT_TRIGGERS.FOLD]: ["No gamble today.", "Too boring.", "Next hand.", "Saving my ammo.", "Fold."],
     [CHAT_TRIGGERS.BET]: ["Pot sweetener.", "Let's build a pot.", "Throwing chips in.", "Action!", "Betting."],
     [CHAT_TRIGGERS.RAISE]: ["Let's juice it up!", "Raising the stakes!", "Scared money don't make money.", "Double down.", "More!"],
     [CHAT_TRIGGERS.CALL]: ["I'll chase.", "One more card.", "Let's see it.", "Any two cards.", "Calling."],
@@ -239,7 +238,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["Lunch money.", "Mine.", "Pay the tax.", "Weak.", "Better than nothing."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["You're dead meat.", "Watch your back.", "You got lucky, punk.", "I'll remember that.", "This ain't over."],
     [CHAT_TRIGGERS.ALL_IN]: ["All in. You scared?", "Do you bleed?", "Put up or shut up.", "Let's see your guts.", "Die or rich."],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["Not worth my time.", "Trash.", "Get this garbage out.", "Next.", "Fold."],
+    [CHAT_TRIGGERS.FOLD]: ["Not worth my time.", "Trash.", "Get this garbage out.", "Next.", "Fold."],
     [CHAT_TRIGGERS.BET]: ["Price of living.", "Pay up.", "I'm raising the heat.", "Don't waste my time.", "Chips in."],
     [CHAT_TRIGGERS.RAISE]: ["Double or die.", "Scared yet?", "I own this pot.", "Raising.", "Bleed for me."],
     [CHAT_TRIGGERS.CALL]: ["I'm watching you.", "Let's see it.", "You bluffing?", "Calling.", "Show me."],
@@ -253,7 +252,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["I won something!", "Cool!", "Fun!", "Nice!", "Hehe."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Aww...", "But I had a pair...", "That's mean.", "Why?", "Sad face."],
     [CHAT_TRIGGERS.ALL_IN]: ["Is this good?", "All my chips!", "I like this hand!", "Clicking the button!", "Hope I win!"],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["I don't like these.", "Folding is boring.", "Bye bye cards.", "No thanks.", "Next please."],
+    [CHAT_TRIGGERS.FOLD]: ["I don't like these.", "Folding is boring.", "Bye bye cards.", "No thanks.", "Next please."],
     [CHAT_TRIGGERS.BET]: ["I bet this much.", "Here.", "Chips go in.", "Betting!", "Is this right?"],
     [CHAT_TRIGGERS.RAISE]: ["I raise you!", "More chips!", "Take that!", "I think I'm winning.", "Raise!"],
     [CHAT_TRIGGERS.CALL]: ["I want to see.", "Show me!", "Calling.", "Staying in!", "Don't bluff me."],
@@ -267,7 +266,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["Breathing room.", "Okay.", "Every bit helps.", "Staying alive.", "Phew."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["No! My rent!", "This is rigged!", "I'm ruined.", "Why me?", "Disaster."],
     [CHAT_TRIGGERS.ALL_IN]: ["Desperation shove.", "Please fold.", "Praying...", "Risking it all.", "Do or die."],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["Can't afford to play.", "Folding junk.", "Too risky.", "Saving chips.", "Pass."],
+    [CHAT_TRIGGERS.FOLD]: ["Can't afford to play.", "Folding junk.", "Too risky.", "Saving chips.", "Pass."],
     [CHAT_TRIGGERS.BET]: ["Scared money.", "Trying to steal.", "Please fold.", "Bet.", "Nervous bet."],
     [CHAT_TRIGGERS.RAISE]: ["I have it!", "Don't test me.", "I'm strong.", "Desperate raise.", "Raise."],
     [CHAT_TRIGGERS.CALL]: ["I have to call.", "Committed.", "Hoping.", "Please miss.", "Call."],
@@ -281,7 +280,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["Peanuts.", "Keep the change.", "Whatever.", "Small fry.", "Incidental."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Touché.", "Well played.", "Meaningless sum.", "I'll buy more.", "Amusing."],
     [CHAT_TRIGGERS.ALL_IN]: ["I can afford it.", "All in.", "Boring regular bet? No, All in.", "Let's see cards.", "Pushing."],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["Boring hand.", "Not worth my time.", "Fold.", "Next.", "Pass."],
+    [CHAT_TRIGGERS.FOLD]: ["Boring hand.", "Not worth my time.", "Fold.", "Next.", "Pass."],
     [CHAT_TRIGGERS.BET]: ["Have some chips.", "Bet.", "A small wager.", "Standard.", "Raising the floor."],
     [CHAT_TRIGGERS.RAISE]: ["Let's make it interesting.", "Raise.", "Price of poker.", "Is that all?", "I raise."],
     [CHAT_TRIGGERS.CALL]: ["I'm curious.", "Show me.", "I'll pay to see.", "Call.", "Entertainment expense."],
@@ -295,7 +294,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["Picking up blinds.", "Standard.", "Low risk.", "Good.", "Safe."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["How did I lose?", "Bad beat.", "He chased.", "Unlucky.", "Cooler."],
     [CHAT_TRIGGERS.ALL_IN]: ["I have the nuts.", "You're drawing dead.", "Max value.", "Absolute strength.", "All in."],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["Fold.", "Trash.", "Not playing that.", "Waiting.", "Discipline."],
+    [CHAT_TRIGGERS.FOLD]: ["Fold.", "Trash.", "Not playing that.", "Waiting.", "Discipline."],
     [CHAT_TRIGGERS.BET]: ["Value.", "Bet.", "Strong.", "Pay me.", "Betting."],
     [CHAT_TRIGGERS.RAISE]: ["I have it.", "Raise.", "Top range.", "Big hand.", "Monster."],
     [CHAT_TRIGGERS.CALL]: ["Set mining.", "Odds.", "Call.", "Drawing.", "One time."],
@@ -309,7 +308,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["Standard variance.", "Chip up.", "Good pot.", "Adding to stack.", "Routine."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Noted.", "Unfortunate runout.", "Bad call.", "Mistake logged.", "Tilt control."],
     [CHAT_TRIGGERS.ALL_IN]: ["The math is correct.", "Positive EV shove.", "Snap call.", "No choice.", "Commit."],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["Discipline.", "Not profitable.", "Folding garbage.", "Tight is right.", "No value."],
+    [CHAT_TRIGGERS.FOLD]: ["Discipline.", "Not profitable.", "Folding garbage.", "Tight is right.", "No value."],
     [CHAT_TRIGGERS.BET]: ["Sizing properly.", "Value bet.", "Blocker bet.", "Extracting.", "Bet."],
     [CHAT_TRIGGERS.RAISE]: ["Isolating.", "Squeezing.", "Value raise.", "Punishing limp.", "Raise."],
     [CHAT_TRIGGERS.CALL]: ["Pot odds.", "Implied odds.", "Floating.", "Keeping you wide.", "Call."],
@@ -323,7 +322,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["I won.", "Cool.", "Nice.", "Yay.", "Chips."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Thought I had you.", "So close.", "Darn.", "Nice hand.", "Missed my draw."],
     [CHAT_TRIGGERS.ALL_IN]: ["I have a pair.", "Maybe it hits.", "I call.", "Let's gamble.", "Hope?"],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["I guess.", "Fine.", "Fold.", "Don't want to.", "Okay."],
+    [CHAT_TRIGGERS.FOLD]: ["I guess.", "Fine.", "Fold.", "Don't want to.", "Okay."],
     [CHAT_TRIGGERS.BET]: ["Min bet.", "Clicking buttons.", "Bet.", "Here.", "Chips."],
     [CHAT_TRIGGERS.RAISE]: ["Raise?", "I assume so.", "Misclick?", "Strong?", "Raise."],
     [CHAT_TRIGGERS.CALL]: ["Call.", "Must see.", "Can't fold.", "Too curious.", "Calling."],
@@ -367,7 +366,7 @@ export const PERSONALITIES = {
       "I'm feeling lucky!",
       "Let's make this pot huge!"
     ],
-    [CHAT_TRIGGERS.FOLD_WEAK]: [
+    [CHAT_TRIGGERS.FOLD]: [
       "Boring cards...",
       "No action here.",
       "I want to play, but this is trash.",
@@ -453,7 +452,7 @@ export const PERSONALITIES = {
       "I've caught bigger fish than you.",
       "All in."
     ],
-    [CHAT_TRIGGERS.FOLD_WEAK]: [
+    [CHAT_TRIGGERS.FOLD]: [
       "Discipline.",
       "Not worth the risk.",
       "I'll wait for a better spot.",
@@ -539,7 +538,7 @@ export const PERSONALITIES = {
       "The model says push.",
       "All units deployed."
     ],
-    [CHAT_TRIGGERS.FOLD_WEAK]: [
+    [CHAT_TRIGGERS.FOLD]: [
       "Negative EV.",
       "Folding is optimal here.",
       "Saving capital.",
@@ -625,7 +624,7 @@ export const PERSONALITIES = {
       "I own you.",
       "All in. Die or fold."
     ],
-    [CHAT_TRIGGERS.FOLD_WEAK]: [
+    [CHAT_TRIGGERS.FOLD]: [
       "Tactical retreat.",
       "Not this time.",
       "I'll catch you later.",
@@ -682,7 +681,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["...", "Stack building.", "Standard.", "Expected.", "Mine."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["...", "Interesting line.", "I will adjust.", "Variance.", "Noted."],
     [CHAT_TRIGGERS.ALL_IN]: ["...", "I see your fear.", "Commit.", "Decision made.", "All in."],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["...", "Fold.", "Not this time.", "Discipline.", "Pass."],
+    [CHAT_TRIGGERS.FOLD]: ["...", "Fold.", "Not this time.", "Discipline.", "Pass."],
     [CHAT_TRIGGERS.BET]: ["...", "Bet.", "Pressure.", "Sizing.", "Observe."],
     [CHAT_TRIGGERS.RAISE]: ["...", "Isolating.", "Raise.", "Do you have it?", "Price goes up."],
     [CHAT_TRIGGERS.CALL]: ["...", "Call.", "Show me.", "I know what you have.", "Keeping you."],
@@ -696,7 +695,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["Pots are pots!", "Mining chips.", "Incrementing.", "Nice tiny pot.", "Ill take it."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Wow! You actually had it?", "Incredible hand!", "You played that well.", "I put you on a bluff!", "That stings!"],
     [CHAT_TRIGGERS.ALL_IN]: ["I think I'm ahead!", "Let's gamble!", "Do you have Ace King?", "I'm feeling it!", "All the biscuits!"],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["Foldy foldy.", "Trash.", "Not my cards.", "Saving money.", "Bye bye."],
+    [CHAT_TRIGGERS.FOLD]: ["Foldy foldy.", "Trash.", "Not my cards.", "Saving money.", "Bye bye."],
     [CHAT_TRIGGERS.BET]: ["Just a little bet.", "Poker is fun!", "Betting!", "Action!", "Here comes the bet."],
     [CHAT_TRIGGERS.RAISE]: ["I think I'm winning!", "Raising it up!", "Power poker!", "Make it expensive!", "Raise!"],
     [CHAT_TRIGGERS.CALL]: ["I have to see.", "Calling station mode!", "What do you have?", "I call!", "Let's see the river."],
@@ -710,9 +709,9 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["...", "Meh.", "Whatever.", "Chips.", "Take it."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["...", "Wow.", "Sick cooler.", "Rigged?", "Unlucky."],
     [CHAT_TRIGGERS.ALL_IN]: ["...", "All in.", "Maximum pressure.", "Can you call?", "Shove."],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["...", "Fold.", "Boring.", "Next.", "Pass."],
-    [CHAT_TRIGGERS.BET]: ["...", "Bet.", "Pot size.", "Heavy.", "Loading."],
-    [CHAT_TRIGGERS.RAISE]: ["...", "Raise.", "Overbet.", "Punish.", "Expensive."],
+    [CHAT_TRIGGERS.FOLD]: ["...", "Fold.", "Boring.", "Next.", "Pass."],
+    [CHAT_TRIGGERS.BET]: ["..."],
+    [CHAT_TRIGGERS.RAISE]: ["...", "Punish.", "Expensive."],
     [CHAT_TRIGGERS.CALL]: ["...", "Call.", "Looking.", "Snap.", "Float."],
     [CHAT_TRIGGERS.CHECK]: ["...", "Check.", "Slow.", "Wait.", "Pass."],
     [CHAT_TRIGGERS.ELIMINATED_SELF]: ["...", "Sick.", "Busted.", "Reload.", "Gg."],
@@ -724,7 +723,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_SMALL]: ["Every chip counts.", "Nice.", "I'll take it.", "Standard.", "Good."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["That is impossible!", "You are so lucky!", "How can you call with that?!", "I am tilting so hard!", "This variance is sick.", "...You have a four?"],
     [CHAT_TRIGGERS.ALL_IN]: ["I'm all in.", "Let's gamble.", "Do you have the courage?", "I challenge you.", "Time to die."],
-    [CHAT_TRIGGERS.FOLD_WEAK]: ["I fold.", "Boring.", "Next hand.", "Not worth it.", "Trash."],
+    [CHAT_TRIGGERS.FOLD]: ["I fold.", "Boring.", "Next hand.", "Not worth it.", "Trash."],
     [CHAT_TRIGGERS.BET]: ["I bet.", "Pay attention.", "Action.", "I'm betting.", "Price of poker."],
     [CHAT_TRIGGERS.RAISE]: ["I raise.", "Too cheap.", "Lets play for real money.", "I am raising.", "Punishment."],
     [CHAT_TRIGGERS.CALL]: ["I call.", "Show me.", "I have to see it.", "You are bluffing.", "Snap call."],
@@ -768,7 +767,7 @@ export const PERSONALITIES = {
       "Let's dance. All chips.",
       "Maximum pressure!"
     ],
-    [CHAT_TRIGGERS.FOLD_WEAK]: [
+    [CHAT_TRIGGERS.FOLD]: [
       "Pas aujourd'hui.",
       "Discipline is key.",
       "Au revoir, cards.",

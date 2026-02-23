@@ -252,11 +252,7 @@ import { store } from '../logic/store';
 import { audioManager } from '../logic/audioManager.js';
 const formatUnit = (val) => {
   if (store.settings.showAsBB) {
-    // Normalizing 1 Buy-In to 100 "BB" visual unit
-    // If standard table buy-in is 1000, we treat 10 chips as 1 BB (1000 / 100)
-    // regardless of actual blind structure (e.g. 2/5 or 5/10) if user wants "Stack based" BB
-    // However, user specifically asked for "Table's Base Buy-In" basis check.
-    const baseBB = props.engine.buyIn ? (props.engine.buyIn / 100) : props.engine.bb;
+    const baseBB = props.engine.bb;
     if (baseBB > 0) return (val / baseBB).toFixed(1) + ' BB';
   }
   return val + ' CR';

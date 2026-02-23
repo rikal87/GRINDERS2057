@@ -12,6 +12,7 @@ const defaultState = {
   ownedProtectors: [], // Array of materialized item objects
   equippedProtector: null, // item object or null
   equippedSkills: [null, null, null], // 3 Slots
+  activeBoosts: [], // [{ taskId, effect: {} }]
   ownedPortraits: ['p1', 'p2', 'p3'],
   selectedPortrait: 'p1',
   boostRegenLT: 0,
@@ -143,8 +144,14 @@ export const gainXP = (player, pot, bb = 1.0, isHighStakes = false, locationLV =
   let xp = bbWon * 1.0;
   // 티어 가산점: 높은 방일수록 경험치 기본값이 높음
   xp += bb * (isHighStakes ? 2 : 1) * locationLV;
+
+  // AI Agent Boost effects
+  const activeXpBoosts = store.activeBoosts
+    .filter(b => b.effect.type === 'xp_boost')
+    .reduce((sum, b) => sum + (b.effect.amount || 0), 0);
+
   const bonus = player.tempXPBonus || 0;
-  store.xp += Math.ceil(xp * (1 + bonus));
+  store.xp += Math.ceil(xp * (1 + bonus + activeXpBoosts));
   console.info('player.tempXPBonus', player.tempXPBonus)
   player.tempXPBonus = 0;
   console.log(`[XP] Gained ${xp} XP.`);

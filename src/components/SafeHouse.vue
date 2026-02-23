@@ -87,23 +87,22 @@
                 <span class="v5-badge-mini">RAM_V1</span>
               </div>
             </div>
-          </div>
-
-          <div class="v5-panel-inner" style="margin-top: 10px;">
             <div class="v5-slot-list">
               <div v-for="(slot, idx) in taskSlots" :key="idx" class="v5-slot-item" :class="{ locked: slot.isLocked }"
                 @click="!slot.isLocked && !slot.task && openTaskSelector(idx)"
                 @mousedown="!slot.isLocked && slot.task && startLongPress(idx)" @mouseup="cancelLongPress"
                 @mouseleave="cancelLongPress" @touchstart="!slot.isLocked && slot.task && startLongPress(idx)"
                 @touchend="cancelLongPress">
+
                 <div class="v5-slot-meta">
                   <span class="v5-slot-tier-tag"> {{ slot.tier }}</span>
                   <span class="name">{{ slot.task ? slot.task.name : (slot.isLocked ? 'LOCKED' :
-                    'IDLE[CLICK_TO_ASSIGN]') }}</span>
+                    'CLICK_TO_ASSIGN') }}</span>
+                  <div class="v5-slot-status" :class="getTaskStatusClass(slot)">
+                    {{ slot.statusText }}
+                  </div>
                 </div>
-                <div class="v5-slot-status" :class="getTaskStatusClass(slot)">
-                  {{ slot.statusText }}
-                </div>
+
                 <!-- Progress bar for long press -->
                 <div v-if="longPressIdx === idx" class="long-press-progress"
                   :style="{ width: longPressProgress + '%' }"></div>
@@ -445,7 +444,8 @@ import { computed, ref } from 'vue';
 import { store, getNextLevelThreshold, getCurrentAgent } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
-import { AI_TASK_DATA, validateTaskSlots, isTaskUnlocked, startTask } from '../logic/aiTaskSystem';
+import { validateTaskSlots, isTaskUnlocked, startTask } from '../logic/aiTaskSystem';
+import { AI_TASK_DATA } from '../logic/agentTaskData';
 import { audioManager } from '../logic/audioManager';
 import { SKILL_DATA, getSlotConfig } from '../logic/skills';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAgentModelClasses';

@@ -140,7 +140,7 @@ export const zones = [
           "Gambler",
           "Nit"
         ],
-        "tables": { amount: 20000, amount_fmt: '10K', amount_min_fmt: '5K', sb: 50, bb: 100, available: [6, 9], baseRake: 0.07, rakeCap: 500 },
+        "tables": { amount: 10000, amount_fmt: '10K', amount_min_fmt: '5K', sb: 50, bb: 100, available: [6, 9], baseRake: 0.07, rakeCap: 500 },
         "theme": {
           "background": "radial-gradient(circle, #001a1a 0%, #000d0d 100%)",
           "borderColor": "#00f0ff",

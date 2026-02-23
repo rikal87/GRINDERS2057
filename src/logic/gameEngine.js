@@ -120,17 +120,16 @@ export class GameEngine {
     this.processBuyIn(YOU)
     players.push(YOU)
 
-    // Initialize AI Opponents from CLASSES_ENEMY
-    // We want a diverse mix, but consistent order or random?
-    // Let's randomize for variety, or pick sequentially?
-    // User plan implies a fixed set of personalities.
-    // Let's pick random unique enemies if possible, or loop.
+    // Build spawn requirements from store.activeBoosts
+    const spawnBoosts = store.activeBoosts
+      .filter(b => b.effect.type === 'spawn')
+      .map(b => b.effect);
 
-    // Copy enemy list to avoid modifying original if we splice
-    // [NEW] Zone-Specific Opponent Pool
-    const bossPool = [...CLASSES_ENEMY_BOSS].filter(p => p.isBoss).sort(() => Math.random() - 0.5);
+    const spawnMultBoosts = store.activeBoosts
+      .filter(b => b.effect.type === 'spawn_rate_mul')
+      .map(b => b.effect);
 
-    // Find current location config
+    // Filter Regular Enemies
     let locationConfig = null;
     for (const zone of zones) {
       const loc = zone.locations.find(l => l.id === this.locationId);
@@ -139,19 +138,81 @@ export class GameEngine {
         break;
       }
     }
-
-    // Filter Regular Enemies
     const allowedNames = locationConfig.npcs;
+
+    // Some tasks might allow spawning an enemy even if it's not strictly allowed by the zone.
+    // For now we'll allow forced spawns to override loc allowedNames
+
+    let enemiesToPlace = [];
+
+    // 1. Forced Spawns
+    const bossPool = [...CLASSES_ENEMY_BOSS].filter(p => p.isBoss).sort(() => Math.random() - 0.5);
+
+    spawnBoosts.forEach(eff => {
+      // Find the enemy template
+      // Match case-insensitively due to ID mismatch (e.g. 'shark' vs 'Shark')
+      const targetId = eff.id.toLowerCase();
+      let template = null;
+      if (targetId === 'named_pro') {
+        // Pop boss if available
+        if (bossPool.length > 0) template = bossPool.pop();
+      } else {
+        template = CLASSES_ENEMY.find(e => e.name.toLowerCase() === targetId);
+      }
+
+      if (template) {
+        // Add up to `amount` times, but respect table size (size - 1 for YOU)
+        for (let j = 0; j < eff.amount; j++) {
+          if (enemiesToPlace.length >= size - 1) break;
+          // Clone the template
+          enemiesToPlace.push({ ...template });
+        }
+      }
+    });
+
+    // 2. Weighted Random Spawns for remainders
     const availableEnemies = CLASSES_ENEMY.filter(enemy => enemy.name !== 'Named_Pro' && allowedNames.includes(enemy.name));
-    console.info('allowedNames', allowedNames, 0.5)
-    // Handle 'Named_Pro' -> Random Boss
-    for (let i = 1; i < size; i++) {
-      let villan = null;
-      if (allowedNames.includes('Named_Pro') && Math.random() < 0.5) {
-        villan = bossPool.pop();
-      } else villan = { ...availableEnemies[Math.floor(Math.random() * availableEnemies.length)] };
+
+    // Prepare weights based on multiply boosts
+    const weightMap = {};
+    availableEnemies.forEach(env => {
+      weightMap[env.name.toLowerCase()] = 1.0;
+    });
+
+    spawnMultBoosts.forEach(eff => {
+      const targetId = eff.id.toLowerCase();
+      if (weightMap[targetId] !== undefined) {
+        weightMap[targetId] *= eff.amount;
+      }
+    });
+
+    // Helper to pick randomly based on weights
+    const getWeightedRandomEnemy = () => {
+      // Add Named_Pro logic (random chance if allowed)
+      if (allowedNames.includes('Named_Pro') && Math.random() < 0.5 && bossPool.length > 0) {
+        return bossPool.pop();
+      }
+
+      const totalWeight = availableEnemies.reduce((sum, en) => sum + weightMap[en.name.toLowerCase()], 0);
+      let rand = Math.random() * totalWeight;
+      for (const en of availableEnemies) {
+        rand -= weightMap[en.name.toLowerCase()];
+        if (rand <= 0) return { ...en };
+      }
+      return { ...availableEnemies[0] }; // Fallback
+    };
+
+    while (enemiesToPlace.length < size - 1) {
+      enemiesToPlace.push(getWeightedRandomEnemy());
+    }
+
+    // Optional: Shuffle enemiesToPlace so forced spawns aren't always seated right next to YOU
+    enemiesToPlace = enemiesToPlace.sort(() => Math.random() - 0.5);
+
+    for (let i = 0; i < enemiesToPlace.length; i++) {
+      let villan = enemiesToPlace[i];
       const aiPlayer = {
-        id: `cpu_${i} `,
+        id: `cpu_${i + 1}`,
         name: `${villan.name}`,
         tempXPBonus: 0,
         class: villan,
@@ -177,10 +238,6 @@ export class GameEngine {
           get aggressionFactor() { return this.calls > 0 ? this.aggressiveActions / this.calls : (this.aggressiveActions > 0 ? 10 : 0); } // Infinite if no calls but has raises
         },
       };
-
-      // Override name with something cool derived from class? 
-      // e.g. "Maniac Unit 1"
-      // or just keep AGENT_X.
 
       if (Math.random() < 0.3) chatAI(aiPlayer, CHAT_TRIGGERS.GAME_START)
       players.push(aiPlayer);
@@ -386,7 +443,7 @@ export class GameEngine {
     setTimeout(() => {
       player.lastDialogue = null
       player.lastThought = null
-    }, 4000);
+    }, 2500);
 
     // Record Action
     if (this.currentHandHistory && this.currentHandHistory.actions[this.state]) {

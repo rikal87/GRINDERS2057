@@ -3,6 +3,7 @@ import { store, getEffectiveMaxLT } from './store';
 import { sendMessage } from './messageSystem';
 import { AI_TASK_DATA } from './agentTaskData';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
+import { zones } from './zone';
 // Task Definitions
 // Logic to process tasks every game tick (e.g. hourly)
 // Actually we can process minutely, but probability is per hour.
@@ -80,6 +81,21 @@ export const processAiTasks = () => {
   const regenAmount = maxLt * 0.01 / 60;
   store.ludusTokens = Math.min(getEffectiveMaxLT(), store.ludusTokens + regenAmount);
 
+  // 1.5. Process Risk/Penalty (e.g., SECURITY_DETECTION)
+  const penaltyTasks = store.onWorkTasks.filter(t => t.status === 'ACTIVE');
+  for (const task of penaltyTasks) {
+    const td = AI_TASK_DATA.find(x => x.id === task.taskId);
+    if (!td || !td.effect) continue;
+
+    const penaltyEffects = td.effect.filter(e => e.type === 'penalty_amount');
+    for (const eff of penaltyEffects) {
+      const riskChancePerMin = (eff.probability || 0.01) / 60;
+      if (Math.random() < riskChancePerMin) {
+        triggerRiskDetection(store.onWorkTasks.indexOf(task), eff);
+      }
+    }
+  }
+
   // 3. Process Active Tasks
   for (let i = store.onWorkTasks.length - 1; i >= 0; i--) {
     const taskState = store.onWorkTasks[i];
@@ -92,7 +108,7 @@ export const processAiTasks = () => {
 
     if (taskState.status === 'SEARCHING') {
       // Cost Deduction (per hour -> per minute)
-      const costPerMin = taskDef.costPerTime / 60;
+      const costPerMin = taskDef.cost / 60;
 
       if (store.ludusTokens >= costPerMin) {
         store.ludusTokens -= costPerMin;
@@ -117,8 +133,8 @@ export const processAiTasks = () => {
             }
           }
         }
-      } else {
-        sendMessage('SYSTEM', 'Task Paused', `Not enough LT to continue ${taskDef.name}.`);
+      } else if (taskDef.cost > 0) {
+        sendMessage('SYSTEM', 'Task Paused', `Not enough LT to continue searching for ${taskDef.name}.`);
         store.onWorkTasks.splice(i, 1);
       }
     }
@@ -128,6 +144,9 @@ export const processAiTasks = () => {
         taskState.status = 'COOLDOWN';
         taskState.cooldownEndTime = store.gameTime + (taskDef.cooldown * 60 * 1000);
         sendMessage('SYSTEM', 'Effect Expired', `${taskDef.name} effect has ended. Cooldown started.`);
+
+        // Remove active boosts associated with this task
+        store.activeBoosts = store.activeBoosts.filter(b => b.taskId !== taskState.taskId);
 
         if (taskDef.cooldown <= 0) {
           store.onWorkTasks.splice(i, 1);
@@ -170,13 +189,43 @@ const triggerTaskSuccess = (taskState, taskDef) => {
       sendMessage('SYSTEM', 'Security Alert', `A Shark has noticed your rich prey hunt and might join the table.`);
     }
   }
+
+  // Apply Buff Effects
+  if (taskDef.effect && Array.isArray(taskDef.effect)) {
+    taskDef.effect.forEach(eff => {
+      // Don't add penalty effects to activeBoosts (they are processed minutely)
+      if (eff.type === 'penalty_amount') return;
+
+      const boost = { taskId: taskDef.id, effect: { ...eff } };
+
+      // Handle random location for rake discounts
+      if (eff.type === 'rake_discount_rnd_mul') {
+        zones.forEach(zone => {
+          if (zone.id === eff.id) {
+            const locations = zone.locations.filter(l => !l.isHidden);
+            const locObj = locations[Math.floor(Math.random() * locations.length)];
+            boost.effect.targetLocationId = locObj.id;
+            // Also notify user about which casino got the discount
+            sendMessage('SYSTEM', 'Rake Event Live!', `[${locObj.name}] is now hosting a ${100 - (eff.amount * 100)}% rake discount event for ${taskDef.duration / 24 / 60} days!`);
+          }
+        });
+      }
+
+      store.activeBoosts.push(boost);
+    });
+  }
 };
 
-const triggerRiskDetection = (index, taskDef) => {
-  const penalty = taskDef.risk.penalty || 10000;
+const triggerRiskDetection = (index, effDef) => {
+  const penalty = effDef.amount || 10000;
   store.bankroll = Math.max(0, store.bankroll - penalty);
   sendMessage('SYSTEM', 'HACKING DETECTED!', `Security forces located your signal. Penalty: ${penalty.toLocaleString()} CR.`);
-  store.onWorkTasks.splice(index, 1);
+
+  if (index >= 0) {
+    const taskState = store.onWorkTasks[index];
+    store.activeBoosts = store.activeBoosts.filter(b => b.taskId !== taskState.taskId);
+    store.onWorkTasks.splice(index, 1);
+  }
 };
 
 const canTaskFitInSlot = (taskTier, slotType) => {

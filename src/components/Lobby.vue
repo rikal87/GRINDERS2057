@@ -87,8 +87,13 @@
                   </div>
                   <div class="stat-row">
                     <span class="stat-label">RAKE:</span>
-                    <span class="stat-value">{{ (currentRake * 100).toFixed(1) }}% (Max {{ currentTableConfig.rakeCap
-                    }})</span>
+                    <span class="stat-value">
+                      <span v-if="currentTableConfig.baseRake !== currentRake"
+                        style="text-decoration: line-through; opacity: 0.5; margin-right: 5px;">
+                        {{ (currentTableConfig.baseRake * 100).toFixed(1) }}%
+                      </span>
+                      {{ (currentRake * 100).toFixed(1) }}% (Max {{ currentTableConfig.rakeCap }})
+                    </span>
                   </div>
 
                 </div>
@@ -177,8 +182,26 @@ const currentTableConfig = computed(() => currentLocation.value.tables);
 const currentRake = computed(() => {
   if (!currentTableConfig.value) return 0;
   const base = currentTableConfig.value.baseRake;
-  const eventRake = store.eventRake;
-  return Math.max(0.01, base - eventRake);
+  const eventRake = store.eventRake || 0;
+
+  // AI Agent Boost effects
+  let agentRakeDiscount = 0;
+  if (store.activeBoosts && currentLocation.value) {
+    store.activeBoosts.forEach(b => {
+      // Global discount
+      if (b.effect.type === 'rake_discount') {
+        agentRakeDiscount += b.effect.amount;
+      }
+      // Targeted discount (e.g. random location event)
+      if (b.effect.type === 'rake_discount_rnd_mul' && b.effect.targetLocationId === currentLocation.value.id) {
+        agentRakeDiscount += b.effect.amount;
+      }
+    });
+  }
+
+  // Multiply based discount
+  let finalRake = (base - eventRake) * Math.max(0, 1 - agentRakeDiscount);
+  return Math.max(0.00, finalRake); // CAN'T BE LOWER THAN 0
 });
 
 const canAfford = computed(() => {

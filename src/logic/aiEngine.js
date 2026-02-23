@@ -85,7 +85,7 @@ function getHeuristicFallback(player, engine) {
 
   let wtsd = player.class?.WTSD ? player.class.WTSD : 0.5;
   let raiseThreshold = 100 - (AF * 10);
-  let callThreshold = 50 - (wtsd * 40); // 20이었는데 40으로 올려서 테스트 필요
+  let callThreshold = 50 - (wtsd * 50); // 20이었는데 50으로 올려서 테스트 필요
   let bluffFreq = Math.max(0, (AF - 2)) * 0.1; // Base bluff freq
 
   // Distance from Button (0 = Button, 1 = CO, ...)
@@ -119,10 +119,10 @@ function getHeuristicFallback(player, engine) {
     // Invert rank for score: 1 (AA) -> 100, 169 (72o) -> 0
     strengthScore = Math.round(Math.max(0, (169 - handRank) / 4));
     if (handRank <= 7) strengthScore += 80; // Premium bonus
-    else if (handRank <= 13) strengthScore += 40; // Strong bonus, but not over play
-    else if (handRank <= 20) strengthScore += 20; // Good bonus
-    else if (handRank <= 33) strengthScore += 10; // Fair bonus
-    else if (handRank <= 80) strengthScore += 5; // Weak bonus // WIDE range
+    else if (handRank <= 13) strengthScore += 60; // Strong bonus, but not over play
+    else if (handRank <= 22) strengthScore += 40; // Good bonus
+    else if (handRank <= 33) strengthScore += 20; // Fair bonus
+    else if (handRank <= 100) strengthScore += 10; // Weak bonus // WIDE range
     if (isHighStakes) {
       if (distFromButton <= 1) strengthScore += 10; // Button bonus
       else if (distFromButton <= 3) strengthScore += 5; // MP bonus

@@ -59,5 +59,9 @@ export const getGameDay = (timestamp) => {
 }
 
 export const advanceTime = (hours) => {
-  store.gameTime += hours * 60 * 60 * 1000;
+  const ticksToSimulate = Math.floor(hours * 60);
+  for (let i = 0; i < ticksToSimulate; i++) {
+    store.gameTime += 60 * 1000;
+    processAiTasks();
+  }
 };
