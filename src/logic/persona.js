@@ -27,22 +27,22 @@ export const CLASSES_ENEMY = [
   { name: 'Broke', philosophy: 'LAP', vPIP: .6, AF: 2, WTSD: .45, chipMultiply: 0.5, maxRam: 150, skills: [], note: '내일이 없는 친구입니다. 리버에 기적이 일어나길 빌며 모든 걸 걸었다가, 결국 오늘도 빈털터리로 돌아갑니다' },
   { name: 'Gambler', philosophy: 'LAG', vPIP: .5, AF: 3, WTSD: .5, chipMultiply: 1, maxRam: 150, skills: [], note: '인생은 한 방, 승부처라면 쓰레기 같은 패로도 풀 배팅을 지르는 스타일입니다.' },
   { name: 'Maniac', philosophy: 'LAG', vPIP: .7, AF: 6, WTSD: .55, chipMultiply: 1, maxRam: 150, skills: [], note: '팟을 개판으로 만드는 주범입니다. 정말 미친놈 같습니다..' },
-  { name: 'Rich_Guy', philosophy: 'LAP', vPIP: .6, AF: 1.5, WTSD: .6, chipMultiply: 4, maxRam: 150, skills: [], note: '기업의 꽤 높은 분이거나 운 좋게 코인 대박이 터진 부자입니다.' },
-  { name: 'Gangster', philosophy: 'TAG', vPIP: .38, AF: 4, WTSD: .44, chipMultiply: 1.5, maxRam: 150, skills: [], note: '눈에 힘주고 베팅하는 게 버릇입니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.' },
+  { name: 'Rich_Guy', philosophy: 'LAP', vPIP: .6, AF: 1.5, WTSD: .6, chipMultiply: 3, maxRam: 150, skills: [], note: '기업의 꽤 높은 분이거나 운 좋게 코인 대박이 터진 부자입니다.' },
+  { name: 'Gangster', philosophy: 'TAG', vPIP: .38, AF: 4, WTSD: .44, chipMultiply: 1, maxRam: 150, skills: [], note: '눈에 힘주고 베팅하는 게 버릇입니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.' },
   { name: 'Nit', philosophy: 'NIT', vPIP: .09, AF: 2.5, WTSD: .35, chipMultiply: 1, maxRam: 150, skills: [], note: '혹시라도 그가 레이즈를 한다면 무조건 도망치세요, AA가 확실합니다.' },
-  { name: 'Quant_Pro', philosophy: 'TAG', vPIP: .22, AF: 2.5, WTSD: .30, chipMultiply: 1, maxRam: 150, skills: [], note: '금융권 퀀트 출신이었으나, 지금은 포커에 미쳐버린 친구입니다.' },
-  { name: 'Mafia_Boss', philosophy: 'LAG', vPIP: .35, AF: 5, WTSD: .35, chipMultiply: 3, maxRam: 150, skills: [], note: '포커를 "전쟁"으로 생각합니다. 상대가 기권할 때까지 돈과 위압감으로 밀어붙이며, 테이블 전체의 분위기를 공포로 몰아넣는 것을 즐깁니다.' },
+  { name: 'Quant_Pro', philosophy: 'TAG', vPIP: .22, AF: 2.5, WTSD: .30, chipMultiply: 1.5, maxRam: 150, skills: [], note: '금융권 퀀트 출신이었으나, 지금은 포커에 미쳐버린 친구입니다.' },
+  { name: 'Mafia_Boss', philosophy: 'LAG', vPIP: .35, AF: 5, WTSD: .35, chipMultiply: 2, maxRam: 150, skills: [], note: '포커를 "전쟁"으로 생각합니다. 상대가 기권할 때까지 돈과 위압감으로 밀어붙이며, 테이블 전체의 분위기를 공포로 몰아넣는 것을 즐깁니다.' },
   { name: 'The_Whale', philosophy: 'LAP', vPIP: .70, AF: 2, WTSD: .75, chipMultiply: 8, maxRam: 150, skills: [], note: '그에게 칩은 숫자에 불과합니다. 판돈이 커질수록 아드레날린을 느끼며, 지고 있어도 "재미있네"라며 웃으며 칩을 더 던집니다. 사실상 테이블의 스폰서나 다름없습니다.' },
-  { name: 'Old_Lion', philosophy: 'TAG', vPIP: .20, AF: 2.5, WTSD: .25, chipMultiply: 2, maxRam: 150, skills: [], isBoss: true, note: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.' },
-  { name: 'Shark', philosophy: 'TAG', vPIP: .24, AF: 3.5, WTSD: .27, chipMultiply: 1.5, maxRam: 150, skills: [], isBoss: true, note: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.' },
+  { name: 'Old_Lion', philosophy: 'TAG', vPIP: .20, AF: 2.5, WTSD: .25, chipMultiply: 1.2, maxRam: 150, skills: [], note: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.' },
+  { name: 'Shark', philosophy: 'TAG', vPIP: .24, AF: 3.5, WTSD: .27, chipMultiply: 1.2, maxRam: 150, skills: [], note: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.' },
   { name: 'Named_Pro', note: '이곳에선 전설적인 플레이어를 만날 가능성이있습니다.' },
 ];
 export const CLASSES_ENEMY_BOSS = [
-  { name: 'IVY_00', philosophy: 'TAG', vPIP: .27, AF: 3.5, WTSD: .27, chipMultiply: 3, maxRam: 150, skills: [], isBoss: true, note: '균형잡힌, 그리고 전설적인 포커 플레이어입니다.' },
-  { name: 'D_NEURAL', philosophy: 'LAG', vPIP: .34, AF: 2.7, WTSD: .26, chipMultiply: 3, maxRam: 150, skills: [], isBoss: true, note: '유쾌하며 상대방의 핸드리딩 실력이 정말 좋습니다.' },
-  { name: 'D.W.A.N_V2', philosophy: 'LAG', vPIP: .33, AF: 4.2, WTSD: .30, chipMultiply: 3, maxRam: 150, skills: [], isBoss: true, note: '매우 공격적인 프로 포커 플레이어입니다.' },
-  { name: 'JNGL_MAN', philosophy: 'TAG', vPIP: .30, AF: 3.3, WTSD: .31, chipMultiply: 3, maxRam: 150, skills: [], isBoss: true, note: '헤즈업 전문 프로 포커 플레이어입니다.' },
-  { name: 'YH0_V1RAL', philosophy: 'LAG', vPIP: .33, AF: 3.7, WTSD: .29, chipMultiply: 3, maxRam: 150, skills: [], isBoss: true, note: '프랑스 출신 유명 포커 플레이어입니다.' },
+  { name: 'IVY_00', philosophy: 'TAG', vPIP: .27, AF: 3.5, WTSD: .27, chipMultiply: 2, maxRam: 150, skills: [], isBoss: true, note: '균형잡힌, 그리고 전설적인 포커 플레이어입니다.' },
+  { name: 'D_NEURAL', philosophy: 'LAG', vPIP: .34, AF: 2.7, WTSD: .26, chipMultiply: 2, maxRam: 150, skills: [], isBoss: true, note: '유쾌하며 상대방의 핸드리딩 실력이 정말 좋습니다.' },
+  { name: 'D.W.A.N_V2', philosophy: 'LAG', vPIP: .33, AF: 4.2, WTSD: .30, chipMultiply: 2, maxRam: 150, skills: [], isBoss: true, note: '매우 공격적인 프로 포커 플레이어입니다.' },
+  { name: 'JNGL_MAN', philosophy: 'TAG', vPIP: .30, AF: 3.3, WTSD: .31, chipMultiply: 2, maxRam: 150, skills: [], isBoss: true, note: '헤즈업 전문 프로 포커 플레이어입니다.' },
+  { name: 'YH0_V1RAL', philosophy: 'LAG', vPIP: .33, AF: 3.7, WTSD: .29, chipMultiply: 2, maxRam: 150, skills: [], isBoss: true, note: '프랑스 출신 유명 포커 플레이어입니다.' },
 ]
 
 export const PERSONALITIES = {

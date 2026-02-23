@@ -2,6 +2,7 @@
 import { store } from './store';
 import { zones } from './zone';
 import { getRndLoreSpamMessage } from './lore_spam_message';
+import { audioManager } from './audioManager';
 export const sendMessage = (type, title, body, actions = [], sender = 'System') => {
   const id = Date.now().toString(36) + Math.random().toString(36).substr(2);
   const msg = {
@@ -91,6 +92,7 @@ export const handleMessageAction = (msgId, actionIndex) => {
       deleteMessage(msgId);
       break;
   }
+  audioManager.playSFX('notification');
 }
 
 export const sendLoreAndSpamMessage = () => {

@@ -1,19 +1,13 @@
 <template>
   <footer class="control-panel" v-if="engine">
-    <!-- Permanent Hand Rank Display (Always Visible) -->
-    <aside>
-      <div class="permanent-hud">
-        <div class="hud-stat">
-          <span class="label">CURRENT_HAND:</span>
-          <span class="value">{{ currentHandRank }}</span>
+    <aside class="inbox-panel">
+      <div class="inbox-header">SYS.COMM.LOG //</div>
+      <div class="message-list">
+        <div v-for="msg in store.messages" :key="msg.id" class="message-item" :class="{ 'unread': !msg.isRead }">
+          <span class="msg-indicator" v-if="!msg.isRead">*</span>
+          <span class="msg-title">{{ msg.title }}</span>
         </div>
-      </div>
-      <div class="permanent-hud">
-        <div class="hud-stat" :class="{ 'low-stamina': store.stamina < 25 }">
-          <span class="label">STEMINA:</span>
-          <span class="value" :style="{ color: getStaminaColor }">{{ Math.floor(store.stamina) }} / {{ store.maxStamina
-          }}</span>
-        </div>
+        <div v-if="store.messages.length === 0" class="empty-msg">NO_NEW_MESSAGES</div>
       </div>
     </aside>
     <!-- Betting & Actions -->
@@ -24,8 +18,8 @@
         <template v-if="engine.state === 'PREFLOP'">
           <button @click="setBet('min')">MIN</button>
           <button @click="setBet('2.2BB')">2.2BB</button>
-          <button @click="setBet(.5)">50%</button>
           <button @click="setBet(1)">100%</button>
+          <button @click="setBet(1.2)">120%</button>
         </template>
         <template v-else>
           <button @click="setBet(.3)">30%</button>
@@ -62,6 +56,21 @@
     </div>
     <!-- Gadget Panel -->
     <div class="skill-panel">
+      <!-- Permanent Hand Rank Display (Always Visible) -->
+      <div class="permanent-hud">
+        <div class="hud-stat">
+          <span class="label">CURRENT_HAND:</span>
+          <span class="value">{{ currentHandRank }}</span>
+        </div>
+      </div>
+      <!-- Permanent Stamina Display (Always Visible) -->
+      <div class="permanent-hud">
+        <div class="hud-stat" :class="{ 'low-stamina': store.stamina < 25 }">
+          <span class="label">STEMINA:</span>
+          <span class="value" :style="{ color: getStaminaColor }">{{ Math.floor(store.stamina) }} / {{ store.maxStamina
+          }}</span>
+        </div>
+      </div>
       <!-- [MOVED] Protector Badge & Effects HUD -->
       <div class="status-row" v-if="player.item">
         <div class="protector-badge" :title="player.item.desc">
@@ -442,41 +451,85 @@ button {
   z-index: 3;
 }
 
-/* RAM Gauge */
-.ram-container {
-  grid-column: span 2;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 8px;
-  border: 1px solid #333;
-  margin-bottom: 5px;
-}
-.ram-label {
+
+aside.inbox-panel {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  height: 154px;
+  min-height: 154px;
+}
+
+.inbox-header {
   font-size: 0.6rem;
   color: var(--neon-cyan);
-  margin-bottom: 4px;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
+  text-align: left;
 }
-.ram-bar {
-  height: 8px;
-  background: #111;
-  display: flex;
-}
-.ram-fill {
-  height: 100%;
-  transition: width 0.3s;
-}
-.ram-fill.used {
-  background: var(--neon-magenta);
-  box-shadow: 0 0 5px var(--neon-magenta);
-}
-.ram-fill.reserved {
-  background: var(--neon-cyan);
-  box-shadow: 0 0 5px var(--neon-cyan);
-}
-aside {
+
+.message-list {
   flex: 1;
+  overflow-y: auto;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
+
+/* Custom scrollbar for message-list */
+.message-list::-webkit-scrollbar {
+  width: 4px;
+}
+.message-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+.message-list::-webkit-scrollbar-thumb {
+  background: var(--neon-cyan);
+}
+
+.message-item {
+  font-size: 0.7rem;
+  padding: 4px 6px;
+  color: #aaa;
+  border-left: 2px solid var(--neon-cyan);
+  flex-shrink: 0;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.message-item.unread {
+  color: #fff;
+  border-left-color: var(--neon-yellow);
+  background: rgba(255, 230, 0, 0.05);
+}
+
+.msg-indicator {
+  color: var(--neon-yellow);
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.msg-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.empty-msg {
+  font-size: 0.7rem;
+  color: #555;
+  text-align: center;
+  margin-top: 10px;
+  font-style: italic;
+}
+
 /* HUD Mini-Display */
 .permanent-hud {
   grid-column: span 2;
@@ -541,6 +594,11 @@ button:disabled {
   .control-panel {
     gap: 10px;
     padding-bottom: 20px;
+  }
+
+  aside.inbox-panel {
+    height: 100px;
+    min-height: 100px;
   }
 
   .betting-interface {

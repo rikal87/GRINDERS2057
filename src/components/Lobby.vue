@@ -177,7 +177,8 @@ const currentTableConfig = computed(() => currentLocation.value.tables);
 const currentRake = computed(() => {
   if (!currentTableConfig.value) return 0;
   const base = currentTableConfig.value.baseRake;
-  return Math.max(0.01, base);
+  const eventRake = store.eventRake;
+  return Math.max(0.01, base - eventRake);
 });
 
 const canAfford = computed(() => {

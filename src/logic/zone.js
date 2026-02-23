@@ -18,7 +18,7 @@ export const zones = [
     "description": "단순 오락거리를 위해 찾는 곳. 돈을 잃어도 타격이 적어 무모한 플레이가 빈번하지만, 가끔 절박한 플레이어도 존재.",
     "locations": [
       {
-        "id": "micro_safte_house",
+        "id": "micro_safe_house",
         "name": "안전가옥",
         "englishName": "Safe House",
         "imgSrc": null,
@@ -140,7 +140,7 @@ export const zones = [
           "Gambler",
           "Nit"
         ],
-        "tables": { amount: 10000, amount_fmt: '10K', amount_min_fmt: '5K', sb: 50, bb: 100, available: [6, 9], baseRake: 0.07, rakeCap: 500 },
+        "tables": { amount: 20000, amount_fmt: '10K', amount_min_fmt: '5K', sb: 50, bb: 100, available: [6, 9], baseRake: 0.07, rakeCap: 500 },
         "theme": {
           "background": "radial-gradient(circle, #001a1a 0%, #000d0d 100%)",
           "borderColor": "#00f0ff",
@@ -280,6 +280,7 @@ export const zones = [
     "name": "High Stakes",
     "description": "선택받은 소수만이 접근할 수 있는 영역. 승패는 권력의 이동을 의미.",
     "locations": [
+
       {
         "id": "high_royal_room",
         "name": "로열 프라이빗 카드룸",
@@ -304,6 +305,31 @@ export const zones = [
         'bgMusic': [TRACK_ENUM.Grainders2057, TRACK_ENUM.Dystopia, TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
       },
       {
+        "id": "high_safe_house",
+        "name": "안전가옥",
+        "englishName": "Safe House",
+        "imgSrc": null,
+        "description": "안전 가옥으로 유명한 실력자들을 초대하였습니다.",
+        "atmosphere": "다소 어두움, 진지한 분위기",
+        "requirements": null,
+        "isHidden": true,
+        "level": 0,
+        "npcs": [
+          "Shark"
+        ],
+        "tables": {
+          amount: 2500000, amount_fmt: '2.5M', amount_min_fmt: '1.25M', sb: 5000, bb: 10000, available: [
+            6
+          ], baseRake: 0.0, rakeCap: 0
+        },
+        "theme": {
+          "background": "radial-gradient(circle, #2c2c2c 0%, #1a1a1a 100%)",
+          "borderColor": "#3f6ae2ff",
+          "boxShadow": "0 0 20px rgba(146, 148, 255, 0.8)"
+        },
+        'bgMusic': [TRACK_ENUM.Grainders2057, TRACK_ENUM.VelvetShadows, TRACK_ENUM.Nightscape, TRACK_ENUM.DreamVector]
+      },
+      {
         "id": "high_grand_casino",
         "name": "대형 카지노 호텔",
         "englishName": "Grand Casino Hotel",
@@ -325,7 +351,32 @@ export const zones = [
           "boxShadow": "0 0 50px rgba(255, 215, 0, 0.7)"
         },
         'bgMusic': [TRACK_ENUM.Placebo, TRACK_ENUM.DustyDay, TRACK_ENUM.Dystopia, TRACK_ENUM.BeThere]
-      }
+      },
+      {
+        "id": "war_of_the_gods",
+        "name": "전설의 전투",
+        "englishName": "War of the Gods",
+        "imgSrc": null,
+        "description": "진정한 전설들을 초대하였습니다.",
+        "atmosphere": "엔드 게임을 위한 시작",
+        "requirements": null,
+        "isHidden": true,
+        "level": 0,
+        "npcs": [
+          "Shark"
+        ],
+        "tables": {
+          amount: 20000000, amount_fmt: '20M', amount_min_fmt: '10M', sb: 50000, bb: 100000, available: [
+            6
+          ], baseRake: 0.0, rakeCap: 0
+        },
+        "theme": {
+          "background": "radial-gradient(circle, #001a33 0%, #000a14 100%)",
+          "borderColor": "#ffd700",
+          "boxShadow": "0 0 30px rgba(255, 215, 0, 0.4)"
+        },
+        'bgMusic': [TRACK_ENUM.Grainders2057, TRACK_ENUM.VelvetShadows, TRACK_ENUM.Nightscape, TRACK_ENUM.DreamVector]
+      },
     ]
   },
   {

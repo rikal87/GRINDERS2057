@@ -120,8 +120,8 @@
       <section class="v5-main-col">
         <div class="v5-panel v5-storage-unit" style="flex:1; overflow:hidden">
           <div class="v5-tabs">
-            <button :class="{ active: mainTab === 'hardware' }" @click="mainTab = 'hardware'">HARDWARE</button>
-            <button :class="{ active: mainTab === 'crypto' }" @click="mainTab = 'crypto'">CRYPTO</button>
+            <button :class="{ active: mainTab === 'hardware' }" @click="mainTab = 'hardware'">Chip Protector</button>
+            <button :class="{ active: mainTab === 'crypto' }" @click="mainTab = 'crypto'">Crypto Currency</button>
           </div>
 
           <div class="v5-item-container">
@@ -196,7 +196,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-              }} UNREAD]</small>
+          }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
@@ -462,8 +462,6 @@ const selectedModelId = ref(store.aiAgent.name);
 const selectedPlanIdx = ref(store.aiAgent.price_plan_idx);
 const activeSlotIdx = ref(null);
 const activeSlotType = ref(null);
-
-
 
 const availableModelIds = computed(() => Object.keys(AI_AGENT_MODEL_AND_PLAN_DATA));
 const currentModelIdx = computed(() => availableModelIds.value.indexOf(selectedModelId.value));

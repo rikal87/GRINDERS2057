@@ -1,8 +1,45 @@
 const RANKS = '23456789TJQKA';
 const SUITS = 'shdc'; // spades, hearts, diamonds, clubs
-// Sklansky-Chubukov / Common Preflop Rankings (Top 169)
+// 6-max / 9-max Playability & EV Based Rankings (Top 169)
+// Values suitedness, connectivity, and high cards over low pocket pairs.
 // 1 is best (AA), 169 is worst (72o)
 const HAND_RANKINGS = {
+  'AA': 1, 'KK': 2, 'QQ': 3, 'AKs': 4, 'JJ': 5,
+  'AQs': 6, 'AKo': 7, 'KQs': 8, 'AJs': 9, 'TT': 10,
+  'AQo': 11, 'ATs': 12, 'KJs': 13, '99': 14, 'QJs': 15,
+  'AJo': 16, 'JTs': 17, 'KTs': 18, '88': 19, 'QTs': 20,
+  'A9s': 21, 'KQo': 22, 'J9s': 23, 'T9s': 24, 'A8s': 25,
+  'KJo': 26, '77': 27, 'Q9s': 28, 'A7s': 29, '98s': 30,
+  'ATo': 31, 'K9s': 32, 'A5s': 33, 'A6s': 34, 'QJo': 35,
+  '66': 36, 'A4s': 37, '87s': 38, 'KTo': 39, 'J8s': 40,
+  'A3s': 41, 'Q8s': 42, 'T8s': 43, 'K8s': 44, 'A2s': 45,
+  '97s': 46, '55': 47, 'JTo': 48, '76s': 49, 'K7s': 50,
+  'QTo': 51, 'A9o': 52, '86s': 53, '65s': 54, 'J7s': 55,
+  'Q7s': 56, 'K6s': 57, 'T7s': 58, '44': 59, '54s': 60,
+  'K5s': 61, '96s': 62, 'Q6s': 63, 'K4s': 64, 'K3s': 65,
+  '75s': 66, '85s': 67, 'K2s': 68, 'J6s': 69, '33': 70,
+  'Q5s': 71, 'K9o': 72, 'A8o': 73, '64s': 74, 'Q4s': 75,
+  'J9o': 76, 'T9o': 77, 'J5s': 78, 'Q3s': 79, '22': 80,
+  'T6s': 81, 'Q2s': 82, 'A7o': 83, '53s': 84, '95s': 85,
+  'J4s': 86, '98o': 87, 'A5o': 88, '74s': 89, 'J3s': 90,
+  '84s': 91, 'J2s': 92, 'T5s': 93, 'T8o': 94, 'K8o': 95,
+  '43s': 96, 'A6o': 97, '87o': 98, 'A4o': 99, 'Q9o': 100,
+  'T4s': 101, '94s': 102, '63s': 103, '97o': 104, 'T3s': 105,
+  '76o': 106, 'A3o': 107, 'T2s': 108, '52s': 109, '73s': 110,
+  '83s': 111, 'A2o': 112, 'K7o': 113, 'Q8o': 114, '42s': 115,
+  '62s': 116, '93s': 117, '82s': 118, 'J8o': 119, 'J7o': 120,
+  '32s': 121, 'T7o': 122, 'K6o': 123, '54o': 124, '92s': 125,
+  '65o': 126, 'K5o': 127, '86o': 128, 'Q7o': 129, 'J6o': 130,
+  'K4o': 131, '75o': 132, '96o': 133, 'K3o': 134, 'Q6o': 135,
+  'K2o': 136, '85o': 137, 'T6o': 138, '53o': 139, '64o': 140,
+  'J5o': 141, 'Q5o': 142, '95o': 143, 'J4o': 144, 'Q4o': 145,
+  '74o': 146, 'J3o': 147, 'Q3o': 148, '84o': 149, 'J2o': 150,
+  'Q2o': 151, '94o': 152, 'T5o': 153, '43o': 154, '63o': 155,
+  '93o': 156, 'T4o': 157, '73o': 158, 'T3o': 159, '83o': 160,
+  '52o': 161, 'T2o': 162, '92o': 163, '42o': 164, '82o': 165,
+  '62o': 166, '72s': 167, '32o': 168, '72o': 169
+};
+const HAND_RANKINGS_HEADSUP = {
   'AA': 1, 'KK': 2, 'QQ': 3, 'JJ': 4, 'AKs': 5,
   'TT': 6, 'AKo': 7, 'AQs': 8, '99': 9, 'AJs': 10,
   '88': 11, 'ATs': 12, 'AQo': 13, '77': 14, 'KQs': 15,
@@ -38,7 +75,6 @@ const HAND_RANKINGS = {
   '73o': 161, '83o': 162, '52o': 163, '42o': 164, '82o': 165,
   '62o': 166, '32o': 167, '72o': 168
 };
-
 export const createDeck = () => {
   let deck = [];
   for (let s of SUITS) {
@@ -541,7 +577,7 @@ export const calculateEquity = (players, board, iterations = 1000) => {
   return activePlayers;
 };
 
-export const getStartingHandRank = (hand) => {
+export const getStartingHandRank = (hand, refHandRankSheet = HAND_RANKINGS) => {
   if (!hand || hand.length !== 2) return 169;
 
   // Helper to get rank char
@@ -567,9 +603,14 @@ export const getStartingHandRank = (hand) => {
     key += (isSuited ? 's' : 'o');
   }
 
-  return HAND_RANKINGS[key] || 169;
+  return refHandRankSheet[key] || 169;
 };
-
+export const getStartingHandRank96Max = (hand) => {
+  return getStartingHandRank(hand, HAND_RANKINGS);
+};
+export const getStartingHandRankHeadsup = (hand) => {
+  return getStartingHandRank(hand, HAND_RANKINGS_HEADSUP);
+};
 export const analyzeBoardTexture = (board) => {
   if (!board || board.length < 3) return { type: 'NEUTRAL', score: 0.5 };
 

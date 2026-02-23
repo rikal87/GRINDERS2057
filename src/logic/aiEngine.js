@@ -1,4 +1,4 @@
-import { evaluateHand, getDrawCategory, getStartingHandRank, analyzeBoardTexture, getSimpleHandCategory } from './poker.js';
+import { evaluateHand, getDrawCategory, getStartingHandRank, analyzeBoardTexture, getSimpleHandCategory, getStartingHandRankHeadsup, getStartingHandRank96Max } from './poker.js';
 // import { LLMService } from './llmService.js';
 import { getAIChatDialogue, } from './AIChatSystem.js';
 import { CHAT_TRIGGERS } from './persona.js'
@@ -82,11 +82,20 @@ function getHeuristicFallback(player, engine) {
   const playerIdx = engine.players.findIndex(p => p.id === player.id);
   const dealerIdx = engine.dealerIndex;
   const playerCount = engine.players.length;
+
+  let wtsd = player.class?.WTSD ? player.class.WTSD : 0.5;
+  let raiseThreshold = 100 - (AF * 10);
+  let callThreshold = 50 - (wtsd * 40); // 20이었는데 40으로 올려서 테스트 필요
+  let bluffFreq = Math.max(0, (AF - 2)) * 0.1; // Base bluff freq
+
   // Distance from Button (0 = Button, 1 = CO, ...)
   const distFromButton = (dealerIdx - playerIdx + playerCount) % playerCount; // not care about low level player
   const alivePlayers = engine.players.filter(p => !p.isFolded).length;
   if (street === 'PREFLOP') {
-    handRank = getStartingHandRank(player.hand);
+    // Short stack strategy: Pocket Pair and Big Hand Advantage
+    if (isHighStakes && (player.chips < 30 * engine.bigBlind || alivePlayers <= 2)) handRank = getStartingHandRankHeadsup(player.hand);
+    else handRank = getStartingHandRank96Max(player.hand);
+
     // [vPIP Logic]
     const vPIP = player.class.vPIP || 0.4; // Default 50%
 
@@ -108,11 +117,16 @@ function getHeuristicFallback(player, engine) {
       return { action: 'fold', amount: 0, insight: `vPIP Fold (Rank ${handRank})` };
     }
     // Invert rank for score: 1 (AA) -> 100, 169 (72o) -> 0
-    // Invert rank for score: 1 (AA) -> 99, 169 (72o) -> -69 (clamped to 0)
-    strengthScore = Math.round(Math.max(0, (169 - handRank) / 2));
-    if (handRank <= 5) strengthScore += 25; // Premium bonus
-    if (handRank <= 12) strengthScore += 15; // Strong bonus
-    else if (handRank >= 60) strengthScore -= 25; // Weak penalty
+    strengthScore = Math.round(Math.max(0, (169 - handRank) / 4));
+    if (handRank <= 7) strengthScore += 80; // Premium bonus
+    else if (handRank <= 13) strengthScore += 40; // Strong bonus, but not over play
+    else if (handRank <= 20) strengthScore += 20; // Good bonus
+    else if (handRank <= 33) strengthScore += 10; // Fair bonus
+    else if (handRank <= 80) strengthScore += 5; // Weak bonus // WIDE range
+    if (isHighStakes) {
+      if (distFromButton <= 1) strengthScore += 10; // Button bonus
+      else if (distFromButton <= 3) strengthScore += 5; // MP bonus
+    }
   } else {
     // Postflop
     const evaluation = evaluateHand([...player.hand, ...engine.board]);
@@ -140,10 +154,7 @@ function getHeuristicFallback(player, engine) {
 
   // 2. Establish Contextual Thresholds
   // Adjust requirements based on Bet Size & Street
-  let wtsd = player.class?.WTSD ? player.class.WTSD : 0.5;
-  let raiseThreshold = 100 - (AF * 10);
-  let callThreshold = 50 - (wtsd * 50); // 20이었는데 50으로 올려서 테스트 필요
-  let bluffFreq = Math.max(0, (AF - 2)) * 0.1; // Base bluff freq
+
   const boardAnalysis = analyzeBoardTexture(engine.board);
 
   if (alivePlayers > 2) {

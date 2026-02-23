@@ -546,6 +546,7 @@
   color: #90a0b0;
   font-weight: 700;
   letter-spacing: 0.5px;
+  text-align: left;
 }
 .v5-msg-card.unread .title {
   color: #fff;
