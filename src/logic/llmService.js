@@ -6,7 +6,7 @@ import { evaluateHand, calculateOuts } from './poker.js';
  * Orchestrates prompt construction and neural decision logic via the latest Gemini SDK.
  */
 
-const API_KEY = 'AIzaSyAa0FK7p8nT0XuxC-hVmhnw2FnSrJUd5x8';
+const API_KEY = '[ENCRYPTION_KEY]';
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 // Shared state for the "Neural Processor" to prevent API flooding and manage lockouts
@@ -104,53 +104,6 @@ Minimum raise amount if raising: ${Math.max(engine.currentRoundBet * 2, engine.c
    * Call Gemini for a neural decision with global lockout prevention.
    */
   static async getNeuralDecision(player, engine) {
-    const now = Date.now();
-
-    // 1. Check Global Lockout
-    if (now < globalLockoutUntil) {
-      const remaining = Math.ceil((globalLockoutUntil - now) / 1000);
-      throw new Error(`SHARED_QUOTA_EXCEEDED (Lockout: ${remaining}s)`);
-    }
-
-    // 2. Throttling
-    const timeSinceLast = now - lastRequestTime;
-    if (timeSinceLast < MIN_REQUEST_SPACING) {
-      const wait = MIN_REQUEST_SPACING - timeSinceLast;
-      await new Promise(resolve => setTimeout(resolve, wait));
-    }
-
-    lastRequestTime = Date.now();
-
-    try {
-      const prompt = this.constructPrompt(player, engine);
-
-      // 3. Sequential Execution
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: POKER_DECISION_SCHEMA,
-          safetySettings: [
-            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "OFF" },
-            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "OFF" },
-            { category: "HARM_CATEGORY_HARASSMENT", threshold: "OFF" },
-            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "OFF" },
-          ]
-        }
-      });
-
-      return JSON.parse(response.text);
-    } catch (error) {
-      console.error("[NEURAL_GW_ERR]", error);
-
-      // 4. Rate Limit Response
-      if (error.message?.includes('429')) {
-        console.error("[NEURAL_ERR] SHARED_QUOTA_EXCEEDED. Engaging 65s emergency cooldown.");
-        globalLockoutUntil = Date.now() + 65000;
-      }
-
-      throw error;
-    }
+    throw new Error('LLM Service is disabled for Tauri build.');
   }
 }

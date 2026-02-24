@@ -143,16 +143,33 @@ export const processAiTasks = () => {
     }
     else if (taskState.status === 'ACTIVE') {
       // Ticking duration
-      if (store.gameTime >= taskState.effectEndTime) {
-        taskState.status = 'COOLDOWN';
-        taskState.cooldownEndTime = store.gameTime + (taskDef.cooldown * 60 * 1000);
-        sendMessage('SYSTEM', 'Effect Expired', `${taskDef.name} effect has ended. Cooldown started.`);
+      if (taskDef.type === 'AGENT_WORK') {
+        // Continuous tasks like shadow_work trigger their effects based on probability directly here
+        const baseProb = taskDef.probability || 0.1;
+        // Check probability per minute based on hourly stated probability
+        const probPerMin = 1 - Math.pow(1 - baseProb, 1 / 60);
+        if (Math.random() < probPerMin) {
+          if (taskDef.effect && taskDef.effect.length > 0) {
+            const eff = taskDef.effect[0];
+            if (eff.type === 'add_bankroll') {
+              store.bankroll += eff.amount;
+              sendMessage('SYSTEM', 'Shadow Work Profit', `[${taskDef.name}] Generated ${eff.amount} CR.`);
+            }
+          }
+        }
+      } else {
+        // Normal duration based tasks
+        if (store.gameTime >= taskState.effectEndTime) {
+          taskState.status = 'COOLDOWN';
+          taskState.cooldownEndTime = store.gameTime + (taskDef.cooldown * 60 * 1000);
+          sendMessage('SYSTEM', 'Effect Expired', `${taskDef.name} effect has ended. Cooldown started.`);
 
-        // Remove active boosts associated with this task
-        store.activeBoosts = store.activeBoosts.filter(b => b.taskId !== taskState.taskId);
+          // Remove active boosts associated with this task
+          store.activeBoosts = store.activeBoosts.filter(b => b.taskId !== taskState.taskId);
 
-        if (taskDef.cooldown <= 0) {
-          store.onWorkTasks.splice(i, 1);
+          if (taskDef.cooldown <= 0) {
+            store.onWorkTasks.splice(i, 1);
+          }
         }
       }
     }
@@ -216,6 +233,14 @@ const triggerTaskSuccess = (taskState, taskDef) => {
 
       store.activeBoosts.push(boost);
     });
+  }
+
+  // Auto-remove neighborhood_game on success
+  if (taskDef.id === 'neighborhood_game') {
+    const idx = store.onWorkTasks.findIndex(t => t.taskId === taskDef.id);
+    if (idx !== -1) {
+      store.onWorkTasks.splice(idx, 1);
+    }
   }
 };
 

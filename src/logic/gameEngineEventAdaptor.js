@@ -2,6 +2,7 @@
 import { store, gainBankroll, gainLT } from './store.js';
 import { evaluateHand } from './poker.js';
 import { recoverStamina } from './staminaSystem.js';
+import { zones } from './zone.js';
 export class EventAdaptor {
   updateEquippedEffects() {
 
@@ -63,8 +64,23 @@ export class EventAdaptor {
       }
     }
   }
-  gameWon({ player, prize }) {
+  gameWon({ player, prize, locationId }) {
     console.info('gameWon', player.name, prize);
+    let firstClearReward = null;
+    for (const tier of zones) {
+      const loc = tier.locations.find(l => l.id === locationId);
+      if (loc && loc.firstClearReward) {
+        firstClearReward = loc.firstClearReward;
+        break;
+      }
+    }
+    if (firstClearReward) {
+      if (!store.unlockedLocations) store.unlockedLocations = [];
+      if (!store.unlockedLocations.includes(firstClearReward)) {
+        store.unlockedLocations.push(firstClearReward);
+        console.log(`[GAME] First Clear Reward Awarded: ${firstClearReward}`);
+      }
+    }
   }
   bet({ player, amount, pot, street }) {
     if (player.isMe) {

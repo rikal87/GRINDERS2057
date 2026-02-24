@@ -1,6 +1,7 @@
 import { reactive, watch } from 'vue';
 import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
+import { sendMessage } from './messageSystem';
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const defaultState = {
@@ -8,8 +9,8 @@ const defaultState = {
   chips: 0, // Chips on table
   // currentBB: 0,
   xp: 0,
-  level: 30,
-  selectedClass: 'VANGUARD',
+  level: 99,
+  selectedClass: 'GRINDER',
   ownedProtectors: [], // Array of materialized item objects
   equippedProtector: null, // item object or null
   equippedSkills: [null, null, null], // 3 Slots
@@ -17,6 +18,15 @@ const defaultState = {
   ownedPortraits: ['p1', 'p2', 'p3'],
   selectedPortrait: 'p1',
   boostRegenLT: 0,
+  completedEvents: [],
+  latest_pay_income_base_amount: 0,
+  missedPayments: {
+    rent_bill: 0,
+    income_tax: 0,
+    fine: 0,
+  },
+  isRealGameOver: false,
+  realGameOverReason: '',
   play_stats: {
     bust_enemy: {
       'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
@@ -66,6 +76,7 @@ const defaultState = {
     max_pot: 0,
   },
   settings: {
+    language: 'ko', // Added for i18n
     preflop: [
       { label: 'MIN', type: 'min' },
       { label: '50%', type: 'half' },
@@ -90,7 +101,7 @@ const defaultState = {
     lastUpdate: 0
   },
   unlockedLocations: [], // Array of item IDs that unlock locations
-  ludusTokens: 0,
+  ludusTokens: 50,
   gameTime: new Date('2057-10-20T09:00:00').getTime(), // Start Date
   aiAgent: {
     model: AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD],
@@ -104,7 +115,7 @@ const defaultState = {
   maxStamina: 100,
   staminaLastUpdate: Date.now(),
   statsAtWakeUp: {
-    bankroll: 999999999,
+    bankroll: 20000,
     played_hands: 0,
     total_earn_money: 0n,
     total_lost_money: 0n,
@@ -198,13 +209,14 @@ export const initStore = async () => {
 };
 export const gainBankroll = (amount) => {
   console.log(`[BANKROLL] Gained ${amount} bankroll.`);
-  store.bankroll += Math.ceil(amount);
+  store.bankroll = Math.max(0, store.bankroll + Math.ceil(amount));
 }
 export const initializeBankroll = () => {
   const bonus = store.equippedProtector?.effects?.reduce((sum, e) => (e.id === 'initial_bankroll_bonus') ? sum + e.value : sum, 0.0);
   const initialBankroll = store.level * 1000 * (1.0 + bonus);
   console.log(`[BANKROLL] Initial Bankroll: ${initialBankroll}, ${bonus}`);
-  // gainBankroll(initialBankroll);
+
+  // Base setup
   store.bankroll = Math.ceil(initialBankroll);
 }
 export const saveStore = async () => {

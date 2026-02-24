@@ -195,11 +195,12 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-          }} UNREAD]</small>
+              }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
             <div style="text-align: right;"><button class="sell-btn"
+                :disabled="['SPAM', 'SOCIAL', 'SYSTEM'].includes(selectedMessage.type) === false"
                 @click="deleteMessageBtn(selectedMessage.id)">DELETE</button></div>
             <span class="v5-reader-title">{{ selectedMessage.title }}</span>
             <div class="v5-reader-body">

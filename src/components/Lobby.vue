@@ -608,7 +608,9 @@ const confirmJoin = () => {
   overflow-wrap: break-word;
   margin: 0;
 }
-
+[lang="en"] .location-info .desc {
+  font-size: 1rem;
+}
 
 .npc-list {
   margin-top: auto;

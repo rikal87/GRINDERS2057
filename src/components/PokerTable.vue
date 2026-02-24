@@ -34,7 +34,8 @@
 
       <div class="meta">
         <span class="name">{{ p.name }}</span>
-        <span class="class-tag" v-if="p.isHuman">{{ p.class.name }}</span>
+        <!-- no more need to show class tag -->
+        <!-- <span class="class-tag" v-if="p.isHuman">{{ p.class?.name }}</span> -->
       </div>
       <div class="balance">
         <!-- [MOVED] Protector Badge -->
@@ -225,10 +226,15 @@ watch(() => props.engine.showdownResults, async (newResults) => {
 });
 
 const currentRam = computed(() => {
-  const p = props.engine.players[0];
+  const p = props.engine?.players[0];
+  if (!p || !p.ram) return 0;
   return p.ram.used + p.ram.reserved;
 });
-const ramPercent = computed(() => (currentRam.value / props.engine.players[0].class.maxRam) * 100);
+const ramPercent = computed(() => {
+  const p = props.engine?.players[0];
+  if (!p || !p.class?.maxRam) return 0;
+  return (currentRam.value / p.class.maxRam) * 100;
+});
 
 const getSeatClass = (idx) => {
   // Basic mapping for 6 and 9 player layouts

@@ -3,10 +3,11 @@ import { store } from './store';
 import { consumeStamina } from './staminaSystem';
 import { processAiTasks } from './aiTaskSystem';
 import { sendLoreAndSpamMessage } from './messageSystem';
+import { processEvents } from './eventSystem';
 
 // 1 second real time = 1 minute game time
 const TICKS_PER_SECOND = 1;
-const GAME_MINUTES_PER_TICK = 1;
+export const GAME_MINUTES_PER_TICK = 1;
 
 let timerInterval = null;
 
@@ -19,6 +20,9 @@ export const startTimeSystem = () => {
 
     // Process AI Agent logic (LT regen, Task success check, etc.)
     processAiTasks();
+
+    // Process global storyline / repeating events
+    processEvents();
 
     // 3% chance per game hour (60 game minutes)
     const probPerTick = 0.03 / (60 / GAME_MINUTES_PER_TICK);

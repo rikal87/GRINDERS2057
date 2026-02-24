@@ -8,7 +8,7 @@ import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
 import { gainXP, initializeBankroll, store, saveStore } from './store.js';
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
-import { zones } from './zone.js';
+
 const eventAdaptor = new EventAdaptor();
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -729,26 +729,10 @@ export class GameEngine {
       this.winnerId = 'player';
       this.gameOver = true;
       this.victoryPrize = gainXP(lastSurvior[0], this.bb * 100, this.bb, this.isHighStakes);
+      audioManager.playSFX('clear-table');
       console.log(`[GAME] Victory Prize Awarded: ${this.bb * 100} `);
 
-      let firstClearReward = null;
-      for (const tier of zones) {
-        const loc = tier.locations.find(l => l.id === this.locationId);
-        if (loc && loc.firstClearReward) {
-          firstClearReward = loc.firstClearReward;
-          break;
-        }
-      }
-
-      if (firstClearReward) {
-        if (!store.unlockedLocations) store.unlockedLocations = [];
-        if (!store.unlockedLocations.includes(firstClearReward)) {
-          store.unlockedLocations.push(firstClearReward);
-          console.log(`[GAME] First Clear Reward Awarded: ${firstClearReward}`);
-        }
-      }
-
-      eventAdaptor.gameWon({ player: lastSurvior[0], prize: this.bb * 100, firstClearReward });
+      eventAdaptor.gameWon({ player: lastSurvior[0], prize: this.bb * 100, locationId: this.locationId });
     }
 
     return false;

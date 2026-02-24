@@ -1,8 +1,7 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { store, resetStore, initializeBankroll, saveStore, initStore } from './logic/store';
 import { GameEngine } from './logic/gameEngine';
-import { getAIAction } from './logic/aiEngine.js';
 import Intro from './components/Intro.vue';
 import Splash from './components/Splash.vue';
 import Lobby from './components/Lobby.vue';
@@ -16,12 +15,29 @@ import HistoryPopup from './components/HistoryPopup.vue';
 import { audioManager } from './logic/audioManager';
 import { performSleep, calculateSessionReport } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
+import { hydrateStoreItems } from './logic/items';
 
 // ... imports
 import { startTimeSystem, formatGameTime, formatGameDate, stopTimeSystem } from './logic/timeSystem';
-import { processAiTasks } from './logic/aiTaskSystem';
 // Automated Hand Transition Logic
 import { watch, computed } from 'vue';
+
+const handleQuitApp = async () => {
+  try {
+    saveStore(); // Save before exiting
+    // Dynamically import Tauri only if we are in the Tauri environment
+    if (window.__TAURI_INTERNALS__) {
+      const moduleName = '@tauri-apps/plugin-process';
+      const tau = await import(/* @vite-ignore */ moduleName);
+      await tau.exit(0);
+    } else {
+      console.warn("Running in pure web mode. Cannot close the window automatically.");
+      alert('웹 브라우저에서는 게임을 닫을 수 없습니다.');
+    }
+  } catch (error) {
+    console.warn("Failed to exit properly", error);
+  }
+};
 
 const currentView = ref(''); // splash, intro, lobby, table, shop, home
 const isAppLoading = ref(true);
@@ -52,7 +68,8 @@ onMounted(() => {
   const initializeApp = async () => {
     stopTimeSystem()
     await initStore();
-    startTimeSystem();
+    hydrateStoreItems();
+
     currentView.value = 'splash';
     isAppLoading.value = false;
   };
@@ -73,8 +90,6 @@ const isRebooting = ref(false);
 
 const startReboot = () => {
   if (isRebooting.value) return;
-
-
   isRebooting.value = true;
   rebootProgress.value = 0;
 
@@ -107,6 +122,7 @@ const handleStart = (mode) => {
   audioManager.playSFX('bootup')
   currentView.value = 'lobby';
   audioManager.play();
+  startTimeSystem();
 };
 
 const handleJoinTable = async (payload) => {
@@ -171,11 +187,18 @@ const handleAction = async (payload) => {
     case 'main_menu':
     case 'exit':
       audioManager.playSFX('ui-click');
-      showGameOverOverlay.value = false
-      engine.value.exitGame();
+      showGameOverOverlay.value = false;
+      store.isRealGameOver = false; // Add this to reset game over states if needed
+      engine.value?.exitGame();
       engine.value = null;
       currentView.value = 'lobby';
       saveStore(); // Explicit save on exit
+      break;
+    case 'hard_reset':
+      audioManager.playSFX('ui-click');
+      resetStore().then(() => {
+        window.location.reload();
+      });
       break;
   }
 };
@@ -368,19 +391,33 @@ watch(currentView, (newView) => {
             <Transition name="fade">
               <div v-if="showGameOverOverlay" class="overlay bankruptcy-overlay">
                 <div class="terminal-msg danger">
-                  <!-- <div class="danger-icon">⚠️</div> -->
-                  <h2 class="glitch-text" data-text="CONNECTION TERMINATED">CONNECTION TERMINATED</h2>
+                  <h2 class="glitch-text" data-text="CONNECTION TERMINATED">YOU ARE BANKRUPT</h2>
                   <h2 class="danger-title">BANKRUPTCY DETECTED</h2>
-                  <p class="critical-msg">CRITICAL ERROR: Neural link severed. Assets liquidated.</p>
+                  <p class="critical-msg">Your assets have been liquidated.</p>
                   <div class="action-row">
                     <button class="btn-reboot reboot-btn" @click="handleAction({ type: 'reboot' });">
-                      <span class="btn-glitch">SYSTEM REBOOT</span>
+                      <span class="btn-glitch">GO TO LOBBY</span>
                     </button>
                   </div>
                 </div>
               </div>
             </Transition>
-
+            <!-- Game Over Overlay -->
+            <Transition name="fade">
+              <div v-if="store.isRealGameOver" class="overlay bankruptcy-overlay">
+                <div class="terminal-msg danger">
+                  <!-- <div class="danger-icon">⚠️</div> -->
+                  <h2 class="glitch-text" data-text="CONNECTION TERMINATED">GAME OVER</h2>
+                  <h2 class="danger-title">GAME OVER</h2>
+                  <p class="critical-msg">{{ store.realGameOverReason }}</p>
+                  <div class="action-row">
+                    <button class="btn-reboot reboot-btn" @click="handleAction({ type: 'hard_reset' });">
+                      <span class="btn-glitch">REBOOT SYSTEM</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </Transition>
           </div>
         </section>
       </div>
@@ -395,7 +432,7 @@ watch(currentView, (newView) => {
             <div class="audio-widget-area">
               <AudioPlayer />
             </div>
-            <div class="setting-item">
+            <!-- <div class="setting-item">
               <span class="label">SYSTEM_REBOOT:</span>
               <button class="reboot-hold-btn" @mousedown="startReboot" @touchstart.prevent="startReboot"
                 @mouseup="cancelReboot" @touchend="cancelReboot" @mouseleave="cancelReboot"
@@ -405,7 +442,7 @@ watch(currentView, (newView) => {
                   HOLD BUTTON
                 </span>
               </button>
-            </div>
+            </div> -->
             <!-- Global Actions -->
             <div class="setting-item" v-if="currentView === 'table'">
               <span class="label">SESSION_LINK:</span>
@@ -419,6 +456,12 @@ watch(currentView, (newView) => {
               </button>
             </div>
             <div class="setting-item">
+              <span class="label">LANGUAGE:</span>
+              <button @click="store.settings.language = store.settings.language === 'en' ? 'ko' : 'en'">
+                {{ store.settings.language === 'en' ? 'LANG: EN' : 'LANG: KO' }}
+              </button>
+            </div>
+            <div class="setting-item">
               <span class="label">DISPLAY_UNIT:</span>
               <button @click="store.settings.showAsBB = !store.settings.showAsBB">
                 {{ store.settings.showAsBB ? 'UNIT: BB' : 'UNIT: CR' }}
@@ -427,7 +470,13 @@ watch(currentView, (newView) => {
             <div class="setting-item">
               <span class="label">EXIT_GAME:</span>
               <button @click="handleAction({ type: 'main_menu' }); toggleSettings();">
-                EXIT
+                EXIT TO TITLE
+              </button>
+            </div>
+            <div class="setting-item">
+              <span class="label">QUIT_APP:</span>
+              <button class="btn-danger" @click="handleQuitApp">
+                QUIT GAME
               </button>
             </div>
           </div>

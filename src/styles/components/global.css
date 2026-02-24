@@ -428,7 +428,7 @@ code {
   max-width: 500px;
   /* max-width: 1920px; */
   /* Mobile first default */
-  margin: 0 auto;
+  margin: 50px auto;
   display: flex;
   flex-direction: column;
   position: relative;
