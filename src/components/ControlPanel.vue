@@ -48,7 +48,10 @@
         <button class="btn-raise" :disabled="!isMyTurn || currentBetValue < minRaise"
           @click="$emit('action', { type: currentBetValue >= playerChips ? 'all_in' : 'raise', amount: currentBetValue + player.currentBet })">
           <p>
-            {{ (currentBetValue >= playerChips) ? 'ALL-IN' : (player.hasFacedFlopBet) ? 'RAISE' : 'BET' }}
+            {{ (currentBetValue >= playerChips) ? 'ALL-IN' : (player.hasFacedFlopBet || engine.state ===
+              'PREFLOP') ?
+              'RAISE'
+              : 'BET' }}
           </p>
           <p>{{ formatUnit(currentBetValue) }}</p>
         </button>
@@ -67,8 +70,8 @@
       <div class="permanent-hud">
         <div class="hud-stat" :class="{ 'low-stamina': store.stamina < 25 }">
           <span class="label">STEMINA:</span>
-          <span class="value" :style="{ color: getStaminaColor }">{{ Math.floor(store.stamina) }} / {{ store.maxStamina
-          }}</span>
+          <span class="value" :style="{ color: getStaminaColor }">{{ Math.floor(store.stamina) }} / {{
+            getEffectiveMaxStamina() }}</span>
         </div>
       </div>
       <!-- [MOVED] Protector Badge & Effects HUD -->
@@ -97,7 +100,7 @@
 import { ref, computed, watch } from 'vue';
 import { evaluateHand } from '../logic/poker.js';
 
-import { store } from '../logic/store';
+import { store, getEffectiveMaxStamina } from '../logic/store';
 
 const props = defineProps({
   engine: Object

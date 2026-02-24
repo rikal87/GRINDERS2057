@@ -16,7 +16,7 @@ export const sendMessage = (type, title, body, actions = [], sender = 'System') 
     actions, // [{ label, actionType, payload }]
     expireAt: null // Optional
   };
-
+  audioManager.playSFX('inmessage');
   store.messages.unshift(msg);
 
   // Optional: Play notification sound if not spam
@@ -97,6 +97,7 @@ export const handleMessageAction = (msgId, actionIndex) => {
 
 export const sendLoreAndSpamMessage = () => {
   const loreSpamMessage = getRndLoreSpamMessage();
-  sendMessage(loreSpamMessage.type, loreSpamMessage.title, loreSpamMessage.body, [{ label: 'DEL', actionType: 'DELETE_MESSAGE', payload: {} }]);
+
+  sendMessage(loreSpamMessage.type, loreSpamMessage.title, loreSpamMessage.body, []);
 }
 

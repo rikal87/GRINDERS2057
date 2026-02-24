@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
-import { store, resetStore, initializeBankroll } from './logic/store';
+import { store, resetStore, initializeBankroll, saveStore, initStore } from './logic/store';
 import { GameEngine } from './logic/gameEngine';
 import { getAIAction } from './logic/aiEngine.js';
 import Intro from './components/Intro.vue';
@@ -18,12 +18,13 @@ import { performSleep, calculateSessionReport } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
 
 // ... imports
-import { startTimeSystem, formatGameTime, formatGameDate, advanceTime } from './logic/timeSystem';
+import { startTimeSystem, formatGameTime, formatGameDate, stopTimeSystem } from './logic/timeSystem';
 import { processAiTasks } from './logic/aiTaskSystem';
 // Automated Hand Transition Logic
 import { watch, computed } from 'vue';
 
-const currentView = ref('splash'); // splash, intro, lobby, table, shop, home
+const currentView = ref(''); // splash, intro, lobby, table, shop, home
+const isAppLoading = ref(true);
 const engine = ref(null);
 
 const isSettingsOpen = ref(false);
@@ -47,12 +48,20 @@ onMounted(() => {
   // Global shop refresh check every 10 seconds
   setInterval(checkAutoRefresh, 10000);
 
-  // Start Game Time System
-  startTimeSystem();
+  // Process initStore async
+  const initializeApp = async () => {
+    stopTimeSystem()
+    await initStore();
+    startTimeSystem();
+    currentView.value = 'splash';
+    isAppLoading.value = false;
+  };
 
-  // Process AI Tasks every minute (1 game hour)
+  initializeApp();
+
+  // Background Auto-Save (Fallback for non-poker events)
   setInterval(() => {
-    processAiTasks();
+    saveStore();
   }, 60000);
 });
 
@@ -166,6 +175,7 @@ const handleAction = async (payload) => {
       engine.value.exitGame();
       engine.value = null;
       currentView.value = 'lobby';
+      saveStore(); // Explicit save on exit
       break;
   }
 };
@@ -209,7 +219,7 @@ const wakeUp = () => {
   performSleep()
   showSleepModal.value = false;
   audioManager.playSFX('action-confirm');
-
+  saveStore(); // Save after sleeping
 };
 const handleSkill = (skillId) => {
   if (engine.value.useSkill(engine.value.players[0], skillId)) {
@@ -288,8 +298,10 @@ watch(currentView, (newView) => {
   <div class="app-shell" :class="{ 'in-settings': isSettingsOpen }">
     <div class="scanline-bg"></div>
     <Transition name="fade" mode="out-in" class="layout-container">
+      <div v-if="isAppLoading" class="loading-screen">
+      </div>
       <!-- Settings Overlay -->
-      <div :key="currentView">
+      <div v-else :key="currentView">
         <header v-if="currentView !== 'intro' && currentView !== 'splash'" class="navbar">
           <div class="header-main">
             <div class="row">
@@ -373,6 +385,7 @@ watch(currentView, (newView) => {
         </section>
       </div>
     </Transition>
+    <!-- Settings Overlay -->
     <Transition name="fade" mode="out-in">
       <div v-if="isSettingsOpen" class="overlay settings-overlay">
         <div class="terminal-msg">
@@ -426,7 +439,7 @@ watch(currentView, (newView) => {
     <Transition name="fade">
       <div v-if="showSleepModal" class="v5-modal-overlay sleep-overlay">
         <div class="v5-modal sleep-modal">
-          <div class="">NEURAL_DEFRAGMENTATION_REPORT</div>
+          <div class="">TODAY_SESSION_BENEFITS_REPORT</div>
           <h2 class="glitch-text" data-text="SESSION_ANALYSIS">SESSION_ANALYSIS</h2>
           <div class="console-box" ref="consoleBox">
             <div v-for="(line, idx) in visibleReportLines" :key="idx" class="console-line">

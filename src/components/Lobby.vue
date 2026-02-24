@@ -108,8 +108,8 @@
             <div class="option-group">
               <span class="label">TABLE_SIZE:</span>
               <div class="btn-group">
-                <button :class="{ active: selectedSize === 6 }" @click="selectedSize = 6">6-MAX</button>
-                <button :class="{ active: selectedSize === 9 }" @click="selectedSize = 9">9-MAX</button>
+                <button class="btn" :class="{ active: selectedSize === 6 }" @click="selectedSize = 6">6-MAX</button>
+                <button class="btn" :class="{ active: selectedSize === 9 }" @click="selectedSize = 9">9-MAX</button>
               </div>
             </div>
           </div>
@@ -721,6 +721,13 @@ const confirmJoin = () => {
 .btn-group button {
   padding: 5px 15px;
   font-size: 0.8rem;
+  background-color: #333;
+}
+
+.btn-group button.active {
+  background-color: var(--neon-red);
+  /* color: #000; */
+  /* box-shadow: 0 0 15px var(--neon-cyan); */
 }
 
 .popup-actions {
@@ -744,13 +751,7 @@ const confirmJoin = () => {
   cursor: not-allowed;
 }
 
-.btn-cancel {
-  padding: 15px;
-  background: transparent;
-  border: 1px solid var(--neon-magenta);
-  color: var(--neon-magenta);
-  cursor: pointer;
-}
+
 
 .city-ground::after {
   content: '';

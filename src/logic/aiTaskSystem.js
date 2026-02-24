@@ -76,9 +76,11 @@ export const processAiTasks = () => {
   const planIdx = agent.price_plan_idx;
   const planData = agent.model?.price_plan[planIdx] || { maxLt: 100 };
   const maxLt = planData.maxLt;
+  const regenMultiplier = planData.lt_regen_bonus_rate || 1.0;
+  const probBonus = planData.probability_bonus || 0;
 
   // 1. LT Regeneration (1% of max per hour -> 1/60 % per minute)
-  const regenAmount = maxLt * 0.01 / 60;
+  const regenAmount = (maxLt * 0.01 * regenMultiplier) / 60;
   store.ludusTokens = Math.min(getEffectiveMaxLT(), store.ludusTokens + regenAmount);
 
   // 1.5. Process Risk/Penalty (e.g., SECURITY_DETECTION)
@@ -114,7 +116,8 @@ export const processAiTasks = () => {
         store.ludusTokens -= costPerMin;
 
         // Success Probability scaling (hourly to minutely)
-        let baseProb = 1 - Math.pow(1 - taskDef.probability, 1 / 60);
+        const adjustedHourlyProb = Math.min(1.0, (taskDef.probability || 0) + probBonus);
+        let baseProb = 1 - Math.pow(1 - adjustedHourlyProb, 1 / 60);
 
         // Bad Luck Protection (+1% of base probability per failure minute)
         const blpBonus = (taskState.failureCount || 0) * (baseProb * 0.01);

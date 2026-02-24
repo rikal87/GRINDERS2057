@@ -48,11 +48,11 @@
               </div>
               <div class="v5-xp-text v5-stamina" :class="{ 'low-stamina': store.stamina < 25 }">
                 <span>STEMINA</span>
-                <span>{{ Math.floor(store.stamina) }} / {{ store.maxStamina }}</span>
+                <span>{{ Math.floor(store.stamina) }} / {{ getEffectiveMaxStamina() }}</span>
               </div>
               <div class="v5-progress-track">
                 <div class="v5-progress-fill"
-                  :style="{ width: (store.stamina / store.maxStamina * 100) + '%', backgroundColor: getStaminaColor }">
+                  :style="{ width: (store.stamina / getEffectiveMaxStamina() * 100) + '%', backgroundColor: getStaminaColor }">
                 </div>
               </div>
             </div>
@@ -207,7 +207,7 @@
               <article v-html="selectedMessage.body"></article>
             </div>
             <div class="v5-reader-actions">
-              <button v-for="(act, idx) in selectedMessage.actions" :key="idx" class="v4-btn cyan"
+              <button v-for="(act, idx) in selectedMessage.actions" :key="idx" class="btn"
                 @click="triggerMessageAction(selectedMessage.id, idx)">
                 {{ act.label }}
               </button>
@@ -223,9 +223,6 @@
               </div>
               <div class="title">{{ msg.title }}</div>
             </div>
-
-
-
           </div>
         </div>
       </section>
@@ -234,7 +231,7 @@
     <transition name="v4-fade">
       <div v-if="showAgentModal" class="v5-modal-overlay" @click.self="showAgentModal = false">
         <div class="v5-modal agent-selector">
-          <h2 class="glitch-text" data-text="AGENT_MARKET_ACCESS">AGENT_MARKET_ACCESS</h2>
+          <h2 class="glitch-text">AGENT_DESCRIPTION</h2>
 
           <div class="agent-browser">
             <button class="nav-btn prev" @click="prevAgent" :disabled="currentModelIdx === 0">&lt;</button>
@@ -244,11 +241,9 @@
                 <span class="id-tag">MODEL_ID: {{ selectedModelId }}</span>
                 <h3 class="name">{{ selectedModelId }}</h3>
               </div>
-
-              <div class="agent-visual">
+              <!-- <div class="agent-visual">
                 <span class="icon">🤖</span>
-              </div>
-
+              </div> -->
               <div class="agent-info">
                 <p class="slogan">"{{ AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId]?.slogan }}"</p>
                 <div class="features-box">
@@ -259,7 +254,6 @@
                 </div>
               </div>
             </div>
-
             <button class="nav-btn next" @click="nextAgent"
               :disabled="currentModelIdx === availableModelIds.length - 1">&gt;</button>
           </div>
@@ -278,6 +272,10 @@
                 <div class="plan-stats">
                   <span>LT_MAX: {{ plan.maxLt }}</span>
                   <span>SLOTS: {{ plan.slot.join(', ') }}</span>
+                  <span v-if="plan.probability_bonus" style="color:var(--neon-green)">PROB_BONUS: +{{
+                    (plan.probability_bonus * 100).toFixed(0) }}%</span>
+                  <span v-if="plan.lt_regen_bonus_rate" style="color:var(--neon-cyan)">REGEN_MUL: {{
+                    plan.lt_regen_bonus_rate }}x</span>
                 </div>
                 <div v-if="isCurrentPlan(selectedModelId, idx)" class="status-tag">ACTIVE</div>
               </div>
@@ -285,10 +283,10 @@
           </div>
 
           <div class="modal-actions">
-            <button class="v4-btn cyan" :disabled="!canPurchase" @click="confirmPurchase">
+            <button class="btn" :disabled="!canPurchase" @click="confirmPurchase">
               {{ purchaseBtnText }}
             </button>
-            <button class="v4-btn" @click="showAgentModal = false">CLOSE</button>
+            <button class="btn" @click="showAgentModal = false">CLOSE</button>
           </div>
         </div>
       </div>
@@ -308,13 +306,15 @@
                 <span class="id-tag">TIER_{{ currentTaskDef.tier }} // {{ currentTaskDef.type }}</span>
                 <h3 class="name">{{ currentTaskDef.name }}</h3>
               </div>
-
               <div class="agent-visual">
                 <span class="icon">📜</span>
               </div>
-
               <div class="agent-info">
-                <p class="slogan" v-if="isTaskUnlocked(currentTaskDef)">"{{ currentTaskDef.desc }}"</p>
+                <div v-if="isTaskUnlocked(currentTaskDef)" class="slogan-container">
+                  <p class="slogan" style="white-space: pre-line">{{ currentTaskDef.desc }}</p>
+                  <p class="slogan-detail" style="opacity: 0.7; font-size: 0.9em; margin-top: 8px;">{{
+                    currentTaskDef.desc_detail }}</p>
+                </div>
                 <div v-else class="lock-overlay">
                   <div class="lock-icon">🔒</div>
                   <p class="slogan" style="color:var(--neon-red)">ENCRYPTION_ACTIVE: REQUIREMENT_NOT_MET</p>
@@ -324,28 +324,27 @@
                     {{ currentTaskDef.unlock.count || currentTaskDef.unlock.amount || currentTaskDef.unlock.credit }}
                   </p>
                 </div>
-
                 <div class="features-box" v-if="isTaskUnlocked(currentTaskDef)">
-                  <div class="label">OPERATIONAL_COSTS</div>
+                  <div class="label">EXECUTION_PARAMETERS</div>
                   <ul class="features">
-                    <li v-if="currentTaskDef.isLumpSum">LUMP_SUM: {{ currentTaskDef.cost }} LT</li>
-                    <li v-else>OP_COST: {{ currentTaskDef.costPerTime }} LT/HR</li>
-                    <li>PROBABILITY: {{ (currentTaskDef.probability * 100).toFixed(1) }}%</li>
-                    <li>COOLDOWN: {{ currentTaskDef.cooldown / 60 }} HR</li>
+                    <li>COST/HR: {{ currentTaskDef.cost }} LT</li>
+                    <li v-if="currentTaskDef.duration">DURATION: {{ formatMinutes(currentTaskDef.duration) }}</li>
+                    <li>COOLDOWN: {{ formatMinutes(currentTaskDef.cooldown) }}</li>
+                    <li v-if="currentProbBonus > 0" style="color:var(--neon-green)">SUCCESS_RATE: {{
+                      ((currentTaskDef.probability + currentProbBonus) * 100).toFixed(1) }}% / HR
+                    </li>
                   </ul>
                 </div>
               </div>
             </div>
-
             <button class="nav-btn next" @click="nextTask"
               :disabled="currentTaskIdx === AI_TASK_DATA.length - 1">&gt;</button>
           </div>
-
           <div class="modal-actions">
-            <button class="v4-btn cyan" :disabled="!canStartCurrentTask" @click="initiateTask">
+            <button class="btn cyan" :disabled="!canStartCurrentTask" @click="initiateTask">
               {{ taskInitiateBtnText }}
             </button>
-            <button class="v4-btn" @click="showTaskModal = false">ABORT</button>
+            <button class="btn" @click="showTaskModal = false">ABORT</button>
           </div>
         </div>
       </div>
@@ -429,7 +428,7 @@
           </div>
 
           <div class="modal-actions" style="margin-top:20px">
-            <button @click="showStatsModal = false">CLOSE_REPORT</button>
+            <button @click="showStatsModal = false" class="btn cyan">CLOSE_REPORT</button>
           </div>
         </div>
       </div>
@@ -441,7 +440,7 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import { store, getNextLevelThreshold, getCurrentAgent } from '../logic/store';
+import { store, getNextLevelThreshold, getCurrentAgent, getEffectiveMaxStamina } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
 import { validateTaskSlots, isTaskUnlocked, startTask } from '../logic/aiTaskSystem';
@@ -451,6 +450,18 @@ import { SKILL_DATA, getSlotConfig } from '../logic/skills';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAgentModelClasses';
 import { deleteMessage } from '../logic/messageSystem';
 // import { formatGameTime, formatGameDate } from '../logic/timeSystem';
+
+const formatMinutes = (mins) => {
+  if (!mins) return 'NONE';
+  if (mins >= 1440) {
+    const days = Math.floor(mins / 1440);
+    const remainder = mins % 1440;
+    const hours = Math.floor(remainder / 60);
+    if (hours > 0) return `${days}D ${hours}H`;
+    return `${days}D`;
+  }
+  return `${Math.floor(mins / 60)}H`;
+};
 
 defineEmits(['sleep']);
 const mainTab = ref('hardware');
@@ -462,6 +473,12 @@ const selectedModelId = ref(store.aiAgent.name);
 const selectedPlanIdx = ref(store.aiAgent.price_plan_idx);
 const activeSlotIdx = ref(null);
 const activeSlotType = ref(null);
+
+const currentProbBonus = computed(() => {
+  const agent = store.aiAgent;
+  const planData = agent.model?.price_plan[agent.price_plan_idx];
+  return planData?.probability_bonus || 0;
+});
 
 const availableModelIds = computed(() => Object.keys(AI_AGENT_MODEL_AND_PLAN_DATA));
 const currentModelIdx = computed(() => availableModelIds.value.indexOf(selectedModelId.value));
@@ -513,7 +530,7 @@ const canStartCurrentTask = computed(() => {
   if (!isTaskUnlocked(task)) return false;
 
   // Check LT for lump sum
-  if (task.isLumpSum && store.ludusTokens < task.cost) return false;
+  if (store.ludusTokens < task.cost) return false;
 
   // Check if slot tier is sufficient
   const slot = taskSlots.value[selectedTaskSlotIdx.value];
@@ -534,7 +551,7 @@ const taskInitiateBtnText = computed(() => {
     if (task.tier > slotTier) return `LOW_TIER_MEMORY (REQ T${task.tier})`;
   }
 
-  if (task.isLumpSum && store.ludusTokens < task.cost) return 'INSUFFICIENT_LT';
+  if (store.ludusTokens < task.cost) return 'INSUFFICIENT_LT';
   return 'INITIATE_PROTOCOL';
 });
 

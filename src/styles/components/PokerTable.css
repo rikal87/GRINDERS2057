@@ -42,7 +42,7 @@
 }
 .replay-trigger {
   position: absolute;
-  top: 45px;
+  top: 0px;
   left: 15px;
   display: flex;
   align-items: center;
@@ -284,36 +284,36 @@
 
 @media (min-width: 1400px) {
   .max9.seat-1 {
-    left: 15%;
-    bottom: 8%;
+    left: 20%;
+    bottom: 0;
   }
   .max9.seat-2 {
     left: 5%;
-    bottom: 35%;
+    bottom: 25%;
   }
   .max9.seat-3 {
-    left: 8%;
+    left: 5%;
     top: 20%;
   }
   .max9.seat-4 {
-    left: 32%;
-    top: -5%;
+    left: 25%;
+    top: 0%;
   }
   .max9.seat-5 {
-    right: 32%;
-    top: -5%;
+    top: 0%;
+    right: 25%;
   }
   .max9.seat-6 {
-    right: 8%;
+    right: 5%;
     top: 20%;
   }
   .max9.seat-7 {
     right: 5%;
-    bottom: 35%;
+    bottom: 25%;
   }
   .max9.seat-8 {
-    right: 15%;
-    bottom: 8%;
+    right: 20%;
+    bottom: 0;
   }
 }
 /* Bottom-Right */
@@ -350,6 +350,17 @@
   bottom: 20%;
   right: 0%;
 }
+/* Vertical 2-Max Distribution (Portrait) */
+.max2.seat-bottom {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.max2.seat-top {
+  /* top: 20%; */
+  left: 50%;
+  transform: translateX(-50%);
+}
 /* Mid-Right */
 
 @media (min-width: 1400px) {
@@ -385,7 +396,6 @@
     /* Slimmer curve */
     margin-top: 10px;
   }
-
   .player-seat {
     width: 85px;
     min-height: 85px;
@@ -528,6 +538,13 @@
   .max6.seat-5 {
     bottom: 20%;
     right: 0;
+  }
+  /* Vertical 2-Max Distribution (Portrait) */
+  .max2.seat-bottom {
+    bottom: 0;
+  }
+  .max2.seat-top {
+    top: 25%;
   }
 }
 

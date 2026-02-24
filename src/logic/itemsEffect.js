@@ -221,7 +221,7 @@ export const ITEM_EFFECT_DATA = [
     icon: '⛃',
     id: 'buy_in_multiply',
     name: '바이인 배수',
-    rarity: 'Uncommon',
+    rarity: 'Rare',
     cooldown: 0,
     trigger: ['passive'],
     editable: false,

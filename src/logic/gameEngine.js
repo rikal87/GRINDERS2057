@@ -6,7 +6,7 @@ import { CHAT_TRIGGERS } from './persona.js'
 import { audioManager } from './audioManager.js';
 import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
-import { gainXP, initializeBankroll, store } from './store.js';
+import { gainXP, initializeBankroll, store, saveStore } from './store.js';
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
 import { zones } from './zone.js';
 const eventAdaptor = new EventAdaptor();
@@ -440,10 +440,14 @@ export class GameEngine {
     // [FIX] Show dialogue/insight AFTER delay (Synchronized with Action)
     player.lastDialogue = action.dialogue || action.type.toLocaleUpperCase() + '.';
     player.lastThought = action.insight;
-    setTimeout(() => {
+    if (player.dialogueTimeoutId) {
+      clearTimeout(player.dialogueTimeoutId);
+    }
+    player.dialogueTimeoutId = setTimeout(() => {
       player.lastDialogue = null
       player.lastThought = null
-    }, 2500);
+      player.dialogueTimeoutId = null
+    }, 3000);
 
     // Record Action
     if (this.currentHandHistory && this.currentHandHistory.actions[this.state]) {
@@ -601,25 +605,44 @@ export class GameEngine {
     this.checkBankruptcy();
 
     // [AI CHAT] Showdown Result
-    const winner = result.results.find(r => r.isWinner);
-    if (winner && !winner.isMe) {
-      // AI Won
-      const aiWinner = this.players.find(p => p.id === winner.id);
-      if (aiWinner) {
-        const isHuge = this.pot > (this.bb * 40);
-        chatAI(aiWinner, isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL);
+    const winners = result.results.filter(r => r.isWinner);
+    const isChop = winners.length > 1;
+
+    if (isChop) {
+      // AI Chopper response
+      const aiChoppers = this.players.filter(p => !p.isHuman && !p.isFolded && winners.some(w => w.id === p.id));
+      if (aiChoppers.length > 0) {
+        const chopper = aiChoppers[Math.floor(Math.random() * aiChoppers.length)];
+        chatAI(chopper, CHAT_TRIGGERS.CHOP);
       }
-    } else if (winner && winner.isMe) {
-      // Human Won -> AI Loses (pick one loser to complain)
-      // find origin Player Object
-      const me = this.players.find(p => p.isMe);
-      const gainXPAmount = gainXP(me, currentPot, this.bb, this.isHighStakes, this.locationLV);
-      eventAdaptor.gainXP({ player: me, amount: gainXPAmount, bb: this.bb, isHighStakes: this.isHighStakes, locationLV: this.locationLV });
-      const losers = this.players.filter(p => !p.isHuman && !p.isFolded && !p.isMe);
-      if (losers.length > 0 && Math.random() < 0.5) {
-        const complainer = losers[Math.floor(Math.random() * losers.length)];
-        const isHuge = this.pot > (this.bb * 40);
-        chatAI(complainer, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL);
+      // Human XP
+      const meWinner = winners.find(w => w.isMe);
+      if (meWinner) {
+        const me = this.players.find(p => p.isMe);
+        const gainXPAmount = gainXP(me, currentPot / winners.length, this.bb, this.isHighStakes, this.locationLV);
+        eventAdaptor.gainXP({ player: me, amount: gainXPAmount, bb: this.bb, isHighStakes: this.isHighStakes, locationLV: this.locationLV });
+      }
+    } else if (winners.length === 1) {
+      const winner = winners[0];
+      if (!winner.isMe) {
+        // AI Won
+        const aiWinner = this.players.find(p => p.id === winner.id);
+        if (aiWinner) {
+          const isHuge = this.pot > (this.bb * 40);
+          chatAI(aiWinner, isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL);
+        }
+      } else {
+        // Human Won -> AI Loses (pick one loser to complain)
+        const me = this.players.find(p => p.isMe);
+        const gainXPAmount = gainXP(me, currentPot, this.bb, this.isHighStakes, this.locationLV);
+        eventAdaptor.gainXP({ player: me, amount: gainXPAmount, bb: this.bb, isHighStakes: this.isHighStakes, locationLV: this.locationLV });
+
+        const losers = this.players.filter(p => !p.isHuman && !p.isFolded && !p.isMe);
+        if (losers.length > 0 && Math.random() < 0.5) {
+          const complainer = losers[Math.floor(Math.random() * losers.length)];
+          const isHuge = this.pot > (this.bb * 40);
+          chatAI(complainer, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL);
+        }
       }
     }
     this.potManager.pot = 0;
@@ -640,6 +663,7 @@ export class GameEngine {
     eventAdaptor.roundEnd(this.players, 'ROUND_END');
     let sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000
     await sleep(sleepTime)
+    saveStore(); // Save at the end of every complete hand
     this.startNewHand();
   }
 
@@ -706,13 +730,32 @@ export class GameEngine {
       this.gameOver = true;
       this.victoryPrize = gainXP(lastSurvior[0], this.bb * 100, this.bb, this.isHighStakes);
       console.log(`[GAME] Victory Prize Awarded: ${this.bb * 100} `);
-      eventAdaptor.gameWon({ player: lastSurvior[0], prize: this.bb * 100 });
+
+      let firstClearReward = null;
+      for (const tier of zones) {
+        const loc = tier.locations.find(l => l.id === this.locationId);
+        if (loc && loc.firstClearReward) {
+          firstClearReward = loc.firstClearReward;
+          break;
+        }
+      }
+
+      if (firstClearReward) {
+        if (!store.unlockedLocations) store.unlockedLocations = [];
+        if (!store.unlockedLocations.includes(firstClearReward)) {
+          store.unlockedLocations.push(firstClearReward);
+          console.log(`[GAME] First Clear Reward Awarded: ${firstClearReward}`);
+        }
+      }
+
+      eventAdaptor.gameWon({ player: lastSurvior[0], prize: this.bb * 100, firstClearReward });
     }
 
     return false;
   }
   exitGame() {
     store.bankroll += this.players[0].chips;
+    saveStore();
     this.cleanup();
   }
   processBuyIn(player) {

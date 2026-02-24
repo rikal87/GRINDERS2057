@@ -3,6 +3,8 @@ export const CHAT_TRIGGERS = {
   WIN_HUGE: 'WIN_HUGE', // Pot > 40BB
   WIN_SMALL: 'WIN_SMALL',
   LOSE_HUGE: 'LOSE_HUGE',
+  LOSE_SMALL: 'LOSE_SMALL',
+  CHOP: 'CHOP',
   BLUFF_CAUGHT: 'BLUFF_CAUGHT',
   ALL_IN: 'ALL_IN',
   FOLD: 'FOLD',
@@ -31,6 +33,7 @@ export const CLASSES_ENEMY = [
   { name: 'Nit', philosophy: 'NIT', vPIP: .09, AF: 2.5, WTSD: .35, chipMultiply: 1, maxRam: 150, skills: [], note: '혹시라도 그가 레이즈를 한다면 무조건 도망치세요, AA가 확실합니다.' },
   { name: 'Quant_Pro', philosophy: 'TAP', vPIP: .22, AF: 2, WTSD: .25, chipMultiply: 1.5, maxRam: 150, skills: [], note: '금융권 퀀트 출신이었으나, 지금은 포커에 미쳐버린 친구입니다.' },
   { name: 'Mafia_Boss', philosophy: 'LAG', vPIP: .35, AF: 5, WTSD: .35, chipMultiply: 2, maxRam: 150, skills: [], note: '포커를 "전쟁"으로 생각합니다. 상대가 기권할 때까지 돈과 위압감으로 밀어붙이며, 테이블 전체의 분위기를 공포로 몰아넣는 것을 즐깁니다.' },
+  { name: 'KBT_Leader', philosophy: 'LAG', vPIP: .75, AF: 4, WTSD: .31, chipMultiply: 3.5, maxRam: 150, skills: [], note: 'KBT 조직의 리더이자 헤즈업 경기의 실력자입니다. 그와의 1:1 경기에서 승리할 수 있을까요?' },
   { name: 'The_Whale', philosophy: 'LAP', vPIP: .70, AF: 2, WTSD: .75, chipMultiply: 8, maxRam: 150, skills: [], note: '그에게 칩은 숫자에 불과합니다. 판돈이 커질수록 아드레날린을 느끼며, 지고 있어도 "재미있네"라며 웃으며 칩을 더 던집니다. 사실상 테이블의 스폰서나 다름없습니다.' },
   { name: 'Old_Lion', philosophy: 'TAG', vPIP: .20, AF: 3, WTSD: .25, chipMultiply: 1.2, maxRam: 150, skills: [], note: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.' },
   { name: 'Shark', philosophy: 'TAG', vPIP: .24, AF: 3.5, WTSD: .27, chipMultiply: 1.2, maxRam: 150, skills: [], note: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.' },
@@ -74,6 +77,8 @@ export const PERSONALITIES = {
       "Logic failure. Investigation required.",
       "Variance outside standard deviation."
     ],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Minor loss logged.", "Acceptable variance.", "Suboptimal.", "Deducting from total.", "Recalibrating."],
+    [CHAT_TRIGGERS.CHOP]: ["Equity returned.", "Pot split evenly.", "Stalemate.", "Variables equalized.", "Chop pot detected."],
     [CHAT_TRIGGERS.ALL_IN]: [
       "Calculating equity... All or nothing.",
       "Maximum aggression protocols engaged.",
@@ -160,6 +165,8 @@ export const PERSONALITIES = {
       "YOU GOT LUCKY, PUNK!",
       "THIS GAME HATES ME!"
     ],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Whatever! Next!", "Just a scratch!", "Who cares!", "More action!", "Boring!"],
+    [CHAT_TRIGGERS.CHOP]: ["Split pot? Boring!", "Chop it up!", "Kiss your sister!", "Let's replay it!", "Shared!"],
     [CHAT_TRIGGERS.ALL_IN]: [
       "RIDE OR DIE!",
       "SHOVING IT IN! GOOD LUCK!",
@@ -223,6 +230,8 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_HUGE]: ["Jackpot!", "Dinner is on me!", "Pure skill... and luck!", "Calculated.", "Just like slots!"],
     [CHAT_TRIGGERS.WIN_SMALL]: ["Keeps the lights on.", "Better than losing.", "Small wins add up.", "Nice.", "Decent."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Ouch... that stung.", "Bad beat!", "Unlucky river.", "Variance is cruel.", "I'll get it back."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Next time.", "Can't win em all.", "Small hit.", "Reloading.", "Unlucky."],
+    [CHAT_TRIGGERS.CHOP]: ["Chop chop!", "Split it.", "Everyone wins.. kinda.", "Push.", "Fair enough."],
     [CHAT_TRIGGERS.ALL_IN]: ["One time!", "Here goes nothing!", "Gambol!", "Pushing it all!", "Do you feel lucky?"],
     [CHAT_TRIGGERS.FOLD]: ["No gamble today.", "Too boring.", "Next hand.", "Saving my ammo.", "Fold."],
     [CHAT_TRIGGERS.BET]: ["Pot sweetener.", "Let's build a pot.", "Throwing chips in.", "Action!", "Betting."],
@@ -237,6 +246,8 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_HUGE]: ["Easy eddies.", "Too soft.", "You gonna cry?", "That's my money.", "Business is good."],
     [CHAT_TRIGGERS.WIN_SMALL]: ["Lunch money.", "Mine.", "Pay the tax.", "Weak.", "Better than nothing."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["You're dead meat.", "Watch your back.", "You got lucky, punk.", "I'll remember that.", "This ain't over."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Watch it.", "Keep the change.", "Just a tax.", "Tch.", "You got lucky."],
+    [CHAT_TRIGGERS.CHOP]: ["Halves.", "We share.", "Split it.", "Truce for now.", "Keep your half."],
     [CHAT_TRIGGERS.ALL_IN]: ["All in. You scared?", "Do you bleed?", "Put up or shut up.", "Let's see your guts.", "Die or rich."],
     [CHAT_TRIGGERS.FOLD]: ["Not worth my time.", "Trash.", "Get this garbage out.", "Next.", "Fold."],
     [CHAT_TRIGGERS.BET]: ["Price of living.", "Pay up.", "I'm raising the heat.", "Don't waste my time.", "Chips in."],
@@ -251,6 +262,8 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_HUGE]: ["Yay! I won!", "Did I do good?", "Look at all these!", "So lucky!", "Woohoo!"],
     [CHAT_TRIGGERS.WIN_SMALL]: ["I won something!", "Cool!", "Fun!", "Nice!", "Hehe."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Aww...", "But I had a pair...", "That's mean.", "Why?", "Sad face."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Aww...", "Oops.", "My chips...", "Next hand!", "Oh well."],
+    [CHAT_TRIGGERS.CHOP]: ["We share?", "Yay, a tie!", "Chop!", "Everyone wins!", "Friendly game."],
     [CHAT_TRIGGERS.ALL_IN]: ["Is this good?", "All my chips!", "I like this hand!", "Clicking the button!", "Hope I win!"],
     [CHAT_TRIGGERS.FOLD]: ["I don't like these.", "Folding is boring.", "Bye bye cards.", "No thanks.", "Next please."],
     [CHAT_TRIGGERS.BET]: ["I bet this much.", "Here.", "Chips go in.", "Betting!", "Is this right?"],
@@ -265,6 +278,8 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_HUGE]: ["Rent paid!", "I survived!", "Oh thank god.", "Finally!", "Needed that."],
     [CHAT_TRIGGERS.WIN_SMALL]: ["Breathing room.", "Okay.", "Every bit helps.", "Staying alive.", "Phew."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["No! My rent!", "This is rigged!", "I'm ruined.", "Why me?", "Disaster."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["I can survive this.", "Every chip counts...", "Ouch.", "Still alive.", "Dang."],
+    [CHAT_TRIGGERS.CHOP]: ["A split is fine.", "At least I didn't lose.", "Saved.", "Whew.", "Chop."],
     [CHAT_TRIGGERS.ALL_IN]: ["Desperation shove.", "Please fold.", "Praying...", "Risking it all.", "Do or die."],
     [CHAT_TRIGGERS.FOLD]: ["Can't afford to play.", "Folding junk.", "Too risky.", "Saving chips.", "Pass."],
     [CHAT_TRIGGERS.BET]: ["Scared money.", "Trying to steal.", "Please fold.", "Bet.", "Nervous bet."],
@@ -279,6 +294,8 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_HUGE]: ["More for the pile.", "Too easy.", "Chump change.", "Add it to the collection.", "Classy."],
     [CHAT_TRIGGERS.WIN_SMALL]: ["Peanuts.", "Keep the change.", "Whatever.", "Small fry.", "Incidental."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Touché.", "Well played.", "Meaningless sum.", "I'll buy more.", "Amusing."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Keep the change.", "Meaningless.", "Whatever.", "A tiny tip.", "Don't care."],
+    [CHAT_TRIGGERS.CHOP]: ["Keep your half.", "Boring split.", "Cut it up.", "Next.", "Shared."],
     [CHAT_TRIGGERS.ALL_IN]: ["I can afford it.", "All in.", "Boring regular bet? No, All in.", "Let's see cards.", "Pushing."],
     [CHAT_TRIGGERS.FOLD]: ["Boring hand.", "Not worth my time.", "Fold.", "Next.", "Pass."],
     [CHAT_TRIGGERS.BET]: ["Have some chips.", "Bet.", "A small wager.", "Standard.", "Raising the floor."],
@@ -293,6 +310,8 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_HUGE]: ["Patience pays.", "The nuts.", "Did you have anything?", "Clean win.", "Solid."],
     [CHAT_TRIGGERS.WIN_SMALL]: ["Picking up blinds.", "Standard.", "Low risk.", "Good.", "Safe."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["How did I lose?", "Bad beat.", "He chased.", "Unlucky.", "Cooler."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Standard variance.", "Expected.", "Next hand.", "Minor setback.", "Folded pre next time."],
+    [CHAT_TRIGGERS.CHOP]: ["Split pot.", "Chop.", "Tie.", "Expected value.", "Fair."],
     [CHAT_TRIGGERS.ALL_IN]: ["I have the nuts.", "You're drawing dead.", "Max value.", "Absolute strength.", "All in."],
     [CHAT_TRIGGERS.FOLD]: ["Fold.", "Trash.", "Not playing that.", "Waiting.", "Discipline."],
     [CHAT_TRIGGERS.BET]: ["Value.", "Bet.", "Strong.", "Pay me.", "Betting."],
@@ -307,6 +326,8 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_HUGE]: ["As expected.", "Maximum value extracted.", "Textbook.", "Nice donation.", "Profit."],
     [CHAT_TRIGGERS.WIN_SMALL]: ["Standard variance.", "Chip up.", "Good pot.", "Adding to stack.", "Routine."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Noted.", "Unfortunate runout.", "Bad call.", "Mistake logged.", "Tilt control."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Expected loss.", "Part of the game.", "Moving on.", "Standard.", "Noted."],
+    [CHAT_TRIGGERS.CHOP]: ["Chop.", "Split equity.", "Shared pot.", "Next.", "Tie."],
     [CHAT_TRIGGERS.ALL_IN]: ["The math is correct.", "Positive EV shove.", "Snap call.", "No choice.", "Commit."],
     [CHAT_TRIGGERS.FOLD]: ["Discipline.", "Not profitable.", "Folding garbage.", "Tight is right.", "No value."],
     [CHAT_TRIGGERS.BET]: ["Sizing properly.", "Value bet.", "Blocker bet.", "Extracting.", "Bet."],
@@ -321,6 +342,8 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_HUGE]: ["I hit!", "Got there!", "Lucky card.", "Wow!", "Nice pot."],
     [CHAT_TRIGGERS.WIN_SMALL]: ["I won.", "Cool.", "Nice.", "Yay.", "Chips."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Thought I had you.", "So close.", "Darn.", "Nice hand.", "Missed my draw."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Oh well.", "Nice hand.", "Good hit.", "Lost a bit.", "Oops."],
+    [CHAT_TRIGGERS.CHOP]: ["Chop!", "Tie hand!", "We share!", "Cool.", "Split."],
     [CHAT_TRIGGERS.ALL_IN]: ["I have a pair.", "Maybe it hits.", "I call.", "Let's gamble.", "Hope?"],
     [CHAT_TRIGGERS.FOLD]: ["I guess.", "Fine.", "Fold.", "Don't want to.", "Okay."],
     [CHAT_TRIGGERS.BET]: ["Min bet.", "Clicking buttons.", "Bet.", "Here.", "Chips."],
@@ -359,6 +382,8 @@ export const PERSONALITIES = {
       "Money well spent for the thrill.",
       "Don't spend it all at once, kid!"
     ],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Haha! Keep it!", "Just small blinds!", "Who cares!", "More chips coming!", "Tip for the dealer!"],
+    [CHAT_TRIGGERS.CHOP]: ["Chop it!", "Everyone gets chips!", "Share the wealth!", "Split!", "Fun!"],
     [CHAT_TRIGGERS.ALL_IN]: [
       "All of it! Let's go!",
       "I don't care about the odds!",
@@ -445,6 +470,8 @@ export const PERSONALITIES = {
       "Even lions sleep.",
       "Enjoy it while it lasts."
     ],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Minor setback.", "Good play.", "Small loss.", "Hmph.", "Patience."],
+    [CHAT_TRIGGERS.CHOP]: ["Split it.", "A draw.", "Chop.", "Fair fight.", "Truce."],
     [CHAT_TRIGGERS.ALL_IN]: [
       "I'm committed.",
       "No turning back now.",
@@ -531,6 +558,8 @@ export const PERSONALITIES = {
       "Check the RNG seed.",
       "Suboptimal result."
     ],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Small minus.", "Variance.", "Calculated loss.", "Statistically insignificant.", "Next variable."],
+    [CHAT_TRIGGERS.CHOP]: ["Equity split.", "Chop.", "0 EV transaction.", "Tie.", "Split pot."],
     [CHAT_TRIGGERS.ALL_IN]: [
       "Equity maximization: 100%.",
       "Pot odds justify this.",
@@ -617,6 +646,8 @@ export const PERSONALITIES = {
       "Enjoy it while you breathe.",
       "This isn't over."
     ],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Next time.", "Keep it.", "Just a scratch.", "Don't get used to it.", "Hmph."],
+    [CHAT_TRIGGERS.CHOP]: ["Take your half.", "Split.", "Truce.", "Chop it.", "Halves."],
     [CHAT_TRIGGERS.ALL_IN]: [
       "Stick it to me!",
       "I'm ending you right here.",
@@ -632,7 +663,6 @@ export const PERSONALITIES = {
       "Whatever."
     ],
     [CHAT_TRIGGERS.BET]: [
-      "I will splash the pot whenever the f*** I please.",
       "Bleed for me.",
       "Feeling the pressure?",
       "I bet.",
@@ -653,8 +683,6 @@ export const PERSONALITIES = {
       "I'm watching you."
     ],
     [CHAT_TRIGGERS.CHECK]: [
-      "Check. Check. Check.",
-      "Check.",
       "Make a move.",
       "Waiting.",
       "Your turn."
@@ -674,12 +702,93 @@ export const PERSONALITIES = {
       "Pathetic."
     ]
   },
+  KBT_LEADER: {
+    [CHAT_TRIGGERS.GAME_START]: [
+      "Welcome to my base. Have an oreo.",
+      "Mister... let's play cards.",
+      "If you don't have my money, then you are mine."
+    ],
+    [CHAT_TRIGGERS.WIN_HUGE]: [
+      "It's a joke anyway. After all, I am paying you with your money.",
+      "Just like a young man coming in for a quickie... I feel so unsatisfied.",
+      "Very aggressive. But you have nothing."
+    ],
+    [CHAT_TRIGGERS.WIN_SMALL]: [
+      "A small snack. Mmm... good.",
+      "You're on tilt. I can see it.",
+      "Every chip belongs to me eventually."
+    ],
+    [CHAT_TRIGGERS.LOSE_HUGE]: [
+      "He beat me... straight up.",
+      "Pay that man his money!",
+      "Mister son of a... fine. Take it."
+    ],
+    [CHAT_TRIGGERS.LOSE_SMALL]: [
+      "A minor setback.",
+      "Take it. I don't care.",
+      "You got lucky."
+    ],
+    [CHAT_TRIGGERS.CHOP]: [
+      "Chop it. But don't splash the pot!",
+      "We share. Boring.",
+      "Split the equity. Next hand."
+    ],
+    [CHAT_TRIGGERS.ALL_IN]: [
+      "In my base, I will splash the pot whenever I please!",
+      "All of it. Now.",
+      "Let's see if you have the guts."
+    ],
+    [CHAT_TRIGGERS.FOLD]: [
+      "Lays down a monster... Fine. I pass.",
+      "Not this time.",
+      "Take it."
+    ],
+    [CHAT_TRIGGERS.WAITING]: [
+      "Are we playing cards or what?",
+      "Taking your time, huh?",
+      "Hurry up. I'm getting bored."
+    ],
+    [CHAT_TRIGGERS.BET]: [
+      "I splash the pot.",
+      "Let's make it interesting.",
+    ],
+    [CHAT_TRIGGERS.RAISE]: [
+      "Taking your time, huh?",
+      "I raise. Don't be scared.",
+      "Putting max pressure.",
+      "Are we playing cards or what?!",
+      "I splash the pot.",
+      "Let's make it interesting.",
+    ],
+    [CHAT_TRIGGERS.CALL]: [
+      "I vant him to think that I am pondering a call... but I call.",
+      "I call. Let's see them.",
+      "Very aggressive. I call."
+    ],
+    [CHAT_TRIGGERS.CHECK]: [
+      "Your move, friend.",
+      "Let's see.",
+      "Hurry up. I'm getting bored."
+    ],
+    [CHAT_TRIGGERS.ELIMINATED_SELF]: [
+      "I am empty. You beat me... straight up.",
+      "My base... my money... gone.",
+      "Very well played. I am finished."
+    ],
+    [CHAT_TRIGGERS.ELIMINATED_ENEMY]: [
+      "Get out of my base. Take him away.",
+      "You have no money? Then you are mine.",
+      "Pathetic."
+    ]
+  },
   // --- BOSS PERSONALITIES ---
   IVY_00: {
     [CHAT_TRIGGERS.GAME_START]: ["...", "I am reading your soul.", "Focus.", "Class is in session.", "Do not blink."],
     [CHAT_TRIGGERS.WIN_HUGE]: ["...", "Efficiency.", "As calculated.", "Your tell was obvious.", "Next hand."],
     [CHAT_TRIGGERS.WIN_SMALL]: ["...", "Stack building.", "Standard.", "Expected.", "Mine."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["...", "Interesting line.", "I will adjust.", "Variance.", "Noted."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["...", "Standard.", "Move on.", "Small.", "Variance."],
+    [CHAT_TRIGGERS.CHOP]: ["...", "Chop.", "Split.", "Tie.", "Next."],
     [CHAT_TRIGGERS.ALL_IN]: ["...", "I see your fear.", "Commit.", "Decision made.", "All in."],
     [CHAT_TRIGGERS.FOLD]: ["...", "Fold.", "Not this time.", "Discipline.", "Pass."],
     [CHAT_TRIGGERS.BET]: ["...", "Bet.", "Pressure.", "Sizing.", "Observe."],
@@ -694,6 +803,8 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_HUGE]: ["I KNEW you had that!", "My read was perfect!", "So much fun!", "Scooping!", "Did you see that river?"],
     [CHAT_TRIGGERS.WIN_SMALL]: ["Pots are pots!", "Mining chips.", "Incrementing.", "Nice tiny pot.", "Ill take it."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["Wow! You actually had it?", "Incredible hand!", "You played that well.", "I put you on a bluff!", "That stings!"],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Nice hand.", "Lost a little.", "Gg.", "Oops.", "Next one."],
+    [CHAT_TRIGGERS.CHOP]: ["Chop!", "We share!", "EVERYONE LOVES A CHOP POT!!", "Split pot!", "Nice."],
     [CHAT_TRIGGERS.ALL_IN]: ["I think I'm ahead!", "Let's gamble!", "Do you have Ace King?", "I'm feeling it!", "All the biscuits!"],
     [CHAT_TRIGGERS.FOLD]: ["Foldy foldy.", "Trash.", "Not my cards.", "Saving money.", "Bye bye."],
     [CHAT_TRIGGERS.BET]: ["Just a little bet.", "Poker is fun!", "Betting!", "Action!", "Here comes the bet."],
@@ -708,6 +819,8 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_HUGE]: ["...", "Ships.", "Standard.", "Easy game.", "Nice stack."],
     [CHAT_TRIGGERS.WIN_SMALL]: ["...", "Meh.", "Whatever.", "Chips.", "Take it."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["...", "Wow.", "Sick cooler.", "Rigged?", "Unlucky."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["...", "Whatever.", "Small.", "Next.", "Meh."],
+    [CHAT_TRIGGERS.CHOP]: ["...", "Chop.", "Split.", "Tie.", "Move on."],
     [CHAT_TRIGGERS.ALL_IN]: ["...", "All in.", "Maximum pressure.", "Can you call?", "Shove."],
     [CHAT_TRIGGERS.FOLD]: ["...", "Fold.", "Boring.", "Next.", "Pass."],
     [CHAT_TRIGGERS.BET]: ["..."],
@@ -722,6 +835,8 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.WIN_HUGE]: ["So easy.", "Total domination.", "I own your soul now.", "Wooooo!", "The math doesn't lie."],
     [CHAT_TRIGGERS.WIN_SMALL]: ["Every chip counts.", "Nice.", "I'll take it.", "Standard.", "Good."],
     [CHAT_TRIGGERS.LOSE_HUGE]: ["That is impossible!", "You are so lucky!", "How can you call with that?!", "I am tilting so hard!", "This variance is sick.", "...You have a four?"],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Whatever.", "Small hit.", "I don't care.", "Next.", "Whatever."],
+    [CHAT_TRIGGERS.CHOP]: ["Chop.", "Split.", "Tie.", "Boring.", "Next."],
     [CHAT_TRIGGERS.ALL_IN]: ["I'm all in.", "Let's gamble.", "Do you have the courage?", "I challenge you.", "Time to die."],
     [CHAT_TRIGGERS.FOLD]: ["I fold.", "Boring.", "Next hand.", "Not worth it.", "Trash."],
     [CHAT_TRIGGERS.BET]: ["I bet.", "Pay attention.", "Action.", "I'm betting.", "Price of poker."],
@@ -760,6 +875,8 @@ export const PERSONALITIES = {
       "Whatever, nice hand.",
       "I will remember this leak."
     ],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Small leak.", "Not a big deal.", "Just a bit.", "C'est rién.", "Moving on."],
+    [CHAT_TRIGGERS.CHOP]: ["Split pot.", "Chop it.", "Tie.", "Share.", "Next hand."],
     [CHAT_TRIGGERS.ALL_IN]: [
       "Tapis! All in.",
       "Do you have the courage?",

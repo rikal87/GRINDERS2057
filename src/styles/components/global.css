@@ -107,10 +107,17 @@ a:hover {
 .btn,
 .btn-leave {
   border: none;
-  padding: 10px;
+  padding: 10px 25px;
   cursor: pointer;
   font-family: inherit;
   transition: color 0.2s;
+}
+.btn-cancel {
+  padding: 15px;
+  background: transparent;
+  border: 1px solid var(--neon-magenta);
+  color: var(--neon-magenta);
+  cursor: pointer;
 }
 button {
   background: var(--neon-magenta);

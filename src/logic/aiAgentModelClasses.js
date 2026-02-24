@@ -120,12 +120,12 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
   },
   [AI_AGENT_MODEL_ENUM.AQUARIUS]: {
     slogan: "Deep technical insight. Visionary.",
-    key_features: "Can Access to elite Slot(T6) configurations.",
+    key_features: "Can Access to elite Slot(T6) and high probability bonus.",
     price_plan: [
-      { cost: 35000 * 1.00, maxLt: 800, slot: ['T3', 'T3'] },
-      { cost: 35000 * 1.50, maxLt: 1000, slot: ['T4', 'T4'] },
-      { cost: 35000 * 2.25, maxLt: 1000, slot: ['T5', 'T5'] },
-      { cost: 35000 * 3.00, maxLt: 1000, slot: ['T6', 'T6'] },
+      { cost: 35000 * 1.00, maxLt: 800, slot: ['T3', 'T3'], probability_bonus: 0.01 },
+      { cost: 35000 * 1.50, maxLt: 1000, slot: ['T4', 'T4'], probability_bonus: 0.02 },
+      { cost: 35000 * 2.25, maxLt: 1000, slot: ['T5', 'T5'], probability_bonus: 0.03 },
+      { cost: 35000 * 3.00, maxLt: 1000, slot: ['T6', 'T6'], probability_bonus: 0.04 },
     ]
   },
   [AI_AGENT_MODEL_ENUM.PISCES]: {
@@ -138,13 +138,13 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
       { cost: 40000 * 3.00, maxLt: 500, slot: ['T5', 'T4', 'T3', 'T2'], lt_regen_bonus_rate: 5.0 },
     ]
   },
-  // ELITE TIER?
+  // EXCLUSIVE TIER
   [AI_AGENT_MODEL_ENUM.ZODIAC]: {
     slogan: "THE COMPLETED SYSTEM. DIVINE INTERVENTION.",
     key_features: "Ultimate everything. If you have this, you own the Net.",
     isHidden: true,
     price_plan: [
-      { cost: 200000, maxLt: 2500, slot: ['T6', 'T6', 'T6', 'T6'] }
+      { cost: 200000, maxLt: 2000, slot: ['T6', 'T6', 'T6', 'T6'], probability_bonus: 0.02, lt_regen_bonus_rate: 2.0 }
     ]
   }
 };

@@ -1,4 +1,5 @@
 import { reactive, watch } from 'vue';
+import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 const SAVE_KEY = 'cyberpoker_save_v1';
 
@@ -20,7 +21,7 @@ const defaultState = {
     bust_enemy: {
       'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
       'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'Mafia_Boss': 0,
-      'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0
+      'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0
     },
     // Economy
     paid_rake: 0,
@@ -138,6 +139,13 @@ export const gainLT = (amount) => {
 export const gainShopRefreshCount = (amount = 1) => {
   store.shop.manualRefreshCount = Math.max(0, store.shop.manualRefreshCount + amount);
 }
+export const getEffectiveMaxStamina = () => {
+  const baseMax = store.maxStamina || 100;
+  const activeStaminaBoosts = store.activeBoosts
+    .filter(b => b.effect.type === 'max_stamina_boost')
+    .reduce((sum, b) => sum + (b.effect.amount || 0), 0);
+  return baseMax + activeStaminaBoosts;
+};
 export const gainXP = (player, pot, bb = 1.0, isHighStakes = false, locationLV = 1) => {
   if (!player.isMe) return 0;
   const bbWon = pot / bb;
@@ -174,20 +182,20 @@ export const checkLevelUp = (xp) => {
 export const getNextLevelThreshold = () => {
   return Math.floor(1000 * Math.pow(1.5, store.level - 1));
 }
-const savedData = localStorage.getItem(SAVE_KEY);
 let initialState = { ...defaultState };
-
-if (savedData) {
-  try {
-    const parsed = JSON.parse(savedData, bigIntReviver);
-    // Basic merge: ensure we have all keys from defaultState
-    initialState = { ...defaultState, ...parsed, hasSave: true };
-  } catch (e) {
-    console.error('Failed to parse save data:', e);
-  }
-}
-
 export const store = reactive(initialState);
+
+export const initStore = async () => {
+  try {
+    const savedData = await get(SAVE_KEY);
+    if (savedData) {
+      const parsed = JSON.parse(savedData, bigIntReviver);
+      Object.assign(store, { ...defaultState, ...parsed, hasSave: true });
+    }
+  } catch (e) {
+    console.error('Failed to parse save data from IndexedDB:', e);
+  }
+};
 export const gainBankroll = (amount) => {
   console.log(`[BANKROLL] Gained ${amount} bankroll.`);
   store.bankroll += Math.ceil(amount);
@@ -199,13 +207,13 @@ export const initializeBankroll = () => {
   // gainBankroll(initialBankroll);
   store.bankroll = Math.ceil(initialBankroll);
 }
-watch(store, (newState) => {
-  const dataToSave = { ...newState };
+export const saveStore = async () => {
+  const dataToSave = { ...store };
   delete dataToSave.hasSave; // Don't persist this meta flag
-  localStorage.setItem(SAVE_KEY, JSON.stringify(dataToSave, bigIntReplacer));
-}, { deep: true });
+  await set(SAVE_KEY, JSON.stringify(dataToSave, bigIntReplacer));
+};
 
-export const resetStore = () => {
+export const resetStore = async () => {
   Object.assign(store, { ...defaultState, hasSave: false });
-  localStorage.removeItem(SAVE_KEY);
+  await del(SAVE_KEY);
 };

@@ -8,14 +8,23 @@ import { CHAT_TRIGGERS } from './persona.js'
  * Now delegates Prompt Construction & Schema to LLMService.
  */
 export const chatAI = (player, trigger = CHAT_TRIGGERS.FOLD_WEAK, insight = "", duration = 2500) => {
-  const msg = getAIChatDialogue(trigger.toLocaleUpperCase(), player.name.toUpperCase());
-  console.log(`[AI_CHAT] ${player.name} ${trigger.toLocaleUpperCase()}: ${msg}`);
+  const safeTrigger = trigger || 'FOLD'; // Fallback if undefined
+  const msg = getAIChatDialogue(safeTrigger.toUpperCase(), player.name.toUpperCase());
+  console.log(`[AI_CHAT] ${player.name} ${safeTrigger.toUpperCase()}: ${msg}`);
+
+  if (player.dialogueTimeoutId) {
+    clearTimeout(player.dialogueTimeoutId);
+  }
+
   player.lastDialogue = msg;
   player.lastThought = insight;
-  setTimeout(() => {
+
+  player.dialogueTimeoutId = setTimeout(() => {
     player.lastDialogue = null;
     player.lastThought = null;
+    player.dialogueTimeoutId = null;
   }, duration);
+
   return msg;
 }
 export const getAIAction = (player, engine) => {

@@ -29,7 +29,7 @@
     <div class="player-footer">
       <div class="volume-container">
         <span class="vol-label">VOL:</span>
-        <input type="range" min="0" max="1" step="0.05" v-model="volume" @input="updateVolume" class="volume-slider" />
+        <input class="volume-slider" type="range" min="0" max="1" step="0.05" v-model="volume" @input="updateVolume" />
         <span class="vol-value">{{ Math.round(volume * 100) }}%</span>
       </div>
     </div>
@@ -175,15 +175,18 @@ watch(() => audioManager.volume.value, (newVal) => {
   background: rgba(0, 240, 255, 0.1);
   height: 4px;
   outline: none;
+  border: 1px solid var(--neon-magenta);
 }
 
 .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 12px;
   height: 12px;
-  background: var(--neon-cyan);
   cursor: pointer;
   border-radius: 0;
+  background: var(--neon-magenta) !important;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  box-shadow: 0 0 10px var(--neon-magenta);
 }
 
 .vol-value {

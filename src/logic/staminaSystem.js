@@ -1,4 +1,4 @@
-import { store } from './store';
+import { store, getEffectiveMaxStamina } from './store';
 import { audioManager } from './audioManager';
 
 const DEPOSITION_RATE_IDLE = 2 / 60; // 2 per hour = 2/60 per minute
@@ -11,7 +11,7 @@ export const consumeStamina = (isAtTable = false) => {
 };
 
 export const recoverStamina = (amount) => {
-  store.stamina = Math.min(store.maxStamina, store.stamina + amount);
+  store.stamina = Math.min(getEffectiveMaxStamina(), store.stamina + amount);
 };
 
 export const calculateSessionReport = () => {
@@ -40,11 +40,12 @@ export const calculateSessionReport = () => {
 };
 
 export const performSleep = (advanceTimeFunc) => {
-  const staminaToRecover = store.maxStamina - store.stamina;
+  const maxStaminaVal = getEffectiveMaxStamina();
+  const staminaToRecover = maxStaminaVal - store.stamina;
   const hoursToSkip = staminaToRecover / 10;
 
   // Recovery
-  store.stamina = store.maxStamina;
+  store.stamina = maxStaminaVal;
 
   // Advance time
   if (advanceTimeFunc) {

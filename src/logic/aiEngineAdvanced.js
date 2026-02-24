@@ -638,8 +638,10 @@ function getPostflopAction(player, engine, myPos) {
     if (engine.state === 'RIVER') {
 
       if (category === 'NUTS' || category === 'MONSTER') {
-        const sizeInfo = Math.random() < 0.3 ? 1.2 : 0.8; // Overbet or fat value
-        return { action: 'raise', amount: engine.pot * sizeInfo, insight: `River Value Bomb (${category})` };
+        const baseSizeInfo = Math.random() < 0.3 ? 1.2 : 0.8; // Overbet or fat value
+        const sizeInfo = baseSizeInfo * adjustment.valueBetMultiplier;
+        const note = sizeInfo >= 1.0 ? 'Overbet' : 'Value Bomb';
+        return { action: 'raise', amount: engine.pot * sizeInfo, insight: `River ${note} (${category})` };
       }
       if (category === 'STRONG') {
         // Thin Value or Standard Value
@@ -672,7 +674,9 @@ function getPostflopAction(player, engine, myPos) {
 
     // [FLOP / TURN LOGIC]
     if (['STRONG', 'NUTS', 'MONSTER'].includes(category)) {
-      return { action: 'raise', amount: betSize * 1.1, insight: `Postflop Value (${category})` };
+      const sizeInfo = betSize * 1.1 * adjustment.valueBetMultiplier;
+      const note = sizeInfo >= engine.pot ? 'Exploitative Overbet' : 'Value';
+      return { action: 'raise', amount: sizeInfo, insight: `Postflop ${note} (${category})` };
     }
     if (['DRAW_STRONG', 'DRAW_WEAK'].includes(drawCategory)) {
       const rnd = Math.random()
@@ -802,8 +806,10 @@ function getPostflopAction(player, engine, myPos) {
     // [RIVER] Value Bet & Bluff
     if (engine.state === 'RIVER') {
       if (['NUTS', 'MONSTER', 'STRONG'].includes(category)) {
-        const valSize = (category === 'NUTS' || category === 'MONSTER') ? 0.8 : 0.6;
-        return { action: 'raise', amount: potSize * valSize, insight: `River Value Stab (${category})` };
+        let valSize = (category === 'NUTS' || category === 'MONSTER') ? 0.8 : 0.6;
+        valSize *= adjustment.valueBetMultiplier;
+        const note = valSize >= 1.0 ? 'Exploitative Overbet Stab' : 'Value Stab';
+        return { action: 'raise', amount: potSize * valSize, insight: `River ${note} (${category})` };
       }
       if (['AIR', 'WEAK'].includes(category) || ['AIR', 'DRAW_MONSTER', 'DRAW_STRONG', 'DRAW_WEAK'].includes(drawCategory)) {
         const stabFreq = 0.4 + adjustment.bluffBoost;
@@ -816,7 +822,9 @@ function getPostflopAction(player, engine, myPos) {
     else {
       // If we have value, bet it
       if (['NUTS', 'MONSTER', 'STRONG'].includes(category)) {
-        return { action: 'raise', amount: potSize * 0.6, insight: `Postflop Value Stab (${category})` };
+        const valSize = 0.6 * adjustment.valueBetMultiplier;
+        const note = valSize >= 1.0 ? 'Exploitative Overbet Stab' : 'Value Stab';
+        return { action: 'raise', amount: potSize * valSize, insight: `Postflop ${note} (${category})` };
       }
       // If we have draws, bet for semi-bluff (protection)
       if (['DRAW_STRONG', 'DRAW_WEAK', 'DRAW_MONSTER'].includes(drawCategory)) {
@@ -841,27 +849,34 @@ function getPostflopAction(player, engine, myPos) {
 
 
 function getExploitativeAdjustment(player, stats) {
-  let adj = { bluffBoost: 0, tightMod: 0, callBoost: 0 };
+  let adj = { bluffBoost: 0, tightMod: 0, callBoost: 0, valueBetMultiplier: 1.0 };
 
   // 1. Over-Folder (FoldToFlop > 60%)
   if (stats.foldToFlop > 0.6) {
     adj.bluffBoost += 0.2;
+    adj.valueBetMultiplier = 0.8; // Bet smaller to induce calls
   }
 
   // 2. Calling Station (vPIP > 50%, FoldToFlop < 30%)
   if (stats.vPIP > 0.5 && stats.foldToFlop < 0.3) {
     adj.bluffBoost -= 0.5;
+    adj.valueBetMultiplier = 1.4; // Overbet or fat value vs stations
   }
 
   // 3. High AF (Aggressive) > 3.0
   if (stats.aggressionFactor > 3.0) {
     adj.callBoost += 0.3; // Call wider (Bluff Catch)
+    adj.valueBetMultiplier = 0.9; // Slightly smaller to trap/induce raises
   }
 
   // 4. Low AF (Passive) < 1.0
   if (stats.aggressionFactor < 1.0) {
     adj.callBoost -= 0.3; // Fold more (Respect Strength)
     adj.bluffBoost += 0.1; // Steal from them
+    // If they call but don't raise, we can value bet larger safely
+    if (adj.valueBetMultiplier === 1.0) {
+      adj.valueBetMultiplier = 1.2;
+    }
   }
   console.log('Adjustment:', adj);
   return adj;

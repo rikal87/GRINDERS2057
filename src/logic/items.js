@@ -192,7 +192,7 @@ export const ITEM_DATA = [
     icon: '🆔',
     class: 'Item',
     tier: 'T3',
-    price: 90000,
+    price: 80000,
     isConsumable: true,
     isAccessKey: true,
     desc: '불법으로 위조되었지만, 이제 당당하게 어깨 피고 들어가세요.',
@@ -200,14 +200,14 @@ export const ITEM_DATA = [
   },
   {
     id: 'the_bunker_key',
-    name: '"더 벙커" 열쇠',
+    name: '"더 벙커" 복제 열쇠',
     icon: '🔑',
     class: 'Item',
     tier: 'T4',
     price: 160000,
     isConsumable: true,
     isAccessKey: true,
-    desc: '누군가 버린 쓰레기장에서 목숨 걸고 포커를 치는 낭만적인 시대에 오신 것을 환영합니다.',
+    desc: '원래는 KBT 조직들만 가지고 있는 열쇠인데, 누군가 복제해서 암시장에 팔고 있습니다.',
     effects: [getItemEffect('the_bunker_key')]
   },
   {
@@ -669,16 +669,7 @@ export const ITEM_DATA = [
     desc: '남은 칩이 적을수록 연산 회로가 폭주하며 재생력을 높입니다.',
     effects: [getItemEffect('last_stand'), getItemEffect('blind_discount')]
   },
-  {
-    id: 'loyalists_gold_ring',
-    name: '충성파의 금지환',
-    icon: '💍',
-    class: 'Item',
-    tier: 'T4',
-    price: 154000,
-    desc: '이 반지는 모든 시장에서 통용되는 상징입니다.',
-    effects: [getItemEffect('loyalty_card'), getItemEffect('straight_flush_master')]
-  },
+
   {
     id: 'lucky_cat_gold',
     name: '황금 마네키네코',
@@ -802,6 +793,16 @@ export const ITEM_DATA = [
     effects: [getItemEffect('blind_discount'), getItemEffect('loyalty_card')]
   },
   // --- T5 items (Rare + 2 Random, 200000 - 500000 CR) ---
+  {
+    id: 'black_market_ring',
+    name: '암상인의 반지',
+    icon: '💍',
+    class: 'Item',
+    tier: 'T5',
+    price: 220000,
+    desc: '이 반지는 암시장에서 통용되는 상징입니다.',
+    effects: [getItemEffect('loyalty_card'), getItemEffect('straight_flush_master'), getRndItemBucket]
+  },
   {
     id: 'ancient_pot',
     name: '고대 항아리',

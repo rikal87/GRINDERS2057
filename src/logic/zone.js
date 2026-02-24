@@ -13,12 +13,12 @@ import imgSpecialOrbitLounge from '../assets/image/zone/special_orbit_lounge.png
 import { TRACK_ENUM } from './audioTracks.js';
 export const zones = [
   {
-    "id": "micro",
-    "name": "Micro Stakes",
-    "description": "단순 오락거리를 위해 찾는 곳. 돈을 잃어도 타격이 적어 무모한 플레이가 빈번하지만, 가끔 절박한 플레이어도 존재.",
+    "id": "free",
+    "name": "Free Stakes",
+    "description": "게임의 첫 여정의 시작점.",
     "locations": [
       {
-        "id": "micro_safe_house",
+        "id": "free_safe_house",
         "name": "안전가옥",
         "englishName": "Safe House",
         "imgSrc": null,
@@ -45,7 +45,7 @@ export const zones = [
         'bgMusic': [TRACK_ENUM.BGM_Kinetic, TRACK_ENUM.VelvetShadows, TRACK_ENUM.Nightscape, TRACK_ENUM.DreamVector]
       },
       {
-        "id": "micro_street_shop",
+        "id": "free_street_shop",
         "name": "길거리 상점 뒷편",
         "englishName": "Street Shop Backroom",
         "imgSrc": imgMicroStreetShop,
@@ -62,15 +62,22 @@ export const zones = [
           amount: 1000, amount_fmt: '1K', amount_min_fmt: '500', sb: 5, bb: 10, available: [
             6,
             9
-          ], baseRake: 0.0, rakeCap: 50
+          ], baseRake: 0.00, rakeCap: 50
         },
         "theme": {
           "background": "radial-gradient(circle, #2c2c2c 0%, #1a1a1a 100%)",
           "borderColor": "#555",
           "boxShadow": "0 0 20px rgba(0,0,0,0.8)"
         },
-        'bgMusic': [TRACK_ENUM.Nightscape]
-      },
+        'bgMusic': [TRACK_ENUM.Nightscape, TRACK_ENUM.Placebo]
+      }
+    ]
+  },
+  {
+    "id": "micro",
+    "name": "Micro Stakes",
+    "description": "단순 오락거리를 위해 찾는 곳. 돈을 잃어도 타격이 적어 무모한 플레이가 빈번하지만, 가끔 절박한 플레이어도 존재.",
+    "locations": [
       {
         "id": "micro_warehouse",
         "name": "뒷골목 창고",
@@ -78,6 +85,7 @@ export const zones = [
         "imgSrc": imgMicroWarehouse,
         "description": "버려진 건물의 지하 저장고를 무단 점거하여 운영되는 불법 도박장. 주로 인근 하층민들이나 자극을 찾는 부랑자들이 자주 찾는 곳.",
         "requirements": null,
+        "firstClearReward": "underground_bar_invite",
         "level": 2,
         "npcs": [
           "Fish",
@@ -93,7 +101,7 @@ export const zones = [
           "borderColor": "#8B4513",
           "boxShadow": "0 0 20px rgba(139, 69, 19, 0.3)"
         },
-        'bgMusic': [TRACK_ENUM.Placebo]
+        'bgMusic': [TRACK_ENUM.Nightscape, TRACK_ENUM.Placebo]
       },
       {
         "id": "micro_underground_bar",
@@ -130,10 +138,11 @@ export const zones = [
         "name": "네온 라운지",
         "englishName": "Neon Lounge",
         "imgSrc": imgLowNeonLounge,
-        "description": "트렌드에 민감한 젊은이 들이 퇴근 후 가볍게 한잔하며 즐기는 장소.",
+        "description": "트렌드에 민감한 청년들이 퇴근 후 가볍게 한잔하며 즐기는 장소.",
         "atmosphere": "세련됨, 차분함, 도시적",
         "requirements": null,
         "level": 4,
+        "firstClearReward": "club_membership",
         "npcs": [
           "Fish",
           "MR_CALL",
@@ -163,7 +172,7 @@ export const zones = [
           "Gambler",
           "Gangster"
         ],
-        "tables": { amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 100, bb: 250, available: [6, 9], baseRake: 0.06, rakeCap: 1250 },
+        "tables": { amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 100, bb: 250, available: [6, 9], baseRake: 0.06, rakeCap: 1000 },
         "theme": {
           "background": "radial-gradient(circle, #2e001f 0%, #1a0011 100%)",
           "borderColor": "#ff0080",
@@ -190,7 +199,7 @@ export const zones = [
           "Rich_Guy",
           "Gangster"
         ],
-        "tables": { amount: 50000, amount_fmt: '50K', amount_min_fmt: '25K', sb: 250, bb: 500, available: [6, 9], baseRake: 0.05, rakeCap: 2500 },
+        "tables": { amount: 50000, amount_fmt: '50K', amount_min_fmt: '25K', sb: 250, bb: 500, available: [6, 9], baseRake: 0.06, rakeCap: 5000 },
         "theme": {
           "background": "radial-gradient(circle, #0f2e0f 0%, #051a05 100%)",
           "borderColor": "#2e8b57",
@@ -206,19 +215,20 @@ export const zones = [
     "description": "본격적인 승부사들의 영역. 생계를 걸거나 도약을 준비하는 이들이 모임.",
     "locations": [
       {
-        "id": "middle_underground_casino",
-        "name": "더 벙커",
-        "englishName": "The Bunker",
+        "id": "middle_kbt_base",
+        "name": "KBT 본거지",
+        "englishName": "KBT Base",
         "imgSrc": imgMiddleUndergroundCasino,
-        "description": "버려진 지하 벙커를 개조한 불법 도박장. 금지된 기술 거래가 이루어지는 위험한 장소.",
-        "atmosphere": "기괴함, 공포, 사이버펑크 호러",
-        "requirements": "the_bunker_key",
+        "description": "KBT 조직의 본거지. '더 벙커'의 안쪽에 위치해 있다.",
+        "atmosphere": "긴장감, 위압감",
+        "isHidden": true,
+        "requirements": null,
         "level": 5,
         "npcs": [
-          "Maniac",
-          "Gangster",
+          "KBT_Leader",
         ],
-        "tables": { amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6, 9], baseRake: 0.1, rakeCap: 5000 },
+        "firstClearReward": "the_bunker_key",
+        "tables": { amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6], baseRake: 0.00, rakeCap: 0, isHighStakes: true },
         "theme": {
           "background": "radial-gradient(circle, #1c1c1c 0%, #000000 100%)",
           "borderColor": "#708090",
@@ -226,7 +236,27 @@ export const zones = [
         },
         'bgMusic': [TRACK_ENUM.JourneyToTitan]
       },
-
+      {
+        "id": "middle_underground_casino",
+        "name": "더 벙커",
+        "englishName": "The Bunker",
+        "imgSrc": imgMiddleUndergroundCasino,
+        "description": "버려진 지하 벙커를 개조한 불법 도박장. KBT가 관리하고 있다.",
+        "atmosphere": "기괴함, 공포, 사이버펑크 호러",
+        "requirements": "the_bunker_key",
+        "level": 5,
+        "npcs": [
+          "Maniac",
+          "Gangster",
+        ],
+        "tables": { amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6, 9], baseRake: 0.08, rakeCap: 5000 },
+        "theme": {
+          "background": "radial-gradient(circle, #1c1c1c 0%, #000000 100%)",
+          "borderColor": "#708090",
+          "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
+        },
+        'bgMusic': [TRACK_ENUM.JourneyToTitan]
+      },
       {
         "id": "middle_casino_hotel",
         "name": "카지노 호텔",
@@ -243,7 +273,7 @@ export const zones = [
           "Mafia_Boss",
           "Quant_Pro",
         ],
-        "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1000, bb: 2500, available: [6, 9], baseRake: 0.06, rakeCap: 12500, isHighStakes: true },
+        "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1000, bb: 2500, available: [6, 9], baseRake: 0.06, rakeCap: 25000, isHighStakes: true },
         "theme": {
           "background": "radial-gradient(circle, #001a33 0%, #000a14 100%)",
           "borderColor": "#ffd700",
@@ -265,7 +295,7 @@ export const zones = [
           "Quant_Pro",
           "Shark",
         ],
-        "tables": { amount: 500000, amount_fmt: '500K', amount_min_fmt: '250K', sb: 2500, bb: 5000, available: [6, 9], baseRake: 0.04, rakeCap: 25000, isHighStakes: true },
+        "tables": { amount: 500000, amount_fmt: '500K', amount_min_fmt: '250K', sb: 2500, bb: 5000, available: [6, 9], baseRake: 0.06, rakeCap: 50000, isHighStakes: true },
         "theme": {
           "background": "radial-gradient(circle, #1a2a3a 0%, #0d151d 100%)",
           "borderColor": "#4682b4",
@@ -296,7 +326,7 @@ export const zones = [
           "Old_Lion",
           "Named_Pro",
         ],
-        "tables": { amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.04, rakeCap: 50000, isHighStakes: true },
+        "tables": { amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.05, rakeCap: 50000, isHighStakes: true },
         "theme": {
           "background": "radial-gradient(circle, #3d0000 0%, #1a0000 100%)",
           "borderColor": "#ff4d4d",
@@ -344,7 +374,7 @@ export const zones = [
           "Mafia_Boss",
           "Rich_Guy",
         ],
-        "tables": { amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.06, rakeCap: 250000, isHighStakes: true },
+        "tables": { amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.06, rakeCap: 500000, isHighStakes: true },
         "theme": {
           "background": "radial-gradient(circle, #1a1a1a 0%, #000000 100%)",
           "borderColor": "#ffd700",
@@ -354,7 +384,7 @@ export const zones = [
       },
       {
         "id": "war_of_the_gods",
-        "name": "전설의 전투",
+        "name": "신들의 전쟁",
         "englishName": "War of the Gods",
         "imgSrc": null,
         "description": "진정한 전설들을 초대하였습니다.",
@@ -389,7 +419,7 @@ export const zones = [
         "name": "'투 더 마스' 궤도 라운지",
         "englishName": "The Orbit",
         "imgSrc": imgSpecialOrbitLounge,
-        "description": "지구를 떠나 화성으로 이주한 최상위 권력층들의 이용하는 정거장. 치외법권 구역.",
+        "description": "지구과 화성를 오가는 최상위 권력층들의 잠시 머무는 곳. 치외법권 구역.",
         "atmosphere": "신비로움, 초현실적, 고립감",
         "requirements": "orbit_lounge_network_hacking",
         "level": 10,
