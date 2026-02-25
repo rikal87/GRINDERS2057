@@ -40,7 +40,9 @@
           <div class="label">BLACK_MARKET</div>
           <div class="desc">UNRESTRICTED_ZONE</div>
         </div>
-        <div class="grid-item" @click="$emit('view', 'crypto')" @mouseenter="setMapLocation('EXCHANGE')">
+        <!-- TODO: Need a Crypto Trade rebuild -->
+        <div class="grid-item" :disabled="true" @click="$emit('view', 'crypto')"
+          @mouseenter="setMapLocation('EXCHANGE')">
           <div class="icon">C</div>
           <div class="label">CRYPTO_NEXUS</div>
           <div class="desc">FINANCIAL_DISTRICT</div>
@@ -278,7 +280,8 @@ const confirmJoin = () => {
       bb: table.bb,
       locationId: currentLocation.value.id,
       locationName: currentLocation.value.name,
-      backgroundDescription: currentLocation.value.backgroundDescription
+      backgroundDescription: currentLocation.value.backgroundDescription,
+      buyInLimit: table.buyInLimit
     });
     showSearchPopup.value = false;
   } else {

@@ -82,6 +82,39 @@ export const zones = [
           "boxShadow": "0 0 20px rgba(0,0,0,0.8)"
         },
         'bgMusic': [TRACK_ENUM.Nightscape, TRACK_ENUM.Placebo]
+      },
+      {
+        "id": "free_street_shop_with_max",
+        "name_ko": "길거리 상점 뒷편",
+        "name_en": "Street Shop Backroom",
+        get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+        "imgSrc": imgMicroStreetShop,
+        "isHidden": true,
+        "description_ko": "맥스가 포커를 가르쳐주겠다고 제안했습니다.",
+        "description_en": "Max offered to teach you how to play poker.",
+        get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
+        "atmosphere": "어두움, 가벼운 분위기, 가끔 절박함",
+        "requirements": null,
+        "level": 1,
+        companions: ['Max(Mentor)'],
+        "npcs": [
+          "Fish",
+          "Broke",
+          "MR_CALL"
+        ],
+        "tables": {
+          buyInLimit: 1,
+          amount: 1000, amount_fmt: '1K', amount_min_fmt: '500', sb: 5, bb: 10, available: [
+            6,
+            9
+          ], baseRake: 0.00, rakeCap: 50
+        },
+        "theme": {
+          "background": "radial-gradient(circle, #2c2c2c 0%, #1a1a1a 100%)",
+          "borderColor": "#555",
+          "boxShadow": "0 0 20px rgba(0,0,0,0.8)"
+        },
+        'bgMusic': [TRACK_ENUM.Nightscape, TRACK_ENUM.Placebo]
       }
     ]
   },
@@ -94,6 +127,37 @@ export const zones = [
     "description_en": "A place visited for simple entertainment. Since losing money doesn't hurt much, reckless play is frequent, but occasionally desperate players also exist.",
     get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
     "locations": [
+      {
+        "id": "micro_warehouse_with_max",
+        "name_ko": "뒷골목 창고",
+        "name_en": "Back Alley Warehouse",
+        get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+        "imgSrc": imgMicroWarehouse,
+        "description_ko": "맥스와 함께 뒷골목 창고를 방문하였습니다.",
+        "description_en": "Visited the back alley warehouse with Max.",
+        get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
+        "requirements": null,
+        "isHidden": true,
+        "firstClearReward": "underground_bar_invite",
+        "level": 2,
+        "npcs": [
+          "Fish",
+          "Broke",
+          "Maniac",
+          "Gangster",
+        ],
+        companions: ['Max(Mentor)'],
+        "tables": {
+          buyInLimit: 1,
+          amount: 2500, amount_fmt: '2.5K', amount_min_fmt: '1.25K', sb: 10, bb: 25, available: [6, 9], baseRake: 0.08, rakeCap: 125
+        },
+        "theme": {
+          "background": "radial-gradient(circle, #2a2a2a 0%, #0f0f0f 100%)",
+          "borderColor": "#8B4513",
+          "boxShadow": "0 0 20px rgba(139, 69, 19, 0.3)"
+        },
+        'bgMusic': [TRACK_ENUM.Nightscape, TRACK_ENUM.Placebo]
+      },
       {
         "id": "micro_warehouse",
         "name_ko": "뒷골목 창고",
@@ -185,6 +249,31 @@ export const zones = [
           "boxShadow": "0 0 30px rgba(0, 240, 255, 0.5)"
         },
         'bgMusic': [TRACK_ENUM.Dystopia, TRACK_ENUM.BeThere]
+      },
+      {
+        "id": "low_underground_club_meet_frolence",
+        "name_ko": "H.B.D 클럽",
+        "name_en": "H.B.D Club",
+        get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+        "imgSrc": imgLowUndergroundClub,
+        "description_ko": "한 여성이 갱스터들과 포커를 치고 있다.",
+        "description_en": "A woman is playing poker with gangsters.",
+        get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
+        "atmosphere": "시끄러움, 혼란스러움, 들뜸",
+        "requirements": null,
+        // "isHidden": true,
+        "level": 5,
+        "npcs": [
+          "Gangster"
+        ],
+        companions: ['Max', 'Florence'],
+        "tables": { amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 100, bb: 250, available: [6, 9], baseRake: 0.06, rakeCap: 1000 },
+        "theme": {
+          "background": "radial-gradient(circle, #2e001f 0%, #1a0011 100%)",
+          "borderColor": "#ff0080",
+          "boxShadow": "0 0 30px rgba(255, 0, 128, 0.6)"
+        },
+        'bgMusic': [TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
       },
       {
         "id": "low_underground_club",

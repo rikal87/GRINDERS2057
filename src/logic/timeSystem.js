@@ -71,5 +71,6 @@ export const advanceTime = (hours) => {
   for (let i = 0; i < ticksToSimulate; i++) {
     store.gameTime += 60 * 1000;
     processAiTasks();
+    processEvents();
   }
 };

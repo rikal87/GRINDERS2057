@@ -293,63 +293,7 @@
       </div>
     </transition>
 
-    <!-- TASK SELECTOR MODAL -->
-    <transition name="v4-fade">
-      <div v-if="showTaskModal" class="v5-modal-overlay" @click.self="showTaskModal = false">
-        <div class="v5-modal agent-selector">
-          <h2 class="glitch-text" data-text="TASK_PROTOCOL_ASSIGNMENT">TASK_PROTOCOL_ASSIGNMENT</h2>
 
-          <div class="agent-browser">
-            <button class="nav-btn prev" @click="prevTask" :disabled="currentTaskIdx === 0">&lt;</button>
-
-            <div class="agent-display" :class="{ locked: !isTaskUnlocked(currentTaskDef) }">
-              <div class="agent-header">
-                <span class="id-tag">TIER_{{ currentTaskDef.tier }} // {{ currentTaskDef.type }}</span>
-                <h3 class="name">{{ currentTaskDef.name }}</h3>
-              </div>
-              <div class="agent-visual">
-                <span class="icon">📜</span>
-              </div>
-              <div class="agent-info">
-                <div v-if="isTaskUnlocked(currentTaskDef)" class="slogan-container">
-                  <p class="slogan" style="white-space: pre-line">{{ currentTaskDef.desc }}</p>
-                  <p class="slogan-detail" style="opacity: 0.7; font-size: 0.9em; margin-top: 8px;">{{
-                    currentTaskDef.desc_detail }}</p>
-                </div>
-                <div v-else class="lock-overlay">
-                  <div class="lock-icon">🔒</div>
-                  <p class="slogan" style="color:var(--neon-red)">ENCRYPTION_ACTIVE: REQUIREMENT_NOT_MET</p>
-                  <p class="requirement" v-if="currentTaskDef.unlock">
-                    NEED: {{ currentTaskDef.unlock.type }}
-                    <span v-if="currentTaskDef.unlock.id">[{{ currentTaskDef.unlock.id }}]</span>
-                    {{ currentTaskDef.unlock.count || currentTaskDef.unlock.amount || currentTaskDef.unlock.credit }}
-                  </p>
-                </div>
-                <div class="features-box" v-if="isTaskUnlocked(currentTaskDef)">
-                  <div class="label">EXECUTION_PARAMETERS</div>
-                  <ul class="features">
-                    <li>COST/HR: {{ currentTaskDef.cost }} LT</li>
-                    <li v-if="currentTaskDef.duration">DURATION: {{ formatMinutes(currentTaskDef.duration) }}</li>
-                    <li>COOLDOWN: {{ formatMinutes(currentTaskDef.cooldown) }}</li>
-                    <li v-if="currentProbBonus > 0" style="color:var(--neon-green)">SUCCESS_RATE: {{
-                      ((currentTaskDef.probability + currentProbBonus) * 100).toFixed(1) }}% / HR
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <button class="nav-btn next" @click="nextTask"
-              :disabled="currentTaskIdx === AI_TASK_DATA.length - 1">&gt;</button>
-          </div>
-          <div class="modal-actions">
-            <button class="btn cyan" :disabled="!canStartCurrentTask" @click="initiateTask">
-              {{ taskInitiateBtnText }}
-            </button>
-            <button class="btn" @click="showTaskModal = false">ABORT</button>
-          </div>
-        </div>
-      </div>
-    </transition>
 
     <!-- SKILL SELECTOR MODAL -->
     <transition name="v4-fade">
@@ -444,7 +388,7 @@ import { computed, ref } from 'vue';
 import { store, getNextLevelThreshold, getCurrentAgent, getEffectiveMaxStamina } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
-import { validateTaskSlots, isTaskUnlocked, startTask } from '../logic/aiTaskSystem';
+import { validateTaskSlots } from '../logic/aiTaskSystem';
 import { AI_TASK_DATA } from '../logic/agentTaskData';
 import { audioManager } from '../logic/audioManager';
 import { SKILL_DATA, getSlotConfig } from '../logic/skills';
@@ -452,19 +396,7 @@ import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAg
 import { deleteMessage } from '../logic/messageSystem';
 // import { formatGameTime, formatGameDate } from '../logic/timeSystem';
 
-const formatMinutes = (mins) => {
-  if (!mins) return 'NONE';
-  if (mins >= 1440) {
-    const days = Math.floor(mins / 1440);
-    const remainder = mins % 1440;
-    const hours = Math.floor(remainder / 60);
-    if (hours > 0) return `${days}D ${hours}H`;
-    return `${days}D`;
-  }
-  return `${Math.floor(mins / 60)}H`;
-};
-
-defineEmits(['sleep']);
+const emit = defineEmits(['sleep', 'back', 'open-task-selector']);
 const mainTab = ref('hardware');
 const selectedMessage = ref(null);
 const showSkillSelector = ref(false);
@@ -501,69 +433,11 @@ const prevAgent = () => {
 };
 
 // Task Selector Logic
-const showTaskModal = ref(false);
-const currentTaskIdx = ref(0);
-const currentTaskDef = computed(() => AI_TASK_DATA[currentTaskIdx.value]);
-const selectedTaskSlotIdx = ref(-1);
-
 const openTaskSelector = (idx) => {
-  selectedTaskSlotIdx.value = idx;
-  showTaskModal.value = true;
-  audioManager.playSFX('ui-click');
+  emit('open-task-selector', idx);
 };
 
-const nextTask = () => {
-  if (currentTaskIdx.value < AI_TASK_DATA.length - 1) {
-    currentTaskIdx.value++;
-    audioManager.playSFX('ui-click');
-  }
-};
 
-const prevTask = () => {
-  if (currentTaskIdx.value > 0) {
-    currentTaskIdx.value--;
-    audioManager.playSFX('ui-click');
-  }
-};
-
-const canStartCurrentTask = computed(() => {
-  const task = currentTaskDef.value;
-  if (!isTaskUnlocked(task)) return false;
-
-  // Check LT for lump sum
-  if (store.ludusTokens < task.cost) return false;
-
-  // Check if slot tier is sufficient
-  const slot = taskSlots.value[selectedTaskSlotIdx.value];
-  if (!slot) return false;
-  const slotTier = parseInt(slot.tier.substring(1));
-  if (task.tier > slotTier) return false;
-
-  return true;
-});
-
-const taskInitiateBtnText = computed(() => {
-  const task = currentTaskDef.value;
-  if (!isTaskUnlocked(task)) return 'REQUIREMENT_NOT_MET';
-
-  const slot = taskSlots.value[selectedTaskSlotIdx.value];
-  if (slot) {
-    const slotTier = parseInt(slot.tier.substring(1));
-    if (task.tier > slotTier) return `LOW_TIER_MEMORY (REQ T${task.tier})`;
-  }
-
-  if (store.ludusTokens < task.cost) return 'INSUFFICIENT_LT';
-  return 'INITIATE_PROTOCOL';
-});
-
-const initiateTask = () => {
-  if (startTask(currentTaskDef.value.id)) {
-    showTaskModal.value = false;
-    audioManager.playSFX('action-confirm');
-  } else {
-    audioManager.playSFX('ui-error');
-  }
-};
 
 // Long press logic
 const longPressIdx = ref(-1);

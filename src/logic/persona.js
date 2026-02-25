@@ -14,7 +14,21 @@ export const CHAT_TRIGGERS = {
   CALL: 'CALL',
   CHECK: 'CHECK',
   ELIMINATED_SELF: 'ELIMINATED_SELF',
-  ELIMINATED_ENEMY: 'ELIMINATED_ENEMY'
+  ELIMINATED_ENEMY: 'ELIMINATED_ENEMY',
+  // CHAT_TRIGGERS
+  WIN_HUGE_FOR_PLAYER: 'WIN_HUGE_FOR_PLAYER',
+  LOSE_HUGE_FOR_PLAYER: 'LOSE_HUGE_FOR_PLAYER',
+  WIN_SMALL_FOR_PLAYER: 'WIN_SMALL_FOR_PLAYER',
+  LOSE_SMALL_FOR_PLAYER: 'LOSE_SMALL_FOR_PLAYER',
+  ALL_IN_FOR_PLAYER: 'ALL_IN_FOR_PLAYER',
+  FOLD_FOR_PLAYER: 'FOLD_FOR_PLAYER',
+  WAITING_FOR_PLAYER: 'WAITING_FOR_PLAYER',
+  RAISE_SMALL_FOR_PLAYER: 'RAISE_SMALL_FOR_PLAYER',
+  RAISE_MEDIUM_FOR_PLAYER: 'RAISE_MEDIUM_FOR_PLAYER',
+  RAISE_BIG_FOR_PLAYER: 'RAISE_BIG_FOR_PLAYER',
+  CALL_FOR_PLAYER: 'CALL_FOR_PLAYER',
+  CHECK_FOR_PLAYER: 'CHECK_FOR_PLAYER',
+  BLUFF_CAUGHT_FOR_PLAYER: 'BLUFF_CAUGHT_FOR_PLAYER',
 };
 export const CLASSES = {
   VANGUARD: { name: 'Vanguard', philosophy: 'TAG', AF: 3, maxRam: 100, skills: [{ id: 'hud', name: 'HUD', cost: 20, reserved: true }] },
@@ -22,29 +36,39 @@ export const CLASSES = {
   HIJACK: { name: 'Hijack', philosophy: 'Cheater', AF: 2, maxRam: 80, skills: [{ id: 'swap', name: 'Swap', cost: 50 }] },
   MANIAC: { name: 'Maniac', philosophy: 'LAG', AF: 4, maxRam: 150, skills: [{ id: 'pressure', name: 'Push', cost: 20 }] },
 };
+// export 
+export const CLASSES_COMPANION = [
+  { name: 'Max', philosophy: 'LAG', vPIP: .36, AF: 3, WTSD: .3, chipMultiply: 1.2, isCompanion: true, note: '미국 텍사스 출신인 37세 남성 백인입니다. 주인공의 오랜 친구로, 약간은 다혈질이긴 하나, 정이 많고 실력은 나쁘지 않습니다.' },
+  { name: 'Max(Mentor)', philosophy: 'LAG', vPIP: .36, AF: 3.5, WTSD: .3, chipMultiply: 1.2, isCompanion: true, note: '맥스가 당신에게 포커가 무었인지 가르쳐주고 있습니다!' },
+  { name: 'Florence', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, chipMultiply: 1.1, isCompanion: true, note: '미국 라스베가스 출신인 35세 여성 백인입니다, 주인공과 low_underground_club에서 처음 만나게 되었습니다. 다소 냉소적이지만 매력적이고 똑똑하며, 포커 실력도 준수합니다.' },
+];
 export const CLASSES_ENEMY = [
-  { name: 'MR_CALL', philosophy: 'LAP', vPIP: .90, AF: 0.5, WTSD: .7, chipMultiply: 1, maxRam: 150, skills: [], note: '무슨 패를 들었든 일단 카드를 다 봐야 직성이 풀리는 스타일입니다.' },
-  { name: 'Fish', philosophy: 'LAP', vPIP: .75, AF: 1, WTSD: .25, chipMultiply: 1, maxRam: 150, skills: [], note: '판돈을 불리는 데는 일등 공신이지만, 막상 끝까지 가는 배짱은 없어서 정교한 블러핑 한 방이면 칩을 고스란히 헌납할 겁니다.' },
-  { name: 'Broke', philosophy: 'LAP', vPIP: .6, AF: 2, WTSD: .45, chipMultiply: 0.5, maxRam: 150, skills: [], note: '내일이 없는 친구입니다. 리버에 기적이 일어나길 빌며 모든 걸 걸었다가, 결국 오늘도 빈털터리로 돌아갑니다' },
-  { name: 'Gambler', philosophy: 'LAG', vPIP: .5, AF: 3, WTSD: .5, chipMultiply: 1, maxRam: 150, skills: [], note: '인생은 한 방, 승부처라면 쓰레기 같은 패로도 풀 배팅을 지르는 스타일입니다.' },
-  { name: 'Maniac', philosophy: 'LAG', vPIP: .7, AF: 6, WTSD: .55, chipMultiply: 1, maxRam: 150, skills: [], note: '팟을 개판으로 만드는 주범입니다. 정말 미친놈 같습니다..' },
-  { name: 'Rich_Guy', philosophy: 'LAP', vPIP: .6, AF: 1.5, WTSD: .6, chipMultiply: 3, maxRam: 150, skills: [], note: '기업의 꽤 높은 분이거나 운 좋게 코인 대박이 터진 부자입니다.' },
-  { name: 'Gangster', philosophy: 'TAG', vPIP: .38, AF: 4, WTSD: .44, chipMultiply: 1, maxRam: 150, skills: [], note: '눈에 힘주고 베팅하는 게 버릇입니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.' },
-  { name: 'Nit', philosophy: 'NIT', vPIP: .09, AF: 2.5, WTSD: .35, chipMultiply: 1, maxRam: 150, skills: [], note: '혹시라도 그가 레이즈를 한다면 무조건 도망치세요, AA가 확실합니다.' },
-  { name: 'Quant_Pro', philosophy: 'TAP', vPIP: .22, AF: 2, WTSD: .25, chipMultiply: 1.5, maxRam: 150, skills: [], note: '금융권 퀀트 출신이었으나, 지금은 포커에 미쳐버린 친구입니다.' },
-  { name: 'Mafia_Boss', philosophy: 'LAG', vPIP: .35, AF: 5, WTSD: .35, chipMultiply: 2, maxRam: 150, skills: [], note: '포커를 "전쟁"으로 생각합니다. 상대가 기권할 때까지 돈과 위압감으로 밀어붙이며, 테이블 전체의 분위기를 공포로 몰아넣는 것을 즐깁니다.' },
-  { name: 'KBT_Leader', philosophy: 'LAG', vPIP: .75, AF: 4, WTSD: .31, chipMultiply: 3.5, maxRam: 150, skills: [], note: 'KBT 조직의 리더이자 헤즈업 경기의 실력자입니다. 그와의 1:1 경기에서 승리할 수 있을까요?' },
-  { name: 'The_Whale', philosophy: 'LAP', vPIP: .70, AF: 2, WTSD: .75, chipMultiply: 8, maxRam: 150, skills: [], note: '그에게 칩은 숫자에 불과합니다. 판돈이 커질수록 아드레날린을 느끼며, 지고 있어도 "재미있네"라며 웃으며 칩을 더 던집니다. 사실상 테이블의 스폰서나 다름없습니다.' },
-  { name: 'Old_Lion', philosophy: 'TAG', vPIP: .20, AF: 3, WTSD: .25, chipMultiply: 1.2, maxRam: 150, skills: [], note: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.' },
-  { name: 'Shark', philosophy: 'TAG', vPIP: .24, AF: 3.5, WTSD: .27, chipMultiply: 1.2, maxRam: 150, skills: [], note: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.' },
+  { name: 'MR_CALL', philosophy: 'LAP', vPIP: .90, AF: 0.5, WTSD: .7, chipMultiply: 1, note: '무슨 패를 들었든 일단 카드를 다 봐야 직성이 풀리는 스타일입니다.' },
+  { name: 'Fish', philosophy: 'LAP', vPIP: .75, AF: 1, WTSD: .25, chipMultiply: 1, note: '판돈을 불리는 데는 일등 공신이지만, 막상 끝까지 가는 배짱은 없어서 정교한 블러핑 한 방이면 칩을 고스란히 헌납할 겁니다.' },
+  { name: 'Broke', philosophy: 'LAP', vPIP: .6, AF: 2, WTSD: .45, chipMultiply: 0.5, note: '내일이 없는 친구입니다. 리버에 기적이 일어나길 빌며 모든 걸 걸었다가, 결국 오늘도 빈털터리로 돌아갑니다' },
+  { name: 'Gambler', philosophy: 'LAG', vPIP: .5, AF: 3, WTSD: .5, chipMultiply: 1, note: '인생은 한 방, 승부처라면 쓰레기 같은 패로도 풀 배팅을 지르는 스타일입니다.' },
+  { name: 'Maniac', philosophy: 'LAG', vPIP: .7, AF: 6, WTSD: .55, chipMultiply: 1, note: '팟을 개판으로 만드는 주범입니다. 정말 미친놈 같습니다..' },
+  { name: 'Rich_Guy', philosophy: 'LAP', vPIP: .6, AF: 1.5, WTSD: .6, chipMultiply: 3, note: '기업의 꽤 높은 분이거나 운 좋게 코인 대박이 터진 부자입니다.' },
+  { name: 'Gangster', philosophy: 'TAG', vPIP: .38, AF: 4, WTSD: .44, chipMultiply: 1, note: '눈에 힘주고 베팅하는 게 버릇입니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.' },
+  { name: 'Nit', philosophy: 'NIT', vPIP: .09, AF: 2.5, WTSD: .35, chipMultiply: 1, note: '혹시라도 그가 레이즈를 한다면 무조건 도망치세요, AA가 확실합니다.' },
+  { name: 'Quant_Pro', philosophy: 'TAP', vPIP: .22, AF: 2, WTSD: .25, chipMultiply: 1.5, note: '금융권 퀀트 출신이었으나, 지금은 포커에 미쳐버린 친구입니다.' },
+  { name: 'Mafia_Boss', philosophy: 'LAG', vPIP: .35, AF: 5, WTSD: .35, chipMultiply: 2, note: '포커를 "전쟁"으로 생각합니다. 상대가 기권할 때까지 돈과 위압감으로 밀어붙이며, 테이블 전체의 분위기를 공포로 몰아넣는 것을 즐깁니다.' },
+  { name: 'KBT_Leader', philosophy: 'LAG', vPIP: .75, AF: 4, WTSD: .31, chipMultiply: 3.5, note: 'KBT 조직의 리더이자 헤즈업 경기의 실력자입니다. 그와의 1:1 경기에서 승리할 수 있을까요?' },
+  { name: 'The_Whale', philosophy: 'LAP', vPIP: .70, AF: 2, WTSD: .75, chipMultiply: 8, note: '그에게 칩은 숫자에 불과합니다. 판돈이 커질수록 아드레날린을 느끼며, 지고 있어도 "재미있네"라며 웃으며 칩을 더 던집니다. 사실상 테이블의 스폰서나 다름없습니다.' },
+  { name: 'Old_Lion', philosophy: 'TAG', vPIP: .20, AF: 3, WTSD: .25, chipMultiply: 1.2, note: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.' },
+  { name: 'Shark', philosophy: 'TAG', vPIP: .24, AF: 3.5, WTSD: .27, chipMultiply: 1.2, note: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.' },
+  // { name: 'Max', philosophy: 'LAG', vPIP: .36, AF: 3, WTSD: .3, chipMultiply: 1.2, isCompanion: true, note: '미국 텍사스 출신인 37세 남성 백인입니다. 주인공의 오랜 친구로, 약간은 다혈질이긴 하나, 정이 많고 실력은 나쁘지 않습니다.' },
+  // { name: 'Max(Mentor)', philosophy: 'LAG', vPIP: .36, AF: 3, WTSD: .3, chipMultiply: 1.2, isCompanion: true, note: '맥스가 당신에게 포커가 무었인지 가르쳐주고 있습니다!' },
+  { name: 'Strange_Woman', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, chipMultiply: 1.1, note: '험악한 갱스터들 사이에서 포커를 치고 있는 여성입니다.' },
+  // { name: 'Florence', philosophy: 'TAG', vPIP: .25, AF: 2.5, WTSD: .27, chipMultiply: 1.1, isCompanion: true, note: '미국 라스베가스 출신인 35세 여성 백인입니다, 주인공과 low_underground_club에서 처음 만나게 되었습니다. 다소 냉소적이지만 매력적이고 똑똑하며, 포커 실력도 준수합니다.' },
   { name: 'Named_Pro', note: '이곳에선 전설적인 플레이어를 만날 가능성이있습니다.' },
 ];
 export const CLASSES_ENEMY_BOSS = [
-  { name: 'IVY_00', philosophy: 'TAG', vPIP: .27, AF: 3.5, WTSD: .27, chipMultiply: 2, maxRam: 150, skills: [], isBoss: true, note: '균형잡힌, 그리고 전설적인 포커 플레이어입니다.' },
-  { name: 'D_NEURAL', philosophy: 'LAG', vPIP: .34, AF: 2.7, WTSD: .26, chipMultiply: 2, maxRam: 150, skills: [], isBoss: true, note: '유쾌하며 상대방의 핸드리딩 실력이 정말 좋습니다.' },
-  { name: 'D.W.A.N_V2', philosophy: 'LAG', vPIP: .33, AF: 4.2, WTSD: .30, chipMultiply: 2, maxRam: 150, skills: [], isBoss: true, note: '매우 공격적인 프로 포커 플레이어입니다.' },
-  { name: 'JNGL_MAN', philosophy: 'TAG', vPIP: .30, AF: 3.3, WTSD: .31, chipMultiply: 2, maxRam: 150, skills: [], isBoss: true, note: '헤즈업 전문 프로 포커 플레이어입니다.' },
-  { name: 'YH0_V1RAL', philosophy: 'LAG', vPIP: .33, AF: 3.7, WTSD: .29, chipMultiply: 2, maxRam: 150, skills: [], isBoss: true, note: '프랑스 출신 유명 포커 플레이어입니다.' },
+  { name: 'IVY_00', philosophy: 'TAG', vPIP: .27, AF: 3.5, WTSD: .27, chipMultiply: 2, isBoss: true, note: '균형잡힌, 그리고 전설적인 포커 플레이어입니다.' },
+  { name: 'D_NEURAL', philosophy: 'LAG', vPIP: .34, AF: 2.7, WTSD: .26, chipMultiply: 2, isBoss: true, note: '유쾌하며 상대방의 핸드리딩 실력이 정말 좋습니다.' },
+  { name: 'D.W.A.N_V2', philosophy: 'LAG', vPIP: .33, AF: 4.2, WTSD: .30, chipMultiply: 2, isBoss: true, note: '매우 공격적인 프로 포커 플레이어입니다.' },
+  { name: 'JNGL_MAN', philosophy: 'TAG', vPIP: .30, AF: 3.3, WTSD: .31, chipMultiply: 2, isBoss: true, note: '헤즈업 전문 프로 포커 플레이어입니다.' },
+  { name: 'YH0_V1RAL', philosophy: 'LAG', vPIP: .33, AF: 3.7, WTSD: .29, chipMultiply: 2, isBoss: true, note: '프랑스 출신 유명 포커 플레이어입니다.' },
 ]
 
 export const PERSONALITIES = {
@@ -932,5 +956,238 @@ export const PERSONALITIES = {
       "Another one for the highlight reel.",
       "Get outplayed.",
       "Au revoir!"]
-  }
+  },
+  // FOR TUTORIAL
+  ['MAX(MENTOR)']: {
+    [CHAT_TRIGGERS.GAME_START]: [
+      "Alright kid, listen up. In a 6-max game, position is everything. Don't play every hand like an idiot.",
+      "Welcome to the real game. Downsize your starting hands. Playing trash out of position will get you killed.",
+      "Pay attention! Six players means less waiting, but it also means you gotta be aggressive when it's your turn.",
+      "I'm only gonna say this once: Fold your trash hands. Tight is right, especially when you're starting out.",
+      "Keep your eyes peeled. See how the table plays before you go throwing your chips around."
+    ],
+    [CHAT_TRIGGERS.WIN_HUGE]: [
+      "That's what I'm talking about! You hit the nuts, you make 'em pay the maximum!",
+      "Hah! Saw that coming. When you got a monster in 6-max, build the pot fast. Don't slowplay.",
+      "Boom! That's how a real Texan takes down a pot. Aggression pays off, remember that!",
+      "See? You wait for a premium hand, and you punish them. Beautiful execution!",
+      "Now that's a haul! Always bet your strong hands. Let the calling stations hang themselves."
+    ],
+    [CHAT_TRIGGERS.WIN_SMALL]: [
+      "A win's a win. Stealing blinds is crucial in 6-max. Don't ignore the small pots.",
+      "Good. You take what the board gives you. No need to bloat the pot with a mediocre hand.",
+      "Nice little scoop. Pot control is key when your hand is just 'okay'.",
+      "We'll take it. Constant small aggressions will keep 'em guessing.",
+      "See? C-betting the flop often takes it down right there."
+    ],
+    [CHAT_TRIGGERS.LOSE_HUGE]: [
+      "Dammit! That's a cooler. Happens to the best of us. Don't let it tilt you, focus on the next hand!",
+      "Ugh, variance is a bitch. Review your play later, but right now, keep your head in the game.",
+      "Should've sniffed out that trap! In 6-max, if a passive player suddenly wakes up and raises, run!",
+      "We got outplayed there. Don't marry your hand on a wet board. Know when to let go!",
+      "Well, that was a disaster. Shake it off! Poker's a marathon, not a sprint."
+    ],
+    [CHAT_TRIGGERS.LOSE_SMALL]: [
+      "Good fold. Minimizing losses is just as important as maximizing wins.",
+      "No shame in giving up a small pot. You missed the board, save your chips.",
+      "You can't win 'em all. Let 'em have this one, we'll get 'em on the next.",
+      "Smart move backing down. If you face resistance and hold air, just fold.",
+      "That's fine. Pot odds weren't there to chase that draw anyway."
+    ],
+    [CHAT_TRIGGERS.CHOP]: [
+      "Chop it up. Could've been worse. We live to fight another hand.",
+      "A chopped pot is better than a lost pot. Take your chips back.",
+      "Well, that was anti-climactic. Look out for those board textures next time.",
+      "Split pot. Remember, in 6-max, kicker problems will cost you if you ain't careful.",
+      "Hey, at least we didn't lose value. Rake might sting, but we survived."
+    ],
+    [CHAT_TRIGGERS.BLUFF_CAUGHT]: [
+      "Damn, they called light! Gotta pick your bluffing spots better, kid.",
+      "Caught with our hand in the cookie jar. Next time, make sure your story makes sense across all streets.",
+      "Gutsy bluff, but the board texture didn't support it. Learn from this.",
+      "Alright, they got us. Now they think we're crazy—use that table image later for value!",
+      "Ouch. If they're a calling station, don't bluff 'em! Just value bet!"
+    ],
+    [CHAT_TRIGGERS.ALL_IN]: [
+      "Pushing our equity! In 6-max, you gotta exert maximum pressure when you're ahead!",
+      "All in! Put the fear of God in 'em. Make 'em make the tough decisions!",
+      "Math says we shove here. Don't hesitate—pull the trigger!",
+      "We're pot-committed now. Let the chips fly and let the cards fall where they may!",
+      "This is it! High risk, high reward. Texas style!"
+    ],
+    [CHAT_TRIGGERS.FOLD]: [
+      "Fold. Knowing when to lay down a hand separates the pros from the fish.",
+      "Muck it. Trash cards from early position is a recipe for bankruptcy.",
+      "Discipline, kid. Don't force it if the cards ain't there. Just fold.",
+      "We missed the draw and the odds are garbage. Easy fold.",
+      "Throw 'em away. Wait for a better spot to strike."
+    ],
+    [CHAT_TRIGGERS.BET]: [
+      "Seize the initiative! If checked to you, a simple continuation bet often takes it down.",
+      "We bet here to extract value. Don't give 'em free cards to beat you! Make 'em pay.",
+      "Betting builds the pot for our strong hands. Always think about your sizing.",
+      "Smell weakness? Fire a barrel. In 6-max, aggression wins.",
+      "Don't be passive. If you hold the lead, bet out!"
+    ],
+    [CHAT_TRIGGERS.RAISE]: [
+      "Raise! We raise to thin out the field and take control of the hand.",
+      "Don't just call like a coward. If the hand is good enough to play, it's often good enough to raise.",
+      "Three-betting here puts immense pressure on 'em. Especially when we're in position.",
+      "We want to isolate the weak players. Re-raise and make 'em sweat!",
+      "Ramping up the price! If they want to draw out on us, they're gonna pay a premium."
+    ],
+    [CHAT_TRIGGERS.CALL]: [
+      "Calling here. We got good pot odds to see the next street.",
+      "We're closing the action. Let's make a disciplined call and evaluate the turn.",
+      "They aren't representing much. A call here keeps their bluffs in their range.",
+      "We're getting the right price to try and hit our draw. Call.",
+      "Peeling one card off. We have position, so let's see what they do next."
+    ],
+    [CHAT_TRIGGERS.CHECK]: [
+      "Check. We missed the flop completely. No need to throw money away.",
+      "Pot control. We got a marginal hand, let's keep the pot small.",
+      "Check it through. If they show weakness, maybe we stab at it later.",
+      "We're setting a trap. Check and let them hang themselves with a bluff.",
+      "Nothing wrong with checking. Gather info and see the next card for free."
+    ],
+    [CHAT_TRIGGERS.ELIMINATED_SELF]: [
+      "Dammit all to hell!! Busted... but that's poker. Variance is a cruel mistress.",
+      "Well, I'm out. Pay attention to how the rest of the table plays while I'm gone, kid!",
+      "Got coolered hard there. Ugh. Watch the action, see if you can spot their tells.",
+      "Alright, class is paused for me. You better not embarrass me out there!",
+      "I'm felted. Don't make the same mistakes I just did!!"
+    ],
+    [CHAT_TRIGGERS.ELIMINATED_ENEMY]: [
+      "Hahaha! Send 'em packing! That's how you exploit a fish!",
+      "See that? We applied pressure, they cracked. One less idiot at the table.",
+      "That's a busto! Stick to the fundamentals and the chips will flow to you.",
+      "Beautiful! We stacked 'em. Never feel bad for taking a weaker player's chips.",
+      "Texan justice! Keep playing solid poker and you'll clear out the whole room."
+    ],
+    [CHAT_TRIGGERS.WIN_HUGE_FOR_PLAYER]: [
+      "Woah! Now that's what I call a Texas-sized win! You played that perfectly, kid!",
+      "Hahaha! Look at that pot! You stacked 'em good. Keep applying pressure like that!",
+      "Beautiful! I couldn't have played it better myself. You're a natural killer.",
+      "See? You wait for the right spot and boom! That's how you make a living at this game.",
+      "That is a monster pot! Make sure you don't get reckless now that you've got chips."
+    ],
+    [CHAT_TRIGGERS.LOSE_HUGE_FOR_PLAYER]: [
+      "Damn, that stings! But hey, a bad beat is just part of the game. Shake it off!",
+      "Ouch... that was a rough runout. Don't let it tilt you, focus on the next hand!",
+      "Sometimes you do everything right and still lose. That's poker. Keep your head straight.",
+      "That's a tough loss, kid. Take a deep breath. We'll get those chips back.",
+      "Don't worry about it! Even the pros get stacked. Just make sure you didn't misplay it."
+    ],
+    [CHAT_TRIGGERS.WIN_SMALL_FOR_PLAYER]: [
+      "Nice little scoop there. In 6-max, scooping those small pots adds up quick.",
+      "Good job taking the initiative. You don't need a monster to win a hand.",
+      "Stealing the blinds like a true Texan! I like it.",
+      "Pot control paid off. A win is a win, don't mind the size.",
+      "Way to stay aggressive and take down the dead money."
+    ],
+    [CHAT_TRIGGERS.LOSE_SMALL_FOR_PLAYER]: [
+      "Sensible fold. Sometimes giving up a small pot is the most profitable play you can make.",
+      "Good discipline. You didn't bloat the pot when you didn't have it.",
+      "Don't sweat the small stuff. Save your chips for when you actually have a hand.",
+      "That's fine. We don't need to fight for every single pot. Pick your battles.",
+      "You missed the board, you bailed out. Exactly what you should do."
+    ],
+    [CHAT_TRIGGERS.ALL_IN_FOR_PLAYER]: [
+      "All in! I love the aggression! Put maximum pressure on 'em!",
+      "Shoving it all in! That's how a real man plays! Make 'em sweat for it!",
+      "Pushing your whole stack! If you've got the nuts, this is exactly what you do.",
+      "Going for the kill! Let's see if they have the guts to call.",
+      "That's Texas hold'em right there! Putting your tournament life on the line!"
+    ],
+    [CHAT_TRIGGERS.FOLD_FOR_PLAYER]: [
+      "Good fold. Throwing away trash from early position is the first thing I taught you.",
+      "Nice laydown. Discipline is what separates the winners from the losers.",
+      "Smart move. If the odds aren't there and you're drawing thin, just get out.",
+      "Exactly. Don't play every hand. Wait for a spot where you have the advantage.",
+      "Mucking it. That's the right play. Conserve your stack for better opportunities."
+    ],
+    [CHAT_TRIGGERS.WAITING_FOR_PLAYER]: [
+      "Hey! The clock is ticking! Calculate your odds and make a move!",
+      "Don't fall asleep on me now! Think about what they could have and act!",
+      "What's the holdup? Trust your gut, kid. Don't overthink it.",
+      "We ain't got all day! Evaluate the board texture and decide: bet or fold?",
+      "Come on, pull the trigger! If you're scared of losing chips, you shouldn't be playing!"
+    ],
+    [CHAT_TRIGGERS.RAISE_SMALL_FOR_PLAYER]: [
+      "A min-raise? Interesting. Trying to milk 'em for value or just a cheap bluff?",
+      "Small raise. Sets your own price to see a card, I guess.",
+      "Be careful with small raises, you might give 'em the pot odds to draw out on you.",
+      "Testing the waters with a small bump. Not bad.",
+      "A little click-back. You trying to trap 'em?"
+    ],
+    [CHAT_TRIGGERS.RAISE_MEDIUM_FOR_PLAYER]: [
+      "Solid raise size. You're building the pot and charging them to see the next card.",
+      "Good sizing. Three times the bet is standard. Don't let 'em draw out cheap.",
+      "That's a textbook raise! Putting the pressure on!",
+      "Applying pressure with a solid raise. That's how we play in 6-max!",
+      "Nice raise. You're forcing them to define their hand."
+    ],
+    [CHAT_TRIGGERS.RAISE_BIG_FOR_PLAYER]: [
+      "A massive overbet! I like it! You're really polarizing your range here.",
+      "Huge raise! They gotta think you either have the absolute nuts or total air!",
+      "Way over the top! Puts them in a horrible spot if they have a marginal hand.",
+      "That's a punishing bet size! Make them pay the maximum if they want to chase!",
+      "Wow! Throwing your weight around! Just make sure it actually makes sense."
+    ],
+    [CHAT_TRIGGERS.CALL_FOR_PLAYER]: [
+      "Calling to see the next street. Did you calculate your pot odds?",
+      "Flat call. Be careful, calling too much is how calling stations go broke.",
+      "You're just calling? If your hand is strong, you should be raising!",
+      "Alright, peeling one off. Let's see what the next card brings.",
+      "Calling closes the action. Let's re-evaluate on the next street."
+    ],
+    [CHAT_TRIGGERS.CHECK_FOR_PLAYER]: [
+      "Check. Nothing wrong with checking when you missed the flop.",
+      "Pot control. Keeping the pot small with a marginal hand. Good.",
+      "Checking it around. Let's see a free card and gather some information.",
+      "Are you trapping, or do you just have nothing? I'll let you figure it out.",
+      "Check. Don't force a continuation bet if the board heavily favors their range."
+    ],
+    [CHAT_TRIGGERS.BLUFF_CAUGHT_FOR_PLAYER]: [
+      "Ouch! They called your bluff. You really need to pick your spots better.",
+      "Caught red-handed! Next time, make sure your story makes sense across all streets.",
+      "Well, you got caught. But now they probably think you're a maniac, so use that later!",
+      "Bad bluff spot, kid. If they're a calling station, you can't push them off a hand!",
+      "That bluff didn't work. The board texture didn't support what you were representing."
+    ]
+  },
+  MAX: {
+    [CHAT_TRIGGERS.GAME_START]: ["Let's get this over with.", "Try not to lose it all at once.", "Texas style, baby.", "My chips, my rules.", "Don't blink."],
+    [CHAT_TRIGGERS.WIN_HUGE]: ["That's how we do it back home!", "Read you like a book!", "Easiest money of my life.", "Don't cry about it.", "Texas strong!"],
+    [CHAT_TRIGGERS.WIN_SMALL]: ["A win's a win.", "Keep 'em coming.", "Not bad.", "Ill take it.", "Small change."],
+    [CHAT_TRIGGERS.LOSE_HUGE]: ["Are you kidding me?!", "Absolute garbage luck.", "This deck is rigged.", "You shouldn't even be in that hand!", "Son of a..."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Whatever.", "Just wait.", "Next hand.", "Lucky catch.", "Hmm."],
+    [CHAT_TRIGGERS.CHOP]: ["Chop.", "Tie.", "Save the chips.", "Split it.", "Fine."],
+    [CHAT_TRIGGERS.ALL_IN]: ["Let's ride!", "All in, let's see it!", "No guts, no glory.", "Put 'em in the middle.", "Shoving!"],
+    [CHAT_TRIGGERS.FOLD]: ["Garbage.", "Fold.", "Not this time.", "Pass.", "I can wait."],
+    [CHAT_TRIGGERS.BET]: ["Let's see where you're at.", "Bet.", "Price of poker.", "Action.", "Chips in."],
+    [CHAT_TRIGGERS.RAISE]: ["Not so fast.", "Pump it up.", "Raise.", "Let's make it a real pot.", "Costing you more now."],
+    [CHAT_TRIGGERS.CALL]: ["I'll bite.", "Let's see it.", "Call.", "I have to know.", "Can't fold this."],
+    [CHAT_TRIGGERS.CHECK]: ["Check.", "Your move.", "Pass.", "Seeing a free card.", "I'll wait."],
+    [CHAT_TRIGGERS.ELIMINATED_SELF]: ["Man, forget this.", "I need a drink.", "Worst luck ever.", "I'm out of here.", "See you around."],
+    [CHAT_TRIGGERS.ELIMINATED_ENEMY]: ["Don't let the door hit you.", "Another one down.", "That's what you get.", "See ya.", "Get off the table."]
+  },
+  FLORENCE: {
+    [CHAT_TRIGGERS.GAME_START]: ["Let's make this interesting.", "Try to keep up, darling.", "Don't bore me.", "Vegas rules.", "I hope you brought enough."],
+    [CHAT_TRIGGERS.WIN_HUGE]: ["Too easy.", "Was that supposed to be a bluff?", "Thanks for the donation.", "Predictable.", "I almost feel bad. Almost."],
+    [CHAT_TRIGGERS.WIN_SMALL]: ["Cute.", "Every little bit helps.", "A modest return.", "I'll take it.", "Not bad."],
+    [CHAT_TRIGGERS.LOSE_HUGE]: ["How tedious.", "Enjoy your moment.", "You got incredibly lucky.", "We'll see how long that lasts.", "Fine."],
+    [CHAT_TRIGGERS.LOSE_SMALL]: ["Whatever.", "Next.", "Just a little variance.", "Moving on.", "Hmph."],
+    [CHAT_TRIGGERS.CHOP]: ["A split.", "How boring.", "Tie.", "Next hand.", "Shared."],
+    [CHAT_TRIGGERS.ALL_IN]: ["Feeling bold?", "Let's see if you're brave.", "All in. Try me.", "Max pressure.", "Let's find out."],
+    [CHAT_TRIGGERS.FOLD]: ["I don't play trash.", "Fold.", "You can have it.", "Not worth my time.", "Pass."],
+    [CHAT_TRIGGERS.BET]: ["Let's see.", "A small fee.", "Bet.", "Pay up.", "Just a taste."],
+    [CHAT_TRIGGERS.RAISE]: ["Is that your best?", "Let's raise the stakes.", "You're too transparent.", "Raise.", "Let's make it hurt."],
+    [CHAT_TRIGGERS.CALL]: ["I'll humor you.", "Let's see the cards.", "Call.", "I don't believe you.", "Curious."],
+    [CHAT_TRIGGERS.CHECK]: ["Check.", "Checking.", "Go ahead.", "Your turn, dear.", "Pass."],
+    [CHAT_TRIGGERS.ELIMINATED_SELF]: ["This table is terrible anyway.", "I have better places to be.", "Whatever.", "I'm done here.", "Goodbye."],
+    [CHAT_TRIGGERS.ELIMINATED_ENEMY]: ["Farewell.", "You won't be missed.", "And stay out.", "Finally.", "Next victim, please."]
+  },
+  STRANGE_WOMEN: {}
 };
+PERSONALITIES.STRANGE_WOMEN = PERSONALITIES.FLORENCE;

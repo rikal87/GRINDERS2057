@@ -556,7 +556,7 @@ export const ITEM_EFFECT_DATA = [
     icon: '👨‍👨‍👦',
     id: 'sets_master',
     name_ko: '세트 메뉴',
-    name_en: 'Set Menu',
+    name_en: 'Combo Menu',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Uncommon',
     cooldown: 0,

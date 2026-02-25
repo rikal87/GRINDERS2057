@@ -12,13 +12,15 @@ import PokerTable from './components/PokerTable.vue';
 import ControlPanel from './components/ControlPanel.vue';
 import AudioPlayer from './components/AudioPlayer.vue';
 import HistoryPopup from './components/HistoryPopup.vue';
+import AgentTaskPopup from './components/AgentTaskPopup.vue';
 import { audioManager } from './logic/audioManager';
 import { performSleep, calculateSessionReport } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
 import { hydrateStoreItems } from './logic/items';
+import { EVENT_ID, EventData } from './logic/eventSystem';
 
 // ... imports
-import { startTimeSystem, formatGameTime, formatGameDate, stopTimeSystem } from './logic/timeSystem';
+import { startTimeSystem, formatGameTime, formatGameDate, stopTimeSystem, advanceTime } from './logic/timeSystem';
 // Automated Hand Transition Logic
 import { watch, computed } from 'vue';
 
@@ -45,6 +47,8 @@ const engine = ref(null);
 
 const isSettingsOpen = ref(false);
 const showHistory = ref(false);
+const showAgentTaskPopup = ref(false);
+const selectedTaskSlotIdx = ref(-1);
 
 const toggleSettings = () => {
   isSettingsOpen.value = !isSettingsOpen.value;
@@ -126,7 +130,7 @@ const handleStart = (mode) => {
 };
 
 const handleJoinTable = async (payload) => {
-  const { size, buyIn, rake, rakeCap, isHighStakes, sb, bb, locationId, locationLV } = payload;
+  const { inviteId, size, buyIn, rake, rakeCap, isHighStakes, sb, bb, locationId, locationLV, buyInLimit } = payload;
   console.info('handleJoinTable', payload);
   // [CLEANUP] Ensure previous engine is destroyed
   if (engine.value) {
@@ -137,8 +141,9 @@ const handleJoinTable = async (payload) => {
   // Use passed rake or default
   const finalRake = rake !== undefined ? rake : 0.05;
   const finalRakeCap = rakeCap !== undefined ? rakeCap : (bb * 10);
+  const finalBuyInLimit = buyInLimit !== undefined ? buyInLimit : 999999;
 
-  engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isHighStakes, locationId, locationLV);
+  engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isHighStakes, locationId, locationLV, finalBuyInLimit, inviteId);
 
   // ... rest of function
 
@@ -163,6 +168,11 @@ const handleJoinTable = async (payload) => {
 const handleView = (view) => {
   currentView.value = view;
   audioManager.playSFX('ui-click');
+};
+
+const handleOpenTaskSelector = (idx) => {
+  selectedTaskSlotIdx.value = idx;
+  showAgentTaskPopup.value = true;
 };
 
 const handleAction = async (payload) => {
@@ -239,7 +249,7 @@ const handleSleepClick = () => {
 };
 
 const wakeUp = () => {
-  performSleep()
+  performSleep(advanceTime)
   showSleepModal.value = false;
   audioManager.playSFX('action-confirm');
   saveStore(); // Save after sleeping
@@ -354,7 +364,8 @@ watch(currentView, (newView) => {
           <Shop v-else-if="currentView === 'shop'" @back="handleView('lobby')" />
 
           <!-- Safe House View -->
-          <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" @sleep="handleSleepClick" />
+          <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" @sleep="handleSleepClick"
+            @open-task-selector="handleOpenTaskSelector" />
 
           <!-- Crypto Exchange View -->
           <CryptoExchange v-else-if="currentView === 'crypto'" @back="handleView('lobby')" />
@@ -484,6 +495,8 @@ watch(currentView, (newView) => {
         </div>
       </div>
     </Transition>
+    <!-- Agent Task Popup -->
+    <AgentTaskPopup v-if="showAgentTaskPopup" :slotIdx="selectedTaskSlotIdx" @close="showAgentTaskPopup = false" />
     <!-- SLEEP REPORT MODAL -->
     <Transition name="fade">
       <div v-if="showSleepModal" class="v5-modal-overlay sleep-overlay">

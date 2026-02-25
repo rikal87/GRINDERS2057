@@ -2,18 +2,19 @@ import { calculateEquity, createDeck } from './poker.js';
 import { getAIAction, chatAI, } from './aiEngine.js';
 import { getAdvancedAIAction } from './aiEngineAdvanced.js';
 // import { CHAT_TRIGGERS } from './AIChatSystem.js';
-import { CHAT_TRIGGERS } from './persona.js'
+import { CHAT_TRIGGERS, CLASSES_COMPANION } from './persona.js'
 import { audioManager } from './audioManager.js';
 import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
 import { gainXP, initializeBankroll, store, saveStore } from './store.js';
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
+import { zones } from './zone.js';
 
 const eventAdaptor = new EventAdaptor();
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export class GameEngine {
-  constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isHighStakes = false, locationId = 'micro_street_shop', locationLV = 1) {
+  constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isHighStakes = false, locationId = 'micro_street_shop', locationLV = 1, buyInLimit = 999999, inviteId = null) {
     this.locationId = locationId;
     this.tableSize = tableSize;
     this.sb = sb;
@@ -27,7 +28,8 @@ export class GameEngine {
     this.buyIn = buyin;
     this.dealerIndex = 0;
     this.currentPlayerIndex = 0;
-    this.players = this.initializePlayers(playerClass, tableSize);
+    this.isTutorial = false;
+    this.mentor = null;
     this.gameOver = false;
     this.winnerId = null;
     this.playersActedCount = 0;
@@ -46,7 +48,10 @@ export class GameEngine {
     this.currentStreetRaises = 0;
     this.pot = 0; // [FIX] Reactive property for instant updates
     this.preflopAggressor = null; // Track who raised preflop for C-Bet logic
-
+    this.buyInLimit = buyInLimit; // only for human?
+    this.inviteId = inviteId;
+    this.players = this.initializePlayers(playerClass, tableSize); // [FIX] Initialize players after all properties are set
+    // this.companions = [];
   }
 
   // Getter for backward compatibility / easier access
@@ -73,6 +78,7 @@ export class GameEngine {
       effectCooldowns: {},
       item: store.equippedProtector,
       tempXPBonus: 0.0,
+      buyInLimit: this.buyInLimit,
       stats: {
         handsPlayed: 0,
         vPIPCount: 0,
@@ -130,6 +136,10 @@ export class GameEngine {
       .map(b => b.effect);
 
     // Filter Regular Enemies
+    if (this.locationId === 'micro_warehouse_with_max' || this.locationId === 'free_street_shop_with_max') {
+      this.isTutorial = true;
+    }
+
     let locationConfig = null;
     for (const zone of zones) {
       const loc = zone.locations.find(l => l.id === this.locationId);
@@ -144,8 +154,21 @@ export class GameEngine {
     // For now we'll allow forced spawns to override loc allowedNames
 
     let enemiesToPlace = [];
-
-    // 1. Forced Spawns
+    // 0. Companions Spawns (Top Priority from zone.js config)
+    if (locationConfig.companions && Array.isArray(locationConfig.companions)) {
+      locationConfig.companions.forEach(companionName => {
+        if (enemiesToPlace.length >= size - 1) return;
+        const targetId = companionName.toLowerCase();
+        let template = CLASSES_COMPANION.find(e => e.name.toLowerCase() === targetId)
+        if (template) {
+          enemiesToPlace.push({ ...template });
+          chatAI(template, CHAT_TRIGGERS.GAME_START);
+        } else {
+          console.warn(`[GAME] Companion persona '${companionName}' not found in CLASSES.`);
+        }
+      });
+    }
+    // 1. Forced Spawns (Boosts)
     const bossPool = [...CLASSES_ENEMY_BOSS].filter(p => p.isBoss).sort(() => Math.random() - 0.5);
 
     spawnBoosts.forEach(eff => {
@@ -222,6 +245,8 @@ export class GameEngine {
         totalWagered: 0,
         isFolded: false,
         isHuman: false,
+        isCompanion: villan.isCompanion || false,
+        isBoss: villan.isBoss || false,
         item: null,
         // Helper methods for skills
         maxTimeBank: 30, // Default 30s for AI
@@ -241,6 +266,10 @@ export class GameEngine {
 
       if (Math.random() < 0.3) chatAI(aiPlayer, CHAT_TRIGGERS.GAME_START)
       players.push(aiPlayer);
+    }
+    if (this.isTutorial) {
+      this.mentor = players.find(e => e.name === 'Max(Mentor)');
+      console.log('MENTOR', this.mentor);
     }
     return players;
   }
@@ -373,9 +402,9 @@ export class GameEngine {
     if (player.isHuman) {
       this.stopTurnTimer();
     }
-
-    console.info('action', action)
+    // this.mentor
     if (action.type === 'fold') {
+      if (player.isMe && this.mentor && this.mentor.isFolded) chatAI(this.mentor, CHAT_TRIGGERS.FOLD_FOR_PLAYER)
       player.isFolded = true;
 
       // [PROFILING] Fold to Flop Bet
@@ -396,25 +425,38 @@ export class GameEngine {
       // this.checkItemTriggers('fold', { phase: this.state }); // Trigger Fold Effects
     } else if (action.type === 'call' || action.type === 'check') {
       const diff = this.potManager.currentRoundBet - player.currentBet;
-      // console.info('action.amount', action.amount)
       this.placeBet(player, diff);
-      // [FIX] Ensure stats exist
       if (!player.stats) player.stats = { calls: 0, aggressiveActions: 0, handsPlayed: 0, vPIPCount: 0, facedFlopBet: 0, foldedToFlopBet: 0 };
       if (player.stats.calls === undefined) player.stats.calls = 0;
 
       if (diff > 0) {
         player.stats.calls++; // [STATS] Track Call only if chips added
-      }
-      if (action.amount > 0) {
         audioManager.playSFX('puti-n-chip');
+        if (player.isMe && this.mentor && this.mentor.isFolded) chatAI(this.mentor, CHAT_TRIGGERS.CALL_FOR_PLAYER)
       } else {
         action.type = 'check';
         audioManager.playSFX('check');
+        if (player.isMe && this.mentor && this.mentor.isFolded) chatAI(this.mentor, CHAT_TRIGGERS.CHECK_FOR_PLAYER)
       }
     } else if (action.type === 'raise' || action.type === 'bet' || action.type === 'all_in') {
       const diff = action.amount - player.currentBet;
       const raised = this.placeBet(player, diff);
       // [FIX] Ensure stats exist
+      if (player.isMe && this.mentor && this.mentor.isFolded) {
+        if (action.type === 'all_in') {
+          chatAI(this.mentor, CHAT_TRIGGERS.ALL_IN_FOR_PLAYER);
+        } else {
+          // Compare the diff to the pot before the bet to get a sense of size
+          const potRatio = diff / (this.pot > 0 ? this.pot : this.bb);
+          if (potRatio < 0.35) {
+            chatAI(this.mentor, CHAT_TRIGGERS.RAISE_SMALL_FOR_PLAYER);
+          } else if (potRatio > 1.2) {
+            chatAI(this.mentor, CHAT_TRIGGERS.RAISE_BIG_FOR_PLAYER);
+          } else {
+            chatAI(this.mentor, CHAT_TRIGGERS.RAISE_MEDIUM_FOR_PLAYER);
+          }
+        }
+      }
       if (!player.stats) player.stats = { calls: 0, aggressiveActions: 0, handsPlayed: 0, vPIPCount: 0, facedFlopBet: 0, foldedToFlopBet: 0 };
       if (player.stats.aggressiveActions === undefined) player.stats.aggressiveActions = 0;
 
@@ -602,49 +644,65 @@ export class GameEngine {
     // }
     eventAdaptor.endStreet('SHOWDOWN');
     // [IMPROVEMENT] Calculate and update XP/Level
-    this.checkBankruptcy();
-
     // [AI CHAT] Showdown Result
     const winners = result.results.filter(r => r.isWinner);
-    const isChop = winners.length > 1;
 
-    if (isChop) {
-      // AI Chopper response
+    if (winners.length > 1 && winners.some(w => w.amountWon === winners[0].amountWon)) {
+      // It's a true Chop if multiple people won similar amounts from the same pot
       const aiChoppers = this.players.filter(p => !p.isHuman && !p.isFolded && winners.some(w => w.id === p.id));
       if (aiChoppers.length > 0) {
         const chopper = aiChoppers[Math.floor(Math.random() * aiChoppers.length)];
         chatAI(chopper, CHAT_TRIGGERS.CHOP);
       }
-      // Human XP
-      const meWinner = winners.find(w => w.isMe);
-      if (meWinner) {
-        const me = this.players.find(p => p.isMe);
-        const gainXPAmount = gainXP(me, currentPot / winners.length, this.bb, this.isHighStakes, this.locationLV);
-        eventAdaptor.gainXP({ player: me, amount: gainXPAmount, bb: this.bb, isHighStakes: this.isHighStakes, locationLV: this.locationLV });
-      }
-    } else if (winners.length === 1) {
-      const winner = winners[0];
-      if (!winner.isMe) {
-        // AI Won
-        const aiWinner = this.players.find(p => p.id === winner.id);
-        if (aiWinner) {
+    } else {
+      // AI Bragging if they won
+      const aiWinners = winners.filter(w => !w.isMe);
+      if (aiWinners.length > 0) {
+        const primaryAiWinner = this.players.find(p => p.id === aiWinners[0].id);
+        if (primaryAiWinner) {
           const isHuge = this.pot > (this.bb * 40);
-          chatAI(aiWinner, isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL);
+          chatAI(primaryAiWinner, isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL);
         }
-      } else {
-        // Human Won -> AI Loses (pick one loser to complain)
-        const me = this.players.find(p => p.isMe);
-        const gainXPAmount = gainXP(me, currentPot, this.bb, this.isHighStakes, this.locationLV);
-        eventAdaptor.gainXP({ player: me, amount: gainXPAmount, bb: this.bb, isHighStakes: this.isHighStakes, locationLV: this.locationLV });
+      }
 
+      // AI Complaining if Human won the main pot
+      const meWinner = winners.find(w => w.isMe);
+      if (meWinner && meWinner.amountWon > meWinner.player.totalWagered) {
         const losers = this.players.filter(p => !p.isHuman && !p.isFolded && !p.isMe);
         if (losers.length > 0 && Math.random() < 0.5) {
           const complainer = losers[Math.floor(Math.random() * losers.length)];
           const isHuge = this.pot > (this.bb * 40);
-          chatAI(complainer, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL);
+          chatAI(complainer, isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL);
         }
       }
     }
+
+    // Human XP Gain
+    const meResult = result.results.find(r => r.isMe);
+    const me = this.players.find(p => p.isMe);
+    if (meResult && meResult.isWinner) {
+      const gainXPAmount = gainXP(me, meResult.amountWon, this.bb, this.isHighStakes, this.locationLV);
+      eventAdaptor.gainXP({ player: me, amount: gainXPAmount, bb: this.bb, isHighStakes: this.isHighStakes, locationLV: this.locationLV });
+    }
+
+    // Mentor Tutorial Feedback
+    if (this.isTutorial && this.mentor && this.mentor.isFolded && me && !me.isFolded) {
+      const netProfit = (meResult ? meResult.amountWon : 0) - me.totalWagered;
+      if (netProfit > 0) {
+        // Player Profited
+        const isHugeWin = netProfit > (this.bb * 20);
+        chatAI(this.mentor, isHugeWin ? CHAT_TRIGGERS.WIN_HUGE_FOR_PLAYER : CHAT_TRIGGERS.WIN_SMALL_FOR_PLAYER);
+      } else if (netProfit < 0) {
+        // Player Lost Money (either lost entirely, or chop/side pot refund was less than wagered)
+        const isHugeLoss = me.totalWagered > (this.bb * 20);
+        chatAI(this.mentor, isHugeLoss ? CHAT_TRIGGERS.LOSE_HUGE_FOR_PLAYER : CHAT_TRIGGERS.LOSE_SMALL_FOR_PLAYER);
+      } else {
+        // Even break (Chop)
+        chatAI(this.mentor, CHAT_TRIGGERS.CHOP);
+      }
+    }
+    const bestWinner = this.players.find(p => p.id === result.winnerId);
+    this.checkBankruptcy(bestWinner);
     this.potManager.pot = 0;
     this.pot = 0; // [FIX] Sync reactive pot immediately
 
@@ -688,39 +746,54 @@ export class GameEngine {
   //   });
   // }
 
-  checkBankruptcy() {
-    const BUY_IN = this.buyIn;
-
-    // 1. Bankrupt CPUs
+  checkBankruptcy(bestWinner) {
+    // 1. Bankrupt Players
     this.players.forEach(p => {
-      if (!p.isHuman && p.chips <= 0 && !p.isEliminated) {
+      if (p.chips <= 0 && !p.isEliminated) {
         console.log(`[GAME] ${p.name} eliminated.`);
+
         // [AI CHAT] Self Elimination
+        if (p.isHuman) {
+          const buyInSuccess = this.processBuyIn(p, true);
+          if (buyInSuccess) {
+            eventAdaptor.rebuy({ player: p, amount: p.chips });
+            return true; // Skip elimination
+          }
+        } else {
+          chatAI(p, CHAT_TRIGGERS.SELF_ELIMINATED);
+        }
+
         p.isEliminated = true;
-        chatAI(p, CHAT_TRIGGERS.ELIMINATED_SELF);
-        eventAdaptor.playerEliminated(p);
+        if (bestWinner && !bestWinner.isMe) chatAI(bestWinner, CHAT_TRIGGERS.ELIMINATED_ENEMY);
+        eventAdaptor.playerBankrupt(p, bestWinner, this.locationId, this.inviteId);
+
+        // Handle Human Bankruptcy
+        if (p.isHuman) {
+          this.gameOver = true;
+          this.winnerId = bestWinner ? bestWinner.id : 'cpu';
+        }
       }
     });
 
-    // 2. Check Human Bankruptcy
-    const human = this.players.find(p => p.isHuman);
-    if (human && human.chips <= 0) {
-      // [AI CHAT] Enemy Elimination (Mockery)
-      const aiSurvivors = this.players.find(s => s.chips > 0 && s.id !== human.id && !s.isHuman);
-      if (aiSurvivors && Math.random() < 0.6) {
-        chatAI(aiSurvivors, CHAT_TRIGGERS.ELIMINATED_ENEMY);
-      }
+    // 2. Check Human Bankruptcy (no more need)
+    // const human = this.players.find(p => p.isHuman);
+    // if (human && human.chips <= 0) {
+    //   // [AI CHAT] Enemy Elimination (Mockery)
+    //   const aiSurvivors = this.players.find(s => s.chips > 0 && s.id !== human.id && !s.isHuman);
+    //   if (aiSurvivors && Math.random() < 0.6) {
+    //     chatAI(aiSurvivors, CHAT_TRIGGERS.ELIMINATED_ENEMY);
+    //   }
 
-      const buyInResult = this.processBuyIn(human);
-      if (buyInResult) {
-        eventAdaptor.rebuy({ player: human, amount: BUY_IN });
-      } else {
-        this.gameOver = true;
-        this.winnerId = 'cpu'; // Generic loss
-        initializeBankroll();
-        eventAdaptor.bankruptcy({ player: human });
-      }
-    }
+    //   const buyInResult = this.processBuyIn(human);
+    //   if (buyInResult) {
+    //     eventAdaptor.rebuy({ player: human, amount: BUY_IN });
+    //   } else {
+    //     this.gameOver = true;
+    //     this.winnerId = 'cpu'; // Generic loss
+    //     initializeBankroll();
+    //     eventAdaptor.playerEliminated({ player: human });
+    //   }
+    // }
 
     // 3. Check for Victory (Only Human Remains)
     const lastSurvior = this.players.filter(p => !p.isEliminated)
@@ -732,29 +805,29 @@ export class GameEngine {
       audioManager.playSFX('clear-table');
       console.log(`[GAME] Victory Prize Awarded: ${this.bb * 100} `);
 
-      eventAdaptor.gameWon({ player: lastSurvior[0], prize: this.bb * 100, locationId: this.locationId });
+      eventAdaptor.gameWon(lastSurvior[0], this.bb * 100, this.locationId, this.inviteId);
     }
 
     return false;
   }
   exitGame() {
+    eventAdaptor.playerLeaveTable(this.players[0], this.locationId, this.players, this.inviteId);
     store.bankroll += this.players[0].chips;
     saveStore();
     this.cleanup();
   }
-  processBuyIn(player) {
-    const BUY_IN = this.buyIn * player.buyInMultiply;
-    player.chips = Math.min(store.bankroll, BUY_IN);
-    if (store.bankroll >= BUY_IN) {
-      store.bankroll -= BUY_IN;
-      player.chips = BUY_IN;
-      console.log(`[BANKROLL] Buy-in deducted. Remaining: ${store.bankroll} `);
-      return true;
-    } else {
-      store.bankroll = 1;
-      console.log(`[BANKROLL] Insufficient funds for buy-in.Remaining: ${store.bankroll} `);
+  processBuyIn(player, isRebuy = false) {
+    if (store.bankroll <= 0 || player.buyInLimit <= 0) {
+      console.warn(`[BANKROLL] Insufficient funds for buy-in.`);
       return false;
     }
+    const targetBuyIn = this.buyIn * player.buyInMultiply;
+    const actualBuyIn = Math.min(store.bankroll, targetBuyIn);
+    player.chips = actualBuyIn;
+    if (isRebuy) player.buyInLimit--;
+    store.bankroll -= actualBuyIn;
+    console.log(`[BANKROLL] Buy-in deducted: ${actualBuyIn}. Remaining: ${store.bankroll}, ${player.buyInLimit} `);
+    return true;
   }
 
   dealFlop() {
@@ -921,7 +994,6 @@ export class GameEngine {
     } else {
       action = getAIAction(player, this);
     }
-    console.info('action.delay', action.delay)
     const delay = action.delay || (1000 + Math.random() * 1000); // Fallback
     console.log(`[AI TURN] ${player.name} thinking for ${Math.floor(delay)}ms...`);
     // await sleep(delay); // Removed redundant sleep. Timer loop handles delay.

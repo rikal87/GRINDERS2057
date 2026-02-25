@@ -444,7 +444,7 @@ export const ITEM_DATA = [
     tier: 'T2',
     price: 30000,
     desc_ko: '햄버거랑 물은 안필요하세요?',
-    desc_en: 'Don\'t you need a burger and some water too?',
+    desc_en: 'Don\'t you need a hamburger, and a bottle of water too?',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [getItemEffect('sets_master')]
   },
@@ -592,7 +592,9 @@ export const ITEM_DATA = [
 
   {
     id: 'neuro_sync_headband',
-    name: '뉴로 동기화 머리띠',
+    name_ko: '뉴로 동기화 머리띠',
+    name_en: 'Neuro Sync Headband',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     icon: '🧠',
     class: 'Item',
     tier: 'T3',
@@ -604,7 +606,9 @@ export const ITEM_DATA = [
   },
   {
     id: 'allin_insurance_plus',
-    name: '세이프 가드 플러스',
+    name_ko: '세이프 가드 플러스',
+    name_en: 'Safe Guard Plus',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     icon: '🛡️',
     class: 'Item',
     tier: 'T3',
@@ -617,7 +621,9 @@ export const ITEM_DATA = [
 
   {
     id: 'life_saver_buoy',
-    name: '디지털 구명튜브',
+    name_ko: '구명튜브',
+    name_en: 'Life Saver Buoy',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     icon: '🛟',
     class: 'Item',
     tier: 'T3',
@@ -629,7 +635,9 @@ export const ITEM_DATA = [
   },
   {
     id: 'advanced_equity_calc',
-    name: '에쿼티 연산기',
+    name_ko: '에쿼티 연산기',
+    name_en: 'Advanced Equity Calculator',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     icon: '📊',
     class: 'Item',
     tier: 'T3',
@@ -641,7 +649,9 @@ export const ITEM_DATA = [
   },
   {
     id: 'crystal_wine_glass',
-    name: '크리스털 와인잔',
+    name_ko: '크리스털 와인잔',
+    name_en: 'Crystal Wine Glass',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     icon: '🍷',
     class: 'Item',
     tier: 'T3',
@@ -1060,7 +1070,7 @@ export const ITEM_DATA = [
     desc_ko: '과거 파리의 상징이자 랜드마크"였"습니다. 이제는 초거대 기업의 고출력 송신 안테나로 쓰이고 있습니다.',
     desc_en: '"Was" the symbol and landmark of Paris in the past. Now it\'s used as a high-powered transmission antenna by a megacorp.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('stemina_regen'), getItemEffect('stemina_regen'), getItemEffect('stemina_regen')]
+    effects: [getItemEffect('last_stand'), getItemEffect('last_stand'), getItemEffect('last_stand')]
   },
   {
     id: 'statue_of_liberty',
@@ -1332,8 +1342,8 @@ export const ITEM_DATA = [
   },
   {
     id: 'movie_rounders_dvd',
-    name_ko: '영화 라운더스 DVD 소장판',
-    name_en: 'Movie Rounders DVD Collector\'s Edition',
+    name_ko: '라운더스 DVD 소장판',
+    name_en: 'Rounders DVD Collector\'s Edition',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     icon: '📀',
     class: 'Item',
@@ -1551,7 +1561,9 @@ export const ITEM_DATA = [
   },
   {
     id: 'guardian_angel_program',
-    name: '수호천사 데몬',
+    name_ko: '수호천사 데몬',
+    name_en: 'Guardian Angel Program',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     icon: '👼',
     class: 'Item',
     tier: 'T6',
@@ -1572,6 +1584,7 @@ export const materializeItem = (baseItem) => {
 
   // Use Object.create to preserve getters from baseItem while allowing instance-specific overrides
   const instance = Object.create(baseItem);
+  instance.id = baseItem.id;
   instance.instanceId = getinstanceId(baseItem);
 
   if (baseItem.effects) {
@@ -1600,11 +1613,26 @@ export const materializeItem = (baseItem) => {
 };
 
 export const restoreItem = (savedItem) => {
-  if (!savedItem || !savedItem.id) return savedItem;
-  const baseItem = getItemById(savedItem.id);
+  if (!savedItem) return savedItem;
+
+  let id = savedItem.id;
+  if (!id && savedItem.instanceId) {
+    // Extract `id` from `instanceId` (format: id_timestamp_random) by removing the last 2 segments
+    const parts = savedItem.instanceId.split('_');
+    if (parts.length > 2) {
+      parts.pop(); // remove random str
+      parts.pop(); // remove timestamp
+      id = parts.join('_');
+    }
+  }
+
+  if (!id) return savedItem;
+
+  const baseItem = getItemById(id);
   if (!baseItem) return savedItem;
 
   const restored = Object.create(baseItem);
+  restored.id = id;
   Object.keys(savedItem).forEach(key => {
     // Avoid overwriting prototype getters that were serialized
     if (key !== 'name' && key !== 'desc' && key !== 'effects') {

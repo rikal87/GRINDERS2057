@@ -93,7 +93,7 @@ export const processAiTasks = () => {
     for (const eff of penaltyEffects) {
       const riskChancePerMin = (eff.probability || 0.01) / 60;
       if (Math.random() < riskChancePerMin) {
-        triggerRiskDetection(store.onWorkTasks.indexOf(task), eff);
+        triggerRiskDetection(store.onWorkTasks.indexOf(task), eff, td.name);
       }
     }
   }
@@ -109,56 +109,69 @@ export const processAiTasks = () => {
     }
 
     if (taskState.status === 'SEARCHING') {
-      // Cost Deduction (per hour -> per minute)
-      const costPerMin = taskDef.cost / 60;
+      if (taskDef.type === 'AGENT_WORK') {
+        // AGENT_WORK skips SEARCHING cost and probabilities, goes straight to ACTIVE
+        triggerTaskSuccess(taskState, taskDef);
+      } else {
+        // Normal Tasks Cost Deduction (per hour -> per minute)
+        const costPerMin = taskDef.cost / 60;
 
-      if (store.ludusTokens >= costPerMin) {
-        store.ludusTokens -= costPerMin;
+        if (store.ludusTokens >= costPerMin) {
+          store.ludusTokens -= costPerMin;
 
-        // Success Probability scaling (hourly to minutely)
-        const adjustedHourlyProb = Math.min(1.0, (taskDef.probability || 0) + probBonus);
-        let baseProb = 1 - Math.pow(1 - adjustedHourlyProb, 1 / 60);
+          // Success Probability scaling (hourly to minutely)
+          const adjustedHourlyProb = Math.min(1.0, (taskDef.probability || 0) + probBonus);
+          let baseProb = 1 - Math.pow(1 - adjustedHourlyProb, 1 / 60);
 
-        // Bad Luck Protection (+1% of base probability per failure minute)
-        const blpBonus = (taskState.failureCount || 0) * (baseProb * 0.01);
-        const currentProb = baseProb + blpBonus;
+          // Bad Luck Protection (+1% of base probability per failure minute)
+          const blpBonus = (taskState.failureCount || 0) * (baseProb * 0.01);
+          const currentProb = baseProb + blpBonus;
 
-        if (Math.random() < currentProb) {
-          triggerTaskSuccess(taskState, taskDef);
-        } else {
-          taskState.failureCount = (taskState.failureCount || 0) + 1;
+          if (Math.random() < currentProb) {
+            triggerTaskSuccess(taskState, taskDef);
+          } else {
+            taskState.failureCount = (taskState.failureCount || 0) + 1;
 
-          // Risk Check (Detection risk)
-          if (taskDef.risk && taskDef.risk.type === 'SECURITY_DETECTION') {
-            const riskChancePerMin = (taskDef.risk.probability || 0.01) / 60;
-            if (Math.random() < riskChancePerMin) {
-              triggerRiskDetection(i, taskDef);
+            // Risk Check (Detection risk)
+            if (taskDef.risk && taskDef.risk.type === 'SECURITY_DETECTION') {
+              const riskChancePerMin = (taskDef.risk.probability || 0.01) / 60;
+              if (Math.random() < riskChancePerMin) {
+                triggerRiskDetection(i, taskDef);
+              }
             }
           }
+        } else if (taskDef.cost > 0) {
+          sendMessage('SYSTEM', 'Task Paused', `Not enough LT to continue searching for ${taskDef.name}.`);
+          store.onWorkTasks.splice(i, 1);
         }
-      } else if (taskDef.cost > 0) {
-        sendMessage('SYSTEM', 'Task Paused', `Not enough LT to continue searching for ${taskDef.name}.`);
-        store.onWorkTasks.splice(i, 1);
       }
     }
     else if (taskState.status === 'ACTIVE') {
-      // Ticking duration
+      // Continuous ticking effects during ACTIVE
       if (taskDef.type === 'AGENT_WORK') {
-        // Continuous tasks like shadow_work trigger their effects based on probability directly here
-        const baseProb = taskDef.probability || 0.1;
-        // Check probability per minute based on hourly stated probability
-        const probPerMin = 1 - Math.pow(1 - baseProb, 1 / 60);
-        if (Math.random() < probPerMin) {
-          if (taskDef.effect && taskDef.effect.length > 0) {
-            const eff = taskDef.effect[0];
-            if (eff.type === 'add_bankroll') {
-              store.bankroll += eff.amount;
-              sendMessage('SYSTEM', 'Shadow Work Profit', `[${taskDef.name}] Generated ${eff.amount} CR.`);
+        const costPerMin = taskDef.cost / 60;
+
+        // AGENT_WORK continuously consumes LT while active
+        if (store.ludusTokens >= costPerMin) {
+          store.ludusTokens -= costPerMin;
+
+          const baseProb = taskDef.probability || 0.1;
+          // Check probability per minute based on hourly stated probability
+          const probPerMin = 1 - Math.pow(1 - baseProb, 1 / 60);
+          if (Math.random() < probPerMin) {
+            const bankrollEff = taskDef.effect?.find(e => e.type === 'add_bankroll');
+            if (bankrollEff) {
+              store.bankroll += bankrollEff.amount;
+              sendMessage('SYSTEM', 'Shadow Work Profit', `[${taskDef.name}] Generated ${bankrollEff.amount} CR.`);
             }
           }
+        } else {
+          sendMessage('SYSTEM', 'Process Terminated', `Not enough LT to sustain ${taskDef.name}. Process aborted.`);
+          store.onWorkTasks.splice(i, 1);
+          continue;
         }
       } else {
-        // Normal duration based tasks
+        // Normal Tasks: Check if effect duration has expired
         if (store.gameTime >= taskState.effectEndTime) {
           taskState.status = 'COOLDOWN';
           taskState.cooldownEndTime = store.gameTime + (taskDef.cooldown * 60 * 1000);
@@ -201,7 +214,11 @@ const triggerTaskSuccess = (taskState, taskDef) => {
     });
   }
 
-  sendMessage('SYSTEM', `Task Success: ${taskDef.name}`, `The task was successful! Effect active for ${taskDef.duration / 60} hours.`, actions);
+  if (taskDef.type === 'AGENT_WORK') {
+    sendMessage('SYSTEM', `Task Initialized: ${taskDef.name}`, `The process is now running. Consuming LT continuously.`);
+  } else {
+    sendMessage('SYSTEM', `Task Success: ${taskDef.name}`, `The task was successful! Effect active for ${taskDef.duration / 60} hours.`, actions);
+  }
 
   // Specific Side Effects
   if (taskDef.risk && taskDef.risk.type === 'SHARK_ATTRACTION') {
@@ -235,19 +252,12 @@ const triggerTaskSuccess = (taskState, taskDef) => {
     });
   }
 
-  // Auto-remove neighborhood_game on success
-  if (taskDef.id === 'neighborhood_game') {
-    const idx = store.onWorkTasks.findIndex(t => t.taskId === taskDef.id);
-    if (idx !== -1) {
-      store.onWorkTasks.splice(idx, 1);
-    }
-  }
 };
 
-const triggerRiskDetection = (index, effDef) => {
+const triggerRiskDetection = (index, effDef, taskName) => {
   const penalty = effDef.amount || 10000;
   store.bankroll = Math.max(0, store.bankroll - penalty);
-  sendMessage('SYSTEM', 'HACKING DETECTED!', `Security forces located your signal. Penalty: ${penalty.toLocaleString()} CR.`);
+  sendMessage('SYSTEM', 'HACKING DETECTED!', `${taskName} has been terminated by security forces. Penalty: ${penalty.toLocaleString()} CR.`);
 
   if (index >= 0) {
     const taskState = store.onWorkTasks[index];
@@ -360,6 +370,6 @@ export const startTask = (taskId) => {
     failureCount: 0
   });
 
-  sendMessage('SYSTEM', 'Task Started', `${taskDef.name} is now in progress...`);
+  // sendMessage('SYSTEM', 'Task Started', `${taskDef.name} is now in progress...`);
   return true;
 };

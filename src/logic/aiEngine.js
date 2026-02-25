@@ -7,7 +7,7 @@ import { CHAT_TRIGGERS } from './persona.js'
  * AI Decision Engine (LLM Integrated)
  * Now delegates Prompt Construction & Schema to LLMService.
  */
-export const chatAI = (player, trigger = CHAT_TRIGGERS.FOLD_WEAK, insight = "", duration = 2500) => {
+export const chatAI = (player, trigger = CHAT_TRIGGERS.FOLD_WEAK, insight = "", duration = 0) => {
   const safeTrigger = trigger || 'FOLD'; // Fallback if undefined
   const msg = getAIChatDialogue(safeTrigger.toUpperCase(), player.name.toUpperCase());
   console.log(`[AI_CHAT] ${player.name} ${safeTrigger.toUpperCase()}: ${msg}`);
@@ -16,6 +16,11 @@ export const chatAI = (player, trigger = CHAT_TRIGGERS.FOLD_WEAK, insight = "", 
     clearTimeout(player.dialogueTimeoutId);
   }
 
+  // Dynamic duration calculation: Base 2500ms + 50ms per character
+  // Cap at 7000ms max to prevent it from getting stuck forever.
+  let displayDuration = duration > 0 ? duration : (2000 + (msg.length * 100));
+  displayDuration = Math.min(Math.max(displayDuration, 2000), 8000);
+
   player.lastDialogue = msg;
   player.lastThought = insight;
 
@@ -23,7 +28,7 @@ export const chatAI = (player, trigger = CHAT_TRIGGERS.FOLD_WEAK, insight = "", 
     player.lastDialogue = null;
     player.lastThought = null;
     player.dialogueTimeoutId = null;
-  }, duration);
+  }, displayDuration);
 
   return msg;
 }
@@ -120,7 +125,7 @@ function getHeuristicFallback(player, engine) {
     // const vPIPThreshold = 1 - vPIP - (alivePlayers / 20);
     const vPIPThreshold = 1 - vPIP;
     // Check for Big Blind: if no raises, we can check regardless of vPIP.
-    console.info('percentile', percentile, 'vPIPThreshold', vPIPThreshold);
+    // console.info('percentile', percentile, 'vPIPThreshold', vPIPThreshold);
     if (percentile < vPIPThreshold && callAmt > 0) {
       // Hand is too weak for our vPIP
       return { action: 'fold', amount: 0, insight: `vPIP Fold (Rank ${handRank})` };

@@ -5,11 +5,11 @@ import { sendMessage } from './messageSystem';
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const defaultState = {
-  bankroll: 999999999,
+  bankroll: 25000,
   chips: 0, // Chips on table
   // currentBB: 0,
   xp: 0,
-  level: 99,
+  level: 1,
   selectedClass: 'GRINDER',
   ownedProtectors: [], // Array of materialized item objects
   equippedProtector: null, // item object or null
@@ -19,6 +19,7 @@ const defaultState = {
   selectedPortrait: 'p1',
   boostRegenLT: 0,
   completedEvents: [],
+  pendingEvents: [],
   latest_pay_income_base_amount: 0,
   missedPayments: {
     rent_bill: 0,
@@ -31,7 +32,13 @@ const defaultState = {
     bust_enemy: {
       'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
       'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'Mafia_Boss': 0,
-      'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0
+      'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
+      'Max': 0, 'Florence': 0
+    },
+    cleared_zones: {
+      'micro_warehouse_with_max': 0,
+      'micro_underground_bar': 0,
+      'micro_warehouse': 0,
     },
     // Economy
     paid_rake: 0,
@@ -76,7 +83,7 @@ const defaultState = {
     max_pot: 0,
   },
   settings: {
-    language: 'ko', // Added for i18n
+    language: 'en', // Added for i18n
     preflop: [
       { label: 'MIN', type: 'min' },
       { label: '50%', type: 'half' },
@@ -102,7 +109,7 @@ const defaultState = {
   },
   unlockedLocations: [], // Array of item IDs that unlock locations
   ludusTokens: 50,
-  gameTime: new Date('2057-10-20T09:00:00').getTime(), // Start Date
+  gameTime: new Date('2057-01-20T09:00:00').getTime(), // Start Date
   aiAgent: {
     model: AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD],
     name: AI_AGENT_MODEL_ENUM.VANGUARD,
@@ -177,7 +184,10 @@ export const gainXP = (player, pot, bb = 1.0, isHighStakes = false, locationLV =
   checkLevelUp(xp);
   return xp;
 }
-
+export const gainClearedZone = (locationId) => {
+  store.cleared_zones[locationId] = store.cleared_zones[locationId] || 0
+  store.cleared_zones[locationId]++
+}
 export const checkLevelUp = (xp) => {
   // 1000 + 2000 >? 1500
   const nextThreshold = getNextLevelThreshold();
@@ -211,11 +221,9 @@ export const gainBankroll = (amount) => {
   console.log(`[BANKROLL] Gained ${amount} bankroll.`);
   store.bankroll = Math.max(0, store.bankroll + Math.ceil(amount));
 }
-export const initializeBankroll = () => {
-  const bonus = store.equippedProtector?.effects?.reduce((sum, e) => (e.id === 'initial_bankroll_bonus') ? sum + e.value : sum, 0.0);
+export const initializeBankroll = (bonus = 0) => {
   const initialBankroll = store.level * 1000 * (1.0 + bonus);
   console.log(`[BANKROLL] Initial Bankroll: ${initialBankroll}, ${bonus}`);
-
   // Base setup
   store.bankroll = Math.ceil(initialBankroll);
 }

@@ -33,7 +33,7 @@
       <!-- Character Dialogue Bubble -->
 
       <div class="meta">
-        <span class="name">{{ p.name }}</span>
+        <span class="name" :class="{ 'companion': p.isCompanion }">{{ p.name }}</span>
         <!-- no more need to show class tag -->
         <!-- <span class="class-tag" v-if="p.isHuman">{{ p.class?.name }}</span> -->
       </div>

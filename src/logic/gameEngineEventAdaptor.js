@@ -1,8 +1,18 @@
 
-import { store, gainBankroll, gainLT } from './store.js';
+import { store, gainBankroll, gainLT, initializeBankroll, gainClearedZone } from './store.js';
 import { evaluateHand } from './poker.js';
 import { recoverStamina } from './staminaSystem.js';
 import { zones } from './zone.js';
+import { scheduleEvent, EVENT_ID } from './eventSystem.js';
+import { deleteMessage } from './messageSystem.js'
+
+// const cleanupInvites = (locationId) => {
+//   store.messages = store.messages.filter(m => {
+//     // Keep message if it has no actions OR its action is not ACCEPT_INVITE for this location
+//     return !m.actions?.some(a => a.actionType === 'ACCEPT_INVITE' && a.payload?.location_id === locationId);
+//   });
+// };
+
 export class EventAdaptor {
   updateEquippedEffects() {
 
@@ -48,24 +58,48 @@ export class EventAdaptor {
   gameOver({ winnerId }) {
     console.info('gameOver', winnerId);
   }
-  playerEliminated(player) {
-    console.info('playerEliminated', player.name);
-    // Track Human bankruptcy
+  playerBankrupt(player, bestWinner, locationId, inviteId) {
+    console.info('playerBankrupt', player.name);
     if (player.isMe) {
       store.play_stats.bankruptcy_count++;
+      player.item?.effects?.forEach(e => {
+        if (e.trigger.includes('bankrupt')) {
+          this.executeItemEffect(player, e, {});
+        }
+      });
+
+      // cleanupInvites(locationId);
+      deleteMessage(inviteId);
+
+      if (locationId === 'free_street_shop_with_max') {
+        scheduleEvent(EVENT_ID.TUTORIAL_LOSE_PLAYER, 0);
+      }
     } else {
-      // Track AI Agent "Bust"
-      const persona = player.persona || player.name;
-      if (store.play_stats.bust_enemy[persona] !== undefined) {
-        store.play_stats.bust_enemy[persona]++;
+      // An NPC went bankrupt
+      if (bestWinner && bestWinner.isMe) {
+        // Player bankrupted the NPC
+        const persona = player.persona || player.name;
+        if (store.play_stats.bust_enemy[persona] !== undefined) {
+          store.play_stats.bust_enemy[persona]++;
+        } else {
+          store.play_stats.bust_enemy['Fish']++;
+        }
+
+        if (locationId === 'free_street_shop_with_max' && player.name === 'Max') {
+          scheduleEvent(EVENT_ID.TUTORIAL_WIN, 1);
+        }
       } else {
-        // Fallback for dynamic personas
-        store.play_stats.bust_enemy['Fish']++; // Default bucket
+        // Someone else bankrupted the NPC
+        if (locationId === 'free_street_shop_with_max' && player.name === 'Max') {
+          scheduleEvent(EVENT_ID.TUTORIAL_LOSE_MAX, 1);
+        }
       }
     }
   }
-  gameWon({ player, prize, locationId }) {
+  gameWon(player, prize, locationId, inviteId) {
     console.info('gameWon', player.name, prize);
+    // cleanupInvites(locationId);
+    deleteMessage(inviteId);
     let firstClearReward = null;
     for (const tier of zones) {
       const loc = tier.locations.find(l => l.id === locationId);
@@ -81,7 +115,38 @@ export class EventAdaptor {
         console.log(`[GAME] First Clear Reward Awarded: ${firstClearReward}`);
       }
     }
+    if (locationId) gainClearedZone(locationId);
+
+    // [Tutorial] Handled edge cases for the tutorial table
+    if (locationId === 'free_street_shop_with_max') {
+      if (player.isMe) {
+        scheduleEvent(EVENT_ID.TUTORIAL_WIN, 2);
+      } else if (player.name === 'Max') {
+        scheduleEvent(EVENT_ID.TUTORIAL_WIN_MAX, 2);
+      }
+    }
   }
+
+  playerLeaveTable(player, locationId, allPlayers, inviteId) {
+    console.info('playerLeaveTable', player.name, locationId, inviteId);
+    if (!player.isMe) return;
+
+    // cleanupInvites(locationId);
+    deleteMessage(inviteId);
+
+    if (locationId === 'free_street_shop_with_max') {
+      const maxIsAlive = allPlayers.some(p => p.name === 'Max' && !p.isEliminated);
+      if (maxIsAlive) {
+        // Run away early -> Max gets mad
+        if (store.completedEvents.includes(EVENT_ID.TUTORIAL_LEAVE)) {
+          scheduleEvent(EVENT_ID.TUTORIAL_LEAVE_AGAIN, 2);
+        } else {
+          scheduleEvent(EVENT_ID.TUTORIAL_LEAVE, 2);
+        }
+      }
+    }
+  }
+
   bet({ player, amount, pot, street }) {
     if (player.isMe) {
       store.play_stats.raise++;
@@ -273,6 +338,11 @@ export class EventAdaptor {
       return;
     }
     switch (effect.id) {
+      case 'bankrupt':
+        // const bonus = store.equippedProtector?.effects?.reduce((sum, e) => (e.id === 'initial_bankroll_bonus') ? sum + e.value : sum, 0.0);
+        initializeBankroll(effect.value);
+        effect.cooldown = effect.maxCooldown;
+        break;
       case 'lt_recovery':
         gainLT(effect.value);
         break;

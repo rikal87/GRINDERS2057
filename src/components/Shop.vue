@@ -52,8 +52,7 @@
       <main class="merch-panel">
         <div class="items-grid" v-if="store.shop.items.length > 0">
           <div v-for="(item, idx) in store.shop.items" :key="item.instanceId" class="item-card" :class="{
-            'special-offer': item.isSpecialOffer,
-            'tier-high': isHighTier(item)
+            'special-offer': item.isSpecialOffer
           }" @click="buyItem(item, idx)">
             <div class="card-header">
               <span class="tier-tag" :class="'tier-' + item.tier">{{ item.tier }}</span>
@@ -192,6 +191,7 @@ const formatTime = (ms) => {
 };
 
 const isHighTier = (item) => {
+  if (!item || !item.tier) return false;
   const t = parseInt(item.tier.replace('T', ''));
   return t >= 4;
 };
@@ -545,21 +545,6 @@ const handleManualRefresh = () => {
 
 .item-details {
   flex: 1;
-}
-
-.item-details .name {
-  font-size: 1.1rem;
-  color: #e0e0e0;
-  margin: 0 0 5px 0;
-  height: 3rem;
-}
-
-.item-details .desc {
-  text-align: justify;
-  font-size: 0.8rem;
-  color: #888;
-  height: 8rem;
-  white-space: pre-line;
 }
 
 .effects-mini {

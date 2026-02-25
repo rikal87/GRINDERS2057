@@ -43,7 +43,7 @@ export const deleteMessage = (id) => {
   if (idx !== -1) store.messages.splice(idx, 1);
 };
 
-export const handleMessageAction = (msgId, actionIndex) => {
+export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
   const msg = store.messages.find(m => m.id === msgId);
   if (!msg || !msg.actions[actionIndex]) return;
 
@@ -51,6 +51,12 @@ export const handleMessageAction = (msgId, actionIndex) => {
 
   // Process Action Logic
   switch (action.actionType) {
+    case 'RECEIVE':
+      store.bankroll += action.payload.amount;
+      sendMessage('SYSTEM', 'Receive Successful', `You received ${action.payload.amount.toLocaleString()} CR.`);
+      deleteMessage(msgId); // Remove bill after payment
+      // Trigger success effect?
+      break;
     case 'PAY_RENT':
     case 'PAY_TAX':
     case 'PAY_FINE':
@@ -106,6 +112,7 @@ export const handleMessageAction = (msgId, actionIndex) => {
       if (locationConfig) {
         const table = locationConfig.tables;
         const joinPayload = {
+          inviteId: msgId,
           size: pl.available || 6,
           buyIn: table.amount,
           rake: table.baseRake || 0,
@@ -119,7 +126,7 @@ export const handleMessageAction = (msgId, actionIndex) => {
           backgroundDescription: locationConfig.backgroundDescription
         };
         window.dispatchEvent(new CustomEvent('join-table', { detail: joinPayload }));
-        deleteMessage(msgId);
+        // deleteMessage(msgId);
       }
       break;
     case 'DELETE_MESSAGE':
