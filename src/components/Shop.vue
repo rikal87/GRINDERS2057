@@ -100,7 +100,7 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
-import { store, gainShopRefreshCount } from '../logic/store';
+import { store, gainShopRefreshCount, gainBankroll, TYPE_CHANGE_BANKROLL } from '../logic/store';
 import { audioManager } from '../logic/audioManager';
 import { refreshShop, getRefreshCost, canManualRefresh, checkAutoRefresh, REFRESH_INTERVAL_MS } from '../logic/shopLogic';
 import { getinstanceId } from '../logic/items';
@@ -198,7 +198,7 @@ const isHighTier = (item) => {
 
 const buyItem = (item, idx) => {
   if (store.bankroll >= item.price) {
-    store.bankroll -= item.price;
+    gainBankroll(-item.price, TYPE_CHANGE_BANKROLL.BUY_ITEM)
     if (item.isAccessKey) {
       if (!store.unlockedLocations) store.unlockedLocations = [];
       store.unlockedLocations.push(item.id);

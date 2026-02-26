@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { store, resetStore, initializeBankroll, saveStore, initStore } from './logic/store';
+import { store, resetStore, saveStore, initStore } from './logic/store';
 import { GameEngine } from './logic/gameEngine';
 import Intro from './components/Intro.vue';
 import Splash from './components/Splash.vue';
@@ -17,8 +17,7 @@ import { audioManager } from './logic/audioManager';
 import { performSleep, calculateSessionReport } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
 import { hydrateStoreItems } from './logic/items';
-import { EVENT_ID, EventData } from './logic/eventSystem';
-
+import { generatePartner, hydratePartners, registerPartner } from './logic/partnerSystem';
 // ... imports
 import { startTimeSystem, formatGameTime, formatGameDate, stopTimeSystem, advanceTime } from './logic/timeSystem';
 // Automated Hand Transition Logic
@@ -73,13 +72,16 @@ onMounted(() => {
     stopTimeSystem()
     await initStore();
     hydrateStoreItems();
+    hydratePartners();
 
     currentView.value = 'splash';
     isAppLoading.value = false;
   };
 
   initializeApp();
-
+  // for TEST
+  registerPartner('max');
+  registerPartner('florence');
   // Background Auto-Save (Fallback for non-poker events)
   setInterval(() => {
     saveStore();
@@ -92,24 +94,7 @@ const rebootInterval = ref(null);
 const rebootProgress = ref(0);
 const isRebooting = ref(false);
 
-const startReboot = () => {
-  if (isRebooting.value) return;
-  isRebooting.value = true;
-  rebootProgress.value = 0;
 
-  // Visual Progress Update (every 50ms)
-  rebootInterval.value = setInterval(() => {
-    rebootProgress.value += (100 / (3000 / 50));
-    if (rebootProgress.value >= 100) rebootProgress.value = 100;
-  }, 50);
-
-  // Trigger Action after 3s
-  rebootTimer.value = setTimeout(() => {
-    handleAction({ type: 'reboot' });
-    cancelReboot(); // Reset after trigger
-    toggleSettings(); // Close menu
-  }, 3000);
-};
 
 const cancelReboot = () => {
   if (!isRebooting.value) return;
@@ -178,22 +163,17 @@ const handleOpenTaskSelector = (idx) => {
 const handleAction = async (payload) => {
   const { type, amount } = payload;
   console.info('handleAction', payload);
-  if (type === 'reboot') {
-    currentView.value = 'lobby';
-    initializeBankroll();
-  } else if (type === 'main_menu') {
+  if (type === 'main_menu') {
     currentView.value = 'intro';
   }
   if (!engine.value) return;
   switch (type) {
-
     case 'all_in':
     case 'fold':
     case 'call':
     case 'raise':
       await engine.value.handlePlayerAction(engine.value.players[0], { type, amount });
       break;
-    case 'reboot':
     case 'main_menu':
     case 'exit':
       audioManager.playSFX('ui-click');
@@ -367,6 +347,9 @@ watch(currentView, (newView) => {
           <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" @sleep="handleSleepClick"
             @open-task-selector="handleOpenTaskSelector" />
 
+          <!-- c House View -->
+          <!-- <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" @sleep="handleSleepClick" @open-task-selector="handleOpenTaskSelector" /> -->
+
           <!-- Crypto Exchange View -->
           <CryptoExchange v-else-if="currentView === 'crypto'" @back="handleView('lobby')" />
           <!-- Game Table View -->
@@ -392,38 +375,6 @@ watch(currentView, (newView) => {
                   <div class="action-row">
                     <button class="btn-exit nexus-btn" @click="handleAction({ type: 'exit' })">
                       <span class="btn-glitch">RETURN_TO_LOBBY</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Transition>
-
-            <!-- Bankruptcy Overlay -->
-            <Transition name="fade">
-              <div v-if="showGameOverOverlay" class="overlay bankruptcy-overlay">
-                <div class="terminal-msg danger">
-                  <h2 class="glitch-text" data-text="CONNECTION TERMINATED">YOU ARE BANKRUPT</h2>
-                  <h2 class="danger-title">BANKRUPTCY DETECTED</h2>
-                  <p class="critical-msg">Your assets have been liquidated.</p>
-                  <div class="action-row">
-                    <button class="btn-reboot reboot-btn" @click="handleAction({ type: 'reboot' });">
-                      <span class="btn-glitch">GO TO LOBBY</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Transition>
-            <!-- Game Over Overlay -->
-            <Transition name="fade">
-              <div v-if="store.isRealGameOver" class="overlay bankruptcy-overlay">
-                <div class="terminal-msg danger">
-                  <!-- <div class="danger-icon">⚠️</div> -->
-                  <h2 class="glitch-text" data-text="CONNECTION TERMINATED">GAME OVER</h2>
-                  <h2 class="danger-title">GAME OVER</h2>
-                  <p class="critical-msg">{{ store.realGameOverReason }}</p>
-                  <div class="action-row">
-                    <button class="btn-reboot reboot-btn" @click="handleAction({ type: 'hard_reset' });">
-                      <span class="btn-glitch">REBOOT SYSTEM</span>
                     </button>
                   </div>
                 </div>
@@ -510,6 +461,37 @@ watch(currentView, (newView) => {
           </div>
           <div class="report-actions">
             <button class="btn" @click="wakeUp" :disabled="!reportFinished">WAKE_UP</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+    <!-- Bankruptcy Overlay -->
+    <Transition name="fade">
+      <div v-if="showGameOverOverlay" class="overlay bankruptcy-overlay">
+        <div class="terminal-msg danger">
+          <h2 class="glitch-text" data-text="CONNECTION TERMINATED">YOU ARE BANKRUPT</h2>
+          <h2 class="danger-title">BANKRUPTCY DETECTED</h2>
+          <p class="critical-msg">Your assets have been liquidated.</p>
+          <div class="action-row">
+            <button class="btn-reboot reboot-btn" @click="handleAction({ type: 'exit' });">
+              <span class="btn-glitch">GO TO LOBBY</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+    <!-- Game Over Overlay -->
+    <Transition name="fade">
+      <div v-if="store.isRealGameOver" class="overlay bankruptcy-overlay">
+        <div class="terminal-msg danger">
+          <!-- <div class="danger-icon">⚠️</div> -->
+          <h2 class="glitch-text" data-text="CONNECTION TERMINATED">GAME OVER</h2>
+          <h2 class="danger-title">GAME OVER</h2>
+          <p class="critical-msg">{{ store.realGameOverReason }}</p>
+          <div class="action-row">
+            <button class="btn-reboot reboot-btn" @click="handleAction({ type: 'hard_reset' });">
+              <span class="btn-glitch">REBOOT SYSTEM</span>
+            </button>
           </div>
         </div>
       </div>

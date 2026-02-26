@@ -1,8 +1,9 @@
 
-import { store } from './store';
+import { gainBankroll, store } from './store';
 import { zones } from './zone';
 import { getRndLoreSpamMessage } from './lore_spam_message';
 import { audioManager } from './audioManager';
+// import { EVENT_ID, scheduleEvent } from './eventSystem';
 export const MESSAGE_TYPE = {
   SYSTEM: 'SYSTEM',
   FINANCE: 'FINANCE',
@@ -52,22 +53,19 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
   // Process Action Logic
   switch (action.actionType) {
     case 'RECEIVE':
-      store.bankroll += action.payload.amount;
+      gainBankroll(action.payload.amount, TYPE_CHANGE_BANKROLL.RECEIVE)
       sendMessage('SYSTEM', 'Receive Successful', `You received ${action.payload.amount.toLocaleString()} CR.`);
       deleteMessage(msgId); // Remove bill after payment
       // Trigger success effect?
       break;
     case 'PAY_RENT':
-    case 'PAY_TAX':
     case 'PAY_FINE':
       const amount = action.payload.amount;
       if (store.bankroll >= amount) {
-        store.bankroll -= amount;
-
+        gainBankroll(-amount, action.actionType)
         if (action.actionType === 'PAY_RENT' && store.missedPayments) {
           store.missedPayments.rent_bill = Math.max(0, store.missedPayments.rent_bill - 1);
         }
-
         sendMessage('SYSTEM', 'Payment Successful', `Successfully paid ${amount.toLocaleString()} CR.`);
         deleteMessage(msgId); // Remove bill after payment
         // Trigger success effect?
@@ -75,10 +73,27 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
         sendMessage('SYSTEM', 'Insufficient Funds!', `You need ${amount.toLocaleString()} CR to pay this bill.`);
       }
       break;
+    case 'RESOLVE_PARTNER_DEBT':
+      const p = action.payload;
+
+      if (p.resolveType === 'ACCEPT') {
+        if (store.bankroll >= p.amount) {
+          gainBankroll(-p.amount, action.actionType)
+          sendMessage('SYSTEM', 'Payment Successful', `Successfully paid ${p.amount.toLocaleString()} CR.`);
+          scheduleEvent(msgId, 2)
+          deleteMessage(msgId);
+        } else {
+          sendMessage('SYSTEM', 'Insufficient Funds!', `You need ${p.amount.toLocaleString()} CR.`);
+        }
+      } else if (p.resolveType === 'REFUSE') {
+        scheduleEvent(p.failEvent, 1);
+        deleteMessage(msgId);
+      }
+      break;
     case 'PAY_INCOME_TAX':
       const taxAmount = action.payload.amount;
       if (store.bankroll >= taxAmount) {
-        store.bankroll -= taxAmount;
+        gainBankroll(-taxAmount, action.actionType)
         // Update the high water mark for the next cycle
         store.latest_pay_income_base_amount = store.bankroll;
 

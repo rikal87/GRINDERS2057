@@ -59,7 +59,7 @@
 
           </div>
         </div>
-        <button class="btn" @click="$emit('sleep')">REST</button>
+        <button class="btn" @click="$emit('sleep')">SLEEP</button>
         <!-- Program Setup -->
         <!-- Ai Agent Template -->
         <div class="v5-panel v5-neural-template">
@@ -120,7 +120,8 @@
         <div class="v5-panel v5-storage-unit" style="flex:1; overflow:hidden">
           <div class="v5-tabs">
             <button :class="{ active: mainTab === 'hardware' }" @click="mainTab = 'hardware'">Chip Protector</button>
-            <button :class="{ active: mainTab === 'crypto' }" @click="mainTab = 'crypto'">Crypto Currency</button>
+            <button :class="{ active: mainTab === 'partner' }" @click="mainTab = 'partner'">Partner</button>
+            <!-- <button :class="{ active: mainTab === 'crypto' }" @click="mainTab = 'crypto'">Crypto Currency</button> -->
           </div>
 
           <div class="v5-item-container">
@@ -154,6 +155,81 @@
               <div v-if="store.ownedProtectors.length === 0" class="empty-stock">
                 <h2>OUT_OF_INVENTORY</h2>
                 <p>BUY AT THE SHOP</p>
+              </div>
+            </template>
+
+            <!-- Partner View -->
+            <template v-else-if="mainTab === 'partner'">
+              <div class="partner-grid">
+                <!-- <div v-for="partner in store.partners" :key="partner.id" class="v5-partner-card" -->
+                <div v-for="partner in store.partners" :key="partner.id" class="v5-panel-inner"
+                  :class="partner.status.toLowerCase()">
+                  <div class="card-glow"></div>
+                  <div class="card-header">
+                    <div class="partner-info">
+                      <div class="scanline"></div>
+                      <span class="v5-class-title philosophy" :class="partner.philosophy.toLowerCase()">{{ partner.name
+                      }}</span>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <p class="v5-class-desc">{{ partner.note }}</p>
+                    <p class="v5-status-badges">
+                      <span class="v5-badge-mini status" :class="partner.status.toLowerCase()">{{ partner.status
+                      }}</span>
+                      <span v-for="contract in partner.contracts" :key="contract.type" class="v5-badge-mini"
+                        :class="{ active: contract.active }" :title="getContractLabel(contract.type)">
+                        {{ contract.type }}
+                      </span>
+                    </p>
+                    <div class="partner-stats-grid">
+                      <div class="stat-box">
+                        <span class="label">BANKROLL</span>
+                        <span class="val">{{ partner.bankroll.toLocaleString() }}<small>CR</small></span>
+                      </div>
+                      <div class="stat-box">
+                        <span class="label">NET_WORTH</span>
+                        <div class="net-worth-chart-container">
+                          <svg viewBox="0 0 100 40" preserveAspectRatio="none" class="net-worth-sparkline">
+                            <path :d="getNetWorthChartPath(partner)" fill="none" stroke="var(--neon-cyan)"
+                              stroke-width="1.5" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div class="stat-box">
+                        <span class="label">RELATIONSHIP</span>
+                        <span class="val"
+                          :class="{ 'high': partner.relationship > 700, 'low': partner.relationship < 200 }">
+                          {{ partner.relationship }}
+                        </span>
+                      </div>
+                      <div class="stat-box" v-for="contract in partner.contracts" :key="contract.type">
+                        <span class="label">{{ contract.type }}</span>
+                        <p class="v5-class-desc">
+                          {{ CONTRACT_TYPE_DESC[contract.type].desc }}
+                        </p>
+                        <p class="v5-class-desc">
+                          {{ CONTRACT_TYPE_DESC[contract.type].note }}
+                        </p>
+                        <p v-if="contract.useRatio">
+                          <input type="range" min="0.0" max="1.0" step="0.1" value="0.5" :disabled="!contract.active"
+                            v-model="contract.ratio" @change="signContract(partner.id, contract.type, contract.ratio)">
+                        </p>
+                        <p>
+                          <button class="btn"
+                            :disabled="partner.relationship < contract.requiredRelationship || contract.active || contract.cooldown > 0"
+                            @click="signContract(partner.id, contract.type, contract.ratio)">SIGN</button>
+                          <button class="btn" :disabled="!contract.active || contract.cooldown > 0"
+                            @click="breakContract(partner.id, contract.type)">CANCEL</button>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card-footer">
+
+                  </div>
+                </div>
               </div>
             </template>
 
@@ -195,7 +271,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-              }} UNREAD]</small>
+          }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
@@ -292,9 +368,6 @@
         </div>
       </div>
     </transition>
-
-
-
     <!-- SKILL SELECTOR MODAL -->
     <transition name="v4-fade">
       <div v-if="showSkillSelector" class="v5-modal-overlay" @click.self="closeSkillSelector">
@@ -378,22 +451,21 @@
         </div>
       </div>
     </transition>
-
-
   </div>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue';
-import { store, getNextLevelThreshold, getCurrentAgent, getEffectiveMaxStamina } from '../logic/store';
+import { store, getNextLevelThreshold, getEffectiveMaxStamina, gainBankroll, TYPE_CHANGE_BANKROLL } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
 import { validateTaskSlots } from '../logic/aiTaskSystem';
 import { AI_TASK_DATA } from '../logic/agentTaskData';
 import { audioManager } from '../logic/audioManager';
-import { SKILL_DATA, getSlotConfig } from '../logic/skills';
-import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAgentModelClasses';
+import { SKILL_DATA } from '../logic/skills';
+import { AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAgentModelClasses';
 import { deleteMessage } from '../logic/messageSystem';
+import { signContract, breakContract, CONTRACT_TYPE, CONTRACT_TYPE_DESC } from '../logic/partnerSystem';
 // import { formatGameTime, formatGameDate } from '../logic/timeSystem';
 
 const emit = defineEmits(['sleep', 'back', 'open-task-selector']);
@@ -502,7 +574,7 @@ const confirmPurchase = () => {
   const plan = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value].price_plan[selectedPlanIdx.value];
   if (store.bankroll < plan.cost) return;
 
-  store.bankroll -= plan.cost;
+  gainBankroll(-plan.cost, TYPE_CHANGE_BANKROLL.AI_AGENT_SUBSCRIPTION)
   store.aiAgent.name = selectedModelId.value;
   store.aiAgent.model = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value];
   store.aiAgent.price_plan_idx = selectedPlanIdx.value;
@@ -599,7 +671,7 @@ const triggerMessageAction = (msgId, idx) => {
 };
 
 const sellItem = (item) => {
-  store.bankroll += Math.floor((item.price || 100) * 0.25);
+  gainBankroll(item.price * 0.25, TYPE_CHANGE_BANKROLL.SELL_ITEM)
   const idx = store.ownedProtectors.findIndex(p => p.instanceId === item.instanceId);
   if (idx !== -1) store.ownedProtectors.splice(idx, 1);
   audioManager.playSFX('coin-throw');
@@ -633,5 +705,36 @@ const getStaminaColor = computed(() => {
   if (s > 25) return '#f8ef00';
   return '#ff003c';
 });
+// CONTRACT_TYPE
+const getContractLabel = (type) => {
+  const lang = store.settings.language;
+  const labels = {
+    'SHARE_BENEFIT': lang === 'ko' ? '수익률 스왑' : 'Share Benefit',
+    'BANKRUPT_RESCUE': lang === 'ko' ? '파산 구조' : 'Bankrupt Rescue',
+    'GAMBLING_WITH_ME': lang === 'ko' ? '카지노 동행' : 'Gambling with a Friend',
+    'A_DATE_WITH_YOU': lang === 'ko' ? '데이트 하기' : 'A Date with You',
+  };
+  return labels[type] || type;
+};
+
+const getNetWorthChartPath = (partner) => {
+  const history = partner.netWorthHistory || [];
+  if (history.length < 2) return "M 0 20 L 100 20";
+
+  // Filter for last 7 days (approx 168 hours)
+  const maxPoints = 168;
+  const data = history.slice(-maxPoints).map(h => h.netWorth);
+
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const stepX = 100 / (data.length - 1);
+
+  return data.map((val, i) => {
+    const x = i * stepX;
+    const y = 40 - ((val - min) / range) * 35 - 2.5; // Scale and offset to keep in 40px height
+    return (i === 0 ? "M " : "L ") + `${x.toFixed(1)} ${y.toFixed(1)}`;
+  }).join(" ");
+};
 </script>
 <style scoped src="../styles/components/SafeHouse.css"></style>

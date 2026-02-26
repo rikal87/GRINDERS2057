@@ -1,5 +1,5 @@
 import { reactive } from 'vue';
-import { store } from './store';
+import { store, gainBankroll, TYPE_CHANGE_BANKROLL } from './store';
 
 // Coin Definitions
 const COIN_TYPES = {
@@ -232,7 +232,7 @@ export const buyCoin = (coinId, amountCR) => {
 
   const coinAmount = amountCR / coin.price;
 
-  store.bankroll -= amountCR;
+  gainBankroll(-amountCR, TYPE_CHANGE_BANKROLL.CRYPTO_TRADE)
 
   if (!store.cryptoPortfolio) store.cryptoPortfolio = {};
 
@@ -283,7 +283,6 @@ export const sellCoin = (coinId, amountCoin) => {
   } else {
     store.cryptoPortfolio[coinId] = currentEntry;
   }
-
-  store.bankroll += returnCR;
+  gainBankroll(returnCR, TYPE_CHANGE_BANKROLL.CRYPTO_TRADE)
   return true;
 };

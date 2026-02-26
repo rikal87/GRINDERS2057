@@ -239,52 +239,6 @@
 
 /* Seating Distribution Logic */
 /* 9-Player Distribution (Professional Elliptical) */
-.max9.seat-0 {
-  bottom: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-/* Hero */
-.max9.seat-1 {
-  bottom: 12%;
-  left: 10%;
-}
-/* Bottom-Left */
-.max9.seat-2 {
-  bottom: 38%;
-  left: 1%;
-}
-/* Mid-Left */
-.max9.seat-3 {
-  top: 25%;
-  left: 5%;
-}
-/* Top-Left */
-.max9.seat-4 {
-  top: 2%;
-  left: 30%;
-}
-/* Top-Center-Left */
-.max9.seat-5 {
-  top: 2%;
-  right: 30%;
-}
-/* Top-Center-Right */
-.max9.seat-6 {
-  top: 25%;
-  right: 5%;
-}
-/* Top-Right */
-.max9.seat-7 {
-  bottom: 38%;
-  right: 1%;
-}
-/* Mid-Right */
-.max9.seat-8 {
-  bottom: 12%;
-  right: 10%;
-}
-
 @media (min-width: 1400px) {
   .max9.seat-1 {
     left: 20%;
@@ -322,20 +276,34 @@
 /* Bottom-Right */
 
 /* Override for 6P to avoid crowding - Professional 6-Max Layout */
+.chip-stack {
+  position: absolute;
+}
 .max6.seat-0 {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
+}
+.max6.seat-0 .chip-stack {
+  top: -30%;
 }
 /* Hero */
 .max6.seat-1 {
   bottom: 20%;
   left: 0%;
 }
+.max6.seat-1 .chip-stack {
+  top: 105%;
+  /* left: 25%; */
+}
 /* Mid-Left */
 .max6.seat-2 {
   top: 20%;
   left: 0%;
+}
+.max6.seat-2 .chip-stack {
+  /* top: 25%; */
+  top: 105%;
 }
 /* Top-Left */
 .max6.seat-3 {
@@ -343,15 +311,24 @@
   left: 35%;
   /* transform: translateX(-50%); */
 }
+.max6.seat-3 .chip-stack {
+  top: 105%;
+}
 /* Top-Center */
 .max6.seat-4 {
   top: 20%;
   right: 0%;
 }
+.max6.seat-4 .chip-stack {
+  top: 105%;
+}
 /* Top-Right */
 .max6.seat-5 {
   bottom: 20%;
   right: 0%;
+}
+.max6.seat-5 .chip-stack {
+  top: 105%;
 }
 /* Vertical 2-Max Distribution (Portrait) */
 .max2.seat-bottom {
@@ -474,11 +451,7 @@
     right: -5px;
     top: -5px;
   }
-  .chip-stack {
-    position: absolute;
-    /* transform: scale(0.8); */
-    /* margin-top: -10px; */
-  }
+
   .ram-meter {
     height: 3px;
   }
@@ -527,13 +500,18 @@
   .max6.seat-1 {
     bottom: 30%;
   }
+  .max6.seat-1 .chip-stack {
+    top: 25%;
+  }
   .max6.seat-2 {
     top: 25%;
   }
+
   .max6.seat-3 {
     top: 0;
     left: 25%;
   }
+
   .max6.seat-4 {
     top: 35%;
     right: 0;
@@ -542,6 +520,7 @@
     bottom: 20%;
     right: 0;
   }
+
   /* Vertical 2-Max Distribution (Portrait) */
   .max2.seat-bottom {
     bottom: 0;
@@ -646,7 +625,7 @@
 }
 
 /* Winner Glow Effect */
-.player-seat.winner-glow {
+.winner-glow {
   animation: winner-pulse 1.5s ease-in-out infinite;
   filter: drop-shadow(0 0 20px var(--neon-yellow)) brightness(1.3);
 }

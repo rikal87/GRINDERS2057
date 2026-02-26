@@ -1,4 +1,4 @@
-import { store } from './store.js';
+import { store, gainBankroll, TYPE_CHANGE_BANKROLL } from './store.js';
 import { ITEM_DATA, materializeItem } from './items.js';
 
 export const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
@@ -94,7 +94,7 @@ export const refreshShop = (isManual = false) => {
   if (isManual) {
     const cost = getRefreshCost();
     if (store.bankroll < cost) return false;
-    store.bankroll -= cost;
+    gainBankroll(-cost, TYPE_CHANGE_BANKROLL.OTHER)
     store.shop.manualRefreshCount++;
   } else {
     store.shop.manualRefreshCount = Math.max(0, store.shop.manualRefreshCount - 1);

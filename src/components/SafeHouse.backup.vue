@@ -251,7 +251,7 @@ const triggerMessageAction = (msgId, idx) => { processMsgAction(msgId, idx); sel
 const equip = (item) => { store.equippedProtector = item; audioManager.playSFX('action-confirm'); };
 const sellItem = (item) => {
   if (store.equippedProtector?.instanceId === item.instanceId) return;
-  store.bankroll += Math.floor((item.price || 100) * 0.25);
+  gainBankroll(Math.floor((item.price || 100) * 0.25), TYPE_CHANGE_BANKROLL.SELL_ITEM);
   const idx = store.ownedProtectors.findIndex(p => p.instanceId === item.instanceId);
   if (idx !== -1) store.ownedProtectors.splice(idx, 1);
   audioManager.playSFX('coin-throw');

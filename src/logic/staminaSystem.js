@@ -33,6 +33,7 @@ export const calculateSessionReport = () => {
 
   return {
     totalProfit,
+    ...store.session_bankroll_stats,
     roi: roi.toFixed(1),
     playTime,
     biggestWin
@@ -60,6 +61,7 @@ export const performSleep = (advanceTimeFunc) => {
     total_lost_money: store.play_stats.total_lost_money,
     max_win_pot: store.play_stats.max_win_pot
   };
+  store.session_bankroll_stats = {};
 
   audioManager.playSFX('action-confirm');
 };

@@ -1,12 +1,12 @@
 import { calculateEquity, createDeck } from './poker.js';
 import { getAIAction, chatAI, } from './aiEngine.js';
 import { getAdvancedAIAction } from './aiEngineAdvanced.js';
-// import { CHAT_TRIGGERS } from './AIChatSystem.js';
-import { CHAT_TRIGGERS, CLASSES_COMPANION } from './persona.js'
+import { CHAT_TRIGGERS, CLASSES_PARTNER } from './persona.js'
 import { audioManager } from './audioManager.js';
 import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
-import { gainXP, initializeBankroll, store, saveStore } from './store.js';
+import { CONTRACT_TYPE } from './partnerSystem.js';
+import { gainXP, store, saveStore, gainBankroll, TYPE_CHANGE_BANKROLL } from './store.js';
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
 import { zones } from './zone.js';
 
@@ -43,7 +43,6 @@ export class GameEngine {
     this.currentHandHistory = null;
     this.processingAI = false;
     this.locationLV = locationLV;
-    // store.bankroll -= this.buyIn; // Deduct from bankroll
     this.turnTimer = null;
     this.currentStreetRaises = 0;
     this.pot = 0; // [FIX] Reactive property for instant updates
@@ -51,7 +50,7 @@ export class GameEngine {
     this.buyInLimit = buyInLimit; // only for human?
     this.inviteId = inviteId;
     this.players = this.initializePlayers(playerClass, tableSize); // [FIX] Initialize players after all properties are set
-    // this.companions = [];
+    // this.partners = [];
   }
 
   // Getter for backward compatibility / easier access
@@ -154,21 +153,37 @@ export class GameEngine {
     // For now we'll allow forced spawns to override loc allowedNames
 
     let enemiesToPlace = [];
-    // 0. Companions Spawns (Top Priority from zone.js config)
-    if (locationConfig.companions && Array.isArray(locationConfig.companions)) {
-      locationConfig.companions.forEach(companionName => {
+    // 0. partners Spawns (Top Priority from zone.js config)
+    if (store.partners && Array.isArray(store.partners)) {
+      store.partners.forEach(partner => {
+        const validContract = partner.contracts.find(contract => contract.type === CONTRACT_TYPE.GAMBLING_WITH_ME && contract.active);
+        const targetId = partner.id.toLocaleUpperCase();
+        const template = CLASSES_PARTNER.find(e => e.name.toUpperCase() === targetId)
+        if (template && validContract) {
+          enemiesToPlace.push({ ...template });
+        } else {
+          console.warn(`[GAME] Companion persona '${partner}' not found in CLASSES.`);
+        }
+      });
+    }
+
+    // 1. Guests Spawns (Top Priority from zone.js config)
+    if (locationConfig.guests && Array.isArray(locationConfig.guests)) {
+      locationConfig.guests.forEach(companionName => {
         if (enemiesToPlace.length >= size - 1) return;
         const targetId = companionName.toLowerCase();
-        let template = CLASSES_COMPANION.find(e => e.name.toLowerCase() === targetId)
+        const template = CLASSES_PARTNER.find(e => e.name.toLowerCase() === targetId)
         if (template) {
           enemiesToPlace.push({ ...template });
-          chatAI(template, CHAT_TRIGGERS.GAME_START);
+          setTimeout(() => {
+            chatAI(template, CHAT_TRIGGERS.GAME_START);
+          }, 2000);
         } else {
           console.warn(`[GAME] Companion persona '${companionName}' not found in CLASSES.`);
         }
       });
     }
-    // 1. Forced Spawns (Boosts)
+    // 2. Forced Spawns (Boosts)
     const bossPool = [...CLASSES_ENEMY_BOSS].filter(p => p.isBoss).sort(() => Math.random() - 0.5);
 
     spawnBoosts.forEach(eff => {
@@ -193,7 +208,7 @@ export class GameEngine {
       }
     });
 
-    // 2. Weighted Random Spawns for remainders
+    // 3. Weighted Random Spawns for remainders
     const availableEnemies = CLASSES_ENEMY.filter(enemy => enemy.name !== 'Named_Pro' && allowedNames.includes(enemy.name));
 
     // Prepare weights based on multiply boosts
@@ -212,7 +227,7 @@ export class GameEngine {
     // Helper to pick randomly based on weights
     const getWeightedRandomEnemy = () => {
       // Add Named_Pro logic (random chance if allowed)
-      if (allowedNames.includes('Named_Pro') && Math.random() < 0.5 && bossPool.length > 0) {
+      if (allowedNames.includes('Named_Pro') && Math.random() < 0.1 && bossPool.length > 0) {
         return bossPool.pop();
       }
 
@@ -245,7 +260,7 @@ export class GameEngine {
         totalWagered: 0,
         isFolded: false,
         isHuman: false,
-        isCompanion: villan.isCompanion || false,
+        isPartner: villan.isPartner || false,
         isBoss: villan.isBoss || false,
         item: null,
         // Helper methods for skills
@@ -765,35 +780,15 @@ export class GameEngine {
 
         p.isEliminated = true;
         if (bestWinner && !bestWinner.isMe) chatAI(bestWinner, CHAT_TRIGGERS.ELIMINATED_ENEMY);
-        eventAdaptor.playerBankrupt(p, bestWinner, this.locationId, this.inviteId);
-
         // Handle Human Bankruptcy
         if (p.isHuman) {
           this.gameOver = true;
           this.winnerId = bestWinner ? bestWinner.id : 'cpu';
+          this.state = 'IDLE';
         }
+        eventAdaptor.playerBankrupt(p, bestWinner, this.locationId, this.inviteId);
       }
     });
-
-    // 2. Check Human Bankruptcy (no more need)
-    // const human = this.players.find(p => p.isHuman);
-    // if (human && human.chips <= 0) {
-    //   // [AI CHAT] Enemy Elimination (Mockery)
-    //   const aiSurvivors = this.players.find(s => s.chips > 0 && s.id !== human.id && !s.isHuman);
-    //   if (aiSurvivors && Math.random() < 0.6) {
-    //     chatAI(aiSurvivors, CHAT_TRIGGERS.ELIMINATED_ENEMY);
-    //   }
-
-    //   const buyInResult = this.processBuyIn(human);
-    //   if (buyInResult) {
-    //     eventAdaptor.rebuy({ player: human, amount: BUY_IN });
-    //   } else {
-    //     this.gameOver = true;
-    //     this.winnerId = 'cpu'; // Generic loss
-    //     initializeBankroll();
-    //     eventAdaptor.playerEliminated({ player: human });
-    //   }
-    // }
 
     // 3. Check for Victory (Only Human Remains)
     const lastSurvior = this.players.filter(p => !p.isEliminated)
@@ -812,7 +807,7 @@ export class GameEngine {
   }
   exitGame() {
     eventAdaptor.playerLeaveTable(this.players[0], this.locationId, this.players, this.inviteId);
-    store.bankroll += this.players[0].chips;
+    gainBankroll(this.players[0].chips, TYPE_CHANGE_BANKROLL.GAMBLING)
     saveStore();
     this.cleanup();
   }
@@ -825,7 +820,7 @@ export class GameEngine {
     const actualBuyIn = Math.min(store.bankroll, targetBuyIn);
     player.chips = actualBuyIn;
     if (isRebuy) player.buyInLimit--;
-    store.bankroll -= actualBuyIn;
+    gainBankroll(actualBuyIn * -1);
     console.log(`[BANKROLL] Buy-in deducted: ${actualBuyIn}. Remaining: ${store.bankroll}, ${player.buyInLimit} `);
     return true;
   }
@@ -958,8 +953,7 @@ export class GameEngine {
   async cashOut() {
     const player = this.players[0];
     if (player && player.chips > 0) {
-      store.bankroll += player.chips;
-      console.log(`[BANKROLL] Cashed out ${player.chips}. New Bankroll: ${store.bankroll} `);
+      gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING)
       player.chips = 0;
     }
   }

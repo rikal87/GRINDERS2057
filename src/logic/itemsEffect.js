@@ -63,7 +63,7 @@ export const ITEM_EFFECT_DATA = [
   {
     icon: '🆔',
     id: 'club_membership',
-    name_ko: '입장권한',
+    name_ko: '입장 권한',
     name_en: 'Entry Pass',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Unique',
@@ -93,7 +93,7 @@ export const ITEM_EFFECT_DATA = [
   {
     icon: '🔑',
     id: 'the_bunker_key',
-    name_ko: '입장권한',
+    name_ko: '입장 권한',
     name_en: 'Entry Pass',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Unique',
@@ -108,7 +108,7 @@ export const ITEM_EFFECT_DATA = [
   {
     icon: '⚜️',
     id: 'holdem_house_membership',
-    name_ko: '입장권한',
+    name_ko: '입장 권한',
     name_en: 'Entry Pass',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Unique',
@@ -123,7 +123,7 @@ export const ITEM_EFFECT_DATA = [
   {
     icon: '🔱',
     id: 'royal_room_invite',
-    name_ko: '입장권한',
+    name_ko: '입장 권한',
     name_en: 'Entry Pass',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Unique',
@@ -168,7 +168,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '💾',
-    id: 'lt_recovery',
+    id: 'last_stand',
     name_ko: 'LT 회복',
     name_en: 'LT Recovery',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -210,17 +210,24 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '💵',
-    id: 'initial_bankroll_bonus',
-    name_ko: '초기 자금 보너스',
-    name_en: 'Initial Bankroll Bonus',
+    id: 'emergency_fund',
+    name_ko: '비상 자금',
+    name_en: 'Emergency Fund',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Uncommon',
     maxCooldown: 300,
     cooldown: 0,
     trigger: ['bankrupt'],
     editable: false,
-    get desc() { return store.settings.language === 'en' ? `Increases next starting bankroll by +${Math.floor(this.value * 100)}% (Cooldown: ${this.maxCooldown} rounds)` : `파산 시 다음 초기 자금 +${Math.floor(this.value * 100)}% (쿨타임: ${this.maxCooldown} 라운드)`; },
-    value: 1.0,
+    get desc() {
+      return store.settings.language === 'en'
+        ? `Gain +${this.valueCalc} Bankroll when bankrupt (Effect increases as level goes up, Cooldown: ${this.maxCooldown} rounds)`
+        : `파산 시 뱅크롤 +${this.valueCalc} (효과는 레벨이 올라갈수록 증가, 쿨타임: ${this.maxCooldown} 라운드)`;
+    },
+    get valueCalc() {
+      return store.level * this.value;
+    },
+    value: 2500,
     isStackable: true
   },
   {
@@ -605,9 +612,14 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     editable: false,
     trigger: ['winAtShowdown', 'winAtShowdownWithAllIn', 'lose'],
-    get desc() { return store.settings.language === 'en' ? `Grants +${Math.floor(this.value * (this.stack + 1) * 100)}% XP bonus upon winning a Showdown.\n(Accumulates upon losing, resets on valid win.)` : `쇼다운에서 승리시 경험치 보너스 +${Math.floor(this.value * (this.stack + 1) * 100)}%\n(이 효과는 쇼다운에서 패배할 때마다 누적되며, 승리할때 초기화.)`; },
+    get desc() {
+      return store.settings.language === 'en' ?
+        `Grants +${Math.floor(this.value * 100)}% XP bonus upon winning a Showdown. (Current total: +${this.stackPerValue}%. This effect accumulates upon losing, resets on valid win.)` :
+        `쇼다운에서 승리시 경험치 보너스 +${this.value * 100}% (현재 누적량: ${this.stackPerValue}%. 이 효과는 쇼다운에서 패배할 때마다 누적되며, 승리할때 초기화.)`;
+    },
     value: .2,
     stack: 0,
+    get stackPerValue() { return this.value * this.stack * 100; },
     isStackable: true
   },
   {
@@ -655,9 +667,9 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '😃',
-    id: 'joy_of_victory',
-    name_ko: '승리의 기쁨',
-    name_en: 'Joy of Victory',
+    id: 'joy_of_vitality',
+    name_ko: '승리의 활력',
+    name_en: 'Joy of Vitality',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Uncommon',
     cooldown: 0,
@@ -692,23 +704,34 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     editable: false,
     trigger: ['win', 'lose'],
-    get desc() { return store.settings.language === 'en' ? `Grants +${Math.floor(this.value * (this.stack + 1) * 100)}% XP bonus per win. (Accumulates with wins, resets upon losing a Showdown.)` : `승리할때 마다 경험치 보너스 +${Math.floor(this.value * (this.stack + 1) * 100)}% (이 효과는 승리할때 마다 누적되며, 쇼다운 패배시 초기화.)`; },
-    value: 0.03,
+    get desc() {
+      return store.settings.language === 'en' ?
+        `Grants +${this.value * 100}% XP bonus per win. (Current total: +${this.stackPerValue}%. This effect accumulates with wins and resets upon losing a Showdown.)` :
+        `승리할때 마다 경험치 보너스 +${this.value * 100}% (현재 누적량: +${this.stackPerValue}%. 이 효과는 승리할때 마다 누적되며, 쇼다운 패배시 초기화.)`;
+    },
+    value: .03,
     stack: 0,
+    get stackPerValue() { return this.value * this.stack * 100; },
     isStackable: true
   },
-  // {
-  //   icon: '🔨',
-  //   id: 'blind_sabotage',
-  //   name: '블라인드 사보타주',
-  //   rarity: 'Rare',
-  //   cooldown: 0,
-  //   editable: false,
-  //   trigger: ['win'],
-  //   get desc() { return `승리 시 다음 라운드 상대들의 블라인드 비용 ${this.value * 100}% 증가` },
-  //   value: 1,
-  //   isStackable: true
-  // },
+  {
+    icon: '⏳',
+    id: 'cooldown_reduction',
+    name_ko: '쿨타임 감소',
+    name_en: 'Cooldown Reduction',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Rare',
+    cooldown: 0,
+    editable: false,
+    trigger: ['round_start'],
+    get desc() {
+      return store.settings.language === 'en' ?
+        `Reduces cooldown of other effects by ${this.value}.` :
+        `다른 효과들의 쿨타임을 ${this.value} 감소.`;
+    },
+    value: 2,
+    isStackable: true
+  },
   {
     icon: '⚛️',
     id: 'quantum_fold',

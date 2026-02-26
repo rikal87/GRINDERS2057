@@ -345,7 +345,7 @@ export const ITEM_DATA = [
     desc_ko: '정말 위험할 때를 대비해 숨겨둔 비상금입니다.',
     desc_en: 'A hidden stash of emergency funds for when things get really dangerous.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('initial_bankroll_bonus')]
+    effects: [getItemEffect('emergency_fund')]
   },
   {
     id: 'tax_haven_vpn',
@@ -476,20 +476,6 @@ export const ITEM_DATA = [
     desc_en: 'Makes a seemingly impossible victory yours.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [getItemEffect('quantum_luck')]
-  },
-  {
-    id: 'illegal_system_miner',
-    name_ko: '불법 토큰 채굴 프로그램',
-    name_en: 'Illegal Token Mining Program',
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    icon: '⛏️',
-    class: 'Item',
-    tier: 'T2',
-    price: 28000,
-    desc_ko: '공유 경제의 미래를 미리 만나보세요. 타인의 자원을 내 것처럼 쓰는 것, 그것이 이 도시에서 살아남는 유일한 규례입니다.',
-    desc_en: 'Experience the future of the sharing economy. Using others\' resources as your own is the only rule for surviving in this city.',
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('joy_of_victory')]
   },
   // --- T3 items (Rare, 50000 - 100000 CR) ---
   {
@@ -747,7 +733,7 @@ export const ITEM_DATA = [
     desc_ko: '어딘가 쓸모 있는 잡동사니들이 가득합니다.',
     desc_en: 'It\'s full of junk that might be useful somewhere.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('initial_bankroll_bonus'), getRndItemBucket]
+    effects: [getItemEffect('emergency_fund'), getRndItemBucket]
   },
   {
     id: 'decrypted_tax_file',
@@ -846,7 +832,7 @@ export const ITEM_DATA = [
     desc_ko: '큰 행운을 불러올 씨앗 같은 데이터 뭉치입니다.',
     desc_en: 'A clump of data like a seed that will bring great luck.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('initial_bankroll_bonus'), getItemEffect('pot_bonus')]
+    effects: [getItemEffect('emergency_fund'), getItemEffect('pot_bonus')]
   },
   {
     id: 'low_stack_berserker_core',
@@ -890,7 +876,7 @@ export const ITEM_DATA = [
     desc_ko: '과학과 미신이 결합된 최신형 부적입니다.',
     desc_en: 'The latest charm combining science and superstition.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('initial_bankroll_bonus'), getRndItemBucket]
+    effects: [getItemEffect('emergency_fund'), getRndItemBucket]
   },
   {
     id: 'mask_of_joy_and_despair',
@@ -933,7 +919,7 @@ export const ITEM_DATA = [
     desc_ko: '잿더미에서 다시 일어서는 것처럼 초기 자금을 복구합니다.',
     desc_en: 'Recovers initial funds like rising from the ashes.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('initial_bankroll_bonus'), getItemEffect('initial_bankroll_bonus')]
+    effects: [getItemEffect('emergency_fund'), getItemEffect('emergency_fund')]
   },
   {
     id: 'quantum_crypto_wallet',
@@ -961,7 +947,7 @@ export const ITEM_DATA = [
     desc_ko: '시간과 운명이 겹치는 찰나의 순간을 포착합니다.',
     desc_en: 'Captures the fleeting moment when time and fate intersect.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('quantum_luck'), getItemEffect('time_bank_plus')]
+    effects: [getItemEffect('quantum_luck'), getItemEffect('cooldown_reduction')]
   },
   // {
   //   id: 'ram_thief_amplifier',
@@ -999,7 +985,7 @@ export const ITEM_DATA = [
     desc_ko: '한 번의 실수를 덮어줄 수 있는 더 나은 코드입니다.',
     desc_en: 'Better code that can cover up a single mistake.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('initial_bankroll_bonus'), getItemEffect('pair_master')]
+    effects: [getItemEffect('emergency_fund'), getItemEffect('pair_master')]
   },
   {
     id: 'vip_lounge_keycard',
@@ -1155,7 +1141,7 @@ export const ITEM_DATA = [
     desc_ko: '세상 그 어떤 파산도 당신을 멈출 수 없습니다.',
     desc_en: 'No bankruptcy in the world can stop you.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('initial_bankroll_bonus'), getItemEffect('initial_bankroll_bonus'), getItemEffect('rake_reduction')]
+    effects: [getItemEffect('emergency_fund'), getItemEffect('emergency_fund'), getItemEffect('rake_reduction')]
   },
   {
     id: 'golden_dragon_statue',
@@ -1211,7 +1197,7 @@ export const ITEM_DATA = [
     desc_ko: '파산을 하셨나요? 걱정 마세요. 더 큰 돈으로 따서 갚으면 그만입니다.',
     desc_en: 'Did you go bankrupt? Don\'t worry. Just win with bigger money and pay it back.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('buy_in_multiply'), getItemEffect('buy_in_multiply'), getItemEffect('initial_bankroll_bonus')]
+    effects: [getItemEffect('buy_in_multiply'), getItemEffect('buy_in_multiply'), getItemEffect('emergency_fund')]
   },
   {
     id: 'casino_insider',
@@ -1295,7 +1281,7 @@ export const ITEM_DATA = [
     desc_ko: '죽음(파산)은 새로운 시작에 불과함을 코드로 증명합니다.',
     desc_en: 'Proves through code that death (bankruptcy) is but a new beginning.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('initial_bankroll_bonus'), getItemEffect('initial_bankroll_bonus'), getRndItemBucket]
+    effects: [getItemEffect('emergency_fund'), getItemEffect('emergency_fund'), getRndItemBucket]
   },
 
   {
@@ -1596,7 +1582,12 @@ export const materializeItem = (baseItem) => {
       if (!resolved) return;
 
       if (effectMap[resolved.id]) {
-        effectMap[resolved.id].value += resolved.value;
+        try {
+          effectMap[resolved.id].value += resolved.value;
+        } catch (e) {
+          // Ignore if value is a getter-only property. 
+          // Getter-based dynamic values will just return their computed value.
+        }
       } else {
         // Clone object and preserve getter descriptors (like 'desc')
         const descriptors = Object.getOwnPropertyDescriptors(resolved);
@@ -1636,7 +1627,12 @@ export const restoreItem = (savedItem) => {
   Object.keys(savedItem).forEach(key => {
     // Avoid overwriting prototype getters that were serialized
     if (key !== 'name' && key !== 'desc' && key !== 'effects') {
-      restored[key] = savedItem[key];
+      try {
+        restored[key] = savedItem[key];
+      } catch (e) {
+        console.warn(`Failed to restore property ${key}: ${e}`);
+        // Ignore errors when trying to overwrite getter-only properties
+      }
     }
   });
 
@@ -1646,8 +1642,13 @@ export const restoreItem = (savedItem) => {
       if (baseEff) {
         const effRestored = Object.create(baseEff);
         Object.keys(savedEff).forEach(k => {
-          if (k !== 'name' && k !== 'desc') {
-            effRestored[k] = savedEff[k];
+          if (k !== 'name' && k !== 'desc' && savedEff[k] !== undefined) {
+            try {
+              effRestored[k] = savedEff[k];
+            } catch (e) {
+              console.warn(`Failed to restore property ${k}: ${e}`);
+              // Ignore errors when trying to overwrite getter-only properties (like 'value')
+            }
           }
         });
         return effRestored;

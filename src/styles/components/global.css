@@ -111,6 +111,7 @@ a:hover {
   cursor: pointer;
   font-family: inherit;
   transition: color 0.2s;
+  min-width: 125px;
 }
 .btn-cancel {
   padding: 15px;

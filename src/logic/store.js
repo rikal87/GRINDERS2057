@@ -1,15 +1,14 @@
 import { reactive, watch } from 'vue';
 import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
-import { sendMessage } from './messageSystem';
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const defaultState = {
-  bankroll: 25000,
+  bankroll: 225000,
   chips: 0, // Chips on table
   // currentBB: 0,
   xp: 0,
-  level: 1,
+  level: 25,
   selectedClass: 'GRINDER',
   ownedProtectors: [], // Array of materialized item objects
   equippedProtector: null, // item object or null
@@ -26,6 +25,7 @@ const defaultState = {
     income_tax: 0,
     fine: 0,
   },
+  partners: [],
   isRealGameOver: false,
   realGameOverReason: '',
   play_stats: {
@@ -128,6 +128,9 @@ const defaultState = {
     total_lost_money: 0n,
     max_win_pot: 0
   },
+  session_bankroll_stats: {},
+  all_time_bankroll_stats: {},
+  bankroll_history: [],
   hasSave: false
 };
 
@@ -190,6 +193,7 @@ export const gainClearedZone = (locationId) => {
 }
 export const checkLevelUp = (xp) => {
   // 1000 + 2000 >? 1500
+  if (Number.isNaN(xp)) return;
   const nextThreshold = getNextLevelThreshold();
   if (store.xp + xp >= nextThreshold) {
     // store.xp = 0;
@@ -217,16 +221,37 @@ export const initStore = async () => {
     console.error('Failed to parse save data from IndexedDB:', e);
   }
 };
-export const gainBankroll = (amount) => {
+export const TYPE_CHANGE_BANKROLL = {
+  GAMBLING: 'GAMBLING',
+  CRYPTO_TRADE: 'CRYPTO_TRADE',
+  RECEIVE: 'RECEIVE',
+  PAY_RENT: 'PAY_RENT',
+  PAY_INCOME_TAX: 'PAY_INCOME_TAX',
+  PAY_FINE: 'PAY_FINE',
+  RESOLVE_PARTNER_DEBT: 'RESOLVE_PARTNER_DEBT',
+  BUY_ITEM: 'BUY_ITEM',
+  SELL_ITEM: 'SELL_ITEM',
+  AI_AGENT_SUBSCRIPTION: 'AI_AGENT_SUBSCRIPTION',
+  AGENT_TASK: 'AGENT_TASK',
+  PARTNER_BENEFIT: 'PARTNER_BENEFIT',
+  PARTNER_DEBT: 'PARTNER_DEBT',
+  OTHER: 'OTHER',
+  GIVE_BRIBE_DEALER: 'GIVE_BRIBE_DEALER',
+}
+// CAN USE NAGATIVE AMOUNT
+export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
   console.log(`[BANKROLL] Gained ${amount} bankroll.`);
-  store.bankroll = Math.max(0, store.bankroll + Math.ceil(amount));
+  if (Number.isNaN(amount)) return;
+  const intAmount = Math.ceil(amount);
+  store.bankroll = Math.max(0, store.bankroll + intAmount);
+
+  store.session_bankroll_stats[type] = (store.session_bankroll_stats[type] || 0) + intAmount;
+  store.all_time_bankroll_stats[type] = (store.all_time_bankroll_stats[type] || 0) + intAmount;
+
+  store.bankroll_history.push({ amount: intAmount, type, timestamp: Date.now() });
+  if (store.bankroll_history.length > 100) store.bankroll_history.shift();
 }
-export const initializeBankroll = (bonus = 0) => {
-  const initialBankroll = store.level * 1000 * (1.0 + bonus);
-  console.log(`[BANKROLL] Initial Bankroll: ${initialBankroll}, ${bonus}`);
-  // Base setup
-  store.bankroll = Math.ceil(initialBankroll);
-}
+
 export const saveStore = async () => {
   const dataToSave = { ...store };
   delete dataToSave.hasSave; // Don't persist this meta flag

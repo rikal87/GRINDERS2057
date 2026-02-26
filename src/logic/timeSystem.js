@@ -4,12 +4,14 @@ import { consumeStamina } from './staminaSystem';
 import { processAiTasks } from './aiTaskSystem';
 import { sendLoreAndSpamMessage } from './messageSystem';
 import { processEvents } from './eventSystem';
+import { simulatePartnersBehavior } from './partnerSystem';
 
 // 1 second real time = 1 minute game time
 const TICKS_PER_SECOND = 1;
 export const GAME_MINUTES_PER_TICK = 1;
 
 let timerInterval = null;
+let lastProcessedHour = null;
 
 export const startTimeSystem = () => {
   if (timerInterval) return;
@@ -23,6 +25,16 @@ export const startTimeSystem = () => {
 
     // Process global storyline / repeating events
     processEvents();
+
+    // Process hourly events
+    const currentHour = new Date(store.gameTime).getHours();
+    if (lastProcessedHour === null) {
+      lastProcessedHour = currentHour;
+      simulatePartnersBehavior();
+    } else if (lastProcessedHour !== currentHour) {
+      lastProcessedHour = currentHour;
+      simulatePartnersBehavior();
+    }
 
     // 3% chance per game hour (60 game minutes)
     const probPerTick = 0.03 / (60 / GAME_MINUTES_PER_TICK);
@@ -72,5 +84,14 @@ export const advanceTime = (hours) => {
     store.gameTime += 60 * 1000;
     processAiTasks();
     processEvents();
+
+    const currentHour = new Date(store.gameTime).getHours();
+    if (lastProcessedHour === null) {
+      lastProcessedHour = currentHour;
+      simulatePartnersBehavior();
+    } else if (lastProcessedHour !== currentHour) {
+      lastProcessedHour = currentHour;
+      simulatePartnersBehavior();
+    }
   }
 };

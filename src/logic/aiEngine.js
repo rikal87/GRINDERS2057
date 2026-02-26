@@ -184,12 +184,8 @@ function getHeuristicFallback(player, engine) {
   const commitmentRatio = startingStack > 0 ? (player.totalWagered / startingStack) : 0;
   const spr = pot > 0 ? (player.chips / pot) : 20;
   let insight = `Score: ${Math.floor(strengthScore)} (Thres: ${Math.floor(callThreshold)}/${Math.floor(raiseThreshold)})`;
-  if (commitmentRatio > 0.35) {
-    // [Committed] We put in > 35% of stack. Hard to fold.
-    callThreshold /= 4;
-    raiseThreshold /= 2;
-    insight += " [Committed]";
-  } else if (spr < 1.5) {
+
+  if (spr < 1.5) {
     // [Pot Odds] Pot is huge relative to our stack (even if we didn't put much in).
     // We get great odds.
     callThreshold -= 10;
@@ -317,10 +313,29 @@ function getHeuristicFallback(player, engine) {
   }
   // [RAISE LOOP FIX] Stabilize thresholds for multi-raise pots
   const rawRaiseThreshold = raiseThreshold; // Capture logic-ready threshold before betRatio adjustment
-  // If facing a 3-bet or higher, significantly tighten up
+
+  // [FINAL COMMITMENT CHECK] 
+  // User logic: As commitment increases, folding becomes near impossible.
+  // Applied here so it scales down properly and overrides raise penalties. 
+  if (commitmentRatio > 0.35) {
+    callThreshold = Math.floor(callThreshold * (1 - commitmentRatio));
+    raiseThreshold = Math.floor(raiseThreshold * (1 - commitmentRatio));
+    insight += ` [Committed ${(commitmentRatio * 100).toFixed(0)}%]`;
+
+    // Hard cap for extreme commitment (e.g. stack almost gone)
+    if (commitmentRatio > 0.70) {
+      callThreshold = Math.min(callThreshold, 15);
+    }
+  }
+
+  // If facing a 3-bet or higher, significantly tighten up (Unless Highly Committed)
   if (raises >= 2) {
-    raiseThreshold += 25 * raises;
-    callThreshold += 15 * raises;
+    if (commitmentRatio > 0.6) {
+      callThreshold += 3 * raises; // Negligible penalty
+    } else {
+      raiseThreshold += 25 * raises;
+      callThreshold += 15 * raises;
+    }
   }
 
   if (raises >= 4 && callAmt > 0) {

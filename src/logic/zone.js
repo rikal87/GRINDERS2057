@@ -96,14 +96,14 @@ export const zones = [
         "atmosphere": "어두움, 가벼운 분위기, 가끔 절박함",
         "requirements": null,
         "level": 1,
-        companions: ['Max(Mentor)'],
+        guests: ['Max(Mentor)'],
         "npcs": [
           "Fish",
           "Broke",
           "MR_CALL"
         ],
         "tables": {
-          buyInLimit: 1,
+          buyInLimit: 0,
           amount: 1000, amount_fmt: '1K', amount_min_fmt: '500', sb: 5, bb: 10, available: [
             6,
             9
@@ -146,9 +146,9 @@ export const zones = [
           "Maniac",
           "Gangster",
         ],
-        companions: ['Max(Mentor)'],
+        guests: ['Max'],
         "tables": {
-          buyInLimit: 1,
+          buyInLimit: 0,
           amount: 2500, amount_fmt: '2.5K', amount_min_fmt: '1.25K', sb: 10, bb: 25, available: [6, 9], baseRake: 0.08, rakeCap: 125
         },
         "theme": {
@@ -266,7 +266,7 @@ export const zones = [
         "npcs": [
           "Gangster"
         ],
-        companions: ['Max', 'Florence'],
+        guests: ['Max', 'An_Unknown_Woman'],
         "tables": { amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 100, bb: 250, available: [6, 9], baseRake: 0.06, rakeCap: 1000 },
         "theme": {
           "background": "radial-gradient(circle, #2e001f 0%, #1a0011 100%)",

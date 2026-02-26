@@ -591,12 +591,13 @@ function getPostflopAction(player, engine, myPos) {
   const commitmentRatio = startingStack > 0 ? (player.totalWagered / startingStack) : 0;
   const spr = potSize > 0 ? (player.chips / potSize) : 20;
   if (commitmentRatio > 0.35) {
-    adjustment.callBoost += 0.35; // Commit
+    adjustment.callBoost += commitmentRatio; // Commit
     adjustment.bluffBoost += 0.15;
     // adjustments to raising? 
     // If low SPR, we are happy to get it in. raiseThreshold lower?
     // In this engine, raising is logic-driven. We can boost bluff slightly or value shove.
-  } else if (spr < 1.5) {
+  }
+  if (spr < 1.5) {
     adjustment.callBoost += 0.1; // Pot Odds
   } else if (spr > 10) {
     adjustment.callBoost -= 0.1; // Reverse Implied Odds

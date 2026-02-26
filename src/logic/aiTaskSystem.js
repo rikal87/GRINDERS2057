@@ -1,5 +1,5 @@
 
-import { store, getEffectiveMaxLT } from './store';
+import { store, getEffectiveMaxLT, gainBankroll, TYPE_CHANGE_BANKROLL } from './store';
 import { sendMessage } from './messageSystem';
 import { AI_TASK_DATA } from './agentTaskData';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
@@ -27,7 +27,7 @@ export const checkSubscription = () => {
   if (plan && plan.cost > 0) {
     if (store.bankroll >= plan.cost) {
       // Auto-renew for 30 days
-      store.bankroll -= plan.cost;
+      gainBankroll(-plan.cost, TYPE_CHANGE_BANKROLL.AI_AGENT_SUBSCRIPTION);
       // 30 days in ms = 30 * 24 * 60 * 60 * 1000
       const duration = 30 * 24 * 60 * 60 * 1000;
       agent.subscriptionExpireAt = store.gameTime + duration;
@@ -161,7 +161,7 @@ export const processAiTasks = () => {
           if (Math.random() < probPerMin) {
             const bankrollEff = taskDef.effect?.find(e => e.type === 'add_bankroll');
             if (bankrollEff) {
-              store.bankroll += bankrollEff.amount;
+              gainBankroll(bankrollEff.amount, TYPE_CHANGE_BANKROLL.AGENT_TASK);
               sendMessage('SYSTEM', 'Shadow Work Profit', `[${taskDef.name}] Generated ${bankrollEff.amount} CR.`);
             }
           }
@@ -256,7 +256,7 @@ const triggerTaskSuccess = (taskState, taskDef) => {
 
 const triggerRiskDetection = (index, effDef, taskName) => {
   const penalty = effDef.amount || 10000;
-  store.bankroll = Math.max(0, store.bankroll - penalty);
+  gainBankroll(-penalty, TYPE_CHANGE_BANKROLL.PAY_FINE)
   sendMessage('SYSTEM', 'HACKING DETECTED!', `${taskName} has been terminated by security forces. Penalty: ${penalty.toLocaleString()} CR.`);
 
   if (index >= 0) {

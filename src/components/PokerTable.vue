@@ -1,12 +1,13 @@
 <template>
   <HistoryPopup v-if="showHistory" :history="engine.handHistory" @close="showHistory = false" />
   <div v-for="(p, idx) in engine.players" :key="p.id" class="player-seat" :class="[`max${engine.tableSize}`, getSeatClass(idx), {
-    'folded': p.isFolded,
+    // 'folded': p.isFolded,
     'winner-glow': showShowdown && isWinner(p.id)
   }]">
 
     <div class="dealer-btn" v-if="engine.dealerIndex === idx">D</div>
-    <div v-if="p.currentBet > 0" class="chip-stack">
+    <div class="chip-stack">
+      <!-- <div v-if="p.currentBet > 0" class="chip-stack"> -->
       <span class="bet-amount">{{ formatUnit(p.currentBet) }}</span>
     </div>
 
@@ -24,7 +25,7 @@
     </Transition>
     <div class="player-info" :class="{
       'active': engine.currentPlayerIndex === idx,
-      'time-critical': isTimeCritical(p, idx)
+      'time-critical': isTimeCritical(p, idx),
     }"
       :style="isTimeCritical(p, idx) ? { borderColor: 'var(--neon-red)', boxShadow: '0 0 15px var(--neon-red)' } : {}">
       <!-- Time Gauge Background -->
@@ -33,7 +34,7 @@
       <!-- Character Dialogue Bubble -->
 
       <div class="meta">
-        <span class="name" :class="{ 'companion': p.isCompanion }">{{ p.name }}</span>
+        <span class="name" :class="{ 'companion': p.isPartner }">{{ p.name }}</span>
         <!-- no more need to show class tag -->
         <!-- <span class="class-tag" v-if="p.isHuman">{{ p.class?.name }}</span> -->
       </div>
@@ -44,9 +45,9 @@
         </span>
       </div>
       <!-- RAM Bar for Human -->
-      <div v-if="p.isHuman" class="ram-meter">
+      <!-- <div v-if="p.isHuman" class="ram-meter">
         <div class="ram-fill" :style="{ width: ramPercent + '%' }"></div>
-      </div>
+      </div> -->
 
     </div>
     <!-- [MOVED] Effect HUD -->
@@ -225,16 +226,16 @@ watch(() => props.engine.showdownResults, async (newResults) => {
   }
 });
 
-const currentRam = computed(() => {
-  const p = props.engine?.players[0];
-  if (!p || !p.ram) return 0;
-  return p.ram.used + p.ram.reserved;
-});
-const ramPercent = computed(() => {
-  const p = props.engine?.players[0];
-  if (!p || !p.class?.maxRam) return 0;
-  return (currentRam.value / p.class.maxRam) * 100;
-});
+// const currentRam = computed(() => {
+//   const p = props.engine?.players[0];
+//   if (!p || !p.ram) return 0;
+//   return p.ram.used + p.ram.reserved;
+// });
+// const ramPercent = computed(() => {
+//   const p = props.engine?.players[0];
+//   if (!p || !p.class?.maxRam) return 0;
+//   return (currentRam.value / p.class.maxRam) * 100;
+// });
 
 const getSeatClass = (idx) => {
   // Basic mapping for 6 and 9 player layouts

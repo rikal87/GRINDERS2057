@@ -1,5 +1,5 @@
 
-import { store, gainBankroll, gainLT, initializeBankroll, gainClearedZone } from './store.js';
+import { store, gainBankroll, gainLT, gainClearedZone } from './store.js';
 import { evaluateHand } from './poker.js';
 import { recoverStamina } from './staminaSystem.js';
 import { zones } from './zone.js';
@@ -298,7 +298,7 @@ export class EventAdaptor {
       store.play_stats.bankruptcy_count++;
     }
     let rescueFund = player.level * 2000;
-    store.bankroll = rescueFund;
+    gainBankroll(rescueFund);
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('bankrupt')) {
         this.executeItemEffect(player, e, { amount: rescueFund });
@@ -338,9 +338,15 @@ export class EventAdaptor {
       return;
     }
     switch (effect.id) {
-      case 'bankrupt':
-        // const bonus = store.equippedProtector?.effects?.reduce((sum, e) => (e.id === 'initial_bankroll_bonus') ? sum + e.value : sum, 0.0);
-        initializeBankroll(effect.value);
+      case 'cooldown_reduction':
+        player.item?.effects?.forEach(e => {
+          if (e.id !== 'cooldown_reduction') {
+            e.cooldown = Math.max(0, e.cooldown - effect.value);
+          }
+        });
+        break;
+      case 'emergency_fund':
+        gainBankroll(effect.value);
         effect.cooldown = effect.maxCooldown;
         break;
       case 'lt_recovery':
@@ -363,7 +369,7 @@ export class EventAdaptor {
         gainLT(effect.value)
         effect.cooldown = effect.maxCooldown;
         break;
-      case 'joy_of_victory':
+      case 'joy_of_vitality':
         if (context.isWin) {
           recoverStamina(effect.value);
         }
@@ -382,11 +388,6 @@ export class EventAdaptor {
           effect.isActivated = false;
           effect.cooldown = effect.maxCooldown;
         }
-        break;
-      case 'initial_bankroll_bonus':
-        // store.bankroll += Math.floor(context.amount * effect.value);
-        gainBankroll(Math.floor(context.amount * effect.value));
-        effect.cooldown = effect.maxCooldown;
         break;
       case 'ghost_bet':
         // Trigger: 'bet'
@@ -530,7 +531,7 @@ export class EventAdaptor {
         // [FIX] effect is the flattened item object
         if (context.isWin) {
           effect.stack = (effect.stack || 0) + 1; // Increment stack on win
-          player.tempXPBonus += effect.value
+          player.tempXPBonus += effect.value * effect.stack
         } else {
           effect.stack = 0; // Reset stack on lose
         }

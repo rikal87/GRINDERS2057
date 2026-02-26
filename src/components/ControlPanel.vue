@@ -39,14 +39,15 @@
         </div>
       </div>
       <div class="actions">
-        <button class="btn-fold" :disabled="!isMyTurn" @click="$emit('action', { type: 'fold' })">FOLD</button>
-        <button class="btn-call" :disabled="!isMyTurn"
-          @click="$emit('action', { type: callAmountRaw >= playerChips ? 'all_in' : 'call', amount: callAmountRaw + player.currentBet })">
+        <button class="btn-fold" :disabled="!isMyTurn || isProcessing"
+          @click="handleAction({ type: 'fold' })">FOLD</button>
+        <button class="btn-call" :disabled="!isMyTurn || isProcessing"
+          @click="handleAction({ type: callAmountRaw >= playerChips ? 'all_in' : 'call', amount: callAmountRaw + player.currentBet })">
           <p>{{ callAmountRaw === 0 ? 'CHECK' : callAmountRaw >= playerChips ? 'ALL-IN' : 'CALL' }}</p>
           <p>{{ formatUnit(callAmountRaw) }}</p>
         </button>
-        <button class="btn-raise" :disabled="!isMyTurn || currentBetValue < minRaise"
-          @click="$emit('action', { type: currentBetValue >= playerChips ? 'all_in' : 'raise', amount: currentBetValue + player.currentBet })">
+        <button class="btn-raise" :disabled="!isMyTurn || isProcessing || currentBetValue < minRaise"
+          @click="handleAction({ type: currentBetValue >= playerChips ? 'all_in' : 'raise', amount: currentBetValue + player.currentBet })">
           <p>
             {{ (currentBetValue >= playerChips) ? 'ALL-IN' : (player.hasFacedFlopBet || engine.state ===
               'PREFLOP') ?
@@ -136,11 +137,28 @@ const getStaminaColor = computed(() => {
   return '#ff003c'; // neon-red
 });
 
+const isProcessing = ref(false);
 
+watch(isMyTurn, (newVal) => {
+  if (newVal) {
+    isProcessing.value = false;
+  }
+});
 
 watch(minRaise, (newVal) => {
   currentBetValue.value = newVal;
 });
+
+const handleAction = (payload) => {
+  if (!isMyTurn.value || isProcessing.value) return;
+  isProcessing.value = true;
+  emit('action', payload);
+
+  // Safety timeout in case the turn change doesn't happen fast enough
+  setTimeout(() => {
+    isProcessing.value = false;
+  }, 1000);
+};
 
 const setBet = (type) => {
   const pot = props.engine.pot;
