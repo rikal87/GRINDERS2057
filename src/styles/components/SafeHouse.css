@@ -578,13 +578,27 @@
   color: #fff;
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
 }
-
-
+.v5-msg-card .head .from {
+  font-weight: 700;
+  color: #fff;
+}
+.v5-msg-card .head .social {
+  color: var(--neon-cyan);
+}
+.v5-msg-card .head .system {
+  color: var(--neon-red);
+}
+.v5-msg-card .head .finance {
+  color: var(--neon-yellow);
+}
+.v5-msg-card .head .tutorial {
+  color: var(--neon-green);
+}
 
 .v5-msg-h-reader {
   background: #0d1319;
   border: 1px solid rgba(255, 0, 85, 0.25);
-  padding: 24px;
+  padding: 0 20px;
   /* padding-right: 10px; */
   margin-bottom: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
@@ -1016,6 +1030,13 @@
   box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
   transform: translateY(-2px);
 }
+.v5-class-desc.note {
+  color: var(--neon-red);
+}
+.v5-class-desc.partner-note {
+  min-height: 10vh;
+  /* text-align: left; */
+}
 .v5-class-desc.partner {
   text-align: left;
 }
@@ -1034,7 +1055,13 @@
   color: var(--neon-green);
 }
 .idle {}
-
+.ratio-group {
+  align-items: center;
+  text-align: center;
+  display: grid;
+  grid-template-columns: 25% auto 25%;
+  justify-content: center;
+}
 .v5-partner-card .card-header {
   padding: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);

@@ -20,6 +20,14 @@ const defaultState = {
   completedEvents: [],
   pendingEvents: [],
   latest_pay_income_base_amount: 0,
+  collusion: {
+    is_colluding: false,
+    partner_id: null,
+    partner_name: null,
+    // partner_relationship: null,
+    partner_share_rate: 0,
+    zone_id: null,
+  },
   missedPayments: {
     rent_bill: 0,
     income_tax: 0,
@@ -128,12 +136,14 @@ const defaultState = {
     total_lost_money: 0n,
     max_win_pot: 0
   },
-  session_bankroll_stats: {},
   all_time_bankroll_stats: {},
-  bankroll_history: [],
+  session_net_history: [],
+  session_net_total: 0,
   hasSave: false
 };
-
+export const getBustEnemyCount = (enemyId) => {
+  return store.play_stats.bust_enemy[enemyId];
+}
 // BigInt JSON helpers
 const bigIntReplacer = (key, value) => typeof value === 'bigint' ? `@BIGINT@:${value.toString()}` : value;
 const bigIntReviver = (key, value) => {
@@ -188,7 +198,7 @@ export const gainXP = (player, pot, bb = 1.0, isHighStakes = false, locationLV =
   return xp;
 }
 export const gainClearedZone = (locationId) => {
-  store.cleared_zones[locationId] = store.cleared_zones[locationId] || 0
+  if (!store.cleared_zones[locationId]) store.cleared_zones[locationId] = 0
   store.cleared_zones[locationId]++
 }
 export const checkLevelUp = (xp) => {
@@ -237,6 +247,17 @@ export const TYPE_CHANGE_BANKROLL = {
   PARTNER_DEBT: 'PARTNER_DEBT',
   OTHER: 'OTHER',
   GIVE_BRIBE_DEALER: 'GIVE_BRIBE_DEALER',
+  CONTRACT: 'CONTRACT', // 계약 관련
+}
+export const registerCompletedEvent = (eventId) => {
+  if (store.completedEvents.includes(eventId)) return;
+  store.completedEvents.push(eventId);
+}
+export const isCompletedEvent = (eventId) => {
+  return store.completedEvents.includes(eventId);
+}
+export const deleteCompletedEvent = (eventId) => {
+  store.completedEvents = store.completedEvents.filter(id => id !== eventId);
 }
 // CAN USE NAGATIVE AMOUNT
 export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
@@ -245,11 +266,12 @@ export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
   const intAmount = Math.ceil(amount);
   store.bankroll = Math.max(0, store.bankroll + intAmount);
 
-  store.session_bankroll_stats[type] = (store.session_bankroll_stats[type] || 0) + intAmount;
-  store.all_time_bankroll_stats[type] = (store.all_time_bankroll_stats[type] || 0) + intAmount;
+  if (!store.all_time_bankroll_stats[type]) store.all_time_bankroll_stats[type] = 0;
+  store.all_time_bankroll_stats[type] += intAmount;
 
-  store.bankroll_history.push({ amount: intAmount, type, timestamp: Date.now() });
-  if (store.bankroll_history.length > 100) store.bankroll_history.shift();
+  store.session_net_history.push({ amount: intAmount, type, timestamp: Date.now() });
+  if (store.session_net_history.length > 200) store.session_net_history.shift();
+  if (type === TYPE_CHANGE_BANKROLL.GAMBLING) store.sessionNetWorth += intAmount;
 }
 
 export const saveStore = async () => {
@@ -261,4 +283,31 @@ export const saveStore = async () => {
 export const resetStore = async () => {
   Object.assign(store, { ...defaultState, hasSave: false });
   await del(SAVE_KEY);
+};
+export const calculateSessionReport = () => {
+  const current = {
+    bankroll: store.bankroll,
+    played_hands: store.play_stats.played_hands,
+    total_earn_money: store.play_stats.total_earn_money,
+    total_lost_money: store.play_stats.total_lost_money,
+    max_win_pot: store.play_stats.max_win_pot
+  };
+  const start = store.statsAtWakeUp;
+  const totalProfit = Number(current.bankroll || 0) - Number(start.bankroll || 0);
+  const startBankrollNum = Number(start.bankroll || 0);
+  const roi = startBankrollNum > 0 ? (totalProfit / startBankrollNum) * 100 : 0;
+  const playTime = Number(current.played_hands || 0) - Number(start.played_hands || 0);
+  const biggestWin = Number(current.max_win_pot || 0) - Number(start.max_win_pot || 0);
+  const detailes = { ...TYPE_CHANGE_BANKROLL }
+  Object.keys(detailes).forEach(key => {
+    detailes[key] = store.session_net_history.filter(h => h.type === detailes[key]).reduce((acc, h) => acc + h.amount, 0) || 0;
+  });
+  store.session_net_history = [];
+  return {
+    totalProfit,
+    roi: roi.toFixed(1),
+    playTime,
+    biggestWin,
+    detailes
+  };
 };

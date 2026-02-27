@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { store, resetStore, saveStore, initStore } from './logic/store';
+import { store, resetStore, saveStore, initStore, calculateSessionReport } from './logic/store';
 import { GameEngine } from './logic/gameEngine';
 import Intro from './components/Intro.vue';
 import Splash from './components/Splash.vue';
@@ -14,14 +14,14 @@ import AudioPlayer from './components/AudioPlayer.vue';
 import HistoryPopup from './components/HistoryPopup.vue';
 import AgentTaskPopup from './components/AgentTaskPopup.vue';
 import { audioManager } from './logic/audioManager';
-import { performSleep, calculateSessionReport } from './logic/staminaSystem';
+import { performSleep } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
 import { hydrateStoreItems } from './logic/items';
-import { generatePartner, hydratePartners, registerPartner } from './logic/partnerSystem';
+import { playerNetSharePartners, hydratePartners, registerPartner } from './logic/partnerSystem';
 // ... imports
 import { startTimeSystem, formatGameTime, formatGameDate, stopTimeSystem, advanceTime } from './logic/timeSystem';
 // Automated Hand Transition Logic
-import { watch, computed } from 'vue';
+import { watch, computed, nextTick } from 'vue';
 
 const handleQuitApp = async () => {
   try {
@@ -126,19 +126,9 @@ const handleJoinTable = async (payload) => {
   // Use passed rake or default
   const finalRake = rake !== undefined ? rake : 0.05;
   const finalRakeCap = rakeCap !== undefined ? rakeCap : (bb * 10);
-  const finalBuyInLimit = buyInLimit !== undefined ? buyInLimit : 999999;
+  // const finalBuyInLimit = buyInLimit !== undefined ? buyInLimit : 999999;
+  engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isHighStakes, locationId, locationLV, buyInLimit, inviteId);
 
-  engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isHighStakes, locationId, locationLV, finalBuyInLimit, inviteId);
-
-  // ... rest of function
-
-  // Initialize players with the selected buy-in
-  // [FIX] Do NOT override chips here; GameEngine handles it (AI has multipliers)
-  // engine.value.players.forEach(p => {
-  //   p.chips = buyIn;
-  // });
-
-  // Inject equipped protector for human
   const equipped = store.ownedProtectors.find(p => (p.instanceId || p.id) === store.equippedProtector);
   if (equipped) {
     engine.value.players[0].equippedProtector = equipped.id;
@@ -197,42 +187,65 @@ const showSleepModal = ref(false);
 const visibleReportLines = ref([]);
 const reportFinished = ref(false);
 const fullReportLines = ref([]);
+const consoleBox = ref(null);
 const handleSleepClick = () => {
+  // bankroll_history
   const report = calculateSessionReport();
+  audioManager.playSFX('bootup');
   fullReportLines.value = [
     `INITIALIZING_REST_PROTOCOL...`,
-    `ACCESSING_NEURAL_LOGS...`,
+    `ACCESSING_GAMBLING_LOGS...`,
     `--------------------------------`,
-    `SESSION_TOTAL_PROFIT: ${report.totalProfit} CR`,
+    `SESSION_TOTAL_PROFIT: ${report.totalProfit.toLocaleString()} CR`,
     `SESSION_ROI: ${report.roi}%`,
     `NEW_HANDS_RECORDED: ${report.playTime}`,
-    `BIGGEST_WIN_POT: ${report.biggestWin} CR`,
+    `BIGGEST_WIN_POT: ${report.biggestWin.toLocaleString()} CR`,
+    `--------------------------------`,
+    `SESSION_PROFIT_DETAILES...`,
+    `--------------------------------`,
+  ];
+  // report.detailes = report.detailes.filter(item => item.amount !== 0);
+  Object.keys(report.detailes).forEach(key => {
+    if (report.detailes[key] !== 0) {
+      fullReportLines.value.push(`${key}: ${report.detailes[key].toLocaleString()} CR`);
+    }
+  });
+  fullReportLines.value = fullReportLines.value.concat([
     `--------------------------------`,
     `STAMINA_LEVEL: 100% RECOVERED`,
     `TIME_SKIP_CALCULATED... DONE`,
-    `READY_FOR_REBOOT.`
-  ];
+    `READY_FOR_WAKEUP.`
+  ])
   visibleReportLines.value = [];
   reportFinished.value = false;
   showSleepModal.value = true;
-  let i = 0;
-  const interval = setInterval(() => {
-    if (i < fullReportLines.value.length) {
-      visibleReportLines.value.push(fullReportLines.value[i]);
-      audioManager.playSFX('ui-click');
-      i++;
-    } else {
-      clearInterval(interval);
-      reportFinished.value = true;
-    }
-  }, 400); // 400ms per line
+  visibleReportLines.value.push(fullReportLines.value[0]);
+  visibleReportLines.value.push(fullReportLines.value[1]);
+  setTimeout(() => {
+    let i = 2;
+    loopShowReport(i);
+  }, 1000);
+  playerNetSharePartners()
+  saveStore(); // Save after sleeping
 };
-
+function loopShowReport(i) {
+  if (i >= fullReportLines.value.length) {
+    reportFinished.value = true;
+    return;
+  }
+  setTimeout(() => {
+    visibleReportLines.value.push(fullReportLines.value[i]);
+    audioManager.playSFX('ui-click');
+    nextTick(() => {
+      consoleBox.value.scrollTop = consoleBox.value.scrollHeight;
+    })
+    loopShowReport(++i);
+  }, 350 - (i * 10));
+}
 const wakeUp = () => {
   performSleep(advanceTime)
   showSleepModal.value = false;
   audioManager.playSFX('action-confirm');
-  saveStore(); // Save after sleeping
 };
 const handleSkill = (skillId) => {
   if (engine.value.useSkill(engine.value.players[0], skillId)) {

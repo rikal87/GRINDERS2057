@@ -205,7 +205,7 @@
 
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue';
-import { store, getNextLevelThreshold } from '../logic/store';
+import { store, getNextLevelThreshold, TYPE_CHANGE_BANKROLL, gainBankroll } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
 import { AI_TASK_DATA, startTask } from '../logic/aiTaskSystem';

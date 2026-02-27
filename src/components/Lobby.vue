@@ -262,7 +262,7 @@ const isLocked = computed(() => {
 const confirmJoin = () => {
   if (currentLocation.value && canAfford.value && !isLocked.value) {
     const table = currentTableConfig.value;
-
+    console.log('table', table);
     // Check if table size is available
     if (!table.available.includes(selectedSize.value)) {
       // Fallback or error? For now just log or do nothing. 

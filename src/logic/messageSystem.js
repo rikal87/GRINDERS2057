@@ -9,7 +9,6 @@ export const MESSAGE_TYPE = {
   FINANCE: 'FINANCE',
   SOCIAL: 'SOCIAL',
   SPAM: 'SPAM',
-  TIER_EVENT: 'TIER_EVENT',
   TUTORIAL: 'TUTORIAL'
 }
 export const sendMessage = (type, title, body, actions = [], sender = 'System') => {
@@ -53,6 +52,7 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
   // Process Action Logic
   switch (action.actionType) {
     case 'RECEIVE':
+      audioManager.playSFX('paybill');
       gainBankroll(action.payload.amount, TYPE_CHANGE_BANKROLL.RECEIVE)
       sendMessage('SYSTEM', 'Receive Successful', `You received ${action.payload.amount.toLocaleString()} CR.`);
       deleteMessage(msgId); // Remove bill after payment
@@ -62,6 +62,7 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
     case 'PAY_FINE':
       const amount = action.payload.amount;
       if (store.bankroll >= amount) {
+        audioManager.playSFX('paybill');
         gainBankroll(-amount, action.actionType)
         if (action.actionType === 'PAY_RENT' && store.missedPayments) {
           store.missedPayments.rent_bill = Math.max(0, store.missedPayments.rent_bill - 1);
@@ -70,6 +71,7 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
         deleteMessage(msgId); // Remove bill after payment
         // Trigger success effect?
       } else {
+        audioManager.playSFX('error');
         sendMessage('SYSTEM', 'Insufficient Funds!', `You need ${amount.toLocaleString()} CR to pay this bill.`);
       }
       break;
@@ -78,49 +80,57 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
 
       if (p.resolveType === 'ACCEPT') {
         if (store.bankroll >= p.amount) {
+          audioManager.playSFX('paybill');
           gainBankroll(-p.amount, action.actionType)
-          sendMessage('SYSTEM', 'Payment Successful', `Successfully paid ${p.amount.toLocaleString()} CR.`);
+          sendMessage('SYSTEM', 'Payment Successful', `Successfully paid ${p.amount.toLocaleString()} CR.`, 1);
           scheduleEvent(msgId, 2)
           deleteMessage(msgId);
+          if (p.nextEvent) scheduleEvent(p.nextEvent, Math.random() * 2);
         } else {
+          audioManager.playSFX('error');
           sendMessage('SYSTEM', 'Insufficient Funds!', `You need ${p.amount.toLocaleString()} CR.`);
         }
       } else if (p.resolveType === 'REFUSE') {
-        scheduleEvent(p.failEvent, 1);
+        if (p.nextEvent) scheduleEvent(p.nextEvent, Math.random() * 2);
         deleteMessage(msgId);
       }
       break;
     case 'PAY_INCOME_TAX':
       const taxAmount = action.payload.amount;
       if (store.bankroll >= taxAmount) {
+        audioManager.playSFX('paybill');
         gainBankroll(-taxAmount, action.actionType)
         // Update the high water mark for the next cycle
         store.latest_pay_income_base_amount = store.bankroll;
-
         if (store.missedPayments) {
           store.missedPayments.income_tax = 0; // Reset completely upon payment
         }
-
-        sendMessage('SYSTEM', 'Tax Paid', `Income tax of ${taxAmount.toLocaleString()} CR has been settled. Next cycle base is now ${store.latest_pay_income_base_amount.toLocaleString()} CR.`);
+        sendMessage('SYSTEM', 'Tax Paid', `Income tax of ${taxAmount.toLocaleString()} CR has been settled. Next cycle base is now ${store.latest_pay_income_base_amount.toLocaleString()} CR.`, 1);
 
         // Remove ALL pending income tax messages since paying updates the base correctly
         store.messages = store.messages.filter(m =>
           !(m.actions && m.actions.some(a => a.actionType === 'PAY_INCOME_TAX'))
         );
       } else {
+        audioManager.playSFX('error');
         sendMessage('SYSTEM', 'Insufficient Funds!', `You need ${taxAmount.toLocaleString()} CR to pay your income tax. Failure to pay will result in severe penalties!`);
       }
       break;
     case 'ACCEPT_INVITE':
+
+      if (action.payload.resolveType === 'REFUSE') {
+        scheduleEvent(action.payload.nextEvent, 1);
+        deleteMessage(msgId);
+        break;
+      }
+
+      audioManager.playSFX('opening-door');
       // Navigate to specific zone or start game
-      const pl = action.payload;
       let locationConfig = null;
-      let locationLV = 1;
       for (const zone of zones) {
-        const loc = zone.locations.find(l => l.id === pl.location_id);
+        const loc = zone.locations.find(l => l.id === action.payload.location_id);
         if (loc) {
           locationConfig = loc;
-          locationLV = zone.level;
           break;
         }
       }
@@ -128,17 +138,17 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
         const table = locationConfig.tables;
         const joinPayload = {
           inviteId: msgId,
-          size: pl.available || 6,
-          buyIn: table.amount,
-          rake: table.baseRake || 0,
-          rakeCap: table.rakeCap || 0,
-          isHighStakes: table.isHighStakes || false,
-          locationLV: locationLV,
-          sb: table.sb,
-          bb: table.bb,
           locationId: locationConfig.id,
           locationName: locationConfig.name,
-          backgroundDescription: locationConfig.backgroundDescription
+          locationLV: locationConfig.level,
+          rake: table.baseRake || 0,
+          buyIn: table.amount,
+          rakeCap: table.rakeCap || 0,
+          isHighStakes: table.isHighStakes || false,
+          size: table.available[0] || 2,
+          sb: table.sb,
+          bb: table.bb,
+          buyInLimit: table.buyInLimit,
         };
         window.dispatchEvent(new CustomEvent('join-table', { detail: joinPayload }));
         // deleteMessage(msgId);
@@ -154,6 +164,6 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
 export const sendLoreAndSpamMessage = () => {
   const loreSpamMessage = getRndLoreSpamMessage();
 
-  sendMessage(loreSpamMessage.type, loreSpamMessage.title, loreSpamMessage.body, []);
+  sendMessage(loreSpamMessage.type, loreSpamMessage.title, loreSpamMessage.body, [], loreSpamMessage.sender);
 }
 

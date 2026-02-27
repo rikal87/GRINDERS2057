@@ -14,6 +14,9 @@ import BGM_Dystopia from '../assets/music/tubebackr_Dystopia.mp3';
 import BGM_BeThere from '../assets/music/tubebackr_BeThere.mp3';
 // import BGM_DuskHorizonBy from '../assets/music/fsm-team-escp-dusk-horizon.mp3';
 import BGM_Kinetic from '../assets/music/fsm-team-escp-kinetics.mp3';
+import BGM_Overnight from '../assets/music/Qlowdy_Overnight.mp3';
+import BGM_HearTheBass from '../assets/music/Infraction_HearTheBass.ogg';
+import BGM_NairobiVibes from '../assets/music/Infraction_NairobiVibes.ogg';
 
 // Dusk Horizon by | escp | https://www.escp.space https://escp-music.bandcamp.com
 export const TRACK_ENUM = {
@@ -30,10 +33,31 @@ export const TRACK_ENUM = {
   Nightscape: "Nightscape",
   DustyDay: "DustyDay",
   Dystopia: "Dystopia",
-  BeThere: "BeThere"
+  BeThere: "BeThere",
+  Overnight: "Overnight",
+  HearTheBass: "HearTheBass",
+  NairobiVibes: "NairobiVibes"
 };
 //  Karl Casey @ White Bat Audio"
 export const TRACK_INFO = {
+  [TRACK_ENUM.Overnight]: {
+    "title": "Overnight",
+    "artist": "Qlowdy",
+    "license": "",
+    "file": BGM_Overnight
+  },
+  [TRACK_ENUM.HearTheBass]: {
+    "title": "Hear The Bass",
+    "artist": "Infraction",
+    "license": "",
+    "file": BGM_HearTheBass
+  },
+  [TRACK_ENUM.NairobiVibes]: {
+    "title": "Nairobi Vibes",
+    "artist": "Infraction",
+    "license": "",
+    "file": BGM_NairobiVibes
+  },
   [TRACK_ENUM.BGM_Kinetic]: {
     "title": "Kinetic",
     "artist": "FSM Team & < e s c p >",

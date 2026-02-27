@@ -35,13 +35,14 @@ export const zones = [
         "atmosphere": "다소 어두움, 가벼운 분위기, 가끔 절박함",
         "requirements": null,
         "isHidden": true,
-        "level": 0,
+        "level": 1,
         "npcs": [
           "Fish",
           "Broke",
           "MR_CALL"
         ],
         "tables": {
+          buyInLimit: 1,
           amount: 2000, amount_fmt: '2K', amount_min_fmt: '1K', sb: 10, bb: 20, available: [
             6
           ], baseRake: 0.0, rakeCap: 0
@@ -98,12 +99,10 @@ export const zones = [
         "level": 1,
         guests: ['Max(Mentor)'],
         "npcs": [
-          "Fish",
-          "Broke",
-          "MR_CALL"
+          "Broke"
         ],
         "tables": {
-          buyInLimit: 0,
+          buyInLimit: 1,
           amount: 1000, amount_fmt: '1K', amount_min_fmt: '500', sb: 5, bb: 10, available: [
             6,
             9
@@ -129,8 +128,8 @@ export const zones = [
     "locations": [
       {
         "id": "micro_warehouse_with_max",
-        "name_ko": "뒷골목 창고",
-        "name_en": "Back Alley Warehouse",
+        "name_ko": "뒷골목 창고(맥스와 함께)",
+        "name_en": "Back Alley Warehouse(with Max)",
         get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
         "imgSrc": imgMicroWarehouse,
         "description_ko": "맥스와 함께 뒷골목 창고를 방문하였습니다.",
@@ -143,12 +142,9 @@ export const zones = [
         "npcs": [
           "Fish",
           "Broke",
-          "Maniac",
-          "Gangster",
         ],
         guests: ['Max'],
         "tables": {
-          buyInLimit: 0,
           amount: 2500, amount_fmt: '2.5K', amount_min_fmt: '1.25K', sb: 10, bb: 25, available: [6, 9], baseRake: 0.08, rakeCap: 125
         },
         "theme": {
@@ -242,38 +238,40 @@ export const zones = [
           "Gambler",
           "Nit"
         ],
-        "tables": { amount: 10000, amount_fmt: '10K', amount_min_fmt: '5K', sb: 50, bb: 100, available: [6, 9], baseRake: 0.07, rakeCap: 500 },
+        "tables": { amount: 10000, amount_fmt: '10K', amount_min_fmt: '5K', sb: 50, bb: 125, available: [6, 9], baseRake: 0.07, rakeCap: 500 },
         "theme": {
           "background": "radial-gradient(circle, #001a1a 0%, #000d0d 100%)",
           "borderColor": "#00f0ff",
           "boxShadow": "0 0 30px rgba(0, 240, 255, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.Dystopia, TRACK_ENUM.BeThere]
+        'bgMusic': [TRACK_ENUM.Dystopia, TRACK_ENUM.BeThere, TRACK_ENUM.Overnight]
       },
       {
-        "id": "low_underground_club_meet_frolence",
+        "id": "low_underground_club_meet_max",
         "name_ko": "H.B.D 클럽",
         "name_en": "H.B.D Club",
         get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
         "imgSrc": imgLowUndergroundClub,
-        "description_ko": "한 여성이 갱스터들과 포커를 치고 있다.",
-        "description_en": "A woman is playing poker with gangsters.",
+        "description_ko": "말로만 듣던 부자들이 VIP 룸에서 포커를 치고 있다.",
+        "description_en": "Playing poker with the rich guys you've only heard about.",
         get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
         "atmosphere": "시끄러움, 혼란스러움, 들뜸",
         "requirements": null,
-        // "isHidden": true,
         "level": 5,
         "npcs": [
-          "Gangster"
+          "Rich_Guy"
         ],
         guests: ['Max', 'An_Unknown_Woman'],
-        "tables": { amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 100, bb: 250, available: [6, 9], baseRake: 0.06, rakeCap: 1000 },
+        "tables": {
+          buyInLimit: 1,
+          amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 125, bb: 250, available: [6, 9], baseRake: 0.06, rakeCap: 1000
+        },
         "theme": {
           "background": "radial-gradient(circle, #2e001f 0%, #1a0011 100%)",
           "borderColor": "#ff0080",
           "boxShadow": "0 0 30px rgba(255, 0, 128, 0.6)"
         },
-        'bgMusic': [TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
+        'bgMusic': [TRACK_ENUM.HearTheBass]
       },
       {
         "id": "low_underground_club",
@@ -359,7 +357,7 @@ export const zones = [
           "KBT_Leader",
         ],
         "firstClearReward": "the_bunker_key",
-        "tables": { amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6], baseRake: 0.00, rakeCap: 0, isHighStakes: true },
+        "tables": { buyInLimit: 1, amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6], baseRake: 0.00, rakeCap: 0, isHighStakes: true },
         "theme": {
           "background": "radial-gradient(circle, #1c1c1c 0%, #000000 100%)",
           "borderColor": "#708090",

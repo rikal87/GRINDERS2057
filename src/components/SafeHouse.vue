@@ -173,7 +173,7 @@
                     </div>
                   </div>
                   <div class="card-body">
-                    <p class="v5-class-desc">{{ partner.note }}</p>
+                    <p class="v5-class-desc partner-note">{{ partner.note }}</p>
                     <p class="v5-status-badges">
                       <span class="v5-badge-mini status" :class="partner.status.toLowerCase()">{{ partner.status
                       }}</span>
@@ -185,7 +185,7 @@
                     <div class="partner-stats-grid">
                       <div class="stat-box">
                         <span class="label">BANKROLL</span>
-                        <span class="val">{{ partner.bankroll.toLocaleString() }}<small>CR</small></span>
+                        <span class="val bankroll">{{ partner.bankroll.toLocaleString() }} <small>CR</small></span>
                       </div>
                       <div class="stat-box">
                         <span class="label">NET_WORTH</span>
@@ -200,7 +200,7 @@
                         <span class="label">RELATIONSHIP</span>
                         <span class="val"
                           :class="{ 'high': partner.relationship > 700, 'low': partner.relationship < 200 }">
-                          {{ partner.relationship }}
+                          {{ Math.round(partner.relationship / 10) }}
                         </span>
                       </div>
                       <div class="stat-box" v-for="contract in partner.contracts" :key="contract.type">
@@ -208,12 +208,20 @@
                         <p class="v5-class-desc">
                           {{ CONTRACT_TYPE_DESC[contract.type].desc }}
                         </p>
-                        <p class="v5-class-desc">
+                        <p class="v5-class-desc note">
                           {{ CONTRACT_TYPE_DESC[contract.type].note }}
                         </p>
                         <p v-if="contract.useRatio">
-                          <input type="range" min="0.0" max="1.0" step="0.1" value="0.5" :disabled="!contract.active"
-                            v-model="contract.ratio" @change="signContract(partner.id, contract.type, contract.ratio)">
+                          <label class="ratio-group">
+                            <span class="label">PARTNER</span>
+                            <input type="range" min="0.1" max="0.9" step="0.1" value="0.5" :disabled="!contract.active"
+                              v-model="contract.ratio"
+                              @change="signContract(partner.id, contract.type, contract.ratio)">
+                            <span class="label">YOU</span>
+                          </label>
+                          <label class="label"> {{ Math.round((1 - contract.ratio) * 10) }} : {{
+                            Math.round(contract.ratio * 10) }}
+                          </label>
                         </p>
                         <p>
                           <button class="btn"
@@ -271,17 +279,16 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-          }} UNREAD]</small>
+              }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
-            <div style="text-align: right;"><button class="sell-btn"
-                :disabled="['SPAM', 'SOCIAL', 'SYSTEM'].includes(selectedMessage.type) === false"
-                @click="deleteMessageBtn(selectedMessage.id)">DELETE</button></div>
+            <p style="text-align: right;">
+              <button class="sell-btn" :disabled="['SPAM', 'SOCIAL', 'SYSTEM'].includes(selectedMessage.type) === false"
+                @click="deleteMessageBtn(selectedMessage.id)">DELETE</button>
+            </p>
             <span class="v5-reader-title">{{ selectedMessage.title }}</span>
-            <div class="v5-reader-body">
-              <header></header>
-              <article v-html="selectedMessage.body"></article>
+            <div class="v5-reader-body" v-html="selectedMessage.body">
             </div>
             <div class="v5-reader-actions">
               <button v-for="(act, idx) in selectedMessage.actions" :key="idx" class="btn"
@@ -290,12 +297,17 @@
               </button>
             </div>
           </div>
-          <div v-else class="v4-empty-state" style="margin-top:20px">NO_MESSAGES</div>
+          <div v-else class="v5-msg-h-reader">
+            <div class="v5-reader-body" style="margin-top:20px">NO_MESSAGES</div>
+          </div>
           <div class="v5-msg-list">
             <div v-for="msg in store.messages" :key="msg.id" class="v5-msg-card"
               :class="{ unread: !msg.isRead, active: selectedMessage?.id === msg.id }" @click="selectMessage(msg)">
               <div class="head">
-                <span>{{ msg.type }}</span>
+                <div>
+                  <span :class="`${msg.type.toLowerCase()}`">{{ msg.type }}</span>
+                  <label> from.<span class="from"> {{ msg.sender }}</span></label>
+                </div>
                 <span>{{ new Date(msg.timestamp).toLocaleDateString() }}</span>
               </div>
               <div class="title">{{ msg.title }}</div>
@@ -711,8 +723,8 @@ const getContractLabel = (type) => {
   const labels = {
     'SHARE_BENEFIT': lang === 'ko' ? '수익률 스왑' : 'Share Benefit',
     'BANKRUPT_RESCUE': lang === 'ko' ? '파산 구조' : 'Bankrupt Rescue',
-    'GAMBLING_WITH_ME': lang === 'ko' ? '카지노 동행' : 'Gambling with a Friend',
-    'A_DATE_WITH_YOU': lang === 'ko' ? '데이트 하기' : 'A Date with You',
+    'COLLUSION': lang === 'ko' ? '담합' : 'Collusion',
+    'A_DATE_WITH_YOU': lang === 'ko' ? '데이트 신청' : 'A Date with You',
   };
   return labels[type] || type;
 };

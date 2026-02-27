@@ -6,8 +6,8 @@
   }]">
 
     <div class="dealer-btn" v-if="engine.dealerIndex === idx">D</div>
-    <div class="chip-stack">
-      <!-- <div v-if="p.currentBet > 0" class="chip-stack"> -->
+    <!-- <div class="chip-stack"> -->
+    <div v-if="p.currentBet > 0" class="chip-stack">
       <span class="bet-amount">{{ formatUnit(p.currentBet) }}</span>
     </div>
 

@@ -43,17 +43,19 @@ export const CLASSES = {
 export const CLASSES_PARTNER = [
   {
     id: 'max', name: 'Max', philosophy: 'LAG', vPIP: .36, AF: 3.5, WTSD: .31, W$SD: 0.53, chipMultiply: 1.2,
-    canContracts: [CONTRACT_TYPE.GAMBLING_WITH_ME, CONTRACT_TYPE.SHARE_BENEFIT, CONTRACT_TYPE.BANKRUPT_RESCUE],
+    canContracts: [CONTRACT_TYPE.SHARE_BENEFIT, CONTRACT_TYPE.BANKRUPT_RESCUE],
     schedule: [
       { days: '월-토', hours: '13:00-23:00', status: 'GAMBLING' },
       { days: '일', hours: '종일', status: 'RESTING' },
       // 매칭되지 않는 나머지 시간은 기본적으로 IDLE/SLEEPING 등으로 처리됩니다
     ],
-    initialBankroll: 48000,
+    initialBankroll: 27500,
     initialRelationship: 800,
     isPartner: true,
-    note_ko: '텍사스 출신의 당신의 오랜 친구입니다. 다혈질 사내이지만, 등 뒤를 맡기기엔 이만한 녀석도 없습니다. 테이블 위에서는 거칠고 변칙적인 플레이로 상대의 평정심을 무너뜨립니다.',
-    note_en: 'Your long-time friend from Texas. A hot-tempered man, but there is no one better to watch your back. At the table, he breaks opponents\' composure with rough and unpredictable plays.',
+    age: 37,
+    concept: '같은 텍사스 출신으로 당신의 오랜 친구입니다. 성격은 다소 거칠게 보이지만, 사실 유쾌하고 속정이 깊고 의리가 있습니다.',
+    note_ko: '텍사스 출신의 당신의 오랜 친구입니다. 테이블 위에서는 거칠고 변칙적인 플레이로 상대의 평정심을 무너뜨립니다.',
+    note_en: 'Your long-time friend from Texas. At the table, he breaks opponents\' composure with rough and unpredictable plays.',
     get note() {
       return store.settings.language === 'en' ? this.note_en : this.note_ko;
     }
@@ -62,7 +64,7 @@ export const CLASSES_PARTNER = [
     id: 'max_mentor', name: 'Max(Mentor)', philosophy: 'LAG', vPIP: .36, AF: 3.5, WTSD: .31, W$SD: 0.53, chipMultiply: 1.2,
     canContracts: [],
     schedule: [],
-    initialBankroll: 48000, initialRelationship: 800, isPartner: true,
+    initialBankroll: 27500, initialRelationship: 800, isPartner: true,
     note_ko: '당신에게 뒷골목 포커의 생존법칙을 일깨워주는 든든한 조력자입니다. 그의 거친 말투 속에는 칩을 지키고 살아남기 위한 실전 노하우가 뼈저리게 녹아있습니다.',
     note_en: 'A reliable mentor who teaches you the survival rules of back-alley poker. His rough tone is deeply imbued with practical know-how for protecting your chips and staying alive.',
     get note() {
@@ -71,13 +73,15 @@ export const CLASSES_PARTNER = [
   },
   {
     id: 'florence', name: 'Florence', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, W$SD: 0.57, chipMultiply: 1.1,
-    canContracts: [CONTRACT_TYPE.GAMBLING_WITH_ME, CONTRACT_TYPE.SHARE_BENEFIT, CONTRACT_TYPE.BANKRUPT_RESCUE, CONTRACT_TYPE.A_DATE_WITH_YOU],
+    age: 32,
+    canContracts: [CONTRACT_TYPE.SHARE_BENEFIT, CONTRACT_TYPE.COLLUSION],
     schedule: [
       { days: '수,목,금,토,일', hours: '17:00-24:00', status: 'GAMBLING' },
       { days: '수,금,일', hours: '00:00-03:00', status: 'GAMBLING' },
       { days: '월,화', hours: '종일', status: 'RESTING' }
     ],
-    initialBankroll: 273000, initialRelationship: 300, isPartner: true,
+    initialBankroll: 73000, initialRelationship: 300, isPartner: true,
+    concept: '플레이어에게 적대적이지는 않습지만, 다소 차갑고 계산이 깔린듯한 비즈니스적인 말투를 꽤 자주 사용합니다. 하지만 가끔씩 귀여운 면모도 있습니다.',
     note_ko: '아름다움 뒤에 차가운 계산을 숨긴 라스베가스 출신의 베테랑 플레이어. H.B.D 클럽에서 처음 조우했으며, 언제나 정석적이고 견고한 타이트-어그레시브(TAG)의 표본을 보여줍니다.',
     note_en: 'A veteran player from Las Vegas who hides cold calculations behind her beauty. First encountered at the H.B.D Club, she exemplifies solid, textbook Tight-Aggressive (TAG) gameplay.',
     get note() {
@@ -85,7 +89,8 @@ export const CLASSES_PARTNER = [
     }
   },
   {
-    id: 'an_unknown_woman', name: 'An_Unknown_Woman', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, W$SD: 0.53, chipMultiply: 1.1,
+    id: 'an_unknown_woman', name: 'An_Unknown_Woman', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, W$SD: 0.53, chipMultiply: 1,
+
     schedule: [CONTRACT_TYPE.A_DATE_WITH_YOU],
     isPartner: false,
     note_ko: '험악한 갱스터들 사이에서 포커를 치고 있는 정체 모를 여성입니다.',
@@ -95,6 +100,21 @@ export const CLASSES_PARTNER = [
     }
   },
 ];
+export const ENEMY_ID = {
+  MR_CALL: 'MR_CALL',
+  FISH: 'Fish',
+  BROKE: 'Broke',
+  GAMBLER: 'Gambler',
+  MANIAC: 'Maniac',
+  OLD_LION: 'Old_Lion',
+  RICH_GUY: 'Rich_Guy',
+  GANGSTER: 'Gangster',
+  NIT: 'Nit',
+  QUANT_PRO: 'Quant_Pro',
+  MAFIA_BOSS: 'Mafia_Boss',
+  SHARK: 'Shark',
+  WHALE: 'Whale',
+}
 export const CLASSES_ENEMY = [
   {
     name: 'MR_CALL', philosophy: 'LAP', vPIP: .90, AF: 0.5, WTSD: .7, chipMultiply: 1,

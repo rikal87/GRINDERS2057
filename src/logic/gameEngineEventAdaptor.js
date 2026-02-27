@@ -72,7 +72,7 @@ export class EventAdaptor {
       deleteMessage(inviteId);
 
       if (locationId === 'free_street_shop_with_max') {
-        scheduleEvent(EVENT_ID.TUTORIAL_LOSE_PLAYER, 0);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_PLAYER, 0);
       }
     } else {
       // An NPC went bankrupt
@@ -86,12 +86,12 @@ export class EventAdaptor {
         }
 
         if (locationId === 'free_street_shop_with_max' && player.name === 'Max') {
-          scheduleEvent(EVENT_ID.TUTORIAL_WIN, 1);
+          scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 1);
         }
       } else {
         // Someone else bankrupted the NPC
         if (locationId === 'free_street_shop_with_max' && player.name === 'Max') {
-          scheduleEvent(EVENT_ID.TUTORIAL_LOSE_MAX, 1);
+          scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_MAX, 1);
         }
       }
     }
@@ -120,9 +120,9 @@ export class EventAdaptor {
     // [Tutorial] Handled edge cases for the tutorial table
     if (locationId === 'free_street_shop_with_max') {
       if (player.isMe) {
-        scheduleEvent(EVENT_ID.TUTORIAL_WIN, 2);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 2);
       } else if (player.name === 'Max') {
-        scheduleEvent(EVENT_ID.TUTORIAL_WIN_MAX, 2);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN_MAX, 2);
       }
     }
   }
@@ -138,10 +138,10 @@ export class EventAdaptor {
       const maxIsAlive = allPlayers.some(p => p.name === 'Max' && !p.isEliminated);
       if (maxIsAlive) {
         // Run away early -> Max gets mad
-        if (store.completedEvents.includes(EVENT_ID.TUTORIAL_LEAVE)) {
-          scheduleEvent(EVENT_ID.TUTORIAL_LEAVE_AGAIN, 2);
+        if (store.completedEvents.includes(EVENT_ID.MAX.TUTORIAL_LEAVE)) {
+          scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE_AGAIN, 2);
         } else {
-          scheduleEvent(EVENT_ID.TUTORIAL_LEAVE, 2);
+          scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE, 2);
         }
       }
     }
@@ -177,23 +177,23 @@ export class EventAdaptor {
     }
 
     result.results.forEach(r => {
-      if (r.id === result.winnerId) {
-        if (runoutInProgress) this.winAtShowdownWithAllIn({ player: r.player, amount, pot, hand: r.hand, board });
-        else this.winAtShowdown({ player: r.player, amount, pot, hand: r.hand, board });
+      if (r.isWinner) {
+        if (runoutInProgress) this.winAtShowdownWithAllIn({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board });
+        else this.winAtShowdown({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board });
       } else {
-        if (runoutInProgress) this.loseAtShowdownWithAllIn({ player: r.player, amount, pot, hand: r.hand, board });
-        else this.loseAtShowdown({ player: r.player, amount, pot, hand: r.hand, board });
+        if (runoutInProgress) this.loseAtShowdownWithAllIn({ player: r.player, amount: 0, pot, hand: r.hand, board });
+        else this.loseAtShowdown({ player: r.player, amount: 0, pot, hand: r.hand, board });
       }
     });
 
-    if (me && result.winnerId === me.id) {
+    if (me && me.isWinner) {
       store.play_stats.w$sd++;
     }
   }
   winAtShowdown({ player, amount, pot, hand, board }) {
     if (player.isMe) {
       store.play_stats.showdown_win++;
-      this.updateWinPost(pot);
+      this.updateWinPost(amount);
     }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('winAtShowdown') || e.trigger.includes('win')) {
@@ -205,7 +205,7 @@ export class EventAdaptor {
     if (player.isMe) {
       store.play_stats.showdown_win++;
       store.play_stats.all_in_win++;
-      this.updateWinPost(pot);
+      this.updateWinPost(amount);
     }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('winAtShowdownWithAllIn') || e.trigger.includes('win')) {
@@ -346,7 +346,7 @@ export class EventAdaptor {
         });
         break;
       case 'emergency_fund':
-        gainBankroll(effect.value);
+        gainBankroll(effect.valueCalc);
         effect.cooldown = effect.maxCooldown;
         break;
       case 'lt_recovery':

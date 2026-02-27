@@ -151,18 +151,18 @@ export class GameEngine {
 
     // Some tasks might allow spawning an enemy even if it's not strictly allowed by the zone.
     // For now we'll allow forced spawns to override loc allowedNames
-
+    console.log('this.buyInLimit', this.buyInLimit);
     let enemiesToPlace = [];
     // 0. partners Spawns (Top Priority from zone.js config)
     if (store.partners && Array.isArray(store.partners)) {
       store.partners.forEach(partner => {
-        const validContract = partner.contracts.find(contract => contract.type === CONTRACT_TYPE.GAMBLING_WITH_ME && contract.active);
+        const validContract = partner.contracts.find(contract => contract.type === CONTRACT_TYPE.COLLUSION && contract.active);
         const targetId = partner.id.toLocaleUpperCase();
         const template = CLASSES_PARTNER.find(e => e.name.toUpperCase() === targetId)
         if (template && validContract) {
           enemiesToPlace.push({ ...template });
         } else {
-          console.warn(`[GAME] Companion persona '${partner}' not found in CLASSES.`);
+          console.warn(`[GAME] Partner persona '${partner.name}' not found in CLASSES.`);
         }
       });
     }
@@ -447,17 +447,17 @@ export class GameEngine {
       if (diff > 0) {
         player.stats.calls++; // [STATS] Track Call only if chips added
         audioManager.playSFX('puti-n-chip');
-        if (player.isMe && this.mentor && this.mentor.isFolded) chatAI(this.mentor, CHAT_TRIGGERS.CALL_FOR_PLAYER)
+        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CALL_FOR_PLAYER)
       } else {
         action.type = 'check';
         audioManager.playSFX('check');
-        if (player.isMe && this.mentor && this.mentor.isFolded) chatAI(this.mentor, CHAT_TRIGGERS.CHECK_FOR_PLAYER)
+        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CHECK_FOR_PLAYER)
       }
     } else if (action.type === 'raise' || action.type === 'bet' || action.type === 'all_in') {
       const diff = action.amount - player.currentBet;
       const raised = this.placeBet(player, diff);
       // [FIX] Ensure stats exist
-      if (player.isMe && this.mentor && this.mentor.isFolded) {
+      if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) {
         if (action.type === 'all_in') {
           chatAI(this.mentor, CHAT_TRIGGERS.ALL_IN_FOR_PLAYER);
         } else {
@@ -687,7 +687,7 @@ export class GameEngine {
         if (losers.length > 0 && Math.random() < 0.5) {
           const complainer = losers[Math.floor(Math.random() * losers.length)];
           const isHuge = this.pot > (this.bb * 40);
-          chatAI(complainer, isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL);
+          chatAI(complainer, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL);
         }
       }
     }
@@ -701,19 +701,19 @@ export class GameEngine {
     }
 
     // Mentor Tutorial Feedback
-    if (this.isTutorial && this.mentor && this.mentor.isFolded && me && !me.isFolded) {
+    if (this.isTutorial && this.mentor && this.mentor.isFolded && me && !me.isFolded && Math.random() < 0.3) {
       const netProfit = (meResult ? meResult.amountWon : 0) - me.totalWagered;
       if (netProfit > 0) {
         // Player Profited
         const isHugeWin = netProfit > (this.bb * 20);
-        chatAI(this.mentor, isHugeWin ? CHAT_TRIGGERS.WIN_HUGE_FOR_PLAYER : CHAT_TRIGGERS.WIN_SMALL_FOR_PLAYER);
+        if (Math.random() < 0.5) chatAI(this.mentor, isHugeWin ? CHAT_TRIGGERS.WIN_HUGE_FOR_PLAYER : CHAT_TRIGGERS.WIN_SMALL_FOR_PLAYER);
       } else if (netProfit < 0) {
         // Player Lost Money (either lost entirely, or chop/side pot refund was less than wagered)
         const isHugeLoss = me.totalWagered > (this.bb * 20);
-        chatAI(this.mentor, isHugeLoss ? CHAT_TRIGGERS.LOSE_HUGE_FOR_PLAYER : CHAT_TRIGGERS.LOSE_SMALL_FOR_PLAYER);
+        if (Math.random() < 0.5) chatAI(this.mentor, isHugeLoss ? CHAT_TRIGGERS.LOSE_HUGE_FOR_PLAYER : CHAT_TRIGGERS.LOSE_SMALL_FOR_PLAYER);
       } else {
         // Even break (Chop)
-        chatAI(this.mentor, CHAT_TRIGGERS.CHOP);
+        if (Math.random() < 0.5) chatAI(this.mentor, CHAT_TRIGGERS.CHOP);
       }
     }
     const bestWinner = this.players.find(p => p.id === result.winnerId);
@@ -784,7 +784,7 @@ export class GameEngine {
         if (p.isHuman) {
           this.gameOver = true;
           this.winnerId = bestWinner ? bestWinner.id : 'cpu';
-          this.state = 'IDLE';
+          // this.state = 'IDLE';
         }
         eventAdaptor.playerBankrupt(p, bestWinner, this.locationId, this.inviteId);
       }
@@ -811,16 +811,17 @@ export class GameEngine {
     saveStore();
     this.cleanup();
   }
-  processBuyIn(player, isRebuy = false) {
+  processBuyIn(player) {
     if (store.bankroll <= 0 || player.buyInLimit <= 0) {
       console.warn(`[BANKROLL] Insufficient funds for buy-in.`);
+      player.chips = 0;
       return false;
     }
     const targetBuyIn = this.buyIn * player.buyInMultiply;
     const actualBuyIn = Math.min(store.bankroll, targetBuyIn);
-    player.chips = actualBuyIn;
-    if (isRebuy) player.buyInLimit--;
-    gainBankroll(actualBuyIn * -1);
+    player.chips = Math.round(actualBuyIn);
+    player.buyInLimit--;
+    gainBankroll(actualBuyIn * -1, TYPE_CHANGE_BANKROLL.GAMBLING);
     console.log(`[BANKROLL] Buy-in deducted: ${actualBuyIn}. Remaining: ${store.bankroll}, ${player.buyInLimit} `);
     return true;
   }

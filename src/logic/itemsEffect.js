@@ -227,7 +227,7 @@ export const ITEM_EFFECT_DATA = [
     get valueCalc() {
       return store.level * this.value;
     },
-    value: 2500,
+    value: 1000,
     isStackable: true
   },
   {

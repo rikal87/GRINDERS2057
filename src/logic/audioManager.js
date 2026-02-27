@@ -380,7 +380,7 @@ class AudioManager {
     // 'main' and 'lobby' are not in zones array usually as locations.
     let tracks = [];
     if (zoneId === 'main') tracks = [TRACK_ENUM.Grainders2057];
-    else if (zoneId === 'lobby') tracks = [TRACK_ENUM.NeonDreams];
+    else if (zoneId === 'lobby') tracks = [TRACK_ENUM.NeonDreams, TRACK_ENUM.Lucid];
     else if (locationConfig && locationConfig.bgMusic) {
       tracks = locationConfig.bgMusic;
     }
