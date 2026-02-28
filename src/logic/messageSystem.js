@@ -9,7 +9,22 @@ export const MESSAGE_TYPE = {
   FINANCE: 'FINANCE',
   SOCIAL: 'SOCIAL',
   SPAM: 'SPAM',
-  TUTORIAL: 'TUTORIAL'
+  TUTORIAL: 'TUTORIAL',
+  MISSION: 'MISSION',
+}
+export const MESSAGE_ACTION_TYPE = {
+  RECEIVE: 'RECEIVE',
+  PAY_RENT: 'PAY_RENT',
+  PAY_FINE: 'PAY_FINE',
+  DEBT_REPAYMENT: 'DEBT_REPAYMENT',
+  PAY_INCOME_TAX: 'PAY_INCOME_TAX',
+  ACCEPT_INVITE: 'ACCEPT_INVITE',
+}
+export const MESSAGE_ACTION_RESOLVE_TYPE = {
+  ACCEPT: 'ACCEPT',
+  REFUSE: 'REFUSE',
+  PAY: 'PAY',
+  JOIN: 'JOIN',
 }
 export const sendMessage = (type, title, body, actions = [], sender = 'System') => {
   const id = Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -51,51 +66,51 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
 
   // Process Action Logic
   switch (action.actionType) {
-    case 'RECEIVE':
+    case MESSAGE_ACTION_TYPE.RECEIVE:
       audioManager.playSFX('paybill');
       gainBankroll(action.payload.amount, TYPE_CHANGE_BANKROLL.RECEIVE)
-      sendMessage('SYSTEM', 'Receive Successful', `You received ${action.payload.amount.toLocaleString()} CR.`);
+      sendMessage('SYSTEM', 'Receive Successful', `You received ${action.payload.amount.toLocaleString()} ${action.payload.currency} from ${action.payload.sender}.`);
       deleteMessage(msgId); // Remove bill after payment
       // Trigger success effect?
       break;
-    case 'PAY_RENT':
-    case 'PAY_FINE':
+    case MESSAGE_ACTION_TYPE.PAY_RENT:
+    case MESSAGE_ACTION_TYPE.PAY_FINE:
       const amount = action.payload.amount;
       if (store.bankroll >= amount) {
         audioManager.playSFX('paybill');
         gainBankroll(-amount, action.actionType)
-        if (action.actionType === 'PAY_RENT' && store.missedPayments) {
+        if (action.actionType === MESSAGE_ACTION_TYPE.PAY_RENT && store.missedPayments) {
           store.missedPayments.rent_bill = Math.max(0, store.missedPayments.rent_bill - 1);
         }
-        sendMessage('SYSTEM', 'Payment Successful', `Successfully paid ${amount.toLocaleString()} CR.`);
+        sendMessage('SYSTEM', 'Payment Successful', `Successfully paid ${amount.toLocaleString()} ${action.payload.currency || 'CR'}.`);
         deleteMessage(msgId); // Remove bill after payment
         // Trigger success effect?
       } else {
         audioManager.playSFX('error');
-        sendMessage('SYSTEM', 'Insufficient Funds!', `You need ${amount.toLocaleString()} CR to pay this bill.`);
+        sendMessage('SYSTEM', 'Insufficient Funds!', `Failed to pay ${amount.toLocaleString()} ${action.payload.currency || 'CR'}.`);
       }
       break;
-    case 'RESOLVE_PARTNER_DEBT':
+    case MESSAGE_ACTION_TYPE.DEBT_REPAYMENT:
       const p = action.payload;
 
-      if (p.resolveType === 'ACCEPT') {
+      if (p.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT) {
         if (store.bankroll >= p.amount) {
           audioManager.playSFX('paybill');
           gainBankroll(-p.amount, action.actionType)
-          sendMessage('SYSTEM', 'Payment Successful', `Successfully paid ${p.amount.toLocaleString()} CR.`, 1);
+          sendMessage('SYSTEM', 'Transaction Successful', `Successfully transferred ${p.amount.toLocaleString()} CR. to ${p.to}.`, 1);
           scheduleEvent(msgId, 2)
           deleteMessage(msgId);
           if (p.nextEvent) scheduleEvent(p.nextEvent, Math.random() * 2);
         } else {
           audioManager.playSFX('error');
-          sendMessage('SYSTEM', 'Insufficient Funds!', `You need ${p.amount.toLocaleString()} CR.`);
+          sendMessage('SYSTEM', 'Insufficient Funds!', `Failed to transfer ${p.amount.toLocaleString()} CR. to ${p.to}.`);
         }
-      } else if (p.resolveType === 'REFUSE') {
+      } else if (p.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.REFUSE) {
         if (p.nextEvent) scheduleEvent(p.nextEvent, Math.random() * 2);
         deleteMessage(msgId);
       }
       break;
-    case 'PAY_INCOME_TAX':
+    case MESSAGE_ACTION_TYPE.PAY_INCOME_TAX:
       const taxAmount = action.payload.amount;
       if (store.bankroll >= taxAmount) {
         audioManager.playSFX('paybill');
@@ -109,21 +124,19 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
 
         // Remove ALL pending income tax messages since paying updates the base correctly
         store.messages = store.messages.filter(m =>
-          !(m.actions && m.actions.some(a => a.actionType === 'PAY_INCOME_TAX'))
+          !(m.actions && m.actions.some(a => a.actionType === MESSAGE_ACTION_TYPE.PAY_INCOME_TAX))
         );
       } else {
         audioManager.playSFX('error');
         sendMessage('SYSTEM', 'Insufficient Funds!', `You need ${taxAmount.toLocaleString()} CR to pay your income tax. Failure to pay will result in severe penalties!`);
       }
       break;
-    case 'ACCEPT_INVITE':
-
-      if (action.payload.resolveType === 'REFUSE') {
+    case MESSAGE_ACTION_TYPE.ACCEPT_INVITE:
+      if (action.payload.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.REFUSE) {
         scheduleEvent(action.payload.nextEvent, 1);
         deleteMessage(msgId);
         break;
       }
-
       audioManager.playSFX('opening-door');
       // Navigate to specific zone or start game
       let locationConfig = null;
@@ -155,15 +168,15 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
       }
       break;
     case 'DELETE_MESSAGE':
+      // audioManager.playSFX('notification');
       deleteMessage(msgId);
       break;
   }
-  audioManager.playSFX('notification');
 }
 
 export const sendLoreAndSpamMessage = () => {
   const loreSpamMessage = getRndLoreSpamMessage();
 
-  sendMessage(loreSpamMessage.type, loreSpamMessage.title, loreSpamMessage.body, [], loreSpamMessage.sender);
+  sendMessage('SPAM', loreSpamMessage.title, loreSpamMessage.body, [], loreSpamMessage.sender);
 }
 

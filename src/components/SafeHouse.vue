@@ -21,8 +21,8 @@
         <!-- Core Vitality -->
         <div class=" v5-panel v5-core-vitality">
           <div class="v5-panel-label">
-            <span>CORE_VITALITY</span>
-            <button class="stats-btn" @click="showStatsModal = true">STATS</button>
+            <span class="label">CORE_STATUS</span>
+            <button class="stats-btn" @click="$emit('open-stats-modal')">STATS</button>
           </div>
           <div class="v5-panel-inner">
 
@@ -65,7 +65,7 @@
         <div class="v5-panel v5-neural-template">
           <div class="v5-panel-label">
             <span>AI_AGENT</span>
-            <button class="set-up-agent-btn" @click="showAgentModal = true">SETUP</button>
+            <button class="set-up-agent-btn" @click="$emit('open-agent-modal')">SETUP</button>
           </div>
           <div class="v5-panel-inner">
             <div class="v5-neural-hero">
@@ -188,6 +188,10 @@
                         <span class="val bankroll">{{ partner.bankroll.toLocaleString() }} <small>CR</small></span>
                       </div>
                       <div class="stat-box">
+                        <span class="label">CURRENT_DEBT</span>
+                        <span class="val bankroll">{{ partner.debt.toLocaleString() }} <small>CR</small></span>
+                      </div>
+                      <div class="stat-box">
                         <span class="label">NET_WORTH</span>
                         <div class="net-worth-chart-container">
                           <svg viewBox="0 0 100 40" preserveAspectRatio="none" class="net-worth-sparkline">
@@ -211,32 +215,60 @@
                         <p class="v5-class-desc note">
                           {{ CONTRACT_TYPE_DESC[contract.type].note }}
                         </p>
-                        <p v-if="contract.useRatio">
-                          <label class="ratio-group">
-                            <span class="label">PARTNER</span>
-                            <input type="range" min="0.1" max="0.9" step="0.1" value="0.5" :disabled="!contract.active"
-                              v-model="contract.ratio"
-                              @change="signContract(partner.id, contract.type, contract.ratio)">
-                            <span class="label">YOU</span>
-                          </label>
-                          <label class="label"> {{ Math.round((1 - contract.ratio) * 10) }} : {{
-                            Math.round(contract.ratio * 10) }}
-                          </label>
-                        </p>
-                        <p>
+                        <div v-if="contract.type === CONTRACT_TYPE.SHARE_BENEFIT">
+                          <p>
+                            <label class="ratio-group">
+                              <span class="label">PARTNER</span>
+                              <input type="range" min="0.1" max="0.9" step="0.1" value="0.5"
+                                :disabled="!contract.active" v-model="contract.ratio"
+                                @change="signContract(partner.id, contract.type, contract.ratio)">
+                              <span class="label">YOU</span>
+                            </label>
+                            <label class="label"> {{ Math.round((1 - contract.ratio) * 10) }} : {{
+                              Math.round(contract.ratio * 10) }}
+                            </label>
+                          </p>
+                          <p>
+                            <label class="label">
+                              <span class="label">PROFIT_TOTAL(FOR_PARTNER)</span>
+                              <span class="val"
+                                :class="{ 'high': contract.profitTotal > 0, 'low': contract.profitTotal < 0 }">{{
+                                  contract.profitTotal.toLocaleString() }} <small>CR</small>
+                              </span>
+                            </label>
+                          </p>
+                        </div>
+                        <div v-if="contract.type === CONTRACT_TYPE.BANKRUPT_RESCUE">
+                          <p>
+                            <label class="label">
+                              <span class="label">SAFETY_MAKER</span>
+                              <span class="val" :class="{ 'high': contract.debt > 0, 'low': contract.debt < 0 }">{{
+                                contract.debt.toLocaleString() }} <small>CR</small>
+                              </span>
+                            </label>
+                          </p>
+                          <p>
+                            <input type="range" min="0.0" max="1.0" step="0.01" :disabled="contract.debt > 0"
+                              v-model="contract.ratio">
+                            <label class="label"> {{ Math.round((contract.debt * contract.ratio)) }} CR
+                            </label>
+                          </p>
+                        </div>
+                        <p v-if="!contract.activeRepayment">
                           <button class="btn"
                             :disabled="partner.relationship < contract.requiredRelationship || contract.active || contract.cooldown > 0"
                             @click="signContract(partner.id, contract.type, contract.ratio)">SIGN</button>
                           <button class="btn" :disabled="!contract.active || contract.cooldown > 0"
                             @click="breakContract(partner.id, contract.type)">CANCEL</button>
                         </p>
+                        <p v-else>
+                          <button class="btn" @click="sendDebtRepayment(partner.id, contract.type)">REPAYMENT</button>
+                        </p>
                       </div>
                     </div>
                   </div>
-
-                  <div class="card-footer">
-
-                  </div>
+                  <!-- <div class="card-footer">
+                  </div> -->
                 </div>
               </div>
             </template>
@@ -279,7 +311,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-              }} UNREAD]</small>
+          }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
@@ -294,6 +326,8 @@
               <button v-for="(act, idx) in selectedMessage.actions" :key="idx" class="btn"
                 @click="triggerMessageAction(selectedMessage.id, idx)">
                 {{ act.label }}
+                {{ act.amount ? ' ' + act.amount.toLocaleString() : '' }}
+                {{ act.currency ? ' ' + act.currency : '' }}
               </button>
             </div>
           </div>
@@ -316,153 +350,8 @@
         </div>
       </section>
     </div>
-    <!-- AI AGENT SELECTION MODAL -->
-    <transition name="v4-fade">
-      <div v-if="showAgentModal" class="v5-modal-overlay" @click.self="showAgentModal = false">
-        <div class="v5-modal agent-selector">
-          <h2 class="glitch-text">AGENT_DESCRIPTION</h2>
 
-          <div class="agent-browser">
-            <button class="nav-btn prev" @click="prevAgent" :disabled="currentModelIdx === 0">&lt;</button>
 
-            <div class="agent-display">
-              <div class="agent-header">
-                <span class="id-tag">MODEL_ID: {{ selectedModelId }}</span>
-                <h3 class="name">{{ selectedModelId }}</h3>
-              </div>
-              <!-- <div class="agent-visual">
-                <span class="icon">🤖</span>
-              </div> -->
-              <div class="agent-info">
-                <p class="slogan">"{{ AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId]?.slogan }}"</p>
-                <div class="features-box">
-                  <div class="label">KEY_CAPABILITIES</div>
-                  <ul class="features">
-                    <li>{{ AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId]?.key_features }}</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <button class="nav-btn next" @click="nextAgent"
-              :disabled="currentModelIdx === availableModelIds.length - 1">&gt;</button>
-          </div>
-
-          <div v-if="selectedModelId" class="plan-selector">
-            <div class="v4-label">SELECT_SUBSCRIPTION_PLAN</div>
-            <div class="plan-grid">
-              <div v-for="(plan, idx) in AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId]?.price_plan" :key="idx"
-                class="plan-card"
-                :class="{ current: isCurrentPlan(selectedModelId, idx), selected: selectedPlanIdx === idx }"
-                @click="selectedPlanIdx = idx">
-                <div class="plan-header">
-                  <span class="level">LEVEL {{ idx }}</span>
-                  <span class="cost">{{ plan.cost.toLocaleString() }} CR</span>
-                </div>
-                <div class="plan-stats">
-                  <span>LT_MAX: {{ plan.maxLt }}</span>
-                  <span>SLOTS: {{ plan.slot.join(', ') }}</span>
-                  <span v-if="plan.probability_bonus" style="color:var(--neon-green)">PROB_BONUS: +{{
-                    (plan.probability_bonus * 100).toFixed(0) }}%</span>
-                  <span v-if="plan.lt_regen_bonus_rate" style="color:var(--neon-cyan)">REGEN_MUL: {{
-                    plan.lt_regen_bonus_rate }}x</span>
-                </div>
-                <div v-if="isCurrentPlan(selectedModelId, idx)" class="status-tag">ACTIVE</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-actions">
-            <button class="btn" :disabled="!canPurchase" @click="confirmPurchase">
-              {{ purchaseBtnText }}
-            </button>
-            <button class="btn" @click="showAgentModal = false">CLOSE</button>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- SKILL SELECTOR MODAL -->
-    <transition name="v4-fade">
-      <div v-if="showSkillSelector" class="v5-modal-overlay" @click.self="closeSkillSelector">
-        <div class="v5-modal">
-          <div class="v4-label">SELECT_SUBROUTINE: {{ activeSlotType }}</div>
-          <div class="v5-modal-list">
-            <div v-for="sk in filteredSkillsForSlot" :key="sk.id" class="v4-item-card" @click="equipSkill(sk)">
-              <div class="v4-item-row">
-                <span class="v4-val white">{{ sk.name }}</span>
-                <span class="v4-val yellow">{{ sk.tier }}</span>
-              </div>
-              <div class="v4-key">{{ sk.desc }}</div>
-              <div class="v4-key" style="opacity:0.4;">RAM: {{ sk.ramOccupation }}GB</div>
-            </div>
-          </div>
-          <div class="v4-modal-footer" style="display:flex; gap:10px; margin-top:20px">
-            <button class="v4-btn red" @click="equipSkill(null)">DE_ATTACH</button>
-            <button class="v4-btn" @click="closeSkillSelector">CANCEL</button>
-          </div>
-        </div>
-      </div>
-    </transition>
-    <!-- PLAY STATS MODAL -->
-    <transition name="v4-fade">
-      <div v-if="showStatsModal" class="v5-modal-overlay" @click.self="showStatsModal = false">
-        <div class="v5-modal stats-modal">
-          <div class="v4-label">PLAY_STATS_ANALYSIS</div>
-          <h2 class="glitch-text" data-text="PERFORMANCE_REPORT">PERFORMANCE_REPORT</h2>
-
-          <div class="stats-container">
-            <!-- Economic Stats -->
-            <div class="stats-section">
-              <div class="section-label">ECONOMIC_METRICS</div>
-              <div class="stats-grid">
-                <div class="stat-entry"><span class="label">TOTAL_EARNED:</span> <span class="val cyan">{{
-                  (store.play_stats.total_earn_money || 0n).toLocaleString() }} CR</span></div>
-                <div class="stat-entry"><span class="label">TOTAL_LOST:</span> <span class="val red">{{
-                  (store.play_stats.total_lost_money || 0n).toLocaleString() }} CR</span></div>
-                <div class="stat-entry"><span class="label">PAID_RAKE:</span> <span class="val yellow">{{
-                  (store.play_stats.paid_rake || 0).toLocaleString() }} CR</span></div>
-                <div class="stat-entry"><span class="label">MAX_WIN_POT:</span> <span class="val white">{{
-                  store.play_stats.max_win_pot.toLocaleString() }} CR</span></div>
-                <div class="stat-entry"><span class="label">MAX_LOSE_POT:</span> <span class="val white">{{
-                  store.play_stats.max_lose_pot.toLocaleString() }} CR</span></div>
-              </div>
-            </div>
-
-            <!-- Behavioral Stats (HUD) -->
-            <div class="stats-section">
-              <div class="section-label">BEHAVIORAL_HUD</div>
-              <div class="stats-grid">
-                <div class="stat-entry"><span class="label">HANDS_PLAYED:</span> <span class="val">{{
-                  store.play_stats.played_hands }}</span></div>
-                <div class="stat-entry"><span class="label">VPIP:</span> <span class="val cyan">{{ vpip }}%</span></div>
-                <div class="stat-entry"><span class="label">PFR:</span> <span class="val yellow">{{ pfr }}%</span></div>
-                <div class="stat-entry"><span class="label">WTSD:</span> <span class="val white">{{ wtsd }}%</span>
-                </div>
-                <div class="stat-entry"><span class="label">W$SD:</span> <span class="val green">{{ wsd }}%</span></div>
-              </div>
-            </div>
-
-            <!-- Luck & Performance -->
-            <div class="stats-section">
-              <div class="section-label">LUCK_AND_PEAKS</div>
-              <div class="stats-grid">
-                <div class="stat-entry"><span class="label">BANKRUPTCY:</span> <span class="val red">{{
-                  store.play_stats.bankruptcy_count }}</span></div>
-                <div class="stat-entry"><span class="label">MAX_STREAK (WIN):</span> <span class="val green">{{
-                  store.play_stats.max_win_streak }}</span></div>
-                <div class="stat-entry"><span class="label">MAX_STREAK (LOSE):</span> <span class="val red">{{
-                  store.play_stats.max_lose_streak }}</span></div>
-                <div class="stat-entry"><span class="label">BAD_BEAT_PEAK:</span> <span class="val yellow">{{
-                  store.play_stats.max_lose_equity.toFixed(1) }}%</span></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-actions" style="margin-top:20px">
-            <button @click="showStatsModal = false" class="btn cyan">CLOSE_REPORT</button>
-          </div>
-        </div>
-      </div>
-    </transition>
   </div>
 </template>
 
@@ -477,15 +366,12 @@ import { audioManager } from '../logic/audioManager';
 import { SKILL_DATA } from '../logic/skills';
 import { AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAgentModelClasses';
 import { deleteMessage } from '../logic/messageSystem';
-import { signContract, breakContract, CONTRACT_TYPE, CONTRACT_TYPE_DESC } from '../logic/partnerSystem';
+import { signContract, breakContract, CONTRACT_TYPE, CONTRACT_TYPE_DESC, debtRepayment } from '../logic/partnerSystem';
 // import { formatGameTime, formatGameDate } from '../logic/timeSystem';
 
-const emit = defineEmits(['sleep', 'back', 'open-task-selector']);
+const emit = defineEmits(['sleep', 'back', 'open-task-selector', 'open-agent-modal', 'open-skill-selector', 'open-stats-modal']);
 const mainTab = ref('hardware');
 const selectedMessage = ref(null);
-const showSkillSelector = ref(false);
-const showStatsModal = ref(false);
-const showAgentModal = ref(false);
 const selectedModelId = ref(store.aiAgent.name);
 const selectedPlanIdx = ref(store.aiAgent.price_plan_idx);
 const activeSlotIdx = ref(null);
@@ -499,7 +385,11 @@ const currentProbBonus = computed(() => {
 
 const availableModelIds = computed(() => Object.keys(AI_AGENT_MODEL_AND_PLAN_DATA));
 const currentModelIdx = computed(() => availableModelIds.value.indexOf(selectedModelId.value));
-
+const repaymentAmount = ref(0);
+const sendDebtRepayment = (partner, contract) => {
+  debtRepayment(partner, Math.round(contract.debt * contract.ratio), false, contract);
+  repaymentAmount.value = 0;
+};
 const nextAgent = () => {
   if (currentModelIdx.value < availableModelIds.value.length - 1) {
     selectedModelId.value = availableModelIds.value[currentModelIdx.value + 1];
@@ -639,14 +529,7 @@ const equipItem = (instanceId) => {
   }
 }
 const openSkillSelector = (idx, type) => {
-  activeSlotIdx.value = idx;
-  activeSlotType.value = type;
-  showSkillSelector.value = true;
-};
-const closeSkillSelector = () => {
-  showSkillSelector.value = false;
-  activeSlotIdx.value = null;
-  activeSlotType.value = null;
+  emit('open-skill-selector', { idx, type });
 };
 const getTierClass = (tier) => {
   return `tier-${tier}`;
@@ -690,26 +573,7 @@ const sellItem = (item) => {
   if (store.equippedProtector?.instanceId === item.instanceId) store.equippedProtector = null;
 };
 
-// HUD Metrics
-const vpip = computed(() => {
-  if (!store.play_stats.played_hands) return 0;
-  return ((store.play_stats.vpip_count / store.play_stats.played_hands) * 100).toFixed(1);
-});
 
-const pfr = computed(() => {
-  if (!store.play_stats.played_hands) return 0;
-  return ((store.play_stats.pfr / store.play_stats.played_hands) * 100).toFixed(1);
-});
-
-const wtsd = computed(() => {
-  if (!store.play_stats.played_hands) return 0;
-  return ((store.play_stats.wtsd / store.play_stats.played_hands) * 100).toFixed(1);
-});
-
-const wsd = computed(() => {
-  if (!store.play_stats.wtsd) return 0;
-  return ((store.play_stats.w$sd / store.play_stats.wtsd) * 100).toFixed(1);
-});
 
 const getStaminaColor = computed(() => {
   const s = store.stamina;

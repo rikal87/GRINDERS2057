@@ -93,8 +93,8 @@ export const CLASSES_PARTNER = [
 
     schedule: [CONTRACT_TYPE.A_DATE_WITH_YOU],
     isPartner: false,
-    note_ko: '험악한 갱스터들 사이에서 포커를 치고 있는 정체 모를 여성입니다.',
-    note_en: 'An unknown woman is playing poker amidst dangerous gangsters.',
+    note_ko: '부자들 사이에서 포커를 치고 있는 정체 모를 여성입니다.',
+    note_en: 'An unknown woman is playing poker with rich men.',
     get note() {
       return store.settings.language === 'en' ? this.note_en : this.note_ko;
     }
@@ -1361,6 +1361,6 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.ELIMINATED_SELF]: ["This table is terrible anyway.", "I have better places to be.", "Whatever.", "I'm done here.", "Goodbye."],
     [CHAT_TRIGGERS.ELIMINATED_ENEMY]: ["Farewell.", "You won't be missed.", "And stay out.", "Finally.", "Next victim, please."]
   },
-  STRANGE_WOMEN: {}
+  AN_UNKNOWN_WOMAN: {}
 };
-PERSONALITIES.STRANGE_WOMEN = PERSONALITIES.FLORENCE;
+PERSONALITIES.AN_UNKNOWN_WOMAN = PERSONALITIES.FLORENCE;

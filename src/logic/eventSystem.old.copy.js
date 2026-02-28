@@ -320,7 +320,7 @@ export const EventData = [
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
         {
           label: this.label_accept,
-          actionType: `RESOLVE_PARTNER_DEBT`,
+          actionType: `DEBT_REPAYMENT`,
           payload: {
             amount: partner.initialBankroll,
             currency: 'CR',
@@ -330,7 +330,7 @@ export const EventData = [
         },
         {
           label: this.label_refuse,
-          actionType: `RESOLVE_PARTNER_DEBT`,
+          actionType: `DEBT_REPAYMENT`,
           payload: {
             amount: 0,
             currency: 'CR',
@@ -468,7 +468,7 @@ export const EventData = [
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
         {
           label: this.label_accept,
-          actionType: `RESOLVE_PARTNER_DEBT`,
+          actionType: `DEBT_REPAYMENT`,
           payload: {
             amount: pay_rent_bill,
             currency: 'CR',
@@ -478,7 +478,7 @@ export const EventData = [
         },
         {
           label: this.label_refuse,
-          actionType: `RESOLVE_PARTNER_DEBT`,
+          actionType: `DEBT_REPAYMENT`,
           payload: {
             amount: 0,
             currency: 'CR',
@@ -574,7 +574,7 @@ export const EventData = [
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
         {
           label: this.label_accept,
-          actionType: `RESOLVE_PARTNER_DEBT`,
+          actionType: `DEBT_REPAYMENT`,
           payload: {
             amount: pay_rent_bill,
             currency: 'CR',
@@ -584,7 +584,7 @@ export const EventData = [
         },
         {
           label: this.label_refuse,
-          actionType: `RESOLVE_PARTNER_DEBT`,
+          actionType: `DEBT_REPAYMENT`,
           payload: {
             amount: 0,
             resolveType: 'REFUSE',

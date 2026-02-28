@@ -1,10 +1,11 @@
 
-import { store, gainBankroll, gainLT, gainClearedZone } from './store.js';
+import { store, gainBankroll, gainLT, gainClearedZoneCount } from './store.js';
 import { evaluateHand } from './poker.js';
 import { recoverStamina } from './staminaSystem.js';
-import { zones } from './zone.js';
+import { zones, LOCATION_ID } from './zone.js';
 import { scheduleEvent, EVENT_ID } from './eventSystem.js';
 import { deleteMessage } from './messageSystem.js'
+import { PARTNER_ID } from './partnerSystem.js';
 
 // const cleanupInvites = (locationId) => {
 //   store.messages = store.messages.filter(m => {
@@ -71,8 +72,10 @@ export class EventAdaptor {
       // cleanupInvites(locationId);
       deleteMessage(inviteId);
 
-      if (locationId === 'free_street_shop_with_max') {
+      if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX) {
         scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_PLAYER, 0);
+      } else if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX) {
+        scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_3_MEET_AT_CLUB_LOSE, 0);
       }
     } else {
       // An NPC went bankrupt
@@ -85,12 +88,15 @@ export class EventAdaptor {
           store.play_stats.bust_enemy['Fish']++;
         }
 
-        if (locationId === 'free_street_shop_with_max' && player.name === 'Max') {
+        if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX && player.name === 'Max') {
           scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 1);
+        } else if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX && player.name === 'Max') {
+          scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_3_MEET_AT_CLUB_WIN, 1); // if max wins complate main story 1-3
         }
+
       } else {
         // Someone else bankrupted the NPC
-        if (locationId === 'free_street_shop_with_max' && player.name === 'Max') {
+        if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX && player.name === 'Max') {
           scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_MAX, 1);
         }
       }
@@ -115,34 +121,41 @@ export class EventAdaptor {
         console.log(`[GAME] First Clear Reward Awarded: ${firstClearReward}`);
       }
     }
-    if (locationId) gainClearedZone(locationId);
+    if (locationId) gainClearedZoneCount(locationId);
 
     // [Tutorial] Handled edge cases for the tutorial table
-    if (locationId === 'free_street_shop_with_max') {
+    if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX) {
       if (player.isMe) {
         scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 2);
-      } else if (player.name === 'Max') {
+      } else if (player.id === PARTNER_ID.MAX) {
         scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN_MAX, 2);
       }
     }
+    // MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS
+    if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX || player.isMe) {
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 2);
+    }
   }
-
   playerLeaveTable(player, locationId, allPlayers, inviteId) {
     console.info('playerLeaveTable', player.name, locationId, inviteId);
     if (!player.isMe) return;
-
     // cleanupInvites(locationId);
-    deleteMessage(inviteId);
 
-    if (locationId === 'free_street_shop_with_max') {
-      const maxIsAlive = allPlayers.some(p => p.name === 'Max' && !p.isEliminated);
-      if (maxIsAlive) {
-        // Run away early -> Max gets mad
+    deleteMessage(inviteId);
+    if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX) {
+      // Run away early -> Max gets mad
+      if (!player.isEliminated) {
         if (store.completedEvents.includes(EVENT_ID.MAX.TUTORIAL_LEAVE)) {
           scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE_AGAIN, 2);
         } else {
           scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE, 2);
         }
+      }
+    } else if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX) {
+      if (store.sessionNetWorth >= 100000) {
+        scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 3);
+      } else {
+        scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_FAILED, 3);
       }
     }
   }
@@ -347,6 +360,11 @@ export class EventAdaptor {
         break;
       case 'emergency_fund':
         gainBankroll(effect.valueCalc);
+        effect.cooldown = effect.maxCooldown;
+        break;
+      case 'smoke_break':
+        recoverStamina(effect.value);
+        gainLT(-effect.value);
         effect.cooldown = effect.maxCooldown;
         break;
       case 'lt_recovery':

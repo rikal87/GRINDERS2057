@@ -33,6 +33,7 @@ const defaultState = {
     income_tax: 0,
     fine: 0,
   },
+
   partners: [],
   isRealGameOver: false,
   realGameOverReason: '',
@@ -124,6 +125,11 @@ const defaultState = {
     price_plan_idx: 0,
     subscriptionExpireAt: 0,
   },
+  agentStats: {
+    cost_lt_total: 0,
+    completed_task_count: 0,
+    failed_task_count: 0,
+  },
   onWorkTasks: [], // [{ taskId, startTime, lastProcessTime }]
   messages: [], // [{ id, type, title, body, timestamp, isRead, actions?, expireAt? }]
   stamina: 100,
@@ -197,10 +203,7 @@ export const gainXP = (player, pot, bb = 1.0, isHighStakes = false, locationLV =
   checkLevelUp(xp);
   return xp;
 }
-export const gainClearedZone = (locationId) => {
-  if (!store.cleared_zones[locationId]) store.cleared_zones[locationId] = 0
-  store.cleared_zones[locationId]++
-}
+
 export const checkLevelUp = (xp) => {
   // 1000 + 2000 >? 1500
   if (Number.isNaN(xp)) return;
@@ -238,7 +241,7 @@ export const TYPE_CHANGE_BANKROLL = {
   PAY_RENT: 'PAY_RENT',
   PAY_INCOME_TAX: 'PAY_INCOME_TAX',
   PAY_FINE: 'PAY_FINE',
-  RESOLVE_PARTNER_DEBT: 'RESOLVE_PARTNER_DEBT',
+  DEBT_REPAYMENT: 'DEBT_REPAYMENT',
   BUY_ITEM: 'BUY_ITEM',
   SELL_ITEM: 'SELL_ITEM',
   AI_AGENT_SUBSCRIPTION: 'AI_AGENT_SUBSCRIPTION',
@@ -249,6 +252,8 @@ export const TYPE_CHANGE_BANKROLL = {
   GIVE_BRIBE_DEALER: 'GIVE_BRIBE_DEALER',
   CONTRACT: 'CONTRACT', // 계약 관련
 }
+
+// EVENT SYSTEM
 export const registerCompletedEvent = (eventId) => {
   if (store.completedEvents.includes(eventId)) return;
   store.completedEvents.push(eventId);
@@ -259,6 +264,16 @@ export const isCompletedEvent = (eventId) => {
 export const deleteCompletedEvent = (eventId) => {
   store.completedEvents = store.completedEvents.filter(id => id !== eventId);
 }
+
+// ZONE CLEAR SYSTEM
+export const getClearedZoneCount = (zoneId) => {
+  return store.play_stats.cleared_zones[zoneId] || 0;
+}
+export const gainClearedZoneCount = (locationId) => {
+  if (!store.play_stats.cleared_zones[locationId]) store.play_stats.cleared_zones[locationId] = 1
+  store.play_stats.cleared_zones[locationId]++
+}
+
 // CAN USE NAGATIVE AMOUNT
 export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
   console.log(`[BANKROLL] Gained ${amount} bankroll.`);

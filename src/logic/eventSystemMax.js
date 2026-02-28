@@ -1,11 +1,13 @@
 // for first player
-import { sendMessage, MESSAGE_TYPE } from "./messageSystem.js";
-import { store } from "./store.js";
-import { PARTNER_ID, gainRelationship, unregisterPartner, getRelationship, gainPartnerBankroll } from "./partnerSystem.js";
+import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE } from "./messageSystem.js";
+import { store, registerCompletedEvent } from "./store.js";
+import { PARTNER_ID, gainRelationship, registerPartner, unregisterPartner, getRelationship, gainPartnerBankroll, getPartner } from "./partnerSystem.js";
 import { scheduleEvent } from "./eventSystem.js";
 import { recoverStamina } from "./staminaSystem.js";
-import { getBustEnemyCount } from "./store.js";
+import { getBustEnemyCount, getClearedZoneCount } from "./store.js";
 import { ENEMY_ID } from "./persona.js";
+import { LOCATION_ID } from "./zone.js";
+import { isEventCompleted } from "./eventSystem.js";
 /**
  * @typedef {Object} MaxEvents
  * @property {string} YOU_GET_SOME_SLEEP
@@ -42,37 +44,130 @@ import { ENEMY_ID } from "./persona.js";
  * @property {string} JOIN_PARTNER // 맥스가 정식 파트너가 되기로 결심합니다.
  * @property {string} REGISTERED_PARTNER // 맥스를 정식 파트너로 등록했습니다.
  * @property {string} MAIN_STORY_1_MEET_AT_CLUB // 맥스가 클럽에서 플레이어를 만납니다.
+ * @property {string} MAIN_STORY_1_2_MEET_AT_CLUB_FAILED
+ * @property {string} MAIN_STORY_1_3_MEET_AT_CLUB_WIN
  * @property {string} GONE
+ * @property {string} BANKRUPT_REPAYMENT
+ * @property {string} BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER
+ * @property {string} DEBT_REPAYMENT_DONE
+ * @property {string} DEBT_REPAYMENT_DONE_PLAYER
+ * @property {string} DEBT_REPAYMENT_DONE_LOW_RELATIONSHIP
+ * @property {string} DEBT_REPAYMENT_DONE_LOW_RELATIONSHIP_PLAYER
+ * @property {string} MAIN_STORY_1_4_MEET_AT_CLUB_DONE
+ * @property {string} MAIN_STORY_1_5_MEET_AT_CLUB_DONE
+ * @property {string} MAIN_STORY_1_6_MEET_AT_CLUB_DONE
+ * @property {string} MAIN_STORY_1_7_MEET_AT_CLUB_DONE
  */
 /** @type {MaxEvents} */
 export const EVENT_MAX = new Proxy({}, {
   get: (target, prop) => `MAX_${prop}`
 });
-const SENDER = store.settings.language === 'en' ? 'Max' : '맥스';
+const SENDER_EN = 'Max';
+const SENDER_KO = '맥스';
+const SENDER = store.settings.language === 'en' ? SENDER_EN : SENDER_KO;
 export const EventData = [
+  {
+    id: EVENT_MAX.BANKRUPT_RESCUE_REPAYMENT_DONE,
+    scenario: '맥스가 플레이어에게 빚진 돈을 모두 갚았습니다.',
+    title_ko: '구조 자금 상환 완료',
+    title_en: 'Rescue Funds Repaid',
+    body_ko: '어휴, 드디어 한 시름 놨네! 네가 보태준 돈 깔끔하게 다 갚았다. 역시 텍사스 사나이들끼리 믿고 돕는 맛이 있지! 정말 고맙다 친구야!',
+    body_en: 'Whew, finally off the hook! I\'ve cleared up all the funds you spotted me. That\'s why us Texans stick together! Really appreciate it, buddy!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+    },
+  },
+  {
+    id: EVENT_MAX.BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER,
+    scenario: '플레이어가 맥스에게 빚진 돈을 모두 갚았습니다.',
+    title_ko: '구조 자금 회수 완료',
+    title_en: 'Rescue Funds Recovered',
+    body_ko: '하하! 역시 자네라면 금방 일어설 줄 알았어! 땡전 한 푼 안 남기고 확실히 다 들어왔다구. 앞으로도 등 맞대고 제대로 털어보자고!',
+    body_en: 'Haha! I knew you\'d bounce back in no time! Received every last cent I lent you. Let\'s keep watching each other\'s backs out there!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+    },
+  },
+  {
+    id: EVENT_MAX.DEBT_REPAYMENT_DONE,
+    scenario: '맥스가 플레이어에게 빚진 돈을 모두 갚았습니다.',
+    title_ko: '채무 변제 완료',
+    title_en: 'Debt Repaid',
+    body_ko: '야, 나한테 빌려갔던 돈 방금 다 보냈어! 덕분에 위기는 넘겼네. 다음엔 내가 한 턱 거하게 쏠 테니까 기대하라고!',
+    body_en: 'Hey, I just sent over the last of what I owed you! Thanks for helping me out of a tight spot. Next round is on me, partner!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+    },
+  },
+  {
+    id: EVENT_MAX.DEBT_REPAYMENT_DONE_PLAYER,
+    scenario: '플레이어가 맥스에게 빚진 돈을 모두 갚았습니다.',
+    title_ko: '채무 상환 확인',
+    title_en: 'Debt Repayment Confirmed',
+    body_ko: '오, 방금 입금 확인했어! 역시 내 친구야, 빚 하나는 칼같이 갚는다니까. 이제 홀가분하게 다시 쓸어 담으러 가볼까?',
+    body_en: 'Oh, just checked the transfer! That\'s my friend, always settling up sharp. Feel lighter now? Let\'s go sweep some tables!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+    },
+  },
+  {
+    id: EVENT_MAX.DEBT_REPAYMENT_DONE_LOW_RELATIONSHIP,
+    scenario: '맥스가 플레이어에게 빚진 돈을 모두 갚았습니다.(하지만 플레이어랑 사이가 별로 좋진 않은 상태입니다...)',
+    title_ko: '채무 변제 완료',
+    title_en: 'Debt Repaid',
+    body_ko: '빌린 돈은 여기 다 보냈으니까 확인해 봐. 빚지고는 못 사는 성격이라 말이야... 뭐, 더 할 말 없으면 이만.',
+    body_en: 'I sent over the money I borrowed, so check your balance. I don\'t like staying in anyone\'s debt... Well, if that\'s all, I\'m out.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+    },
+  },
+  {
+    id: EVENT_MAX.DEBT_REPAYMENT_DONE_PLAYER_LOW_RELATIONSHIP,
+    scenario: '플레이어가 맥스에게 빚진 돈을 모두 갚았습니다.(하지만 플레이어랑 사이가 별로 좋진 않은 상태입니다...)',
+    title_ko: '채무 상환 확인',
+    title_en: 'Debt Repayment Confirmed',
+    body_ko: '입금된 거 방금 확인했어. 제때 갚아줘서 다행이네. 돈 거래는 확실해야 뒤탈이 없는 법이니까. 수고해.',
+    body_en: 'Just confirmed the deposit. Glad you paid it back on time. Money matters need to be kept clean. See ya.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+    },
+  },
   {
     id: EVENT_MAX.JOIN_PARTNER,
     scenario: '맥스가 정식 파트너가 되기로 결심합니다. (플레이어의 자산이 10만 달러 이상일 때)',
-    title_ko: '텍사스 콤비 결성',
+    title_ko: '텍사스 듀오 결성',
     title_en: 'Texas Duo Formed',
     body_ko: '하하! 실력이 아주 물이 올랐구만 친구! 뒷골목 피쉬들 돈이나 뜯어먹기엔 이제 아까운 실력이야. 이 정도면 나랑 본격적으로 등 맞대고 뛰어도 되겠어. 제대로 텍사스 마초 듀오를 결성해 볼까?',
     body_en: 'Haha! You\'ve really sharpened those claws, friend! You\'re too good to just be swiping chips from back-alley fish now. With skills like that, you\'re ready to watch my back. What do you say we form a real Texas macho duo?',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     condition: () => {
-      return store.bankroll > 100000;
+      return store.bankroll > 100000
     },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      scheduleEvent(EVENT_MAX.REGISTERED_PARTNER, 1);
     },
   },
   {
     id: EVENT_MAX.REGISTERED_PARTNER,
-    scenario: '맥스를 정식 파트너로 등록했습니다.(시스템 안내용)',
-    title_ko: '맥스를 정식 파트너로 등록했습니다.',
+    scenario: '맥스가 파트너로 등록되었습니다.(시스템 안내용)',
+    title_ko: '맥스가 파트너로 등록되었습니다.',
     title_en: 'Max Registered as Partner',
-    body_ko: '맥스가 파트너로 등록되었습니다. 이제 안전가옥에서 파트너 탭에서 맥스와 계약을 맺을 수 있습니다.',
-    body_en: 'Max has been registered as a formal partner. Now you can sign contracts with Max in the partner tab in the safe house.',
+    body_ko: '맥스가 파트너로 등록되었습니다. 이제 [안전가옥]의 [파트너] 탭에서 맥스와 계약을 맺을 수 있습니다.',
+    body_en: 'Max has been registered as a partner. Now you can sign contracts with Max in the [Partner] tab of the [Safe House].',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
@@ -89,11 +184,13 @@ export const EventData = [
     body_en: 'Listen up buddy, a grinder I know over at the Neon Lounge just gave me a sweet tip. Tonight, the VIP room at H.B.D Club is gonna be crawling with rich suckers stinking of cash. I\'ll call you later tonight, so get ready.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    timer: 3 * 60, // 3 hours
     condition: () => {
-      return false // not trigger yet
+      // return getClearedZoneCount(LOCATION_ID.LOW_UNDERGROUND_CLUB) > 0;
+      return true // for test
     },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER);
+      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], SENDER);
     },
   },
   {
@@ -105,9 +202,13 @@ export const EventData = [
     body_en: ' It\'s time. They\'re fat, juicy, and ready to be bled dry. Bring a heavy stack of chips and meet me there. We\'re gonna make a killing!',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    label_ko: '참가하기',
+    label_en: 'Join',
+    get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
     timer: 32,
     condition: () => {
-      return false // not trigger yet, 22:13 triggered?
+      // return getClearedZoneCount(LOCATION_ID.LOW_UNDERGROUND_CLUB) > 0 && isEventCompleted(EVENT_MAX.MAIN_STORY_1_MEET_AT_CLUB) && new Date(store.gameTime).getHours() >= 22;
+      return new Date(store.gameTime).getHours() >= 22 // for test
     },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [
@@ -116,10 +217,107 @@ export const EventData = [
           actionType: 'ACCEPT_INVITE',
           payload: {
             resolveType: 'JOIN',
-            location_id: 'low_underground_club_meet_max'
+            location_id: LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX
           }
         },
       ], SENDER)
+    },
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_1_2_MEET_AT_CLUB_FAILED,
+    scenario: 'MAIN_STORY_1_MEET_AT_CLUB 미션 -[Rich_Guy] 털어먹기 실패 (중도 탈락) 이벤트',
+    title_ko: '퉤, 오늘 물 버렸네.',
+    title_en: 'Spit, water\'s gone bad tonight.',
+    body_ko: '아오 썅, 그 자식들 겉멋만 든 줄 알았더니 생각보다 빡센 놈들이었네. 올인 나기 전에 튀는 것도 실력이지 뭐. 오늘은 일단 후퇴다!',
+    body_en: 'Ah shit, thought those punks were just all show, but they\'re tougher than they look. Knowing when to bail before going bust is a skill too. We retreat for now!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      scheduleEvent(EVENT_MAX.MAIN_STORY_1_3_MEET_AT_CLUB_DONE, 20)
+    },
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS,
+    scenario: 'MAIN_STORY_1_MEET_AT_CLUB 미션 -[Rich_Guy] 털어먹기 성공 이벤트',
+    title_ko: '크하하! 봤냐?!',
+    title_en: 'Mwahaha! Did you see that?!',
+    body_ko: '이게 진짜 텍사스 마초 듀오의 힘이지! 그 놈들 표정 썩어들어가는 거 봤냐? 이 쌓인 돈 좀 보라고, 하하하! 오늘 밤엔 내가 최고급 스테이크 쏜다!',
+    body_en: 'That\'s the power of the Texas macho duo! Did you see the look on those suckers\' faces? Just look at this mountain of money, hahaha! Premium steak is on me tonight!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      scheduleEvent(EVENT_MAX.MAIN_STORY_1_3_MEET_AT_CLUB_DONE, 10)
+    },
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_1_3_MEET_AT_CLUB_DONE,
+    scenario: 'MAIN_STORY_1_MEET_AT_CLUB 미션 완료후 맥스가 플레이어에게 말을 거는 이벤트',
+    title_ko: '어이, 근데 말이야...',
+    title_en: 'Hey, but you know...',
+    body_ko: '아까 그 VIP 룸에 앉아있던 여자 말이지. 얼음장같이 차갑게 생겨가지곤 칩 쓸어담던 그 여자.',
+    body_en: 'That woman sitting in the VIP room earlier. The one looking cold as ice, sweeping up all the chips.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      scheduleEvent(EVENT_MAX.MAIN_STORY_1_4_MEET_AT_CLUB_DONE, 5)
+    },
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_1_4_MEET_AT_CLUB_DONE,
+    scenario: 'MAIN_STORY_1_3_MEET_AT_CLUB_DONE 연계',
+    title_ko: '어디서 본 얼굴인데...',
+    title_en: 'I\'ve seen that face before...',
+    body_ko: '분명 텍사스 그라인더 판에서 굴러먹던 시절에 어디선가 마주친 적이 있는 거 같단 말이지. 아... 썅, 누구였더라?',
+    body_en: 'I swear I bumped into her back when I was grinding in the Texas underground. Ah... shit, who was it?',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      scheduleEvent(EVENT_MAX.MAIN_STORY_1_5_MEET_AT_CLUB_DONE, 20)
+    },
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_1_5_MEET_AT_CLUB_DONE,
+    scenario: 'MAIN_STORY_1_4_MEET_AT_CLUB_DONE 연계',
+    title_ko: '아 썅! 기억났다!',
+    title_en: 'Ah shit! I remember now!',
+    body_ko: '플로렌스! 그래 맞아, 플로렌스 피어스! 라스베가스 하이롤러 판에서 이름 꽤나 날리던 독사 같은 여자라고. 어쩐지 포스가 장난 아니더라니.',
+    body_en: 'Florence! Yeah, that\'s right, Florence Pierce! She\'s a straight-up viper who made a big name for herself in the Vegas high-roller scene. No wonder her vibe was no joke.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      scheduleEvent(EVENT_MAX.MAIN_STORY_1_6_MEET_AT_CLUB_DONE, 25)
+    },
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_1_6_MEET_AT_CLUB_DONE,
+    scenario: 'MAIN_STORY_1_5_MEET_AT_CLUB_DONE 연계',
+    title_ko: '근데 여긴 웬일이래?',
+    title_en: 'What\'s she doing here though?',
+    body_ko: '그렇게 잘 나가던 여자가 이런 촌구석 뒷골목 클럽엔 왜 굴러들어온 거지? 뭐 크게 한탕 말아먹고 도망이라도 온 건가? 하, 세상 참 좁아.',
+    body_en: 'Why would a big shot like her be playing in a back-alley club? Did she go bust on a massive pot and run away or something? Hah, small world.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      scheduleEvent(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE, 25)
+    },
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE,
+    scenario: 'MAIN_STORY_1_6_MEET_AT_CLUB_DONE 연계',
+    title_ko: '뭐 어쨌든',
+    title_en: 'Well, anyway',
+    body_ko: '우리가 신경 쓸 일은 아니지. 남의 사정이야 어찌됐든 우린 우리 살길이나 찾자고. 오늘 밤 꽤 피곤했을 텐데 푹 쉬어라, 파트너!',
+    body_en: 'None of our business. Whatever her deal is, we just gotta look out for our own survival. You must be wiped out tonight, get some solid rest, partner!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
     },
   },
   {
@@ -184,13 +382,16 @@ export const EventData = [
     body_en: 'Hey man, you didn\'t forget the money you owe me, right? I\'m in a damn tight spot right now, so pay up quick. I\'m about to get kicked off the table.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    get sender() { return store.settings.language === 'en' ? SENDER_en : SENDER_ko; },
     func() {
+      const partner = getPartner(PARTNER_ID.MAX);
+      if (!partner) return;
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [{
-        label: this.title,
-        actionType: `PAY_DEBT (${pay_rent_bill}) CR`,
+        label: 'PAY DEBT',
+        actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
         payload: {
-          amount: pay_rent_bill
+          amount: partner.debt,
+          currency: 'CR',
+          to: partner.name,
         }
       }], SENDER)
     },
@@ -204,13 +405,16 @@ export const EventData = [
     body_en: 'Hey!! I\'m in this mess because of you! Are you kidding me? Cough up my money right now if you don\'t want a beating!',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    get sender() { return store.settings.language === 'en' ? SENDER_en : SENDER_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [{
-        label: this.title,
-        actionType: `PAY_DEBT (${pay_rent_bill}) CR`,
+      const partner = getPartner(PARTNER_ID.MAX);
+      if (!partner) return;
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [{
+        label: `PAY DEBT`,
+        actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
         payload: {
-          amount: pay_rent_bill
+          amount: partner.debt,
+          currency: 'CR',
+          to: partner.name,
         }
       }], SENDER)
     },
@@ -259,27 +463,29 @@ export const EventData = [
     get label_accept() { return store.settings.language === 'en' ? this.label_accept_en : this.label_accept_ko; },
     get label_refuse() { return store.settings.language === 'en' ? this.label_refuse_en : this.label_refuse_ko; },
     func() {
-      const partner = store.partners.find(partner => partner.id === PARTNER_ID.MAX);
+      const partner = getPartner(PARTNER_ID.MAX);
       if (!partner) return;
       // if (partner.debt <= 0) return;
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [
         {
           label: this.label_accept,
-          actionType: `RESOLVE_PARTNER_DEBT`,
+          actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
           payload: {
             amount: partner.initialBankroll,
             currency: 'CR',
             resolveType: 'ACCEPT',
+            to: partner.name,
             nextEvent: getRelationship(PARTNER_ID.MAX) < 200 ? EVENT_MAX.BANKRUPT_ACCEPT_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_MAX.BANKRUPT_ACCEPT_RESCUE,
           }
         },
         {
           label: this.label_refuse,
-          actionType: `RESOLVE_PARTNER_DEBT`,
+          actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
           payload: {
             amount: 0,
             currency: 'CR',
             resolveType: 'REFUSE',
+            to: partner.name,
             nextEvent: getRelationship(PARTNER_ID.MAX) < 200 ? EVENT_MAX.BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_MAX.BANKRUPT_REFUSE_RESCUE
           }
         }
@@ -326,7 +532,7 @@ export const EventData = [
     func() {
       gainRelationship(PARTNER_ID.MAX, -50);
       gainPartnerBankroll(PARTNER_ID.MAX, 5000); // 초기 자금 지원
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
     },
   },
   {
@@ -340,7 +546,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       gainRelationship(PARTNER_ID.MAX, -999);
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
     },
   },
   {
@@ -415,10 +621,11 @@ export const EventData = [
     },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [{
-        label: `RECEIVE (2000 CR)`,
+        label: `RECEIVE`,
         actionType: 'RECEIVE',
         payload: {
-          amount: 2000
+          amount: 2000,
+          currency: 'CR'
         }
       }], SENDER)
     },
@@ -432,9 +639,12 @@ export const EventData = [
     body_en: 'Haha! Listen up, I just found a sweet spot crawling with easy money! It\'s exactly the kind of action you love. Let\'s clean \'em out Texas style! Join me as soon as you\'re ready!',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
-    label_ko: '참가하기',
-    label_en: 'Join',
+    accept_ko: '참가하기',
+    accept_en: 'Join',
+    refuse_ko: '거절하기',
+    refuse_en: 'Refuse',
+    get acceptLabel() { return store.settings.language === 'en' ? this.accept_en : this.accept_ko; },
+    get refuseLabel() { return store.settings.language === 'en' ? this.refuse_en : this.refuse_ko; },
     get timer() { return Math.random() * 2 + 2 * 24 * 60; }, // 2~4 days
     condition() {
       return store.completedEvents.includes(EVENT_MAX.TUTORIAL_WIN_AFTER) && getRelationship(PARTNER_ID.MAX) >= 300
@@ -442,18 +652,18 @@ export const EventData = [
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [
         {
-          label: this.label,
-          actionType: 'ACCEPT_INVITE',
+          label: this.acceptLabel,
+          actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
           payload: {
-            resolveType: 'JOIN',
-            location_id: 'micro_warehouse_with_max'
+            resolveType: MESSAGE_ACTION_RESOLVE_TYPE.JOIN,
+            location_id: LOCATION_ID.MICRO_WAREHOUSE_WITH_MAX
           }
         },
         {
-          label: this.label,
-          actionType: 'ACCEPT_INVITE',
+          label: this.refuseLabel,
+          actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
           payload: {
-            resolveType: 'REFUSE',
+            resolveType: MESSAGE_ACTION_RESOLVE_TYPE.REFUSE,
             nextEvent: EVENT_MAX.FISH_HUNTER_REFUSE
           }
         }
@@ -487,17 +697,14 @@ export const EventData = [
     label_ko: '참가하기',
     label_en: 'Join',
     timer: 20, // 30 minutes
-    condition() {
-      // return store.bankroll > 1000 && store.cleared_zones.includes('free_street_shop');
-      return true // for test
-    },
     func() {
       sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body, [
         {
           label: this.label,
-          actionType: 'ACCEPT_INVITE',
+          actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
           payload: {
-            location_id: 'free_street_shop_with_max',
+            // location_id: 'free_street_shop_with_max',
+            location_id: LOCATION_ID.FREE_STREET_SHOP_WITH_MAX,
             guest: 'Max'
           }
         }
@@ -518,13 +725,12 @@ export const EventData = [
     label_ko: '참가하기',
     label_en: 'Join',
     func() {
-      // (Removed incorrect forced TUTORIAL_LOSE_MAX schedule)
       sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body, [
         {
           label: this.label,
-          actionType: 'ACCEPT_INVITE',
+          actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
           payload: {
-            location_id: 'free_street_shop_with_max',
+            location_id: LOCATION_ID.FREE_STREET_SHOP_WITH_MAX,
           }
         }
       ], SENDER)
@@ -548,9 +754,9 @@ export const EventData = [
       sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body, [
         {
           label: this.label,
-          actionType: 'ACCEPT_INVITE',
+          actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
           payload: {
-            location_id: 'free_street_shop_with_max',
+            location_id: LOCATION_ID.FREE_STREET_SHOP_WITH_MAX,
           }
         }
       ], SENDER)
@@ -570,11 +776,7 @@ export const EventData = [
     label_ko: '알았어',
     label_en: 'OK',
     func() {
-      sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body, [
-        {
-          label: this.label,
-        }
-      ], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
       scheduleEvent(EVENT_MAX.TUTORIAL_WIN_AFTER, 1); // 연계 튜토리얼 2탄 스케줄 예약 가능
     },
     repeatable: false
@@ -592,11 +794,7 @@ export const EventData = [
     label_ko: '알았어',
     label_en: 'OK',
     func() {
-      sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body, [
-        {
-          label: this.label,
-        }
-      ], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
       registerCompletedEvent(EVENT_MAX.TUTORIAL_DONE);
     },
     repeatable: false
@@ -614,12 +812,13 @@ export const EventData = [
     label_ko: '알았어',
     label_en: 'OK',
     func() {
+      const taxiFee = 2500;
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
         {
-          label: `${this.label} (2,500 CR)`,
-          actionType: 'RECEIVE',
+          label: this.label,
+          actionType: MESSAGE_ACTION_TYPE.RECEIVE,
           payload: {
-            amount: 2500
+            amount: taxiFee
           }
         }
       ], SENDER)
@@ -636,15 +835,8 @@ export const EventData = [
     body_en: 'My luck is absolute trash right now. Hey, I\'m busted, so you better win this whole thing for both of us!',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
-    label_ko: '알았어',
-    label_en: 'OK',
     func() {
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
-        {
-          label: this.label,
-        }
-      ], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
     },
     repeatable: false
   },
@@ -657,20 +849,9 @@ export const EventData = [
     body_en: 'I taught you the basics! Sigh... Go get some hot food. I\'ll call you back shortly.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
-    label_ko: '알았어',
-    label_en: 'OK',
     func() {
       scheduleEvent(EVENT_MAX.TUTORIAL_THEN_LOSE_RETRY, 60); // 1시간 뒤 이어서 재도전 메시지 발송 
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [
-        {
-          label: `${this.label} (1,000 CR)`,
-          actionType: 'RECEIVE',
-          payload: {
-            amount: 1000
-          }
-        }
-      ], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
     },
     repeatable: false
   },
@@ -683,9 +864,6 @@ export const EventData = [
     body_en: 'Something urgent? Running off doesn\'t seem very Texan to me. I\'ll hit you up again shortly.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
-    label_ko: '알았어',
-    label_en: 'OK',
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER);
       scheduleEvent(EVENT_MAX.TUTORIAL_THEN_LEAVE_RETRY, 60);
@@ -701,9 +879,6 @@ export const EventData = [
     body_en: 'Run away again? Are you kidding me?! Don\'t ever expect me to teach you again!',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
-    label_ko: '알았어',
-    label_en: 'OK',
     func() {
       registerCompletedEvent(EVENT_MAX.TUTORIAL_DONE);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)

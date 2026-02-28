@@ -13,6 +13,24 @@ import imgSpecialOrbitLounge from '../assets/image/zone/special_orbit_lounge.png
 import { TRACK_ENUM } from './audioTracks.js';
 import { store } from './store.js';
 
+export const LOCATION_ID = {
+  "FREE_SAFE_HOUSE": "free_safe_house",
+  "FREE_STREET_SHOP_WITH_MAX": "free_street_shop_with_max",
+  "LOW_NEON_LOUNGE": "low_neon_lounge",
+  "LOW_UNDERGROUND_CLUB": "low_underground_club",
+  "LOW_OLD_CASINO": "low_old_casino",
+  "MIDDLE_UNDERGROUND_CASINO": "middle_underground_casino",
+  "MIDDLE_HOLDEM_HOUSE": "middle_holdem_house",
+  "MIDDLE_CASINO_HOTEL": "middle_casino_hotel",
+  "HIGH_PRO_HOUSE": "high_pro_house",
+  "HIGH_GRAND_CASINO": "high_grand_casino",
+  "SPECIAL_ORBIT_LOUNGE": "special_orbit_lounge",
+  "MICRO_WAREHOUSE_WITH_MAX": "micro_warehouse_with_max",
+  "LOW_UNDERGROUND_CLUB_MEET_MAX": "low_underground_club_meet_max",
+  "FREE_SAFE_HOUSE": 'free_safe_house',
+  "MIDDLE_KBT_BASE": "middle_kbt_base",
+}
+
 export const zones = [
   {
     "id": "free",

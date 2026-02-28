@@ -8,7 +8,7 @@ import { EventAdaptor } from './gameEngineEventAdaptor.js';
 import { CONTRACT_TYPE } from './partnerSystem.js';
 import { gainXP, store, saveStore, gainBankroll, TYPE_CHANGE_BANKROLL } from './store.js';
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
-import { zones } from './zone.js';
+import { zones, LOCATION_ID } from './zone.js';
 
 const eventAdaptor = new EventAdaptor();
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -135,7 +135,7 @@ export class GameEngine {
       .map(b => b.effect);
 
     // Filter Regular Enemies
-    if (this.locationId === 'micro_warehouse_with_max' || this.locationId === 'free_street_shop_with_max') {
+    if (this.locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX) {
       this.isTutorial = true;
     }
 
@@ -419,7 +419,7 @@ export class GameEngine {
     }
     // this.mentor
     if (action.type === 'fold') {
-      if (player.isMe && this.mentor && this.mentor.isFolded) chatAI(this.mentor, CHAT_TRIGGERS.FOLD_FOR_PLAYER)
+      if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.FOLD_FOR_PLAYER)
       player.isFolded = true;
 
       // [PROFILING] Fold to Flop Bet

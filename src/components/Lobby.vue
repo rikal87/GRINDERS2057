@@ -674,39 +674,6 @@ const confirmJoin = () => {
   animation: blink 2s infinite;
 }
 
-.nav-btn {
-  background: transparent;
-  border: 1px solid var(--neon-cyan);
-  color: var(--neon-cyan);
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.nav-btn:hover:not(:disabled) {
-  background: var(--neon-cyan);
-  color: #000;
-  box-shadow: 0 0 15px var(--neon-cyan);
-}
-
-.nav-btn:disabled {
-  border-color: #333;
-  color: #333;
-  cursor: not-allowed;
-}
-
-.search-options {
-  margin: 1rem 0;
-  display: flex;
-  justify-content: flex-end;
-  /* right align the size selector */
-}
-
 .option-group {
   display: flex;
   align-items: center;
@@ -717,23 +684,7 @@ const confirmJoin = () => {
   margin-bottom: 0;
 }
 
-/* Reusing btn-group styles but checking if override is needed */
-.btn-group {
-  display: flex;
-  gap: 10px;
-}
 
-.btn-group button {
-  padding: 5px 15px;
-  font-size: 0.8rem;
-  background-color: #333;
-}
-
-.btn-group button.active {
-  background-color: var(--neon-red);
-  /* color: #000; */
-  /* box-shadow: 0 0 15px var(--neon-cyan); */
-}
 
 .popup-actions {
   display: flex;

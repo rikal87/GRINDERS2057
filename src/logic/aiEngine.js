@@ -99,7 +99,7 @@ function getHeuristicFallback(player, engine) {
 
   let wtsd = player.class?.WTSD ? player.class.WTSD : 0.5;
   let raiseThreshold = 100 - (AF * 10);
-  let callThreshold = 50 - (wtsd * 50); // 20이었는데 50으로 올려서 테스트 필요
+  let callThreshold = 100 - (wtsd * 100);
   let bluffFreq = Math.max(0, (AF - 2)) * 0.1; // Base bluff freq
 
   // Distance from Button (0 = Button, 1 = CO, ...)
@@ -184,34 +184,32 @@ function getHeuristicFallback(player, engine) {
   const commitmentRatio = startingStack > 0 ? (player.totalWagered / startingStack) : 0;
   const spr = pot > 0 ? (player.chips / pot) : 20;
   let insight = `Score: ${Math.floor(strengthScore)} (Thres: ${Math.floor(callThreshold)}/${Math.floor(raiseThreshold)})`;
-
-  if (spr < 1.5) {
-    // [Pot Odds] Pot is huge relative to our stack (even if we didn't put much in).
-    // We get great odds.
-    callThreshold -= 10;
-  } else if (spr > 10 && isHighStakes) {
-    // [Deep Stack] Play tighter against AF (Reverse Implied Odds)
-    // But we can float/bluff more on earlier streets.
-    // But, don't care about low-level player
-    callThreshold += 10;
-    if (street !== 'RIVER') bluffFreq += 0.05;
+  if (isHighStakes) {
+    if (spr < 1.5) {
+      // [Pot Odds] Pot is huge relative to our stack (even if we didn't put much in).
+      // We get great odds.
+      callThreshold -= 10;
+    } else if (spr > 10) {
+      // [Deep Stack] Play tighter against AF (Reverse Implied Odds)
+      // But we can float/bluff more on earlier streets.
+      // But, don't care about low-level player
+      callThreshold += 10;
+      if (street !== 'RIVER') bluffFreq += 0.05;
+    }
   }
   // [AI FIX] 3-Bet Specific Adjustment
   // If facing a raise Preflop, we need a stronger hand to 3-Bet.
   if (street === 'PREFLOP' && callAmt > 0) {
     raiseThreshold += 25 * raises; // Require premium strength
   }
-
-  if (street === 'FLOP') {
-    bluffFreq += 0.15; // Attack weakness on Flop
-    callThreshold -= 10;
-    raiseThreshold -= 10;
-  }
-  else if (street === 'TURN') {
-    raiseThreshold += 10; // Turn raises are scarier/value heavy
-    bluffFreq *= 0.66; // Less bluffing on turn
-  } else if (street === 'RIVER') {
-    // River bluff only base aggressive
+  if (isHighStakes) {
+    if (street === 'FLOP') {
+      bluffFreq += 0.15; // Attack weakness on Flop
+    } else if (street === 'TURN') {
+      bluffFreq *= 0.66; // Less bluffing on turn
+    } else if (street === 'RIVER') {
+      // River bluff only base aggressive
+    }
   }
   // [AI FIX] If we are facing an all_in (or bet > our stack), we cannot bluff.
   // We have 0 fold equity if we are the one going all_in for our life.
@@ -224,7 +222,6 @@ function getHeuristicFallback(player, engine) {
   // [HIGH STAKES AI] Enhanced Position & C-Bet Logic
   // console.info('player>>', player.name, 'bluffFreq', bluffFreq);
   if (isHighStakes) {
-
     // We want to see if the Human (or any specific opponent) is exploitable.
     // For now, we focus on the Human Player.
     const human = engine.players.find(p => p.isHuman && !p.isFolded);
@@ -329,7 +326,7 @@ function getHeuristicFallback(player, engine) {
   }
 
   // If facing a 3-bet or higher, significantly tighten up (Unless Highly Committed)
-  if (raises >= 2) {
+  if (isHighStakes && raises >= 2) {
     if (commitmentRatio > 0.6) {
       callThreshold += 3 * raises; // Negligible penalty
     } else {
@@ -338,20 +335,7 @@ function getHeuristicFallback(player, engine) {
     }
   }
 
-  if (raises >= 4 && callAmt > 0) {
-    // [FIX] Use rawRaiseThreshold to avoid being "too loose" due to large pots lowering requirements
-    if (strengthScore >= rawRaiseThreshold + 20) {
-      // Monster: All-In
-      action = 'raise';
-      amount = player.chips + 10000; // Force All-In logic later
-      insight = "4-Bet+ Shove (Monster)";
-    } else if (strengthScore >= callThreshold) {
-      action = 'call';
-      insight = "4-Bet+ Flat Call";
-    } else {
-      action = 'fold';
-    }
-  } else if (callAmt === 0) {
+  if (callAmt === 0) {
     // Automatic Check if free
     if (strengthScore > raiseThreshold * 0.8) {
       // Value bet / Protection bet
@@ -411,29 +395,16 @@ function getHeuristicFallback(player, engine) {
     // A. Preflop Sizing
     if (street === 'PREFLOP') {
       if (callAmt > 0) {
-        // [3-BET / SQUEEZE]
+        // [3-BET+ / SQUEEZE]
         // Facing a raise. Standard is 3x the valid bet (callAmt + currentBet). 
-        // Or if OoP (Out of Position), maybe 4x.
-        // Simplified: 3x total bet to match.
-        // engine.currentRoundBet is the amount to match? No, it's the target.
-        // Actually, 'callAmt' is what we need to call. 'engine.currentRoundBet' is the highest bet.
-        // A 3-bet should be 3 * engine.currentRoundBet.
-        let multiplier = 3.0;
-        if (isHighStakes && strengthScore > raiseThreshold + 20) multiplier = 3.5; // Value 3-bet
+        const multiplier = Math.max(2.2, 5.5 - raises);
         amount = Math.floor(engine.currentRoundBet * multiplier);
       } else {
         // [OPEN RAISE]
         // Standard Open: 2.2BB - 3.5BB
         let bbAmt = engine.bb;
         let openSize = 2.5; // Default 2.5x
-
-        if (strengthScore > raiseThreshold + 30) openSize = 3.5; // Monster
-        else if (strengthScore < callThreshold) openSize = 2.2; // Min-open for fold equity check
-
-        // Position Adjustment (Early pos opens larger usually, but simplified: Late pos opens larger to steal?)
-        // Actually, standard is EP opens larger to discourage callers.
         if (isHighStakes && distFromButton > 3) openSize += 0.5;
-
         amount = Math.floor(bbAmt * openSize);
       }
     }
@@ -446,10 +417,8 @@ function getHeuristicFallback(player, engine) {
         // Let's stick to a multiplier of the bet we are facing. 
         // engine.currentRoundBet is the bet we face.
         let multiplier = 3.0;
-
         // Adjust for board texture / strength?
-        if (strengthScore > raiseThreshold + 40) multiplier = 4.0; // Punishment
-        else if (strengthScore < callThreshold) multiplier = 2.8; // Cheaper bluff
+        if (strengthScore > raiseThreshold + 20) multiplier = 4.0 + Math.max(0, (AF - 3)); // Punishment
 
         amount = Math.max(amount, Math.floor(engine.currentRoundBet * multiplier));
       } else {

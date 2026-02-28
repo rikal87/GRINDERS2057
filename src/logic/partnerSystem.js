@@ -3,17 +3,27 @@ import { store, gainBankroll, TYPE_CHANGE_BANKROLL } from "./store";
 import { scheduleEvent, EVENT_ID } from "./eventSystem";
 import { audioManager } from "./audioManager";
 
-export const getPartners = (partnerId = null) => {
-  if (partnerId) return store.partners.filter(p => p.id === partnerId);
-  return store.partners;
+export const getPartner = (partnerId = null) => {
+  if (!partnerId) return null;
+  const partner = store.partners.find(p => p.id === partnerId);
+  return partner;
 }
+export const createContractObject = (type, ratio) => {
+  if (type === CONTRACT_TYPE.SHARE_BENEFIT) return ContractShareBenefit(ratio ?? 0.5);
+  if (type === CONTRACT_TYPE.BANKRUPT_RESCUE) return ContractBankruptRescue(ratio ?? 0.3);
+  if (type === CONTRACT_TYPE.A_DATE_WITH_YOU) return ContractADateWithYou();
+  if (type === CONTRACT_TYPE.COLLUSION) return ContractCollusion(ratio ?? 0.5);
+  return Contract(type);
+};
+
 export const hydratePartners = () => {
   store.partners.forEach(existingPartner => {
-    // 1. Hydrate un-classed JSON objects to Contract instances
+    // 1. Restore missing properties on saved contracts
     if (Array.isArray(existingPartner.contracts)) {
-      existingPartner.contracts = existingPartner.contracts.map(c =>
-        (c instanceof Contract) ? c : new Contract(c.type, c.ratio, c.active)
-      );
+      existingPartner.contracts = existingPartner.contracts.map(c => {
+        const defaultContract = createContractObject(c.type, c.ratio);
+        return { ...defaultContract, ...c };
+      });
     } else {
       existingPartner.contracts = [];
     }
@@ -22,7 +32,7 @@ export const hydratePartners = () => {
     const canContracts = CLASSES_PARTNER.find((p) => p.id === existingPartner.id)?.canContracts || [];
     canContracts.forEach((contractType) => {
       if (!existingPartner.contracts.some((c) => c.type === contractType)) {
-        existingPartner.contracts.push(new Contract(contractType, 0.5, false));
+        existingPartner.contracts.push(createContractObject(contractType));
       }
     });
 
@@ -53,29 +63,72 @@ export const unregisterPartner = (partnerId = null) => {
   if (partner) partnerScheduleEvent(EVENT_ID[partnerId.toUpperCase()]['GONE'], 2, partner, true);
   store.partners = store.partners.filter((p) => p.id !== partnerId);
 }
+export const gainPartnersRelationshipOliveBranch = () => {
+  store.partners.forEach((partner) => {
+    if (partner.relationship <= 250) gainRelationship(partner.id, Math.ceil(Math.random() * 200 + 50));
+  });
+}
 export const gainRelationship = (partnerId = null, amount = 0) => {
-  if (Number.isNaN(amount)) return;
-  if (!partnerId) return null;
+  if (Number.isNaN(amount)) return false;
+  if (!partnerId) return false;
   const partner = store.partners.find((p) => p.id === partnerId);
-  if (!partner) return null;
+  if (!partner) return false;
   partner.relationship = Math.max(0, Math.min(1000, partner.relationship + Math.ceil(amount)));
+  return true;
 }
 export const gainPartnerBankroll = (partner = null, amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
-  if (Number.isNaN(amount)) return;
-  if (!partner) return null;
+  if (Number.isNaN(amount)) return false;
+  if (!partner) return false;
   partner.bankroll = Math.max(0, partner.bankroll + Math.ceil(amount));
   if (type === TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT) partner.netShareTotal += amount;
+  // else if (type === TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT) partner.debt -= amount;  // if amount > 0, it means player's debt for partner
+  return true;
 }
-export const shareBenefit = (partnerId = null, amount = 0) => {
-  if (!partnerId) return null;
-  const partner = store.partners.find((p) => p.id === partnerId);
-  if (!partner) return null;
-  if (partner.contracts.some((c) => c.type === CONTRACT_TYPE.SHARE_BENEFIT && c.active)) {
-    gainPartnerBankroll(partnerId, amount * partner.ratio, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
-    gainBankroll(amount * -1 * partner.ratio, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
-    // time for partner's net worth history is game in-game time (save total bankroll)
-    partner.netWorthHistory.push({ time: store.gameTime, netWorth: partner.bankroll });
+export const debtRepayment = (partner = null, amount = 0, toPlayer = true, contract = null) => {
+  if (!partner || amount <= 0) return false;
+  if (partner.id !== PARTNER_ID.MAX) {
+    console.warn('!!!!!!!! Only for Max can repay debt !!!!!!!!')
+    return false;
   }
+  // toPlayer=true: Partner pays Player (partner owes player => partner.debt < 0)
+  // toPlayer=false: Player pays Partner (player owes partner => partner.debt > 0)
+  const direction = toPlayer ? -1 : 1;
+  const debt = contract ? contract.debt : partner.debt;
+  const oweAmount = (debt * direction > 0) ? debt * direction : 0;
+  const actualAmount = Math.min(oweAmount, amount);
+  if (actualAmount > 0) {
+    gainPartnerBankroll(partner, actualAmount * direction, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
+    gainBankroll(actualAmount * -direction, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
+    partner.netWorthHistory.push({ time: store.gameTime, netWorth: partner.bankroll });
+    if (contract && contract.type === CONTRACT_TYPE.BANKRUPT_RESCUE && contract.activeRepaymentPeriod) {
+      contract.debt -= actualAmount;
+      if (contract.debt === 0) {
+        contract.activeRepaymentPeriod = false;
+        if (partner.id === PARTNER_ID.MAX) {
+
+        }
+        if (toPlayer) scheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE, 2, partner);
+        else scheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER, 2, partner, true);
+      }
+    }
+    else {
+      partner.debt -= actualAmount;
+      if (partner.debt === 0) {
+        if (toPlayer) scheduleEvent(`${EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE + (partner.relationship < 200 ? '_LOW_RELATIONSHIP' : '')}`, 2, partner);
+        else scheduleEvent(`${EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER + (partner.relationship < 200 ? '_LOW_RELATIONSHIP' : '')}`, 2, partner, true);
+      }
+    }
+  }
+  return true;
+}
+export const shareBenefit = (partner = null, amount = 0, contract = null, toPlayer = true) => {
+  if (!partner || amount === 0 || !contract) return false;
+  const finalAmount = amount * contract.ratio * (toPlayer ? -1 : 1);
+  gainPartnerBankroll(partner, finalAmount, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
+  gainBankroll(-finalAmount, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
+  contract.profitTotal += finalAmount;
+  partner.netWorthHistory.push({ time: store.gameTime, netWorth: partner.bankroll + finalAmount });
+  return true;
 }
 export const requestRescueDebt = (partner = null) => {
   if (!partner) return false;
@@ -86,15 +139,19 @@ export const requestRescueDebt = (partner = null) => {
   }
   return false;
 }
-export const rescueDebt = (partner = null, ratio = 0.3, contract = null) => {
+export const rescueDebt = (partner = null, ratio = 0.3, contract = null, toPlayer = false) => {
   if (!contract || !partner) return false;
   if (contract.active) {
     ratio = contract.ratio;
     contract.active = false;
-    contract.cooldown = 72;
+    contract.debtRepaymentDue = contract.initDebtRepaymentDue
+    contract.activeRepaymentPeriod = true;
   }
-  gainBankroll(-store.bankroll * ratio, TYPE_CHANGE_BANKROLL.CONTRACT);
-  gainPartnerBankroll(partner, store.bankroll * ratio, TYPE_CHANGE_BANKROLL.CONTRACT);
+  const whosBankroll = toPlayer ? partner.bankroll : store.bankroll;
+  const amount = whosBankroll * ratio * (toPlayer ? 1 : -1);
+
+  gainBankroll(amount, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
+  gainPartnerBankroll(partner, -amount, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
   const getEvent = EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_ACCEPT_RESCUE' + (partner.relationship < 200 ? '_LOW_RELATIONSHIPSHIP' : '')]
   if (getEvent) partnerScheduleEvent(getEvent, 2, partner, true);
   return false;
@@ -143,35 +200,35 @@ export const CONTRACT_TYPE_DESC = {
     }
   },
   [CONTRACT_TYPE.SHARE_BENEFIT]: {
-    desc_ko: '파트너와의 이익 공유 계약합니다. 이제 파트너나 플레이어가 승리할때마다 계약된 비율로 수익을 나눕니다.',
-    desc_en: 'Enter into a profit-sharing agreement with your partner. Now, whenever you or your partner wins, the profits will be shared according to the agreed ratio.',
+    desc_ko: '파트너와 이익 공유 계약을 체결합니다. 이제 파트너와 플레이어가 게임을 통해 창출한 수익을 정산하며, 계약된 분배율에 따라 상호 이익을 나눕니다',
+    desc_en: 'Upon entering this contract, all game profits will be settled and distributed according to the agreed-upon split.',
     get require() {
       return partner.relationship >= 600;
     },
     get desc() {
       return store.language === 'ko' ? this.desc_ko : this.desc_en;
     },
-    note_kr: '수익 기여율 대비 계약된 쉐어 비율이 차이가 불균형하면, 관계가 변화할 수 있습니다.',
-    note_en: 'If the agreed share ratio differs significantly from the profit contribution ratio, the relationship may change.',
+    note_kr: '수익 기여율 차이가 불균형하면, 관계가 변화할 수 있습니다. 이 계약은 동시에 1명의 파트너와만 맺을 수 있습니다.',
+    note_en: 'Disparities in profit contribution may impact your relationship. You can only maintain one active partnership contract at a time',
     get note() {
       return store.language === 'ko' ? this.note_kr : this.note_en;
     }
   },
   [CONTRACT_TYPE.BANKRUPT_RESCUE]: {
-    desc_ko: '플레이어나 파트너가 파산했을때, 현재 보유중인 뱅크롤의 30%를 만큼 자금을 지원합니다.',
-    desc_en: 'If the player or partner goes bankrupt, 30% of the current bankroll will be provided as funds.',
+    desc_ko: '한쪽이 파산할 경우, 보유 뱅크롤의 30%를 긴급 지원합니다. (해당 계약은 한쪽이 파산하면 자동으로 해제됩니다.)',
+    desc_en: 'If either party goes bankrupt, 30% of the active bankroll will be provided as emergency funds. (Contract terminates automatically upon either party\'s bankruptcy.)',
     get desc() {
       return store.language === 'ko' ? this.desc_ko : this.desc_en;
     },
-    note_kr: '파트너에게 자금을 지원하면 관계가 상승하지만, 파산한 대상이 당신이라면 빚을 갚을때까지 관계가 하락합니다\n(해당 계약은 한쪽이 파산하면 자동으로 해제됩니다.)',
-    note_en: 'Providing funds to a partner increases the relationship, but if you are the one who goes bankrupt, the relationship will decrease until the debt is repaid\n(This contract is automatically terminated if one party goes bankrupt.)',
+    note_kr: '만약 당신이 파산한 상태에서 파트너에게 7일 안에 빚을 갚지 못하면 일반 채무상태로 넘어가게 됩니다.',
+    note_en: 'If you remain bankrupt and fail to settle your debt within 7 days, you will enter a state of general debt.',
     get note() {
       return store.language === 'ko' ? this.note_kr : this.note_en;
     }
   },
   [CONTRACT_TYPE.A_DATE_WITH_YOU]: {
-    desc_ko: '파트너와 데이트를 합니다. 파트너와 데이트를 하면, 파트너와의 관계가 상승합니다.',
-    desc_en: 'Go on a date with your partner. Going on a date with your partner will increase your relationship with them.',
+    desc_ko: '파트너와 사적으로 만나는 사이가 됩니다.',
+    desc_en: 'You and your partner will start seeing each other privately.',
     get desc() {
       return store.language === 'ko' ? this.desc_ko : this.desc_en;
     },
@@ -182,25 +239,22 @@ export const CONTRACT_TYPE_DESC = {
     }
   },
 };
-const CONTRACT_USE_RATIO = {
-  [CONTRACT_TYPE.NOTHING]: false,
-  // [CONTRACT_TYPE.COLLUSION]: false,
-  [CONTRACT_TYPE.SHARE_BENEFIT]: true,
-  [CONTRACT_TYPE.BANKRUPT_RESCUE]: false,
-  [CONTRACT_TYPE.A_DATE_WITH_YOU]: false,
-  [CONTRACT_TYPE.COLLUSION]: true,
-}
-export class Contract {
-  constructor(type = CONTRACT_TYPE.NOTHING, ratio = 0.5, active = false) {
-    this.type = type;
-    this.ratio = ratio;
-    this.useRatio = CONTRACT_USE_RATIO[type];
-    this.cooldown = 0;
-    this.active = active;
-    this.requiredRelationship = CONTRACT_REQUIRED_RELATIONSHIP[type] || 999999;
-    this.relationshipToBreak = CONTRACT_BREAK_RELATIONSHIP[type] || 999999;
+
+export const Contract = (type = CONTRACT_TYPE.NOTHING) => {
+  return {
+    type,
+    cooldown: 0,
+    active: false,
+    requiredRelationship: CONTRACT_REQUIRED_RELATIONSHIP[type] || 999999,
+    relationshipToBreak: CONTRACT_BREAK_RELATIONSHIP[type] || 999999,
   }
 }
+export const ContractCollusion = (ratio = 0.5) => { return { ratio, profitTotal: 0, ...Contract(CONTRACT_TYPE.COLLUSION) } }
+export const ContractBankruptRescue = (ratio = 0.3) => { return { ratio, activeRepaymentPeriod: false, debtRepaymentDue: 0, initDebtRepaymentDue: 24 * 7, debt: 0, ...Contract(CONTRACT_TYPE.BANKRUPT_RESCUE) } }
+export const ContractShareBenefit = (ratio = 0.5) => { return { ratio, profitTotal: 0, ...Contract(CONTRACT_TYPE.SHARE_BENEFIT) } }
+export const ContractADateWithYou = () => { return { ...Contract(CONTRACT_TYPE.A_DATE_WITH_YOU) } }
+
+
 export class Partner {
   constructor({ id, name, philosophy, vPIP, AF, WTSD, W$SD, chipMultiply, isPartner, note, initialBankroll = 0, initialRelationship = 0, schedule = [], contracts = [] }) {
     this.id = id;
@@ -263,6 +317,7 @@ export const breakContract = (partnerId, type) => {
   const contract = partner.contracts.find((c) => c.type === type);
   if (!contract || !contract.active) return false;
   contract.active = false;
+  contract.profitTotal = 0; // reset profit total
   contract.cooldown = 72; // 3 days in game time (72 hours)
   return true;
 }
@@ -340,6 +395,7 @@ export const updatePartnerStatusBySchedule = () => {
     partner.status = newStatus;
     partner.contracts.forEach(contract => {
       if (contract.cooldown > 0) contract.cooldown--;
+      if (contract.debtRepaymentDue > 0) contract.debtRepaymentDue--;
     });
     if (partner.status === PartnerStatus.GAMBLING) return;
     // --- POST-GAMBLING / IDLE CHECKS ---
@@ -359,42 +415,46 @@ export const updatePartnerStatusBySchedule = () => {
       }
     });
     // check debt penalty
+    const impactPercentage = Math.max(partner.bankroll, 10000) / 1000;
     if (partner.debt !== 0) {
-      const impactPercentage = partner.debt / 10000;
       const finalRelationshipChange = Math.round(impactPercentage * 100);
-      gainRelationship(partner.id, Math.max(-10, Math.min(10, finalRelationshipChange)));
+      gainRelationship(partner.id, Math.max(-20, Math.min(10, finalRelationshipChange)));
     }
     // networth adjustment
     if (partner.sessionNetWorth !== 0) {
-      const hasBenefitContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.SHARE_BENEFIT && c.active);
-      if (hasBenefitContract) {
-        const totalNetWorth = partner.sessionNetWorth;
-        if (totalNetWorth > 0) {
-          const totalShareAmount = totalNetWorth * hasBenefitContract.ratio;
-          gainBankroll(totalShareAmount, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
-          gainPartnerBankroll(partner, -totalShareAmount, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
-          // cooldown이 0일 때만 관계도 변동 (최초계약시 24시간 유예기간)
-          // if (hasBenefitContract.cooldown === 0) {
-          const impactPercentage = partner.bankroll > 0 ? (totalShareAmount / partner.bankroll) : 0;
-          let baseGain = impactPercentage * 100;
+      if (partner.sessionNetWorth > 0) { // only positive networth
 
-          const ratioModifier = 1.0 * ((0.5 - hasBenefitContract.ratio) * 4);
-
-          let finalRelationshipChange = Math.round(baseGain * ratioModifier);
-          finalRelationshipChange = Math.max(-100, Math.min(50, finalRelationshipChange));
-
-          gainRelationship(partner.id, finalRelationshipChange);
-          console.log(`[CONTRACT ${partner.id}] 수익분배:${Math.floor(totalShareAmount)} CR / 체감도:${(impactPercentage * 100).toFixed(1)}% / 비율:${hasBenefitContract.ratio} => 관계도 변동량: ${finalRelationshipChange}`);
-          // }
+        let finalRelationshipChange = 0;
+        const hasPartnerDebt = partner.debt < 0;
+        const hasDebtContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BANKRUPT_RESCUE && c.activeRepaymentPeriod);
+        if (hasPartnerDebt) {
+          if (!hasDebtContract) {
+            // 1st priority: partner repays player
+            debtRepayment(partner, partner.sessionNetWorth * 0.5, true);
+          } else {
+            // 2nd priority: debt contract
+            debtRepayment(partner, partner.sessionNetWorth * 0.5, true, hasDebtContract);
+          }
         }
-        partner.sessionNetWorth = 0; // RESET
+        const hasBenefitContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.SHARE_BENEFIT && c.active);
+        let isShared = false;
+        if (hasBenefitContract) isShared = shareBenefit(partner, partner.sessionNetWorth, hasBenefitContract);
+        if (isShared) {
+          const baseGain = (hasBenefitContract.profitTotal * 0.1) * impactPercentage;
+          const ratioModifier = Math.abs((0.5 - hasBenefitContract.ratio) * 4) + 1;
+          finalRelationshipChange += Math.round(baseGain * ratioModifier);
+          finalRelationshipChange = Math.max(-150, Math.min(50, finalRelationshipChange));
+        }
+        console.info(`${partner.id} : ${finalRelationshipChange}`);
+        gainRelationship(partner.id, finalRelationshipChange);
       }
+      partner.sessionNetWorth = 0; // RESET
     }
-    // check bankrupt
+    // check bankrupt partner
     if (partner.bankroll <= 0) {
       const hasRescueBankruptContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BANKRUPT_RESCUE && c.active);
       if (hasRescueBankruptContract) {
-        rescueDebt(partner, 0.5, hasRescueBankruptContract);
+        rescueDebt(partner, 0.3, hasRescueBankruptContract, false);
         // Removed the extra RESOLVED_DEBT trigger here because rescueDebt triggers BANKRUPT_ACCEPT_RESCUE natively.
       } else if (partner.debt > 0) {
         partnerScheduleEvent(EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_HAS_DEBT' + (partner.relationship <= 200 ? '_LOW_RELATIONSHIP' : '')], 2, partner);
@@ -438,6 +498,7 @@ export const simulatePartnersNetWorth = () => {
         gainPartnerBankroll(partner, netWorthChange);
         partner.netWorthHistory.push({ time: store.gameTime, netWorth: partner.bankroll });
         partner.sessionNetWorth += netWorthChange;
+        console.info(partner.name, partner.sessionNetWorth);
         if (partner.netWorthHistory.length > 150) partner.netWorthHistory.shift();
       }
     }
@@ -448,9 +509,10 @@ export const generatePartner = (partnerId = 'max') => {
   if (!p) return;
   const { canContracts } = p;
   const contracts = [];
-  canContracts.forEach((c) => {
-    contracts.push(new Contract(c, 0.5, 0));
-  })
+  canContracts.forEach((type) => {
+    const contract = createContractObject(type);
+    if (contract) contracts.push(contract);
+  });
   return new Partner({ ...p, contracts });
 };
 const partnerScheduleEvent = (eventId, delay = 2, partner, acceptResend = false) => {
@@ -467,7 +529,7 @@ export const playerNetSharePartners = () => {
     return;
   }
   store.partners.forEach(partner => {
-    partner.forEach(contract => {
+    partner.contracts.forEach(contract => {
       if (contract.active && contract.type === CONTRACT_TYPE.SHARE_BENEFIT) {
         gainBankroll(-contract.ratio * store.sessionNetWorth, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
         gainPartnerBankroll(partner, contract.ratio * store.sessionNetWorth, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);

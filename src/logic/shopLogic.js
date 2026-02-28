@@ -58,8 +58,11 @@ export const generateShopItems = (level) => {
     'T1': 1, 'T2': 2, 'T3': 3, 'T4': 4, 'T5': 5, 'T6': 6
   };
 
-  // Filter items by tier
+  // Filter items by tier and access key status
   const availableItems = ITEM_DATA.filter(item => {
+    if (item.isAccessKey && store.unlockedLocations?.includes(item.id)) {
+      return false;
+    }
     return tierMap[item.tier] <= maxTier + 1; // Allow slightly higher tier potential
   });
 

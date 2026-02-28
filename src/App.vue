@@ -13,6 +13,9 @@ import ControlPanel from './components/ControlPanel.vue';
 import AudioPlayer from './components/AudioPlayer.vue';
 import HistoryPopup from './components/HistoryPopup.vue';
 import AgentTaskPopup from './components/AgentTaskPopup.vue';
+import AiAgentPopup from './components/AiAgentPopup.vue';
+import SkillSelectorModal from './components/SkillSelectorModal.vue';
+import PlayStatsPopup from './components/PlayStatsPopup.vue';
 import { audioManager } from './logic/audioManager';
 import { performSleep } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
@@ -48,6 +51,28 @@ const isSettingsOpen = ref(false);
 const showHistory = ref(false);
 const showAgentTaskPopup = ref(false);
 const selectedTaskSlotIdx = ref(-1);
+
+const showAgentModal = ref(false);
+const showSkillSelector = ref(false);
+const showStatsModal = ref(false);
+const activeSlotIdx = ref(null);
+const activeSlotType = ref(null);
+
+const handleOpenAgentModal = () => {
+  showAgentModal.value = true;
+};
+
+const handleOpenSkillSelector = (payload) => {
+  activeSlotIdx.value = payload.idx;
+  activeSlotType.value = payload.type;
+  showSkillSelector.value = true;
+};
+
+const closeSkillSelector = () => {
+  showSkillSelector.value = false;
+  activeSlotIdx.value = null;
+  activeSlotType.value = null;
+};
 
 const toggleSettings = () => {
   isSettingsOpen.value = !isSettingsOpen.value;
@@ -358,7 +383,8 @@ watch(currentView, (newView) => {
 
           <!-- Safe House View -->
           <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" @sleep="handleSleepClick"
-            @open-task-selector="handleOpenTaskSelector" />
+            @open-task-selector="handleOpenTaskSelector" @open-agent-modal="handleOpenAgentModal"
+            @open-skill-selector="handleOpenSkillSelector" @open-stats-modal="showStatsModal = true" />
 
           <!-- c House View -->
           <!-- <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" @sleep="handleSleepClick" @open-task-selector="handleOpenTaskSelector" /> -->
@@ -461,6 +487,17 @@ watch(currentView, (newView) => {
     </Transition>
     <!-- Agent Task Popup -->
     <AgentTaskPopup v-if="showAgentTaskPopup" :slotIdx="selectedTaskSlotIdx" @close="showAgentTaskPopup = false" />
+
+    <!-- AI Agent Selection Modal -->
+    <AiAgentPopup :show="showAgentModal" @close="showAgentModal = false" />
+
+    <!-- Skill Selector Modal -->
+    <SkillSelectorModal :show="showSkillSelector" :activeSlotIdx="activeSlotIdx" :activeSlotType="activeSlotType"
+      @close="closeSkillSelector" />
+
+    <!-- Play Stats Modal -->
+    <PlayStatsPopup :show="showStatsModal" @close="showStatsModal = false" />
+
     <!-- SLEEP REPORT MODAL -->
     <Transition name="fade">
       <div v-if="showSleepModal" class="v5-modal-overlay sleep-overlay">

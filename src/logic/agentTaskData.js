@@ -6,7 +6,7 @@ export const AI_TASK_DATA = [
   {
     id: 'neighborhood_game',
     tier: 1,
-    type: 'SEARCH',
+    type: 'NETWORKING',
     name_ko: 'Neighborhood Game',
     name_en: 'Neighborhood Game',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -213,7 +213,7 @@ export const AI_TASK_DATA = [
     desc_ko: `입장한 테이블에 [Broke] 성향 플레이어의 등장 확률이 2배 증가합니다.`,
     desc_en: `Doubles the spawn rate of [Broke] players at your table.`,
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    desc_detail_ko: '인근 부랑자들에게 맞춤형 스팸 번개를 무차별 살포합니다. 인생 역전을 노리는 불쌍한 영혼들이 모여듭니다.',
+    desc_detail_ko: '인근 부랑자들에게 맞춤형 스팸 초대장을 무차별 살포합니다. 인생 역전을 노리는 불쌍한 영혼들이 모여듭니다.',
     desc_detail_en: 'Indiscriminately spams custom flash-mob invitations to nearby drifters. Poor souls hoping to turn their lives around will gather.',
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 8,

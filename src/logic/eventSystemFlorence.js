@@ -1,6 +1,6 @@
+import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_RESOLVE_TYPE } from "./messageSystem.js";
 import { store } from "./store.js";
 import { PARTNER_ID, gainRelationship } from "./partnerSystem.js";
-import { sendMessage, MESSAGE_TYPE } from "./messageSystem.js";
 // import { scheduleEvent, processEvents } from "./eventSystem.js";
 
 const pay_rent_bill = 5000;
@@ -33,7 +33,7 @@ const SENDER = store.settings.language === 'en' ? 'Florence' : '플로렌스';
 export const EventData = [
 
   {
-    id: '' + EVENT_FLORENCE.GONE,
+    id: EVENT_FLORENCE.GONE,
     scenario: '플로렌스는 사라졌습니다 (관계악화, 관계도 < 0)',
     title_ko: '계약 완전 종료',
     title_en: 'Contract Terminated',
@@ -94,7 +94,6 @@ export const EventData = [
     body_en: '...I\'m not exactly used to calculating odds away from the poker table. I might just allow a little emotion.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    get SENDER() { return SENDER(); },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
     },
@@ -115,27 +114,17 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      const partner = store.partners.find(partner => partner.id === PARTNER_ID.FLORENCE);
+      const partner = getPartner(PARTNER_ID.FLORENCE);
       if (!partner) return;
+      // NO OPTION TO REFUSE
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
         {
           label: this.label_accept,
-          actionType: `RESOLVE_PARTNER_DEBT`,
+          actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
           payload: {
-            amount: pay_rent_bill,
+            amount: partner.debt,
             currency: 'CR',
-            resolveType: 'ACCEPT',
-            nextEvent: getRelationship(PARTNER_ID.FLORENCE) < 200 ? EVENT_FLORENCE.BANKRUPT_ACCEPT_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_FLORENCE.BANKRUPT_ACCEPT_RESCUE,
-          }
-        },
-        {
-          label: this.label_refuse,
-          actionType: `RESOLVE_PARTNER_DEBT`,
-          payload: {
-            amount: 0,
-            currency: 'CR',
-            resolveType: 'REFUSE',
-            nextEvent: getRelationship(PARTNER_ID.FLORENCE) < 200 ? EVENT_FLORENCE.BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_FLORENCE.BANKRUPT_REFUSE_RESCUE
+            resolveType: MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT,
           }
         }
       ], SENDER)
@@ -155,11 +144,16 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
     func() {
+      const partner = getPartner(PARTNER_ID.FLORENCE);
+      if (!partner) return;
+      // NO OPTION TO REFUSE
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [{
         label: this.label,
-        actionType: `${this.label} (${pay_rent_bill}) CR`,
+        actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
         payload: {
-          amount: pay_rent_bill
+          amount: partner.debt,
+          currency: 'CR',
+          resolveType: MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT,
         }
       }], SENDER)
     },
@@ -180,24 +174,26 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
+      const partner = getPartner(PARTNER_ID.FLORENCE);
+      if (!partner) return;
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
         {
           label: this.label_accept,
-          actionType: `RESOLVE_PARTNER_DEBT`,
+          actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
           payload: {
-            amount: pay_rent_bill,
+            amount: partner.initialBankroll,
             currency: 'CR',
-            resolveType: 'ACCEPT',
-            nextEvent: EVENT_FLORENCE.BANKRUPT_ACCEPT_RESCUE
+            resolveType: MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT,
+            nextEvent: getRelationship(PARTNER_ID.FLORENCE) < 200 ? EVENT_FLORENCE.BANKRUPT_ACCEPT_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_FLORENCE.BANKRUPT_ACCEPT_RESCUE
           }
         },
         {
           label: this.label_refuse,
-          actionType: `RESOLVE_PARTNER_DEBT`,
+          actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
           payload: {
             amount: 0,
-            resolveType: 'REFUSE',
-            nextEvent: EVENT_FLORENCE.ELIMINATED
+            resolveType: MESSAGE_ACTION_RESOLVE_TYPE.REFUSE,
+            nextEvent: getRelationship(PARTNER_ID.FLORENCE) < 200 ? EVENT_FLORENCE.BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_FLORENCE.BANKRUPT_REFUSE_RESCUE
           }
         }
       ], SENDER)
@@ -243,7 +239,7 @@ export const EventData = [
     func() {
       gainRelationship(PARTNER_ID.FLORENCE, -150);
       gainPartnerBankroll(PARTNER_ID.FLORENCE, 25000); // 초기 자금 지원
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
     },
   },
   {
@@ -258,7 +254,7 @@ export const EventData = [
     func() {
       gainRelationship(PARTNER_ID.FLORENCE, -150);
       gainPartnerBankroll(PARTNER_ID.FLORENCE, 50000); // 초기 자금 지원
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
     },
   },
   {

@@ -104,6 +104,7 @@ import { store, gainShopRefreshCount, gainBankroll, TYPE_CHANGE_BANKROLL } from 
 import { audioManager } from '../logic/audioManager';
 import { refreshShop, getRefreshCost, canManualRefresh, checkAutoRefresh, REFRESH_INTERVAL_MS } from '../logic/shopLogic';
 import { getinstanceId } from '../logic/items';
+import { gainPartnersRelationshipOliveBranch } from '../logic/partnerSystem';
 
 defineEmits(['back']);
 
@@ -205,6 +206,7 @@ const buyItem = (item, idx) => {
     } else if (item.isConsumable) {
       console.info('item.id')
       if (item.id === 'black_consumer') gainShopRefreshCount(-5)
+      if (item.id === 'olive_branch') gainPartnersRelationshipOliveBranch()
 
     } else {
       item.instanceId = getinstanceId(item)

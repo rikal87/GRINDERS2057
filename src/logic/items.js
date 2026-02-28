@@ -19,6 +19,20 @@ export const ITEM_DATA = [
     effects: [getItemEffect('xp_boost')]
   },
   {
+    id: 'casino_promotion_info_collector',
+    name_ko: '카지노 프로모션 정보 수집기',
+    name_en: 'Casino Promotion Info Collector',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    icon: '📡',
+    class: 'Item',
+    tier: 'T1',
+    price: 3200,
+    desc_ko: '프로모션 중인 카지노 정보를 수집합니다.',
+    desc_en: 'Collects casino promotion information.',
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    effects: [getItemEffect('blind_discount')]
+  },
+  {
     id: 'broken_compass',
     name_ko: '고장난 나침반',
     name_en: 'Broken Compass',
@@ -63,6 +77,7 @@ export const ITEM_DATA = [
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [getItemEffect('stemina_regen')]
   },
+
   {
     id: 'old_stopwatch',
     name_ko: '낡은 초시계',
@@ -93,20 +108,6 @@ export const ITEM_DATA = [
     effects: [getItemEffect('chip_rounding')]
   },
   {
-    id: 'cryo_mint_dispenser',
-    name_ko: '크라이오 민트 디스펜서',
-    name_en: 'Cryo Mint Dispenser',
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    icon: '🧊',
-    class: 'Item',
-    tier: 'T1',
-    price: 1800,
-    desc_ko: '극도의 시원함으로 뇌 회로를 일시적으로 냉각시켜 시간을 법니다.',
-    desc_en: 'Temporarily cools down brain circuits with extreme freshness, buying you time.',
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('time_bank_plus')]
-  },
-  {
     id: 'industrial_showdown_lose_refund',
     name_ko: '공업용 자석',
     name_en: 'Industrial Magnet',
@@ -120,6 +121,21 @@ export const ITEM_DATA = [
     desc_en: 'Devastates the surroundings with immense magnetic force.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [getItemEffect('showdown_lose_refund')]
+  },
+  {
+    id: 'smoke_break',
+    name_ko: '담배 한 대',
+    name_en: 'Smoke Break',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    icon: '🚬',
+    class: 'Item',
+    tier: 'T1',
+    price: 2500,
+    editable: false,
+    desc_ko: '"타들어가는 것은 담배가 아니라 당신의 생명입니다." 라는 공익 광고 본 적 없나요?',
+    desc_en: 'Haven\'t you seen the public service announcement that \"Not only the cigarette is burning, but your life\"?',
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    effects: [getItemEffect('smoke_break')]
   },
   {
     id: 'failure_philosophy',
@@ -164,8 +180,6 @@ export const ITEM_DATA = [
     effects: [getItemEffect('pair_master')]
   },
 
-
-
   // --- T2 items (Uncommon, 10000 - 50000 CR) ---
   {
     id: 'holo_projected_flower',
@@ -209,20 +223,7 @@ export const ITEM_DATA = [
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [getItemEffect('cooler')]
   },
-  {
-    id: 'casino_info_collector',
-    name_ko: '카지노 정보 수집기',
-    name_en: 'Casino Info Collector',
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    icon: '📡',
-    class: 'Item',
-    tier: 'T2',
-    price: 32000,
-    desc_ko: '블라이드가 저렴한 카지노가 있는지 찾습니다.',
-    desc_en: 'Searches for casinos with cheaper blinds.',
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('blind_discount')]
-  },
+
   {
     id: 'orbit_lounge_network_hacking',
     name_ko: '오르빗 네트워크 해킹',
@@ -650,6 +651,21 @@ export const ITEM_DATA = [
 
   // --- T4 items (Uncommon + 1 Random, 100000 - 200000 CR) ---
   {
+    id: 'olive_branch',
+    name_ko: '올리브 나뭇가지',
+    name_en: 'Olive Branch',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    icon: '🌿',
+    class: 'Item',
+    tier: 'T4',
+    price: 100000,
+    isConsumable: true,
+    desc_ko: '이제 화해의 손길을 내밀 때인 것 같아요. 당신의 진심을 본다면 그들도 이해해 줄 겁니다.',
+    desc_en: 'Maybe it\'s time to offer an olive branch. If they see your sincere remorse, they\'ll likely be more understanding.',
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    effects: [getItemEffect('olive_branch')]
+  },
+  {
     id: 'loaded_dice',
     name_ko: '사기 주사위',
     name_en: 'Loaded Dice',
@@ -1002,7 +1018,7 @@ export const ITEM_DATA = [
     effects: [getItemEffect('rake_reduction'), getItemEffect('blind_discount')]
   },
   {
-    id: 'blind_folding_fan',
+    id: 'folding_fan',
     name_ko: '접이식 부채',
     name_en: 'Folding Fan',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -1013,7 +1029,7 @@ export const ITEM_DATA = [
     desc_ko: '부채질로 한번으로 느긋함과 우아함 두가지를 동시에 잡습니다.',
     desc_en: 'With a single sweep of the fan, you capture both relaxation and elegance.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('blind_discount'), getItemEffect('loyalty_card')]
+    effects: [getItemEffect('stemina_regen'), getItemEffect('stemina_regen')]
   },
   // --- T5 items (Rare + 2 Random, 200000 - 500000 CR) ---
   {
@@ -1030,6 +1046,7 @@ export const ITEM_DATA = [
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [getItemEffect('loyalty_card'), getItemEffect('straight_flush_master'), getRndItemBucket]
   },
+
   {
     id: 'ancient_pot',
     name_ko: '고대 항아리',
@@ -1057,6 +1074,20 @@ export const ITEM_DATA = [
     desc_en: '"Was" the symbol and landmark of Paris in the past. Now it\'s used as a high-powered transmission antenna by a megacorp.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [getItemEffect('last_stand'), getItemEffect('last_stand'), getItemEffect('last_stand')]
+  },
+  {
+    id: 'cryo_mint_dispenser',
+    name_ko: '크라이오 민트 디스펜서',
+    name_en: 'Cryo Mint Dispenser',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    icon: '🧊',
+    class: 'Item',
+    tier: 'T5',
+    price: 390000,
+    desc_ko: '극도의 시원함으로 잠이 확 깹니다.',
+    desc_en: 'The extreme coolness wakes you up instantly.',
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    effects: [getItemEffect('stemina_regen'), getItemEffect('stemina_regen'), getItemEffect('stemina_regen')]
   },
   {
     id: 'statue_of_liberty',

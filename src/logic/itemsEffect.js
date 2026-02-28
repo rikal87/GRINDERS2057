@@ -1,6 +1,26 @@
 import { store } from './store.js';
 export const ITEM_EFFECT_DATA = [
   {
+    icon: '🌿',
+    id: 'olive_branch',
+    name_ko: '화해의 나뭇가지',
+    name_en: 'Olive Branch',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Unique',
+    cooldown: 0,
+    trigger: [],
+    editable: false,
+    get desc() {
+      return store.settings.language === 'en' ?
+        `Upon purchase, increases relationship with partners who have 25 or lower affinity by ${this.value}-${this.valMax}. (One-time use)`
+        : `구매시 관계도가 25이하인 파트너들과의 관계 +${this.value}~${this.valMax} (1회성)`;
+    },
+    effect_name: 'olive_branch',
+    valMax: 25,
+    value: 5,
+    isStackable: true
+  },
+  {
     icon: '☕',
     id: 'stemina_regen',
     name_ko: '스태미나 회복',
@@ -40,7 +60,7 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     trigger: [],
     editable: false,
-    get desc() { return store.settings.language === 'en' ? `Grants access to the "Underground Bar".` : `구매시 "지하 바" 이용가능.`; },
+    get desc() { return store.settings.language === 'en' ? `Upon purchase, grants access to the "Underground Bar".` : `구매시 "지하 바" 이용가능.`; },
     effect_name: 'underground_bar_invite',
     value: 1,
     isStackable: true
@@ -55,7 +75,7 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     trigger: [],
     editable: false,
-    get desc() { return store.settings.language === 'en' ? `Grants access to "Orbit".` : `구매시 "오르빗" 이용가능.`; },
+    get desc() { return store.settings.language === 'en' ? `Upon purchase, grants access to "Orbit".` : `구매시 "오르빗" 이용가능.`; },
     effect_name: 'orbit_tour',
     value: 1,
     isStackable: true
@@ -70,7 +90,7 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     trigger: [],
     editable: false,
-    get desc() { return store.settings.language === 'en' ? `Grants access to the "H.B.D Club".` : `구매시 "H.B.D 클럽" 이용가능.`; },
+    get desc() { return store.settings.language === 'en' ? `Upon purchase, grants access to the "H.B.D Club".` : `구매시 "H.B.D 클럽" 이용가능.`; },
     effect_name: 'club_membership',
     value: 1,
     isStackable: true
@@ -90,6 +110,7 @@ export const ITEM_EFFECT_DATA = [
     value: -5,
     isStackable: true
   },
+
   {
     icon: '🔑',
     id: 'the_bunker_key',
@@ -167,12 +188,12 @@ export const ITEM_EFFECT_DATA = [
     isStackable: true
   },
   {
-    icon: '💾',
-    id: 'last_stand',
+    icon: '🔋',
+    id: 'lt_recovery',
     name_ko: 'LT 회복',
     name_en: 'LT Recovery',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    rarity: 'Common',
+    rarity: 'Uncommon',
     cooldown: 0,
     trigger: ['win'],
     editable: false,
@@ -250,7 +271,7 @@ export const ITEM_EFFECT_DATA = [
     name_ko: 'LT 회복량 증가',
     name_en: 'Enhanced LT Regen',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    rarity: 'Uncommon',
+    rarity: 'Common',
     cooldown: 0,
     maxCooldown: 5,
     trigger: ['round_start'],
@@ -274,17 +295,36 @@ export const ITEM_EFFECT_DATA = [
     isStackable: true
   },
   {
-    icon: '🏷️',
+    icon: '⛁',
     id: 'blind_discount',
     name_ko: '블라인드 할인',
     name_en: 'Blind Discount',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    rarity: 'Uncommon',
+    rarity: 'Common',
     cooldown: 0,
     trigger: ['blind_pay'],
     editable: false,
     get desc() { return store.settings.language === 'en' ? `Reduces blind cost by -${Math.floor(this.value * 100)}%` : `블라인드 비용 -${Math.floor(this.value * 100)}%`; },
     value: .3,
+    isStackable: true
+  },
+  {
+    icon: '🚬',
+    id: 'smoke_break',
+    name_ko: '담배 한 대',
+    name_en: 'Smoke Break',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Unique',
+    cooldown: 0,
+    maxCooldown: 15,
+    trigger: ['round_start'],
+    editable: false,
+    get desc() {
+      return store.settings.language === 'en'
+        ? `Start of round: stamina +${this.value}, LT -${this.value} (Cooldown: ${this.maxCooldown} rounds)`
+        : `라운드 시작시 스테미너가 ${this.value}만큼 회복됩니다. 대신 LT가 ${-this.value} 감소합니다. (쿨타임: ${this.maxCooldown} 라운드)`;
+    },
+    value: 8,
     isStackable: true
   },
   {
@@ -643,7 +683,7 @@ export const ITEM_EFFECT_DATA = [
     name_ko: '더블 다운',
     name_en: 'Double Down',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    rarity: 'Rare',
+    rarity: 'Uncommon',
     cooldown: 0,
     editable: false,
     trigger: ['win'],

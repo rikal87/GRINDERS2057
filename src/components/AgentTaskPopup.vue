@@ -2,11 +2,11 @@
   <transition name="v4-fade">
     <div class="v5-modal-overlay popup-overlay" @click.self="$emit('close')">
       <div class="v5-modal agent-selector popup-modal">
-        <h2 class="glitch-text" data-text="TASK_PROTOCOL_ASSIGNMENT">TASK_PROTOCOL_ASSIGNMENT</h2>
+        <h2 class="glitch-text modal-title" data-text="TASK_ASSIGNMENT">TASK_ASSIGNMENT</h2>
 
         <!-- Tab Navigation -->
-        <div class="v5-tabs">
-          <button v-for="tab in tabs" :key="tab.id" :class="{ active: activeTab === tab.id }"
+        <div class="btn-group">
+          <button v-for="tab in tabs" :key="tab.id" class="btn" :class="{ active: activeTab === tab.id }"
             @click="activeTab = tab.id">
             {{ tab.label }}
           </button>
@@ -18,11 +18,8 @@
           <div v-if="filteredTasks.length > 0" class="agent-display"
             :class="{ locked: !isTaskUnlocked(currentTaskDef) }">
             <div class="agent-header">
-              <span class="id-tag">TIER_{{ currentTaskDef.tier }} // {{ currentTaskDef.type }}</span>
+              <span class="id-tag">TIER_{{ currentTaskDef.tier }}</span>
               <h3 class="name">{{ currentTaskDef.name }}</h3>
-            </div>
-            <div class="agent-visual">
-              <span class="icon">📜</span>
             </div>
             <div class="agent-info">
               <div v-if="isTaskUnlocked(currentTaskDef)" class="slogan-container">
@@ -30,17 +27,43 @@
                 <p class="slogan-detail" style="opacity: 0.7; font-size: 0.9em; margin-top: 8px;">{{
                   currentTaskDef.desc_detail }}</p>
               </div>
-              <div v-else class="lock-overlay">
+              <div v-else class="slogan-container">
                 <div class="lock-icon">🔒</div>
-                <p class="slogan" style="color:var(--neon-red)">ENCRYPTION_ACTIVE: REQUIREMENT_NOT_MET</p>
+                <p class="slogan" style="color:var(--neon-red)">LOCKED: REQUIREMENT_NOT_MET</p>
                 <p class="requirement" v-if="currentTaskDef.unlock">
                   NEED: {{ currentTaskDef.unlock.type }}
                   <span v-if="currentTaskDef.unlock.id">[{{ currentTaskDef.unlock.id }}]</span>
                   {{ currentTaskDef.unlock.count || currentTaskDef.unlock.amount || currentTaskDef.unlock.credit }}
                 </p>
               </div>
-              <div class="features-box" v-if="isTaskUnlocked(currentTaskDef)">
+              <!-- <div class="features-box" v-if="isTaskUnlocked(currentTaskDef)">
                 <div class="label">EXECUTION_PARAMETERS</div>
+                <div class="stats-container" v-if="isTaskUnlocked(currentTaskDef)">
+                  <div class="stats-section">
+                    <div class="section-label">EXECUTION_PARAMETERS</div>
+                    <div class="stats-grid">
+                      <div class="stat-entry">
+                        <span class="label">COST:</span>
+                        <span class="val cyan">
+                          {{ currentTaskDef.cost }} LT
+                          <span v-if="currentTaskDef.type !== 'AGENT_WORK'">HR</span><span v-else> Per Active</span>
+                        </span>
+                      </div>
+                      <div class="stat-entry">
+                        <span class="label">TOTAL_LOST:</span> <span class="val red">0 CR</span>
+                      </div>
+                      <div class="stat-entry">
+                        <span class="label">PAID_RAKE:</span> <span class="val yellow">0 CR</span>
+                      </div>
+                      <div class="stat-entry">
+                        <span class="label">MAX_WIN_POT:</span> <span class="val white">0 CR</span>
+                      </div>
+                      <div class="stat-entry">
+                        <span class="label">MAX_LOSE_POT:</span> <span class="val white">0 CR</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <ul class="features">
                   <li>COST: {{ currentTaskDef.cost }} LT <span v-if="currentTaskDef.type !== 'AGENT_WORK'">/
                       HR</span><span v-else>/ ACTIVE</span></li>
@@ -51,21 +74,53 @@
                       ((currentTaskDef.probability + currentProbBonus) * 100).toFixed(1) }}% / HR
                   </li>
                 </ul>
+              </div> -->
+              <div class="stats-container" v-if="isTaskUnlocked(currentTaskDef)">
+                <div class="stats-section">
+                  <div class="section-label">EXECUTION_PARAMETERS</div>
+                  <div class="stats-grid">
+                    <div class="stat-entry">
+                      <span class="label">COST/HR:</span>
+                      <span class="val cyan">
+                        {{ currentTaskDef.cost }} LT
+                        <span v-if="currentTaskDef.type !== 'AGENT_WORK'">HR</span>
+                      </span>
+                    </div>
+                    <div class="stat-entry">
+                      <span class="label">COOLDOWN:</span>
+                      <span class="val" :class="getBonusColor(cooldownBonus)">
+                        {{ formatMinutes(currentTaskDef.cooldown) }}
+                      </span>
+                    </div>
+                    <div class="stat-entry">
+                      <span class="label">DURATION:</span> <span class="val" :class="getBonusColor(durationBonus)">{{
+                        formatMinutes(currentTaskDef.duration) }}</span>
+                    </div>
+                    <div class="stat-entry">
+                      <span class="label">SUCCESS_RATE:</span>
+                      <span class="val" :class="getBonusColor(currentProbBonus)">
+                        {{ ((currentTaskDef.probability + currentProbBonus) * 100).toFixed(1) }}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
           <div v-else class="empty-state">
-            <span>NO_PROTOCOL_FOUND</span>
+            <span>NO_TASK_FOUND</span>
           </div>
 
           <button class="nav-btn next" @click="nextTask"
             :disabled="currentTaskIdx >= filteredTasks.length - 1 || filteredTasks.length === 0">&gt;</button>
         </div>
         <div class="modal-actions">
-          <button class="btn cyan" :disabled="!canStartCurrentTask || filteredTasks.length === 0" @click="initiateTask">
+          <button class="btn-accept" :disabled="!canStartCurrentTask || filteredTasks.length === 0"
+            @click="initiateTask">
             {{ taskInitiateBtnText }}
           </button>
-          <button class="btn" @click="$emit('close')">ABORT</button>
+          <button class="btn-cancel" @click="$emit('close')">CLOSE</button>
         </div>
       </div>
     </div>
@@ -78,7 +133,11 @@ import { store } from '../logic/store';
 import { AI_TASK_DATA } from '../logic/agentTaskData';
 import { isTaskUnlocked, startTask } from '../logic/aiTaskSystem';
 import { audioManager } from '../logic/audioManager';
-
+const getBonusColor = (probBonus) => {
+  console.log(probBonus);
+  if (probBonus > 0.0) return 'var(--neon-green)';
+  else return '#fff';
+}
 const props = defineProps({
   slotIdx: {
     type: Number,
@@ -90,7 +149,6 @@ const emit = defineEmits(['close']);
 
 const tabs = [
   { id: 'AGENT_WORK', label: 'AGENT WORK' },
-  { id: 'SEARCH', label: 'SEARCH' },
   { id: 'BOOST', label: 'BOOST' },
   { id: 'NETWORKING', label: 'NETWORKING' }
 ];
@@ -122,6 +180,11 @@ const currentProbBonus = computed(() => {
   const agent = store.aiAgent;
   const planData = agent.model?.price_plan[agent.price_plan_idx];
   return planData?.probability_bonus || 0;
+});
+const durationBonus = computed(() => {
+  const agent = store.aiAgent;
+  const planData = agent.model?.price_plan[agent.price_plan_idx];
+  return planData?.duration_bonus || 0;
 });
 
 const formatMinutes = (mins) => {
@@ -179,12 +242,12 @@ const canStartCurrentTask = computed(() => {
 const taskInitiateBtnText = computed(() => {
   const task = currentTaskDef.value;
   if (!task) return 'NO_TASK_SELECTED';
-  if (!isTaskUnlocked(task)) return 'REQUIREMENT_NOT_MET';
+  if (!isTaskUnlocked(task)) return 'INITIATE';
 
-  if (task.tier > slotTierValue.value) return `LOW_TIER_MEMORY (REQ T${task.tier})`;
+  if (task.tier > slotTierValue.value) return `LOW_TIER_TASKSLOT`;
 
   if (store.ludusTokens < task.cost) return 'INSUFFICIENT_LT';
-  return 'INITIATE_PROTOCOL';
+  return 'INITIATE';
 });
 
 const initiateTask = () => {
@@ -220,6 +283,7 @@ onMounted(() => {
   max-height: 90vh;
   display: flex;
   flex-direction: column;
+  justify-content: space-between
 }
 
 .empty-state {
@@ -233,8 +297,48 @@ onMounted(() => {
   text-align: center;
   border: 1px dashed var(--neon-red);
 }
-
+.modal-actions {
+  padding: 25px;
+}
+.btn-group {
+  margin-top: 10px;
+  justify-content: center
+}
+.features li {
+  color: var(--neon-cyan);
+  text-align: left;
+  font-size: 0.75rem;
+}
+.slogan-container {
+  background: #0d1319;
+  border: 1px solid rgba(255, 0, 85, 0.25);
+  padding: 0 20px;
+  /* padding-right: 10px; */
+  margin-bottom: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  position: relative;
+  /* color: var(--neon-cyan); */
+}
+.agent-display {
+  /* width: 300px; */
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--panel-border);
+  height: 40vh;
+  padding: 10px;
+}
+.agent-display h3 {
+  color: var(--neon-red);
+}
+.btn-accept,
+.btn-cancel {
+  min-width: 200px;
+}
 .agent-browser {
   margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 </style>

@@ -345,7 +345,7 @@ const lore_spam_message = [
     "type": "SOCIAL",
     "sender": "Newbie_01",
     "title_ko": "질문 좀요 ㅠㅠ",
-    "title_en": "",
+    "title_en": "I have a question",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     "body_ko": "형님들, '팟 오즈'가 뭐예요? 이거 모르면 호구라던데... 족보 외우기도 힘들어 죽겠네요.",
     "body_en": "Hey bros, what's 'Pot Odds'? I heard you're a sucker if you don't know this... It's hard enough just memorizing the hand rankings.",

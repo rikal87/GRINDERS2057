@@ -78,6 +78,8 @@ export const processAiTasks = () => {
   const maxLt = planData.maxLt;
   const regenMultiplier = planData.lt_regen_bonus_rate || 1.0;
   const probBonus = planData.probability_bonus || 0;
+  const durationBonus = planData.duration_bonus || 0;
+  const cooldownBonus = planData.cooldown_bonus || 0;
 
   // 1. LT Regeneration (1% of max per hour -> 1/60 % per minute)
   const regenAmount = (maxLt * 0.01 * regenMultiplier) / 60;
@@ -97,7 +99,6 @@ export const processAiTasks = () => {
       }
     }
   }
-
   // 3. Process Active Tasks
   for (let i = store.onWorkTasks.length - 1; i >= 0; i--) {
     const taskState = store.onWorkTasks[i];
@@ -172,9 +173,9 @@ export const processAiTasks = () => {
         }
       } else {
         // Normal Tasks: Check if effect duration has expired
-        if (store.gameTime >= taskState.effectEndTime) {
+        if (store.gameTime >= taskState.effectEndTime * (1 + durationBonus)) {
           taskState.status = 'COOLDOWN';
-          taskState.cooldownEndTime = store.gameTime + (taskDef.cooldown * 60 * 1000);
+          taskState.cooldownEndTime = store.gameTime + (taskDef.cooldown * 60 * 1000) * (1 - cooldownBonus);
           sendMessage('SYSTEM', 'Effect Expired', `${taskDef.name} effect has ended. Cooldown started.`);
 
           // Remove active boosts associated with this task
@@ -287,17 +288,17 @@ export const isTaskUnlocked = (taskDef) => {
       // Map task ID to stats persona name if necessary
       const personaKey = id.charAt(0).toUpperCase() + id.slice(1);
       return (stats.bust_enemy[personaKey] || 0) >= count;
-
     case 'played_hand':
       return stats.played_hands >= count;
-
     case 'paid_rake':
       return stats.paid_rake >= amount;
-
     case 'reach_credit':
       // Check current bankroll or total earned? credit usually refers to bankroll
       return store.bankroll >= credit;
-
+    case 'cost_lt':
+      return store.agentStats.cost_lt_total >= amount;
+    case 'completed_task_count':
+      return store.agentStats.completed_task_count >= count;
     default:
       console.warn(`Unknown unlock type: ${type}`);
       return true;

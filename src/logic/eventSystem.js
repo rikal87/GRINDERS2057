@@ -1,5 +1,5 @@
 // for first player
-import { sendMessage, MESSAGE_TYPE } from "./messageSystem.js";
+import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE } from "./messageSystem.js";
 import { store, saveStore } from "./store.js";
 import { EVENT_FLORENCE, EventData as FlorenceEventData } from "./eventSystemFlorence.js";
 import { EVENT_MAX, EventData as MaxEventData } from "./eventSystemMax.js";
@@ -11,7 +11,7 @@ export const EVENT_ID = {
   PAY_RENT_BILL: 'pay_rent_bill',
   INCOME_TAX: 'income_tax',
   MAX: EVENT_MAX,
-  FLORENCE: EVENT_FLORENCE
+  FLORENCE: EVENT_FLORENCE,
 };
 
 const handleGameOver = async (reason) => {
@@ -24,6 +24,7 @@ export const EventData = [
   ...MaxEventData,
   {
     id: EVENT_ID.FIRST_PAY_RENT_BILL,
+    scenario: '게임 시작 후 얼마지나지 않아 첫 주거 렌트비 지불 메시지',
     title_ko: '첫 주거 렌트비 지불',
     title_en: 'Pay Rent Bill',
     body_ko: '납부해야 할 주거 렌트비가 있습니다. 연체료를 피하려면 지금 납부하세요.',
@@ -38,12 +39,13 @@ export const EventData = [
     label_en: 'Pay',
     timer: 120, // after 2 hour(in game)
     func() {
-      const pay_rent_bill = 5000;
+
       sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body, [{
-        label: `${this.label} (${pay_rent_bill}) CR`,
-        actionType: `PAY_RENT`,
+        label: this.label,
+        actionType: MESSAGE_ACTION_TYPE.PAY_RENT,
         payload: {
-          amount: pay_rent_bill
+          amount: pay_rent_bill,
+          currency: 'CR'
         }
       }], this.sender)
     },
@@ -51,9 +53,7 @@ export const EventData = [
   },
   {
     id: EVENT_ID.PAY_RENT_BILL_WARNING,
-    description_ko: '렌트비 지불',
-    description_en: 'Pay Rent',
-    get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
+    scenario: '게임시작후 얼마지나지 않아 임대인의 렌트비 독촉 메시지',
     timer: 150, // after 2.5 hour(in game)
     func() {
       const title = store.settings.language === 'en' ? '[Final Warning] Rent Payment Overdue' : '[최후 통첩] 밀린 렌트비 납부 요망';
@@ -65,9 +65,7 @@ export const EventData = [
   },
   {
     id: 'pay_rent_bill',
-    description_ko: '렌트비 지불 (주기)',
-    description_en: 'Pay Rent (Periodic)',
-    get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
+    scenario: '렌트비 지불 (주기)',
     timer: 7 * 24 * 60, // 7 days
     func() {
       store.missedPayments.rent_bill = (store.missedPayments.rent_bill || 0) + 1;
@@ -87,6 +85,7 @@ export const EventData = [
         label: label,
         actionType: PAY_RENT,
         payload: {
+          currency: 'CR',
           amount: pay_rent_bill
         }
       }], sender)
@@ -95,9 +94,7 @@ export const EventData = [
   },
   {
     id: EVENT_ID.INCOME_TAX,
-    description_ko: '소득세를 지불 (주기)',
-    description_en: 'Pay Income Tax (Periodic)',
-    get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
+    scenario: '소득세를 지불 (주기)',
     timer: 90 * 24 * 60, // 90 days
     func() {
       const income_amount = (store.bankroll - store.latest_pay_income_base_amount);
@@ -128,6 +125,7 @@ export const EventData = [
         label: label,
         actionType: 'PAY_INCOME_TAX',
         payload: {
+          currency: 'CR',
           amount: Math.ceil(pay_income_tax)
         }
       }], sender)
@@ -148,6 +146,9 @@ export const scheduleEvent = (eventId, delayMinutes = 0) => {
   store.pendingEvents.push({ id: eventId, triggerTime });
   console.log(`[EVENT] Scheduled '${eventId}' for +${delayMinutes}m`);
 };
+export const isEventCompleted = (eventId) => {
+  return store.completedEvents.includes(eventId);
+}
 export const processEvents = () => {
   const elapsedMinutes = Math.floor((store.gameTime - START_TIME) / 60000);
   const now = store.gameTime;
@@ -187,18 +188,33 @@ export const processEvents = () => {
 
   // 2. Process Pending (Scheduled/Queued) Events
   if (store.pendingEvents && store.pendingEvents.length > 0) {
-    store.pendingEvents = store.pendingEvents.filter(pending => {
+    const triggeredEvents = [];
+    const remainingEvents = [];
+
+    // 실행할 이벤트와 대기할 이벤트를 먼저 분리
+    store.pendingEvents.forEach(pending => {
       if (now >= pending.triggerTime) {
-        const eventDef = EventData.find(e => e.id === pending.id);
-        if (eventDef) {
-          eventDef.func(); // 대기열에서 조건 달성 즉시 실행
-          if (!eventDef.repeatable) {
-            store.completedEvents.push(pending.id);
-          }
-        }
-        return false; // 실행 완료 후 큐에서 삭제
+        triggeredEvents.push(pending);
+      } else {
+        remainingEvents.push(pending);
       }
-      return true; // 시간이 안 됐으면 큐에 유지
+    });
+
+    // 큐를 먼저 갱신. (이렇게 해야 아래 func() 안에서 스케줄링된 새 이벤트가 날아가지 않고 올바르게 추가됨)
+    store.pendingEvents = remainingEvents;
+
+    // 분리된 이벤트 실행
+    triggeredEvents.forEach(pending => {
+      const eventDef = EventData.find(e => e.id === pending.id);
+      if (eventDef) {
+        console.info(`[EVENT] Triggering '${pending.id}'`);
+        eventDef.func(); // 대기열에서 조건 달성 즉시 실행
+        if (!eventDef.repeatable) {
+          store.completedEvents.push(pending.id);
+        }
+      } else {
+        console.info(`[EVENT] Not Found '${pending.id}'`);
+      }
     });
   }
 };
