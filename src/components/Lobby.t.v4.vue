@@ -657,9 +657,44 @@ const confirmJoin = () => {
   font-size: 0.65rem;
   padding: 2px 8px;
   background: rgba(57, 255, 20, 0.08);
+  cursor: help;
+}
+.npc-tag.mr-call {
   border: 1px solid var(--accent-green);
   color: var(--accent-green);
-  cursor: help;
+}
+.npc-tag.fish {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+.npc-tag.broke {}
+.npc-tag.rich_guy {
+  border-color: var(--accent-yellow);
+  color: var(--accent-yellow);
+}
+.npc-tag.maniac {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+.npc-tag.old_lion {
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+.npc-tag.quant_pro {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+.npc-tag.shark {
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+}
+.npc-tag.whale {
+  border-color: var(--accent-pink);
+  color: var(--accent-pink);
+}
+.npc-tag.gangster {
+  border-color: var(--accent-yellow);
+  color: var(--accent-yellow);
 }
 
 .table-stats {

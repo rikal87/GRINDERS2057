@@ -153,7 +153,7 @@ export const zones = [
         "level": 6,
         "npcs": [
           "Maniac",
-          "Mafia_Boss"
+          "The_Don"
         ],
         "tables": { amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6, 9], baseRake: 0.1, rakeCap: 10000, isHighStakes: true },
       },
@@ -224,7 +224,7 @@ export const zones = [
         "level": 8,
         "npcs": [
           "The_Whale",
-          "Mafia_Boss",
+          "The_Don",
           "Rich_Guy"
         ],
         "tables": { amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.11, rakeCap: 500000, isHighStakes: true }

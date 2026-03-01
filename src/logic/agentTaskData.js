@@ -550,14 +550,14 @@ export const AI_TASK_DATA = [
     tier: 5,
     name: 'Heavy Security',
     type: 'BOOST',
-    desc: `입장한 테이블에 [Gangster] 및 [Mafia_Boss] 성향 플레이어가 절대 등장하지 않습니다.`,
+    desc: `입장한 테이블에 [Gangster] 및 [The_Don] 성향 플레이어가 절대 등장하지 않습니다.`,
     desc_detail: '뒷골목 마피아 보스들도 이 살벌한 최첨단 방벽 앞에서는 점잖게 발길을 돌릴 것입니다.',
     cost: 30,
     probability: 0.05,
     duration: 24 * 60,
     cooldown: 3 * 24 * 60,
-    effect: [{ type: 'spawn_rate_mul', id: 'gangster', amount: 0 }, { type: 'spawn_rate_mul', id: 'mafia_boss', amount: 0 }],
-    unlock: { type: 'Bust_enemy', id: 'mafia_boss', count: 125 }
+    effect: [{ type: 'spawn_rate_mul', id: 'gangster', amount: 0 }, { type: 'spawn_rate_mul', id: 'the_don', amount: 0 }],
+    unlock: { type: 'Bust_enemy', id: 'the_don', count: 125 }
   },
   {
     id: 'rich_guy_hunter_3',

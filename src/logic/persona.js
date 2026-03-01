@@ -111,12 +111,13 @@ export const ENEMY_ID = {
   GANGSTER: 'Gangster',
   NIT: 'Nit',
   QUANT_PRO: 'Quant_Pro',
-  MAFIA_BOSS: 'Mafia_Boss',
+  THE_DON: 'The_Don',
   SHARK: 'Shark',
   WHALE: 'Whale',
 }
 export const CLASSES_ENEMY = [
   {
+    id: 'mr_call',
     name: 'MR_CALL', philosophy: 'LAP', vPIP: .90, AF: 0.5, WTSD: .7, chipMultiply: 1,
     note_ko: '무슨 패를 들었든 일단 카드를 다 봐야 직성이 풀리는 스타일입니다.',
     note_en: 'Mr. Call is a mysterious man who plays poker with a calm demeanor, but his eyes reveal a hint of danger.',
@@ -125,6 +126,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'fish',
     name: 'Fish', philosophy: 'LAP', vPIP: .75, AF: 1, WTSD: .25, chipMultiply: 1,
     note_ko: '판돈을 불리는 데는 일등 공신이지만, 막상 끝까지 가는 배짱은 없어서 정교한 블러핑 한 방이면 칩을 고스란히 헌납할 겁니다.',
     note_en: 'He is a great contributor to increasing the pot, but he lacks the courage to go all the way, so a single sophisticated bluff will cost him all his chips.',
@@ -133,6 +135,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'broke',
     name: 'Broke', philosophy: 'LAP', vPIP: .6, AF: 2, WTSD: .45, chipMultiply: 0.5,
     note_ko: '내일이 없는 친구입니다. 리버에 기적이 일어나길 빌며 모든 걸 걸었다가, 결국 오늘도 빈털터리로 돌아갑니다',
     note_en: 'He is a friend with no tomorrow. He bets everything hoping for a miracle on the river, only to end up broke again today.',
@@ -141,6 +144,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'gambler',
     name: 'Gambler', philosophy: 'LAG', vPIP: .5, AF: 3, WTSD: .5, chipMultiply: 1,
     note_ko: '인생은 한 방, 승부처라면 쓰레기 같은 패로도 풀 배팅을 지르는 스타일입니다.',
     note_en: 'Life is a gamble, and he bets it all on a single shot. Even with trash hands, he goes all-in at crucial moments.',
@@ -149,6 +153,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'maniac',
     name: 'Maniac', philosophy: 'LAG', vPIP: .7, AF: 6, WTSD: .55, chipMultiply: 1,
     note_ko: '팟을 개판으로 만드는 주범입니다. 정말 미친놈 같습니다..',
     note_en: 'He is the main culprit who messes up the pot. He seems like a really crazy guy..',
@@ -157,6 +162,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'rich_guy',
     name: 'Rich_Guy', philosophy: 'LAP', vPIP: .6, AF: 1.5, WTSD: .6, chipMultiply: 3,
     note_ko: '기업의 꽤 높은 분이거나 운 좋게 코인 대박이 터진 부자입니다.',
     note_en: 'He is a high-ranking executive of a company or a rich man who got lucky with a crypto boom.',
@@ -165,6 +171,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'gangster',
     name: 'Gangster', philosophy: 'TAG', vPIP: .38, AF: 4, WTSD: .44, chipMultiply: 1,
     note_ko: '눈에 힘주고 베팅하는 게 버릇입니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.',
     note_en: 'He has a habit of betting with a stern look in his eyes. Be careful, as he seems like he might flip the table if the cards don\'t go his way.',
@@ -173,6 +180,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'nit',
     name: 'Nit', philosophy: 'NIT', vPIP: .09, AF: 2.5, WTSD: .35, chipMultiply: 1,
     note_ko: '혹시라도 그가 레이즈를 한다면 무조건 도망치세요, AA가 확실합니다.',
     note_en: 'If he raises, run for your life, it\'s definitely AA.',
@@ -181,6 +189,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'quant_pro',
     name: 'Quant_Pro', philosophy: 'TAP', vPIP: .22, AF: 2, WTSD: .25, chipMultiply: 1.5,
     note_ko: '금융권 퀀트 출신이었으나, 지금은 포커에 미쳐버린 친구입니다.',
     note_en: 'He was a quant in the finance industry, but now he\'s crazy about poker.',
@@ -189,7 +198,8 @@ export const CLASSES_ENEMY = [
     }
   },
   {
-    name: 'Mafia_Boss', philosophy: 'LAG', vPIP: .35, AF: 5, WTSD: .35, chipMultiply: 2,
+    id: 'the_don',
+    name: 'The_Don', philosophy: 'LAG', vPIP: .35, AF: 5, WTSD: .35, chipMultiply: 2,
     note_ko: '포커를 "전쟁"으로 생각합니다. 상대가 기권할 때까지 돈과 위압감으로 밀어붙이며, 테이블 전체의 분위기를 공포로 몰아넣는 것을 즐깁니다.',
     note_en: 'He thinks of poker as a "war". He enjoys pushing his opponents with money and intimidation until they give up, filling the entire table with fear.',
     get note() {
@@ -197,6 +207,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'kbt_leader',
     name: 'KBT_Leader', philosophy: 'LAG', vPIP: .75, AF: 4, WTSD: .31, chipMultiply: 3.5,
     note_ko: 'KBT 조직의 리더이자 헤즈업 경기의 실력자입니다. 그와의 1:1 경기에서 승리할 수 있을까요?',
     note_en: 'He is the leader of the KBT organization and a skilled player in heads-up matches. Can you defeat him in a 1:1 game?',
@@ -205,6 +216,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'the_whale',
     name: 'The_Whale', philosophy: 'LAP', vPIP: .70, AF: 2, WTSD: .75, chipMultiply: 8,
     note_ko: '그에게 칩은 숫자에 불과합니다. 판돈이 커질수록 아드레날린을 느끼며, 지고 있어도 "재미있네"라며 웃으며 칩을 더 던집니다. 사실상 테이블의 스폰서나 다름없습니다.',
     note_en: 'To him, chips are just numbers. The bigger the pot, the more adrenaline he feels, and even when losing, he laughs and throws in more chips saying "This is fun." He is practically the sponsor of the table.',
@@ -213,6 +225,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'old_lion',
     name: 'Old_Lion', philosophy: 'TAG', vPIP: .20, AF: 3, WTSD: .25, chipMultiply: 1.2,
     note_ko: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.',
     note_en: 'His prime has passed, but he is still a sharp veteran. If he has entered the game, it means he has already laid all the traps, so don\'t mess with him carelessly.',
@@ -221,6 +234,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'shark',
     name: 'Shark', philosophy: 'TAG', vPIP: .24, AF: 3.5, WTSD: .27, chipMultiply: 1.2,
     note_ko: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.',
     note_en: 'The most frightening thing is not his hand, but his patience.',
@@ -229,6 +243,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
+    id: 'named_pro',
     name: 'Named_Pro', note_ko: '이곳에선 전설적인 플레이어를 만날 가능성이있습니다.',
     note_en: 'You may encounter legendary players here.',
     get note() {
@@ -814,7 +829,7 @@ export const PERSONALITIES = {
       "Next variable."
     ]
   },
-  MAFIA_BOSS: {
+  THE_DON: {
     [CHAT_TRIGGERS.GAME_START]: [
       "Let's play some cards.",
       "This is a war zone.",

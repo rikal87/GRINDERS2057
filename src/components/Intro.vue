@@ -14,8 +14,11 @@
       <button class="menu-btn" :disabled="!store.hasSave" @click="$emit('start', 'continue')">
         RESUME_LINK
       </button>
-      <button class="menu-btn" @click="$emit('start', 'continue')">
+      <button class="menu-btn" @click="$emit('calibrate')">
         CALIBRATE_SYSTEM
+      </button>
+      <button class="menu-btn" @click="$emit('quit')">
+        SHUT_DOWN
       </button>
     </div>
 
@@ -24,51 +27,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { onMounted } from 'vue';
 import { store } from '../logic/store';
 import LobbyBackground from './LobbyBackground.vue';
 import { audioManager } from '../logic/audioManager';
 
-defineEmits(['start']);
-
-const jitterActive = ref(false);
-let jitterInterval = null;
+defineEmits(['start', 'calibrate', 'quit']);
 
 onMounted(() => {
   audioManager.playTrackByZoneId('main');
-  jitterInterval = setInterval(() => {
-    if (Math.random() > 0.8) {
-      jitterActive.value = true;
-      setTimeout(() => jitterActive.value = false, 100 + Math.random() * 200);
-    }
-  }, 2000);
 });
-
-onUnmounted(() => {
-  if (jitterInterval) clearInterval(jitterInterval);
-});
-
-const getStreakStyle = (n) => {
-  const top = 10 + Math.random() * 80; // Wider vertical range
-  const left = Math.random() * -10;
-  const width = 50 + Math.random() * 100; // Longer streaks
-  const height = Math.random() > 0.8 ? 4 : 2; // Some thicker blocks
-  const delay = Math.random() * 5;
-  const duration = 0.15 + Math.random() * 0.25;
-  const colors = ['var(--neon-cyan)', 'var(--neon-magenta)', '#ffffff', 'var(--neon-yellow)'];
-  const color = colors[Math.floor(Math.random() * colors.length)];
-
-  return {
-    top: `${top}%`,
-    left: `${left}%`,
-    width: `${width}%`,
-    height: `${height}px`,
-    backgroundColor: color,
-    boxShadow: `0 0 15px ${color}, 0 0 30px ${color}`, // Intense glow
-    animationDelay: `${delay}s`,
-    animationDuration: `${duration}s`
-  };
-};
 </script>
 
 <style scoped>

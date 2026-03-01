@@ -3,6 +3,9 @@ import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE } from "./messageSystem.
 import { store, saveStore } from "./store.js";
 import { EVENT_FLORENCE, EventData as FlorenceEventData } from "./eventSystemFlorence.js";
 import { EVENT_MAX, EventData as MaxEventData } from "./eventSystemMax.js";
+import { ENEMY_ID } from "./persona.js";
+import { getBustEnemyCount } from "./store.js";
+
 const pay_rent_bill = 5000;
 
 export const EVENT_ID = {
@@ -12,6 +15,8 @@ export const EVENT_ID = {
   INCOME_TAX: 'income_tax',
   MAX: EVENT_MAX,
   FLORENCE: EVENT_FLORENCE,
+  SHARK_HUNTER_APPEARS: 'SHARK_HUNTER_APPEARS',
+  GANGSTER_WARNING: 'GANGSTER_WARNING',
 };
 
 const handleGameOver = async (reason) => {
@@ -22,6 +27,45 @@ const handleGameOver = async (reason) => {
 export const EventData = [
   ...FlorenceEventData,
   ...MaxEventData,
+  {
+    id: EVENT_ID.SHARK_HUNTER_APPEARS,
+    "type": "SOCIAL",
+    "sender": "Fan_Club_Prez",
+    "title_ko": "샤크 사냥꾼 등장!",
+    "title_en": "Shark Hunter Appears!",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "와 대박! 너 랭킹 게시판 떴어! 그 유명한 'Sharkill' 잡았다며? 사인 좀 해주라 ㅋㅋㅋ",
+    "body_en": "Wow, amazing! You made it to the rankings board! I heard you caught the famous 'Sharkill'? Can I get an autograph lol",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition: () => {
+      return getBustEnemyCount(ENEMY_ID.SHARK) > 0;
+    },
+    timer: 123, // after 2 hour(in game)
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], this.sender)
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_ID.GANGSTER_WARNING,
+    "type": "SOCIAL",
+    "sender": "The_Syndicate",
+    "title_ko": "경고장",
+    "title_en": "Warning Letter",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "우리 구역에서 장사하려면 상납금을 내야지? 이번엔 말로 하지만, 다음엔 네 놈의 그 예쁜 손가락을 가져가겠다. - The_Syndicate",
+    "body_en": "If you want to do business in our district, you must pay tributes, right? This time it's just words, but next time I'll take those pretty fingers of yours. - The_Syndicate",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition: () => {
+      return getBustEnemyCount(ENEMY_ID.GANGSTER) > 0;
+    },
+    timer: 123, // after 2 hour(in game)
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], this.sender)
+    },
+    repeatable: false
+  },
+
   {
     id: EVENT_ID.FIRST_PAY_RENT_BILL,
     scenario: '게임 시작 후 얼마지나지 않아 첫 주거 렌트비 지불 메시지',

@@ -373,7 +373,8 @@ watch(currentView, (newView) => {
         <!-- Splash Screen (Intro) -->
         <Splash v-if="currentView === 'splash'" @finish="currentView = 'intro'" />
         <!-- Intro View(main-menu) -->
-        <Intro v-else-if="currentView === 'intro'" @start="handleStart" />
+        <Intro v-else-if="currentView === 'intro'" @start="handleStart" @calibrate="toggleSettings"
+          @quit="handleQuitApp" />
         <section class="game-container" :style="{ filter: `blur(${staminaBlur}px)` }">
           <!-- Lobby View -->
           <Lobby v-if="currentView === 'lobby'" @join="handleJoinTable" @view="handleView" />
@@ -445,10 +446,7 @@ watch(currentView, (newView) => {
               </button>
             </div> -->
             <!-- Global Actions -->
-            <div class="setting-item" v-if="currentView === 'table'">
-              <span class="label">SESSION_LINK:</span>
-              <button class="btn-danger" @click="handleAction({ type: 'exit' }); toggleSettings()">LEAVE_TABLE</button>
-            </div>
+
             <!-- Accessibility -->
             <div class="setting-item">
               <span class="label">VISUAL_MODE:</span>
@@ -467,6 +465,10 @@ watch(currentView, (newView) => {
               <button @click="store.settings.showAsBB = !store.settings.showAsBB">
                 {{ store.settings.showAsBB ? 'UNIT: BB' : 'UNIT: CR' }}
               </button>
+            </div>
+            <div class="setting-item" v-if="currentView === 'table'">
+              <span class="label">SESSION_LINK:</span>
+              <button class="btn-danger" @click="handleAction({ type: 'exit' }); toggleSettings()">LEAVE_TABLE</button>
             </div>
             <div class="setting-item">
               <span class="label">EXIT_GAME:</span>

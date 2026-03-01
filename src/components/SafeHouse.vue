@@ -76,7 +76,7 @@
               <div class="v5-stat-row">
                 <div class="v5-stat-group">
                   <span class="label">LUDUS_TOKENS</span>
-                  <span class="val yellow">{{ Math.floor(store.ludusTokens).toLocaleString() }}
+                  <span class="val cyan">{{ Math.floor(store.ludusTokens).toLocaleString() }}
                     <small>LT</small></span>
                 </div>
               </div>
@@ -115,7 +115,7 @@
         </button>
       </section>
 
-      <!-- CENTER COLUMN: GEAR / STORAGE -->
+      <!-- CENTER COLUMN: Chip Protector / Partner / Crypto -->
       <section class="v5-main-col">
         <div class="v5-panel v5-storage-unit" style="flex:1; overflow:hidden">
           <div class="v5-tabs">
@@ -125,7 +125,7 @@
           </div>
 
           <div class="v5-item-container">
-            <!-- Hardware View -->
+            <!-- Chip Protector View -->
             <template v-if="mainTab === 'hardware'">
               <div class="items-grid">
                 <div v-for="item in store.ownedProtectors" :key="item.instanceId" class="item-card"
@@ -162,8 +162,7 @@
             <template v-else-if="mainTab === 'partner'">
               <div class="partner-grid">
                 <!-- <div v-for="partner in store.partners" :key="partner.id" class="v5-partner-card" -->
-                <div v-for="partner in store.partners" :key="partner.id" class="v5-panel-inner"
-                  :class="partner.status.toLowerCase()">
+                <div v-for="partner in store.partners" :key="partner.id" class="v5-panel-inner">
                   <div class="card-glow"></div>
                   <div class="card-header">
                     <div class="partner-info">
@@ -189,7 +188,8 @@
                       </div>
                       <div class="stat-box">
                         <span class="label">CURRENT_DEBT</span>
-                        <span class="val bankroll">{{ partner.debt.toLocaleString() }} <small>CR</small></span>
+                        <span class="val" :class="getProfitClass(partner.debt)">{{ partner.debt.toLocaleString() }}
+                          <small>CR</small></span>
                       </div>
                       <div class="stat-box">
                         <span class="label">NET_WORTH</span>
@@ -202,8 +202,7 @@
                       </div>
                       <div class="stat-box">
                         <span class="label">RELATIONSHIP</span>
-                        <span class="val"
-                          :class="{ 'high': partner.relationship > 700, 'low': partner.relationship < 200 }">
+                        <span class="val" :class="getRelationClass(partner.relationship)">
                           {{ Math.round(partner.relationship / 10) }}
                         </span>
                       </div>
@@ -231,9 +230,8 @@
                           <p>
                             <label class="label">
                               <span class="label">PROFIT_TOTAL(FOR_PARTNER)</span>
-                              <span class="val"
-                                :class="{ 'high': contract.profitTotal > 0, 'low': contract.profitTotal < 0 }">{{
-                                  contract.profitTotal.toLocaleString() }} <small>CR</small>
+                              <span class="val" :class="getProfitClass(contract.profitTotal)">{{
+                                contract.profitTotal.toLocaleString() }} <small>CR</small>
                               </span>
                             </label>
                           </p>
@@ -242,7 +240,7 @@
                           <p>
                             <label class="label">
                               <span class="label">SAFETY_MAKER</span>
-                              <span class="val" :class="{ 'high': contract.debt > 0, 'low': contract.debt < 0 }">{{
+                              <span class="val" :class="getProfitClass(contract.debt)">{{
                                 contract.debt.toLocaleString() }} <small>CR</small>
                               </span>
                             </label>
@@ -311,12 +309,12 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-          }} UNREAD]</small>
+              }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
             <p style="text-align: right;">
-              <button class="sell-btn" :disabled="['SPAM', 'SOCIAL', 'SYSTEM'].includes(selectedMessage.type) === false"
+              <button class="sell-btn" :disabled="selectedMessage.actions.length > 0"
                 @click="deleteMessageBtn(selectedMessage.id)">DELETE</button>
             </p>
             <span class="v5-reader-title">{{ selectedMessage.title }}</span>
@@ -368,42 +366,25 @@ import { AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAgentModelClasses';
 import { deleteMessage } from '../logic/messageSystem';
 import { signContract, breakContract, CONTRACT_TYPE, CONTRACT_TYPE_DESC, debtRepayment } from '../logic/partnerSystem';
 // import { formatGameTime, formatGameDate } from '../logic/timeSystem';
-
+const getRelationClass = (v) => {
+  if (v > 700) return 'high';
+  if (v < 300) return 'low';
+  else return '';
+}
+const getProfitClass = (v) => {
+  if (v > 0.0) return 'high';
+  if (v < 0.0) return 'low';
+  else return '';
+}
 const emit = defineEmits(['sleep', 'back', 'open-task-selector', 'open-agent-modal', 'open-skill-selector', 'open-stats-modal']);
 const mainTab = ref('hardware');
 const selectedMessage = ref(null);
-const selectedModelId = ref(store.aiAgent.name);
-const selectedPlanIdx = ref(store.aiAgent.price_plan_idx);
-const activeSlotIdx = ref(null);
-const activeSlotType = ref(null);
 
-const currentProbBonus = computed(() => {
-  const agent = store.aiAgent;
-  const planData = agent.model?.price_plan[agent.price_plan_idx];
-  return planData?.probability_bonus || 0;
-});
 
-const availableModelIds = computed(() => Object.keys(AI_AGENT_MODEL_AND_PLAN_DATA));
-const currentModelIdx = computed(() => availableModelIds.value.indexOf(selectedModelId.value));
 const repaymentAmount = ref(0);
 const sendDebtRepayment = (partner, contract) => {
   debtRepayment(partner, Math.round(contract.debt * contract.ratio), false, contract);
   repaymentAmount.value = 0;
-};
-const nextAgent = () => {
-  if (currentModelIdx.value < availableModelIds.value.length - 1) {
-    selectedModelId.value = availableModelIds.value[currentModelIdx.value + 1];
-    selectedPlanIdx.value = 0; // Reset to level 0 plan when changing models
-    audioManager.playSFX('ui-click');
-  }
-};
-
-const prevAgent = () => {
-  if (currentModelIdx.value > 0) {
-    selectedModelId.value = availableModelIds.value[currentModelIdx.value - 1];
-    selectedPlanIdx.value = 0;
-    audioManager.playSFX('ui-click');
-  }
 };
 
 // Task Selector Logic
@@ -448,46 +429,10 @@ const getTaskStatusClass = (slot) => {
   const status = slot.state.status;
   return {
     'searching': status === 'SEARCHING',
+    'networking': status === 'NETWORKING',
     'active': status === 'ACTIVE',
     'cooldown': status === 'COOLDOWN'
   };
-};
-
-const isCurrentPlan = (modelId, idx) => {
-  return store.aiAgent.name === modelId && store.aiAgent.price_plan_idx === idx;
-};
-
-const canPurchase = computed(() => {
-  if (selectedPlanIdx.value === null) return false;
-  const plan = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value].price_plan[selectedPlanIdx.value];
-  if (isCurrentPlan(selectedModelId.value, selectedPlanIdx.value)) return false;
-  return store.bankroll >= plan.cost;
-});
-
-const purchaseBtnText = computed(() => {
-  if (!selectedModelId.value) return 'SELECT AGENT';
-  if (isCurrentPlan(selectedModelId.value, selectedPlanIdx.value)) return 'CURRENT PLAN';
-  const plan = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value].price_plan[selectedPlanIdx.value];
-  if (store.bankroll < plan.cost) return 'INSUFFICIENT FUNDS';
-  return `PURCHASE ( ${plan.cost.toLocaleString()} CR )`;
-});
-
-const confirmPurchase = () => {
-  const plan = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value].price_plan[selectedPlanIdx.value];
-  if (store.bankroll < plan.cost) return;
-
-  gainBankroll(-plan.cost, TYPE_CHANGE_BANKROLL.AI_AGENT_SUBSCRIPTION)
-  store.aiAgent.name = selectedModelId.value;
-  store.aiAgent.model = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value];
-  store.aiAgent.price_plan_idx = selectedPlanIdx.value;
-  // Set expiration to 30 days from now
-  store.aiAgent.subscriptionExpireAt = store.gameTime + (30 * 24 * 60 * 60 * 1000);
-
-  audioManager.playSFX('action-confirm');
-  showAgentModal.value = false;
-
-  // Clean up invalid tasks if slots decreased
-  validateTaskSlots();
 };
 
 const startLongPress = (idx) => {
@@ -528,28 +473,6 @@ const equipItem = (instanceId) => {
     audioManager.playSFX('ui-click');
   }
 }
-const openSkillSelector = (idx, type) => {
-  emit('open-skill-selector', { idx, type });
-};
-const getTierClass = (tier) => {
-  return `tier-${tier}`;
-}
-const filteredSkillsForSlot = computed(() => {
-  if (!activeSlotType.value) return [];
-  const type = activeSlotType.value;
-  return SKILL_DATA.filter(sk => {
-    if (type === 'ULT') return true;
-    const slotTier = parseInt(type.substring(1));
-    const skTier = sk.tier === 'ULT' ? 99 : parseInt(sk.tier.substring(1));
-    return skTier <= slotTier;
-  });
-});
-
-const equipSkill = (skill) => {
-  store.equippedSkills[activeSlotIdx.value] = skill;
-  closeSkillSelector();
-  audioManager.playSFX('action-confirm');
-};
 
 const unreadCount = computed(() => store.messages.filter(m => !m.isRead).length);
 const deleteMessageBtn = (id) => {
@@ -572,7 +495,6 @@ const sellItem = (item) => {
   audioManager.playSFX('coin-throw');
   if (store.equippedProtector?.instanceId === item.instanceId) store.equippedProtector = null;
 };
-
 
 
 const getStaminaColor = computed(() => {

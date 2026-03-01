@@ -187,8 +187,6 @@ export const zones = [
         "npcs": [
           "Fish",
           "Broke",
-          "Maniac",
-          "Gangster",
         ],
         "tables": {
           amount: 2500, amount_fmt: '2.5K', amount_min_fmt: '1.25K', sb: 10, bb: 25, available: [6, 9], baseRake: 0.08, rakeCap: 125
@@ -423,8 +421,9 @@ export const zones = [
           "Gangster",
           "Gambler",
           "Rich_Guy",
-          "Mafia_Boss",
+          "The_Don",
           "Quant_Pro",
+          "Old_Lion"
         ],
         "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1000, bb: 2500, available: [6, 9], baseRake: 0.06, rakeCap: 25000, isHighStakes: true },
         "theme": {
@@ -540,7 +539,7 @@ export const zones = [
         "npcs": [
           "The_Whale",
           "Shark",
-          "Mafia_Boss",
+          "The_Don",
           "Rich_Guy",
         ],
         "tables": { amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.06, rakeCap: 500000, isHighStakes: true },

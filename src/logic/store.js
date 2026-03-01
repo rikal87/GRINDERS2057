@@ -40,7 +40,7 @@ const defaultState = {
   play_stats: {
     bust_enemy: {
       'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
-      'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'Mafia_Boss': 0,
+      'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'The_Don': 0,
       'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
       'Max': 0, 'Florence': 0
     },

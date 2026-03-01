@@ -20,14 +20,31 @@
 }
 
 :root {
-  --neon-cyan: #00f0ff;
-  --neon-magenta: #ff003c;
-  --deep-dark: #050a0e;
   --card-bg: rgba(10, 20, 28, 0.8);
   --glass-border: rgba(0, 240, 255, 0.2);
+  --neon-forest: #2e8b57;
+  --deep-dark: #050a0e;
+  --neon-cyan: #00f0ff;
+  --neon-magenta: #ff003c;
   --neon-yellow: #f8ef00;
-  --neon-red: #ff003c;
+  --neon-red: #ff0000e1;
   --neon-green: #39ff14;
+  --accent-red: #ff0055;
+  --accent-cyan: #00f0ff;
+  --accent-yellow: #ccff00;
+  --accent-green: #39ff14;
+  --accent-magenta: #ff00aa;
+  --neon-shine-gold: #d4af37;
+  --neon-grey: #808080;
+  --neon-purple: #a340ff;
+  --neon-blue: #4946d6dc;
+  --neon-brown: #ad5110;
+  --neon-gold: #d4af37;
+  --neon-pink: #ff00aa;
+  --neon-marine: #009c9c;
+  --neon-indigo: #475aff;
+  --neon-violet: #da0000;
+  --neon-orange: #ff5100;
   /* Alias for magenta or distinct red if needed */
 
   font-family: 'Share Tech Mono', 'DoHyeon-Regular', monospace;
@@ -924,25 +941,27 @@ footer {
   color: #8090a0;
 }
 
-.stat-entry .val {
-  font-family: 'Share Tech Mono', monospace;
+.partner-stats-grid .stat-box .val {
+  letter-spacing: 0;
+}
+.val {
   font-size: 0.9rem;
   font-weight: bold;
 }
 
-.stat-entry .val.cyan {
+.val.cyan {
   color: var(--neon-cyan);
 }
-.stat-entry .val.yellow {
+.val.yellow {
   color: var(--neon-yellow);
 }
-.stat-entry .val.red {
+.val.red {
   color: var(--neon-red);
 }
-.stat-entry .val.green {
+.val.green {
   color: var(--neon-green);
 }
-.stat-entry .val.white {
+.val.white {
   color: #fff;
 }
 .v5-modal-overlay {

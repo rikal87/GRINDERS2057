@@ -149,10 +149,9 @@ const lore_spam_message = [
     "title_ko": "10년 전의 나에게",
     "title_en": "To me from 10 years ago",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    "body_ko": "이봐, 2057년 10월 25일 저녁 8시. 퀸스 하이 플러시에 절대 올인하지 마. 그 판은 함정이야. 믿어. 난 이미 후회하고 있으니까.",
-    "body_en": "Hey, October 25, 2057, 8:00 PM. Never go all-in on a Queen-high flush. That hand is a trap. Believe me. I'm already regretting it.",
+    "body_ko": "이봐, 2047년 10월 25일 저녁 8시. 퀸스 하이 플러시에 절대 올인하지 마. 그 판은 함정이야. 믿어. 난 이미 후회하고 있으니까.",
+    "body_en": "Hey, October 25, 2047, 8:00 PM. Never go all-in on a Queen-high flush. That hand is a trap. Believe me. I'm already regretting it.",
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    "trigger_date": "2057-10-25"
   },
   {
     "type": "SPAM",
@@ -209,17 +208,7 @@ const lore_spam_message = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     "trigger_zone": "low_neon_lounge"
   },
-  {
-    "type": "SOCIAL",
-    "sender": "The_Syndicate",
-    "title_ko": "경고장",
-    "title_en": "Warning Letter",
-    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    "body_ko": "우리 구역에서 장사하려면 상납금을 내야지? 이번엔 말로 하지만, 다음엔 네 놈의 그 예쁜 손가락을 가져가겠다. - The Knife",
-    "body_en": "If you want to do business in our district, you must pay tributes, right? This time it's just words, but next time I'll take those pretty fingers of yours. - The Knife",
-    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    "trigger_win_big": true
-  },
+
   {
     "type": "SOCIAL",
     "sender": "Mom",
@@ -382,16 +371,6 @@ const lore_spam_message = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     "body_ko": "돈 다 잃었다... 오늘따라 술맛이 쓰네. 너도 털렸냐? 리지스 바로 와라. 내가 산다. (거짓말임)",
     "body_en": "I lost all my money... The drinks taste bitter today. Did you get wiped out too? Come to Lizzie's right away. I'll buy. (Just kidding)",
-    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-  },
-  {
-    "type": "SOCIAL",
-    "sender": "Fan_Club_Prez",
-    "title_ko": "샤크 사냥꾼 등장!",
-    "title_en": "Shark Hunter Appears!",
-    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    "body_ko": "와 대박! 너 랭킹 게시판 떴어! 그 유명한 'Sharkill' 잡았다며? 사인 좀 해주라 ㅋㅋㅋ",
-    "body_en": "Wow, amazing! You made it to the rankings board! I heard you caught the famous 'Sharkill'? Can I get an autograph lol",
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
   },
   {

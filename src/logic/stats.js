@@ -10,7 +10,7 @@ const stats = {
     'Gangster': 0,
     'Nit': 0,
     'Quant_Pro': 0,
-    'Mafia_Boss': 0,
+    'The_Don': 0,
     'Shark': 0,
     'Old_Lion': 0,
     'Named_Pro': 0,

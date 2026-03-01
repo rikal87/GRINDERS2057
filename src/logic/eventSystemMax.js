@@ -211,7 +211,7 @@ export const EventData = [
       return new Date(store.gameTime).getHours() >= 22 // for test
     },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [
+      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [
         {
           label: this.label,
           actionType: 'ACCEPT_INVITE',
@@ -256,22 +256,8 @@ export const EventData = [
     scenario: 'MAIN_STORY_1_MEET_AT_CLUB 미션 완료후 맥스가 플레이어에게 말을 거는 이벤트',
     title_ko: '어이, 근데 말이야...',
     title_en: 'Hey, but you know...',
-    body_ko: '아까 그 VIP 룸에 앉아있던 여자 말이지. 얼음장같이 차갑게 생겨가지곤 칩 쓸어담던 그 여자.',
-    body_en: 'That woman sitting in the VIP room earlier. The one looking cold as ice, sweeping up all the chips.',
-    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
-      scheduleEvent(EVENT_MAX.MAIN_STORY_1_4_MEET_AT_CLUB_DONE, 5)
-    },
-  },
-  {
-    id: EVENT_MAX.MAIN_STORY_1_4_MEET_AT_CLUB_DONE,
-    scenario: 'MAIN_STORY_1_3_MEET_AT_CLUB_DONE 연계',
-    title_ko: '어디서 본 얼굴인데...',
-    title_en: 'I\'ve seen that face before...',
-    body_ko: '분명 텍사스 그라인더 판에서 굴러먹던 시절에 어디선가 마주친 적이 있는 거 같단 말이지. 아... 썅, 누구였더라?',
-    body_en: 'I swear I bumped into her back when I was grinding in the Texas underground. Ah... shit, who was it?',
+    body_ko: '아까 그 VIP 룸에 앉아있던 여자 말이지. 얼음장같이 차갑게 생겨가지곤 칩 쓸어담던 그 여자. 어디서 본 얼굴인데... 분명 텍사스 그라인더 판에서 굴러먹던 시절에 어디선가 마주친 적이 있는 거 같단 말이지. 아... 썅, 누구였더라?',
+    body_en: 'The ice queen in the VIP room, bleeding the table dry. I\'ve seen her before. Somewhere... back in my days grinding the Texas underground. I\'m sure of it. Ah... shit, who was it?',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
@@ -279,18 +265,32 @@ export const EventData = [
       scheduleEvent(EVENT_MAX.MAIN_STORY_1_5_MEET_AT_CLUB_DONE, 20)
     },
   },
+  // {
+  //   id: EVENT_MAX.MAIN_STORY_1_4_MEET_AT_CLUB_DONE,
+  //   scenario: 'MAIN_STORY_1_3_MEET_AT_CLUB_DONE 연계',
+  //   title_ko: '어디서 본 얼굴인데...',
+  //   title_en: 'I\'ve seen that face before...',
+  //   body_ko: '분명 텍사스 그라인더 판에서 굴러먹던 시절에 어디선가 마주친 적이 있는 거 같단 말이지. 아... 썅, 누구였더라?',
+  //   body_en: 'I swear I bumped into her back when I was grinding in the Texas underground. Ah... shit, who was it?',
+  //   get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+  //   get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+  //   func() {
+  //     sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+  //     scheduleEvent(EVENT_MAX.MAIN_STORY_1_5_MEET_AT_CLUB_DONE, 20)
+  //   },
+  // },
   {
     id: EVENT_MAX.MAIN_STORY_1_5_MEET_AT_CLUB_DONE,
     scenario: 'MAIN_STORY_1_4_MEET_AT_CLUB_DONE 연계',
     title_ko: '아 썅! 기억났다!',
     title_en: 'Ah shit! I remember now!',
-    body_ko: '플로렌스! 그래 맞아, 플로렌스 피어스! 라스베가스 하이롤러 판에서 이름 꽤나 날리던 독사 같은 여자라고. 어쩐지 포스가 장난 아니더라니.',
-    body_en: 'Florence! Yeah, that\'s right, Florence Pierce! She\'s a straight-up viper who made a big name for herself in the Vegas high-roller scene. No wonder her vibe was no joke.',
+    body_ko: '플로렌스! 그래 맞아, 플로렌스 피어스! 라스베가스 하이롤러 판에서 이름 꽤나 날리던 여자라고. 어쩐지 포스가 장난 아니더라니.',
+    body_en: 'Florence! Yeah, that\'s right, Florence Pierce! She\'s a big name from the Vegas high-roller scene. No wonder her vibe was no joke.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
-      scheduleEvent(EVENT_MAX.MAIN_STORY_1_6_MEET_AT_CLUB_DONE, 25)
+      scheduleEvent(EVENT_MAX.MAIN_STORY_1_6_MEET_AT_CLUB_DONE, 12)
     },
   },
   {
@@ -304,7 +304,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
-      scheduleEvent(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE, 25)
+      scheduleEvent(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE, 15)
     },
   },
   {

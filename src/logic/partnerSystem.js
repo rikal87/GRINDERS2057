@@ -79,8 +79,9 @@ export const gainRelationship = (partnerId = null, amount = 0) => {
 export const gainPartnerBankroll = (partner = null, amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
   if (Number.isNaN(amount)) return false;
   if (!partner) return false;
-  partner.bankroll = Math.max(0, partner.bankroll + Math.ceil(amount));
-  if (type === TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT) partner.netShareTotal += amount;
+  const finalAmount = Math.round(Math.max(0, partner.bankroll + amount));
+  partner.bankroll = finalAmount;
+  if (type === TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT) partner.netShareTotal += finalAmount;
   // else if (type === TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT) partner.debt -= amount;  // if amount > 0, it means player's debt for partner
   return true;
 }
@@ -104,9 +105,6 @@ export const debtRepayment = (partner = null, amount = 0, toPlayer = true, contr
       contract.debt -= actualAmount;
       if (contract.debt === 0) {
         contract.activeRepaymentPeriod = false;
-        if (partner.id === PARTNER_ID.MAX) {
-
-        }
         if (toPlayer) scheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE, 2, partner);
         else scheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER, 2, partner, true);
       }
@@ -122,11 +120,12 @@ export const debtRepayment = (partner = null, amount = 0, toPlayer = true, contr
   return true;
 }
 export const shareBenefit = (partner = null, amount = 0, contract = null, toPlayer = true) => {
-  if (!partner || amount === 0 || !contract) return false;
+  if (!partner || !contract) return false;
   const finalAmount = amount * contract.ratio * (toPlayer ? -1 : 1);
   gainPartnerBankroll(partner, finalAmount, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
   gainBankroll(-finalAmount, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
   contract.profitTotal += finalAmount;
+  console.log(`${partner.id} PARTNER_BENEFIT: ${finalAmount}`);
   partner.netWorthHistory.push({ time: store.gameTime, netWorth: partner.bankroll + finalAmount });
   return true;
 }
@@ -444,6 +443,7 @@ export const updatePartnerStatusBySchedule = () => {
           const ratioModifier = Math.abs((0.5 - hasBenefitContract.ratio) * 4) + 1;
           finalRelationshipChange += Math.round(baseGain * ratioModifier);
           finalRelationshipChange = Math.max(-150, Math.min(50, finalRelationshipChange));
+
         }
         console.info(`${partner.id} : ${finalRelationshipChange}`);
         gainRelationship(partner.id, finalRelationshipChange);

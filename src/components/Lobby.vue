@@ -72,12 +72,12 @@
                 <div class="npc-list">
                   <span class="label">DETECTED_PERSONAS</span>
                   <div class="tags">
-                    <span v-for="npc in currentLocation.npcs" :key="npc" class="npc-tag" :title="getNote(npc)">{{
-                      npc
-                    }}</span>
+                    <span v-for="npc in currentLocation.npcs" :key="npc" class="npc-tag" :title="getNote(npc)"
+                      :class="`${npc.toLowerCase()}`">{{
+                        npc
+                      }}</span>
                   </div>
                 </div>
-
                 <div class="table-stats">
                   <div class="stat-row">
                     <span class="stat-label">BUY_IN:</span>
@@ -636,11 +636,70 @@ const confirmJoin = () => {
   font-size: 0.7rem;
   padding: 2px 6px;
   background: rgba(0, 255, 65, 0.1);
-  border: 1px solid var(--neon-green);
-  color: var(--neon-green);
+  border: 1px solid;
+  /* border: 1px solid var(--neon-green);
+  color: var(--neon-green); */
   cursor: help;
 }
+.npc-tag.mr_call {
+  border-color: var(--neon-marine);
+  color: var(--neon-marine);
+}
+.npc-tag.fish {
+  border-color: var(--neon-green);
+  color: var(--neon-green);
+}
+.npc-tag.broke {
+  border-color: var(--neon-brown);
+  color: var(--neon-brown);
+}
+.npc-tag.gambler {
+  border-color: var(--neon-purple);
+  color: var(--neon-purple);
+}
+.npc-tag.rich_guy {
+  border-color: var(--accent-magenta);
+  color: var(--accent-magenta);
+}
+.npc-tag.maniac {
+  border-color: var(--neon-violet);
+  color: var(--neon-violet);
+}
+.npc-tag.old_lion {
+  border-color: var(--neon-gold);
+  color: var(--neon-gold);
+}
+.npc-tag.quant_pro {
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+.npc-tag.shark {
+  border-color: var(--neon-indigo);
+  color: var(--neon-indigo);
+}
+.npc-tag.the_whale {
+  border-color: var(--neon-shine-gold);
+  color: var(--neon-shine-gold);
+}
+.npc-tag.gangster {
+  border-color: var(--neon-orange);
+  color: var(--neon-orange);
+}
+.npc-tag.the_don {
+  border-color: var(--neon-red);
+  color: var(--neon-red);
+}
+.npc-tag.nit {
+  border-color: var(--neon-grey);
+  color: var(--neon-grey);
+}
 
+
+.npc-tag.named_pro {
+  border-color: var(--neon-red);
+  color: var(--neon-gold);
+}
+.npc-tag.unknown_woman {}
 .table-stats {
   background: rgba(0, 0, 0, 0.3);
   padding: 1rem;
