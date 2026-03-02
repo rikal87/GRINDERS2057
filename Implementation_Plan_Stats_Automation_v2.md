@@ -18,7 +18,7 @@
   - `playerEliminated`: Determine enemy persona and increment `bust_enemy` counter in `play_stats`.
   - `roundEnd`: Update `played_hands` and check for `max_bankroll` / `max_credit`.
 
-#### [MODIFY] [aiTaskSystem.js](file:///d:/github-repository/CyberPoker2077/src/logic/aiTaskSystem.js)
+#### [MODIFY] [aiAgentTaskSystem.js](file:///d:/github-repository/CyberPoker2077/src/logic/aiAgentTaskSystem.js)
 - Implement `isTaskUnlocked(taskDef)` helper function.
 - Integrate `unlock` status into `AI_TASK_DATA` processing.
 

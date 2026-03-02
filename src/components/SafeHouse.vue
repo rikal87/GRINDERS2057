@@ -160,9 +160,8 @@
 
             <!-- Partner View -->
             <template v-else-if="mainTab === 'partner'">
-              <div class="partner-grid">
-                <!-- <div v-for="partner in store.partners" :key="partner.id" class="v5-partner-card" -->
-                <div v-for="partner in store.partners" :key="partner.id" class="v5-panel-inner">
+              <div class="partner-grid" v-if="getJoinedPartners().length > 0">
+                <div v-for="partner in getJoinedPartners()" :key="partner.id" class="v5-panel-inner">
                   <div class="card-glow"></div>
                   <div class="card-header">
                     <div class="partner-info">
@@ -177,7 +176,7 @@
                       <span class="v5-badge-mini status" :class="partner.status.toLowerCase()">{{ partner.status
                       }}</span>
                       <span v-for="contract in partner.contracts" :key="contract.type" class="v5-badge-mini"
-                        :class="{ active: contract.active }" :title="getContractLabel(contract.type)">
+                        :class="{ active: contract.active }" :data-tooltip="getContractLabel(contract.type)">
                         {{ contract.type }}
                       </span>
                     </p>
@@ -269,6 +268,10 @@
                   </div> -->
                 </div>
               </div>
+              <div v-if="getJoinedPartners().length === 0" class="empty-stock">
+                <h2>NO_PARTNER_AVAILABLE</h2>
+                <p>FIND AT MISSION</p>
+              </div>
             </template>
 
             <!-- Crypto View -->
@@ -309,7 +312,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-              }} UNREAD]</small>
+          }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
@@ -355,14 +358,11 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import { store, getNextLevelThreshold, getEffectiveMaxStamina, gainBankroll, TYPE_CHANGE_BANKROLL } from '../logic/store';
+import { store, getNextLevelThreshold, getEffectiveMaxStamina, gainBankroll, TYPE_CHANGE_BANKROLL, getJoinedPartners } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
-import { validateTaskSlots } from '../logic/aiTaskSystem';
-import { AI_TASK_DATA } from '../logic/agentTaskData';
+import { AI_TASK_DATA } from '../logic/aiAgentTaskData';
 import { audioManager } from '../logic/audioManager';
-import { SKILL_DATA } from '../logic/skills';
-import { AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAgentModelClasses';
 import { deleteMessage } from '../logic/messageSystem';
 import { signContract, breakContract, CONTRACT_TYPE, CONTRACT_TYPE_DESC, debtRepayment } from '../logic/partnerSystem';
 // import { formatGameTime, formatGameDate } from '../logic/timeSystem';

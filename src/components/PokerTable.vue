@@ -79,7 +79,8 @@
       <div v-if="showShowdown && winnerHandInfo" class="hud-winner-hand">
         <!-- <div class="winner-label">WINNER_IDENTIFIED //</div> -->
         <div class="winner-label">{{ winnerHandInfo.player.name }}</div>
-        <div class="winner-hand">{{ winnerHandInfo.hand.name }}</div>
+        <div class="winner-hand">{{ props.engine.state === 'SHOWDOWN' ? winnerHandInfo.hand.name : 'UNCONTESTED' }}
+        </div>
       </div>
     </Transition>
 
@@ -185,7 +186,7 @@ watch(() => props.engine.showdownResults, async (newResults) => {
         // 1. Announce Pot
         currentPotName.value = pot.name;
         activePotWinner.value = pot.winners; // Array of IDs
-
+        // props.engine.state === 'SHOWDOWN';
         // 2. Wait for visual emphasis
         await new Promise(r => setTimeout(r, 2000));
 

@@ -72,7 +72,7 @@
 import { computed, ref, watch } from 'vue';
 import { store, gainBankroll, TYPE_CHANGE_BANKROLL } from '../logic/store';
 import { AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAgentModelClasses';
-import { validateTaskSlots } from '../logic/aiTaskSystem';
+import { validateTaskSlots } from '../logic/aiAgentTaskSystem';
 import { audioManager } from '../logic/audioManager';
 
 const props = defineProps({

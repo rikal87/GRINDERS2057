@@ -86,8 +86,7 @@ export const zones = [
         "level": 1,
         "npcs": [
           "Fish",
-          "Broke",
-          "MR_CALL"
+          "Broke"
         ],
         "tables": {
           amount: 1000, amount_fmt: '1K', amount_min_fmt: '500', sb: 5, bb: 10, available: [
@@ -117,7 +116,7 @@ export const zones = [
         "level": 1,
         guests: ['Max(Mentor)'],
         "npcs": [
-          "Broke"
+          "Fish"
         ],
         "tables": {
           buyInLimit: 1,
@@ -155,7 +154,7 @@ export const zones = [
         get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
         "requirements": null,
         "isHidden": true,
-        "firstClearReward": "underground_bar_invite",
+        "firstClearRewards": "underground_bar_invite",
         "level": 2,
         "npcs": [
           "Fish",
@@ -182,7 +181,7 @@ export const zones = [
         "description_en": "An illegal gambling den operated by squatting in the underground cellar of an abandoned building. Mainly visited by the local lower class or vagrants seeking stimulation.",
         get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
         "requirements": null,
-        "firstClearReward": "underground_bar_invite",
+        "firstClearRewards": ["underground_bar_invite"],
         "level": 2,
         "npcs": [
           "Fish",
@@ -247,7 +246,7 @@ export const zones = [
         "atmosphere": "세련됨, 차분함, 도시적",
         "requirements": null,
         "level": 4,
-        "firstClearReward": "club_membership",
+        "firstClearRewards": "club_membership",
         "npcs": [
           "Fish",
           "MR_CALL",
@@ -273,6 +272,7 @@ export const zones = [
         get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
         "atmosphere": "시끄러움, 혼란스러움, 들뜸",
         "requirements": null,
+        isHidden: true,
         "level": 5,
         "npcs": [
           "Rich_Guy"
@@ -372,8 +372,8 @@ export const zones = [
         "npcs": [
           "KBT_Leader",
         ],
-        "firstClearReward": "the_bunker_key",
-        "tables": { buyInLimit: 1, amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6], baseRake: 0.00, rakeCap: 0, isHighStakes: true },
+        "firstClearRewards": "the_bunker_key",
+        "tables": { buyInLimit: 1, amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6], baseRake: 0.00, rakeCap: 0, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #1c1c1c 0%, #000000 100%)",
           "borderColor": "#708090",
@@ -425,7 +425,7 @@ export const zones = [
           "Quant_Pro",
           "Old_Lion"
         ],
-        "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1000, bb: 2500, available: [6, 9], baseRake: 0.06, rakeCap: 25000, isHighStakes: true },
+        "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1000, bb: 2500, available: [6, 9], baseRake: 0.06, rakeCap: 25000, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #001a33 0%, #000a14 100%)",
           "borderColor": "#ffd700",
@@ -450,7 +450,7 @@ export const zones = [
           "Quant_Pro",
           "Shark",
         ],
-        "tables": { amount: 500000, amount_fmt: '500K', amount_min_fmt: '250K', sb: 2500, bb: 5000, available: [6, 9], baseRake: 0.06, rakeCap: 50000, isHighStakes: true },
+        "tables": { amount: 500000, amount_fmt: '500K', amount_min_fmt: '250K', sb: 2500, bb: 5000, available: [6, 9], baseRake: 0.06, rakeCap: 50000, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #1a2a3a 0%, #0d151d 100%)",
           "borderColor": "#4682b4",
@@ -488,7 +488,7 @@ export const zones = [
           "Old_Lion",
           "Named_Pro",
         ],
-        "tables": { amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.05, rakeCap: 50000, isHighStakes: true },
+        "tables": { amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.05, rakeCap: 50000, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #3d0000 0%, #1a0000 100%)",
           "borderColor": "#ff4d4d",
@@ -542,7 +542,7 @@ export const zones = [
           "The_Don",
           "Rich_Guy",
         ],
-        "tables": { amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.06, rakeCap: 500000, isHighStakes: true },
+        "tables": { amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.06, rakeCap: 500000, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #1a1a1a 0%, #000000 100%)",
           "borderColor": "#ffd700",
@@ -605,7 +605,7 @@ export const zones = [
           "Musk_V",
           "The_Whale"
         ],
-        "tables": { amount: 100000000, amount_fmt: '100M', amount_min_fmt: '50M', sb: 500000, bb: 1000000, available: [6, 9], baseRake: 0.03, rakeCap: 5000000, isHighStakes: false },
+        "tables": { amount: 100000000, amount_fmt: '100M', amount_min_fmt: '50M', sb: 500000, bb: 1000000, available: [6, 9], baseRake: 0.03, rakeCap: 5000000, isAdvanced: false },
         "theme": {
           "background": "radial-gradient(circle, #000033 0%, #00001a 100%)",
           "borderColor": "#00ffff",

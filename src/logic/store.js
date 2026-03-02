@@ -4,11 +4,11 @@ import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentMode
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const defaultState = {
-  bankroll: 225000,
+  bankroll: 20000,
   chips: 0, // Chips on table
   // currentBB: 0,
   xp: 0,
-  level: 25,
+  level: 1,
   selectedClass: 'GRINDER',
   ownedProtectors: [], // Array of materialized item objects
   equippedProtector: null, // item object or null
@@ -20,6 +20,11 @@ const defaultState = {
   completedEvents: [],
   pendingEvents: [],
   latest_pay_income_base_amount: 0,
+  status_zone: {
+    'micro_warehouse_with_max': { suspicion: 0.0, infamy: 0.0 },
+    'micro_underground_bar': { suspicion: 0.0, infamy: 0.0 },
+    'micro_warehouse': { suspicion: 0.0, infamy: 0.0 },
+  },
   collusion: {
     is_colluding: false,
     partner_id: null,
@@ -91,6 +96,46 @@ const defaultState = {
     max_bankroll: 0,
     max_pot: 0,
   },
+  play_stats_session: {
+    bust_enemy: {
+      'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
+      'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'The_Don': 0,
+      'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
+      'Max': 0, 'Florence': 0
+    },
+    // Economy
+    paid_rake: 0,
+    netWinnings: 0,
+    // Behavior (VPIP/PFR)
+    played_hands: 0,
+    fold: 0,
+    check: 0,
+    call: 0,
+    raise: 0,
+    all_in: 0,
+    wtsd: 0, // Went To Showdown
+    w$sd: 0, // Won $ at Showdown
+    pfr: 0, // Pre-Flop Raise
+    c_bet_count: 0,
+    fold_to_3bet: 0,
+    fold_to_4bet_or_more: 0,
+    donk_bet_count: 0,
+    raise3bet: 0,
+    raise4bet_or_more: 0,
+    vpip_count: 0,
+    // Luck & Probability
+    showdown_win: 0,
+    all_in_win: 0,
+    win_without_showdown: 0,
+    // Records
+    max_win_pot: 0,
+    max_lose_pot: 0,
+    max_win_streak: 0,
+    max_lose_streak: 0,
+    max_lose_equity: 0.0,
+    min_win_equity: 0.0,
+    max_pot: 0,
+  },
   settings: {
     language: 'en', // Added for i18n
     preflop: [
@@ -145,8 +190,10 @@ const defaultState = {
   all_time_bankroll_stats: {},
   session_net_history: [],
   session_net_total: 0,
-  hasSave: false
+  hasSave: false,
+  // last_session_stats: null // Used for settlement popup
 };
+
 export const getBustEnemyCount = (enemyId) => {
   return store.play_stats.bust_enemy[enemyId];
 }
@@ -159,7 +206,9 @@ const bigIntReviver = (key, value) => {
   }
   return value;
 };
-
+export const getJoinedPartners = () => {
+  return store.partners.filter(p => p.isJoined);
+}
 export const getCurrentAgent = () => {
   return store.aiAgent ? store.aiAgent.model : AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD];
 }
@@ -183,25 +232,47 @@ export const getEffectiveMaxStamina = () => {
     .reduce((sum, b) => sum + (b.effect.amount || 0), 0);
   return baseMax + activeStaminaBoosts;
 };
-export const gainXP = (player, pot, bb = 1.0, isHighStakes = false, locationLV = 1) => {
+export const gainXPEstimate = (player, pot, bb = 1.0, isAdvanced = false, locationLV = 1) => {
   if (!player.isMe) return 0;
   const bbWon = pot / bb;
   let xp = bbWon * 1.0;
   // 티어 가산점: 높은 방일수록 경험치 기본값이 높음
-  xp += bb * (isHighStakes ? 2 : 1) * locationLV;
-
+  xp += bb * (isAdvanced ? 2 : 1) * locationLV;
   // AI Agent Boost effects
   const activeXpBoosts = store.activeBoosts
     .filter(b => b.effect.type === 'xp_boost')
     .reduce((sum, b) => sum + (b.effect.amount || 0), 0);
-
   const bonus = player.tempXPBonus || 0;
-  store.xp += Math.ceil(xp * (1 + bonus + activeXpBoosts));
+  player.gainedXp += Math.ceil(xp * (1 + bonus + activeXpBoosts));
   console.info('player.tempXPBonus', player.tempXPBonus)
   player.tempXPBonus = 0;
+  console.log(`[XP] Gain ${xp} XP.(Estimate)`);
+  return xp;
+}
+export const gainXP = (player) => {
+  if (!player.isMe) return 0;
+  const xp = Math.ceil(player.gainedXp);
+  store.xp += xp;
+  player.gainedXp = 0; // reset player xp(temp value)
   console.log(`[XP] Gained ${xp} XP.`);
   checkLevelUp(xp);
   return xp;
+}
+export const gainSuspicion = (locationId, amount) => {
+  if (!store.status_zone[locationId]) store.status_zone[locationId] = { suspicion: 0, infamy: 0 };
+  store.status_zone[locationId].suspicion = Math.max(0, Math.min(100, store.status_zone[locationId].suspicion + amount));
+}
+export const getCurrentSuspicion = (locationId) => {
+  if (!store.status_zone[locationId]) return 0;
+  return store.status_zone[locationId].suspicion;
+}
+export const gainInfamy = (locationId, amount) => {
+  if (!store.status_zone[locationId]) store.status_zone[locationId] = { suspicion: 0, infamy: 0 };
+  store.status_zone[locationId].infamy = Math.max(0, Math.min(100, store.status_zone[locationId].infamy + amount));
+}
+export const getCurrentInfamy = (locationId) => {
+  if (!store.status_zone[locationId]) return 0;
+  return store.status_zone[locationId].infamy;
 }
 
 export const checkLevelUp = (xp) => {
@@ -325,4 +396,41 @@ export const calculateSessionReport = () => {
     biggestWin,
     detailes
   };
+};
+
+export const applySessionExit = (player, engine) => {
+  const { totalHandsPlayed, vPIPCount, pfrCount, wtsdCount, w$sdCount } = player.stats;
+  const vpip = totalHandsPlayed > 0 ? (vPIPCount / totalHandsPlayed) * 100 : 0;
+  const pfr = totalHandsPlayed > 0 ? (pfrCount / totalHandsPlayed) * 100 : 0;
+  const wtsd = totalHandsPlayed > 0 ? (wtsdCount / totalHandsPlayed) * 100 : 0;
+  const wsd = wtsdCount > 0 ? (w$sdCount / wtsdCount) * 100 : 0;
+
+  const netWinnings = (player.chips - player.totalBuyIn);
+  const winBB = netWinnings / engine.bb;
+  let generatedInfamy = winBB * 0.2;
+
+  // Cap Infamy between 0 and 100
+  console.info('player.born_villain', player.born_villain, generatedInfamy)
+  let baseBoostInfamy = (engine.exitReservationRounds === -1 ? 1.0 : 0.5) + player.born_villain + player.infamy_boost;
+  if (generatedInfamy > 0) {
+    gainInfamy(engine.locationId, generatedInfamy * baseBoostInfamy);
+  } else gainInfamy(engine.locationId, generatedInfamy);
+
+
+  // [FIX] Share partner benefit
+  gainXP(netWinnings);
+
+  // Store for PlayStatsPopup display
+  store.play_stats_session = {
+    netBB: parseFloat(winBB.toFixed(1)),
+    played_hands: totalHandsPlayed,
+    vpip: vpip.toFixed(1),
+    pfr: pfr.toFixed(1),
+    wtsd: wtsd.toFixed(1),
+    wsd: wsd.toFixed(1),
+    generatedInfamy: generatedInfamy * baseBoostInfamy,
+    generatedSuspicion: 0, // Suspicion is added dynamically during the game, but we might want to calculate the diff if needed.
+  };
+  saveStore();
+  return netWinnings;
 };

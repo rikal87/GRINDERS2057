@@ -122,7 +122,6 @@ export class EventAdaptor {
       }
     }
     if (locationId) gainClearedZoneCount(locationId);
-
     // [Tutorial] Handled edge cases for the tutorial table
     if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX) {
       if (player.isMe) {
@@ -298,10 +297,10 @@ export class EventAdaptor {
   rebuy({ player, amount }) {
 
   }
-  gainXP({ player, amount, bb, isHighStakes, locationLV }) {
+  gainXP({ player, amount }) {
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('gainXP')) {
-        this.executeItemEffect(player, e, { amount, bb, isHighStakes, locationLV });
+        this.executeItemEffect(player, e, { amount });
       }
     });
   }

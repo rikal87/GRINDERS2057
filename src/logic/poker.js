@@ -232,6 +232,7 @@ export const getHandCategory = (hand, board, evalResult) => {
     if (isBoardPaired) return 'MARGINAL'; // Vulnerable to Full House
     if (nutInfo.rank <= 5) return usedHoleCards === 2 ? 'MONSTER' : 'STRONG'; // High Flush
     if (nutInfo.rank <= 15) return 'STRONG'; // Mid Flush
+    if (nutInfo.rank <= 25) return 'GOOD'; // Mid-Low Flush
     return 'MARGINAL'; // Low Flush
   }
 
@@ -241,7 +242,8 @@ export const getHandCategory = (hand, board, evalResult) => {
     if (isBoardFlushPossible) return 'MARGINAL'; // Vulnerable to Flush
     if (isBoardPaired) return 'MARGINAL'; // Vulnerable to FH
     if (nutInfo.rank <= 3) return usedHoleCards === 2 ? 'MONSTER' : 'STRONG'; // Nut Straight
-    return 'STRONG';
+    if (nutInfo.rank <= 10) return 'STRONG'; // Good Straight
+    return 'GOOD'; // Bottom straight
   }
 
   // 4: Three of a Kind
@@ -249,6 +251,7 @@ export const getHandCategory = (hand, board, evalResult) => {
     if (usedHoleCards === 0) return 'WEAK';
     if (isBoardTrips) {
       if (nutInfo.rank <= 5) return 'STRONG'; // Top Kicker
+      if (nutInfo.rank <= 15) return 'GOOD'; // Mid Kicker
       return 'WEAK'; // Low Kicker or Chop
     }
 
@@ -257,6 +260,7 @@ export const getHandCategory = (hand, board, evalResult) => {
     if (isPocketPair) return 'MONSTER'; // SET 
     // Trips
     if (nutInfo.rank <= 10) return 'STRONG'; // Good Kicker
+    if (nutInfo.rank <= 20) return 'GOOD'; // Mid Kicker
     return 'MARGINAL'; // Weak Kicker
   }
 
@@ -264,10 +268,12 @@ export const getHandCategory = (hand, board, evalResult) => {
   if (rank === 3) {
     if (isBoardPaired) {
       if (nutInfo.rank <= 10) return 'STRONG'; // Top Two or better
+      if (nutInfo.rank <= 25) return 'GOOD'; // Mid Two
       return 'MARGINAL'; // Counterfeited or bottom two
     }
     // Normal Two Pair
     if (nutInfo.rank <= 10) return 'STRONG'; // Top Two
+    if (nutInfo.rank <= 25) return 'GOOD'; // Mid Two
     return 'MARGINAL'; // Bottom Two
   }
 
@@ -278,15 +284,29 @@ export const getHandCategory = (hand, board, evalResult) => {
 
     if (isPocketPair) {
       if (handRanks[0] > maxBoard) return 'STRONG'; // Overpair
-      if (handRanks[0] < maxBoard) return 'WEAK';
-      return 'MARGINAL';
+      if (handRanks[0] > (boardRanks[1] || -1)) {
+        if (isBoardFlushPossible || isBoardStraightPossible) return 'MARGINAL';
+        return 'GOOD'; // 2nd pair (Pocket pair between 1st and 2nd board card)
+      }
+      if (handRanks[0] < boardRanks[boardRanks.length - 1]) return 'WEAK'; // Underpair
+      return 'MARGINAL'; // 3rd pair etc.
     } else {
       if (handRanks.includes(maxBoard)) {
-        if (nutInfo.rank <= 40) return 'STRONG'; // Top Pair Good Kicker
-        if (isBoardFlushPossible || isBoardStraightPossible) return 'MARGINAL';
-        return 'STRONG';
+        if (nutInfo.rank <= 30) return 'STRONG'; // TPTK / TPGK
+        if (nutInfo.rank <= 60) {
+          if (isBoardFlushPossible || isBoardStraightPossible) return 'MARGINAL';
+          return 'GOOD'; // TPMK
+        }
+        if (isBoardFlushPossible || isBoardStraightPossible) return 'WEAK';
+        return 'MARGINAL'; // TPWK
       }
-      return 'MARGINAL';
+
+      const pairedRank = handRanks.find(r => boardRanks.includes(r));
+      if (pairedRank === boardRanks[1]) {
+        if (isBoardFlushPossible || isBoardStraightPossible) return 'MARGINAL';
+        return 'GOOD'; // Middle Pair (2nd pair with board)
+      }
+      return 'MARGINAL'; // Bottom pair / 3rd pair
     }
   }
 
@@ -717,7 +737,7 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
     if (usedHoleCards === 0) {
       return getNutStatus(hand, board).isNuts ? 'BOARD_CHOP' : 'WEAK';
     }
-    if (isBoardPaired) return 'STRONG';
+    if (isBoardPaired) return 'GOOD';
     return usedHoleCards === 2 ? 'MONSTER' : 'STRONG';
   }
 
@@ -728,7 +748,7 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
       const isNuts = getNutStatus(hand, board).isNuts;
       return isNuts ? 'BOARD_CHOP' : 'WEAK';
     }
-    if (isBoardFlushPossible || isBoardPaired) return 'STRONG';
+    if (isBoardFlushPossible || isBoardPaired) return 'GOOD';
     return usedHoleCards === 2 ? 'MONSTER' : 'STRONG'; // One card straight is just Strong
   }
 
@@ -750,7 +770,7 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
       const myPair = holeVal.find(v => boardRanks.includes(v)) || 0;
 
       if (myPair < boardHigh) return 'MARGINAL'; // Counterfeited
-      return 'STRONG';
+      return 'GOOD';
     }
 
     // Normal Two Pair (No board pair)
@@ -769,15 +789,18 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
 
     if (isPocketPair) {
       if (handRanks[0] > maxBoard) return 'STRONG'; // Overpair
+      if (handRanks[0] > (boardRanks[1] || -1)) return 'GOOD'; // Second pair
       if (handRanks[0] < boardRanks[boardRanks.length - 1]) return 'WEAK'; // Underpair
       return 'MARGINAL'; // Midpair
     } else {
       // Hit a pair with the board
       const pairedRank = holeVal.find(v => boardRanks.includes(v));
+      const kicker = holeVal.find(v => v !== pairedRank);
 
       if (pairedRank === maxBoard) {
-        if (isBoardFlushPossible || isBoardStraightPossible) return 'MARGINAL';
-        return 'STRONG'; // Top Pair
+        if (isBoardFlushPossible || isBoardStraightPossible) return 'GOOD'; // Wet board Top Pair
+        if (kicker >= 10) return 'STRONG'; // Top Pair with Good Kicker (Q, K, A)
+        return 'GOOD'; // Top Pair Weak Kicker
       }
 
       if (isBoardPaired) {
@@ -785,6 +808,8 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
         return holeVal.includes(12) ? 'ACE_HIGH' : 'AIR';
       }
 
+      const pairedIndex = boardRanks.indexOf(pairedRank);
+      if (pairedIndex === 1) return 'GOOD'; // Middle Pair
       return 'MARGINAL'; // Mid/Low pair
     }
   }

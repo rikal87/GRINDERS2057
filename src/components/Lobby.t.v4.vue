@@ -89,7 +89,7 @@
                     <span class="stat-value">{{ (currentRake * 100).toFixed(1) }}% (Max {{ currentTableConfig.rakeCap
                     }})</span>
                   </div>
-                  <div class="stat-row" v-if="currentTableConfig.isHighStakes">
+                  <div class="stat-row" v-if="currentTableConfig.isAdvanced">
                     <span class="stat-warning">HIGH_STAKES_PROTOCOL_ACTIVE</span>
                   </div>
                 </div>
@@ -245,7 +245,7 @@ const confirmJoin = () => {
       buyIn: table.amount,
       rake: currentRake.value,
       rakeCap: table.rakeCap,
-      isHighStakes: table.isHighStakes || false,
+      isAdvanced: table.isAdvanced || false,
       locationLV: currentLocation.value.locationLV,
       sb: table.sb,
       bb: table.bb,

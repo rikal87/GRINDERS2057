@@ -42,7 +42,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      unregisterPartner(PARTNER_ID.FLORENCE);
+      leavePartner(PARTNER_ID.FLORENCE);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
     },
   },

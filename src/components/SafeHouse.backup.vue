@@ -208,7 +208,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { store, getNextLevelThreshold, TYPE_CHANGE_BANKROLL, gainBankroll } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
-import { AI_TASK_DATA, startTask } from '../logic/aiTaskSystem';
+import { AI_TASK_DATA, startTask } from '../logic/aiAgentTaskSystem';
 import { audioManager } from '../logic/audioManager';
 import { SKILL_DATA, getSlotConfig } from '../logic/skills';
 

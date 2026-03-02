@@ -157,7 +157,7 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
           rake: table.baseRake || 0,
           buyIn: table.amount,
           rakeCap: table.rakeCap || 0,
-          isHighStakes: table.isHighStakes || false,
+          isAdvanced: table.isAdvanced || false,
           size: table.available[0] || 2,
           sb: table.sb,
           bb: table.bb,

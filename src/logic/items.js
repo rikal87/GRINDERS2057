@@ -18,6 +18,21 @@ export const ITEM_DATA = [
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [getItemEffect('xp_boost')]
   },
+  // {
+  //   id: 'devil_shape',
+  //   name_ko: '악마의 형상',
+  //   name_en: 'Devil Shape',
+  //   get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+  //   icon: '😈',
+  //   class: 'Item',
+  //   tier: 'T1',
+  //   price: 1,
+  //   editable: false,
+  //   desc_ko: '악마의 형상입니다. ',
+  //   desc_en: 'Devil shape.',
+  //   get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+  //   effects: [getItemEffect('born_villain')]
+  // },
   {
     id: 'casino_promotion_info_collector',
     name_ko: '카지노 프로모션 정보 수집기',
@@ -1317,17 +1332,17 @@ export const ITEM_DATA = [
 
   {
     id: 'casino_insider_nemesis',
-    name_ko: '불법 카지노 관계자의 천적',
-    name_en: 'Nemesis of Illegal Casino Insiders',
+    name_ko: '카지노 관계자의 천적',
+    name_en: 'Nemesis of Casino Insiders',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     icon: '👹',
     class: 'Item',
     tier: 'T5',
     price: 305000,
-    desc_ko: '불법 카지노 관계자들은 그의 이름만 들어도 치가 떨립니다.',
-    desc_en: 'Illegal casino insiders tremble at the mere mention of his name.',
+    desc_ko: '카지노 관계자들은 그의 이름만 들어도 치가 떨립니다.',
+    desc_en: 'Casino insiders tremble at the mere mention of his name.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('rake_reduction'), getItemEffect('rake_reduction'), getItemEffect('blind_discount')]
+    effects: [getItemEffect('born_villain'), getItemEffect('born_villain'), getItemEffect('born_villain')]
   },
   {
     id: 'monopoly_pass',

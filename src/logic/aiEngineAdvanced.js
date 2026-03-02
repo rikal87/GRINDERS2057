@@ -536,315 +536,182 @@ function getPostflopAction(player, engine, myPos) {
 
   const hand = player.hand;
   const evalResult = evaluateHand([...hand, ...board]);
-  const outsData = calculateOuts(hand, board);
+  // const outsData = calculateOuts(hand, board); // Leftover if needed
   const texture = analyzeBoardTexture(board);
-
-  // 1. Categorize Hand
   const drawCategory = getDrawCategory(hand, board);
   const category = getHandCategory(hand, board, evalResult);
-  // const category = [drawCategory, madeCategory];
 
-  // 2. Determine Context
-  const isPreflopAggressor = engine.preflopAggressor === player.id;
-  const isAggressor = isPreflopAggressor;
-
-  // 3. Pot Odds
   const currentBet = engine.potManager ? engine.potManager.currentRoundBet : engine.currentRoundBet;
   const callAmount = currentBet - player.currentBet;
   const potSize = engine.pot;
-  const potOdds = callAmount / (potSize + callAmount);
   const isCheckable = callAmount <= 0;
 
-  // [NEW] Opponent Adaptation
-  // Try to find the opponent. If HU, it's the other guy.
-  const activePlayers = engine.players.filter(p => !p.isFolded);
-  const opponent = activePlayers.find(p => p.id !== player.id);
-  const rawStats = (opponent && opponent.stats) ? opponent.stats : { foldToFlop: 0.5, vPIP: 0.5, aggressionFactor: 1.5 };
+  const isAggressor = engine.preflopAggressor === player.id;
+  const alivePlayers = engine.players.filter(p => !p.isFolded).length;
+  const street = engine.state;
 
-  // Create a safe local copy to avoid "Set on Proxy" errors for getters
-  const stats = {
-    vPIP: rawStats.vPIP || 0.5,
-    foldToFlop: rawStats.foldToFlop || 0.5,
-    aggressionFactor: rawStats.aggressionFactor || 1.5 // Default to Standard Aggression
-  };
-  // [STATS FIX] Blend Default with Actual Stats for small samples (0-25 hands)
-  // Instead of hard override, we use a weighted average.
-  // Weight of Actual Stats = handsPlayed / 25.
-  // Weight of Default Stats = 1 - (handsPlayed / 25).
-  const SAMPLE_THRESHOLD = 25;
-  const hands = rawStats.handsPlayed || 0;
+  // --- 1. Evaluate Estimated Equity ---
+  let estimatedEquity = 0;
+  if (category === 'NUTS') estimatedEquity = 0.95;
+  else if (category === 'MONSTER') estimatedEquity = 0.85;
+  else if (category === 'STRONG') estimatedEquity = 0.70;
+  else if (category === 'GOOD') estimatedEquity = 0.60;
+  else if (category === 'MARGINAL') estimatedEquity = 0.50;
+  else if (category === 'WEAK') estimatedEquity = 0.30;
+  else if (category === 'ACE_HIGH') estimatedEquity = 0.15;
+  else estimatedEquity = 0.05; // AIR
 
-  if (hands < SAMPLE_THRESHOLD) {
-    const confidence = hands / SAMPLE_THRESHOLD;
-    const defaultStats = { vPIP: 0.25, foldToFlop: 0.5, aggressionFactor: 1.5 }; // Conservative Defaults
+  let drawBonus = 0;
+  if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.25;
+  else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.15;
+  else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.05;
 
-    stats.vPIP = (rawStats.vPIP * confidence) + (defaultStats.vPIP * (1 - confidence));
-    stats.foldToFlop = (rawStats.foldToFlop * confidence) + (defaultStats.foldToFlop * (1 - confidence));
-    stats.aggressionFactor = (rawStats.aggressionFactor * confidence) + (defaultStats.aggressionFactor * (1 - confidence));
-  }
+  const streetsLeft = street === 'FLOP' ? 2 : (street === 'TURN' ? 1 : 0);
+  drawBonus *= (streetsLeft / 2);
+  estimatedEquity = Math.min(0.98, estimatedEquity + drawBonus);
 
-  const adjustment = getExploitativeAdjustment(player, stats);
+  // --- 2. Pot Odds & SPR ---
+  const totalPotAfterCall = potSize + callAmount;
+  let potOdds = callAmount > 0 ? (callAmount / totalPotAfterCall) : 0;
+  let requiredEquity = potOdds;
 
-  // [PHASE 4] Contextual Adjustments (SPR & Range)
-  // 1. SPR Logic
+  if (alivePlayers > 2) requiredEquity += (alivePlayers - 2) * 0.05;
+
   const startingStack = player.chips + player.totalWagered;
   const commitmentRatio = startingStack > 0 ? (player.totalWagered / startingStack) : 0;
   const spr = potSize > 0 ? (player.chips / potSize) : 20;
-  if (commitmentRatio > 0.35) {
-    adjustment.callBoost += commitmentRatio; // Commit
-    adjustment.bluffBoost += 0.15;
-    // adjustments to raising? 
-    // If low SPR, we are happy to get it in. raiseThreshold lower?
-    // In this engine, raising is logic-driven. We can boost bluff slightly or value shove.
+
+  // --- 3. Opponent Profiling ---
+  const opponent = engine.players.find(p => p.isHuman && !p.isFolded) || engine.players.find(p => p.id !== player.id && !p.isFolded);
+  const rawStats = (opponent && opponent.stats) ? opponent.stats : { vPIP: 0.5, foldToFlop: 0.5, aggressionFactor: 1.5 };
+
+  const SAMPLE_THRESHOLD = 25;
+  const handsPlayed = rawStats.handsPlayed || 0;
+  const confidence = Math.min(1, handsPlayed / SAMPLE_THRESHOLD);
+  const defStats = { vPIP: 0.30, foldToFlop: 0.5, aggressionFactor: 1.5 };
+
+  const oppVPIP = (rawStats.vPIP * confidence) + (defStats.vPIP * (1 - confidence));
+  const oppF2F = (rawStats.foldToFlop * confidence) + (defStats.foldToFlop * (1 - confidence));
+  const oppAF = (rawStats.aggressionFactor * confidence) + (defStats.aggressionFactor * (1 - confidence));
+
+  let bluffFreq = Math.max(0, (player.class?.AF || 1.5 - 2)) * 0.1;
+  let insight = "";
+
+  // Adjust Strategy Based on Opponent
+  if (oppF2F > 0.6) {
+    bluffFreq += 0.15;
+    if (!isCheckable) requiredEquity += 0.05; // Exploit Tight
+    insight += " [Exp:Tight]";
   }
-  if (spr < 1.5) {
-    adjustment.callBoost += 0.1; // Pot Odds
-  } else if (spr > 10) {
-    adjustment.callBoost -= 0.1; // Reverse Implied Odds
+  if (oppVPIP > 0.6 && oppF2F < 0.4) {
+    bluffFreq *= oppF2F;
+    requiredEquity -= 0.05; // Exploit Station
+    insight += " [Exp:Station]";
+  }
+  if (oppAF > 3) {
+    requiredEquity -= (oppAF - 3 * 0.1); // Exploit Aggressive
+    insight += " [Exp:Aggressive]";
   }
 
-  // 2. Range Advantage
-  // Aggressor favors High Cards (J+).
+  const AF = player.class?.AF || 1.5;
+  // --- 3.5 NPC Playstyle Adjustments ---
+  estimatedEquity *= 1 + ((AF - 3) * 0.1); // lower AF > 3 = Overestimating your own hand, lower AF < 3 = Underestimating your own hand
+  raiseEquityThreshold *= 1 + ((AF - 3) * 0.1); // lower AF > 3 = raise more, lower AF < 3 = raise less
+
+  // Range Advantage & SPR adjustments
   const highCardCount = texture.ranks ? texture.ranks.filter(r => r >= 9).length : 0;
   if (isAggressor) {
-    if (highCardCount >= 1) adjustment.bluffBoost += 0.15; // Range Match
-    else adjustment.bluffBoost -= 0.1; // Range Miss
+    if (highCardCount >= 1) bluffFreq += 0.1;
+    else bluffFreq -= 0.1;
+    if (street === 'FLOP') bluffFreq += 0.15;
   } else {
-    // Defender Advantage (Low/Mid board)
-    if (highCardCount === 0 && texture.type !== 'DRY') {
-      // Boost Donk/Lead freq? 
-      // Current logic mostly checks. We could boost a lead if we added that logic.
-      // For now, maybe Call Boost?
-      adjustment.callBoost += 0.1;
-    }
+    if (highCardCount <= 2 && texture.type === 'WET') bluffFreq += 0.1;
+  }
+  if (street === 'TURN') bluffFreq *= 0.66;
+
+  if (spr < 1.5) {
+    requiredEquity *= 0.8;
+  } else if (spr > 10) {
+    requiredEquity *= 1.1;
+    if (street !== 'RIVER') bluffFreq += 0.05;
   }
 
-  // --- Scenario A: We are Aggressor (C-Betting) ---
-  if (isAggressor && isCheckable) {
-    let betSize = engine.pot * 0.5;
-
-    switch (engine.state) {
-      case 'FLOP':
-        betSize = engine.pot * 0.35; // Standard Flop C-Bet
-        break;
-      case 'TURN':
-        betSize = engine.pot * 0.6; // Turn requires more protection
-        break;
-      case 'RIVER':
-        betSize = engine.pot * 0.75; // River bets should be polarized and sizable
-        break;
-    }
-    console.info(engine.pot, betSize)
-    // [RIVER SPECIAL LOGIC]
-    if (engine.state === 'RIVER') {
-
-      if (category === 'NUTS' || category === 'MONSTER') {
-        const baseSizeInfo = Math.random() < 0.3 ? 1.2 : 0.8; // Overbet or fat value
-        const sizeInfo = baseSizeInfo * adjustment.valueBetMultiplier;
-        const note = sizeInfo >= 1.0 ? 'Overbet' : 'Value Bomb';
-        return { action: 'raise', amount: engine.pot * sizeInfo, insight: `River ${note} (${category})` };
-      }
-      if (category === 'STRONG') {
-        // Thin Value or Standard Value
-        return { action: 'raise', amount: engine.pot * 0.55, insight: `River Value Bet (${category})` };
-      }
-      if (category === 'MARGINAL') {
-        // Thin Value or Standard Value
-        if (Math.random() < 0.1) return { action: 'raise', amount: engine.pot * 0.33, insight: 'River Any-Two Value' };
-        return { action: 'check', insight: `River Check Back (Showdown Value)` };
-      }
-      // Draw is not made, try to bluff!
-      if (['DRAW_MONSTER', 'DRAW_STRONG', 'DRAW_WEAK'].includes(drawCategory)) {
-        let bluffFreq = 0.3 + adjustment.bluffBoost;
-        if (drawCategory === 'DRAW_MONSTER') bluffFreq += 0.25;
-        else if (drawCategory === 'DRAW_STRONG') bluffFreq += 0.15;
-        if (Math.random() < bluffFreq) {
-          return { action: 'raise', amount: engine.pot * 0.75, insight: 'River Triple-Barrel Bluff' };
-        }
-        return { action: 'check', insight: 'River Give Up' };
-      }
-      if (['AIR', 'WEAK'].includes(category)) {
-        // Almost pure bluff 
-        const bluffFreq = 0.1 + adjustment.bluffBoost;
-        if (Math.random() < bluffFreq) {
-          return { action: 'raise', amount: engine.pot * 0.75, insight: 'River Triple-Barrel Bluff' };
-        }
-        return { action: 'check', insight: 'River Give Up' };
-      }
-    }
-
-    // [FLOP / TURN LOGIC]
-    if (['STRONG', 'NUTS', 'MONSTER'].includes(category)) {
-      const sizeInfo = betSize * 1.1 * adjustment.valueBetMultiplier;
-      const note = sizeInfo >= engine.pot ? 'Exploitative Overbet' : 'Value';
-      return { action: 'raise', amount: sizeInfo, insight: `Postflop ${note} (${category})` };
-    }
-    if (['DRAW_STRONG', 'DRAW_WEAK'].includes(drawCategory)) {
-      const rnd = Math.random()
-      if (drawCategory === 'DRAW_STRONG' && rnd < 0.6) return { action: 'raise', amount: betSize, insight: `Postflop Semi-Bluff (${drawCategory})` };
-      else if (drawCategory === 'DRAW_WEAK' && rnd < 0.3) return { action: 'raise', amount: betSize, insight: `Postflop Semi-Bluff (${drawCategory})` };
-      else return { action: 'check', insight: `Postflop Check (${drawCategory})` };
-    }
-    if (['MARGINAL'].includes(category)) {
-      // Thin Value Bet or Check Back for Pot Control
-      if (Math.random() < 0.5) return { action: 'raise', amount: betSize, insight: `Postflop Thin Value (${category})` };
-      else return { action: 'check', insight: `Postflop Check Back (${category})` };
-    }
-    // [C-BET ENHANCEMENT] AIR & WEAK (Bluff C-Bet)
-    if (['AIR', 'WEAK'].includes(category)) {
-      // [ADAPTATION] Boost base bluff frequency
-      let baseBluffFreq = (texture.type === 'DRY') ? 0.6 : 0.4; // Dry boards are better for C-Betting
-      let bluffFreq = baseBluffFreq + adjustment.bluffBoost;
-
-      // If we have backdoors or overcards, boost slightly
-      if (category === 'WEAK') bluffFreq += 0.1;
-
-      if (Math.random() < bluffFreq) {
-        return { action: 'raise', amount: betSize, insight: 'Postflop Bluff C-Bet' };
-      }
-    }
-    return { action: 'check', insight: `Postflop Check (${category})` };
+  if (commitmentRatio > 0.35) {
+    requiredEquity *= (1 - (commitmentRatio * 0.5));
+    insight += ` [Commt ${(commitmentRatio * 100).toFixed(0)}%]`;
   }
-  // --- Scenario B: Facing Bet (Defending) ---
-  // Define betRatio for logic (Overbet detection)
+
+  let raiseEquityThreshold = requiredEquity + 0.20;
+  if (isAggressor && street === 'FLOP') raiseEquityThreshold -= 0.1;
+  if (myAF > 3.0) raiseEquityThreshold *= 0.75; // Maniac raises easier
+  if (myVPIP < 0.2 && myAF < 1.5) raiseEquityThreshold *= 1.15; // Nit requires more
+
+  const raises = engine.currentStreetRaises || 0;
   if (!isCheckable) {
-
-    const betRatio = callAmount / (potSize || 1);
-
-    // [RIVER DEFENSE]
-    if (engine.state === 'RIVER') {
-      // 1. Monsters always raise or call-trap
-      if (category === 'NUTS') {
-        return { action: 'raise', amount: currentBet * 3, insight: 'River Value Raise' };
-      }
-      if (category === 'MONSTER') {
-        if (Math.random() < 0.25) return { action: 'call', insight: 'River Trap Call' };
-        return { action: 'raise', amount: currentBet * 3, insight: 'River Value Raise' };
-      }
-
-      // 2. Strong hands or Board Chop Call
-      if (category === 'STRONG' || category === 'BOARD_CHOP') {
-        if (category === 'BOARD_CHOP') return { action: 'call', insight: 'River Call (Board Split)' };
-        if (betRatio > 1.5 && Math.random() < 0.5) return { action: 'fold', insight: 'Fold Strong to Overbet' };
-        return { action: 'call', insight: 'River Call (Strong)' };
-      }
-
-      // 3. Medium Hands - Bluff Catch Logic
-      if (['MARGINAL', 'WEAK', 'ACE_HIGH'].includes(category)) {
-        // If Opponent is Aggressive (AF > 3), call with Medium or Ace High
-        let callProb = 0.2 + adjustment.callBoost; // Base 20% + adapt
-
-        // Ace High Hero Call specific
-        if (category === 'ACE_HIGH') {
-          // Only call if opponent is somewhat aggressive or we think they bluff
-          if (stats.aggressionFactor < 2.0 && adjustment.bluffBoost <= 0) {
-            callProb = 0; // Fold vs Passive
-          } else {
-            callProb = 0.15 + (adjustment.bluffBoost * 0.5); // 15% base vs Aggro
-          }
-        }
-
-        if (potOdds < 0.25 && category !== 'ACE_HIGH') callProb += 0.4; // Great odds (Exclude Ace High from "Great Odds" auto-call unless strictly aggro)
-
-        if (Math.random() < callProb) {
-          return { action: 'call', insight: `River Bluff Catch (${category} AF=${stats.aggressionFactor.toFixed(1)})` };
-        }
-        return { action: 'fold', insight: `River Fold (${category})` };
-      }
-      if (category === 'AIR' && texture.type === 'WET') {
-        // [ADAPTATION]
-        let bluffFreq = adjustment.bluffBoost;
-        if (Math.random() < bluffFreq) {
-          return { action: 'raise', amount: betSize, insight: 'River Bluff' };
-        }
-      }
-      // 4. Weak/Air - Fold
-      return { action: 'fold', insight: 'River Fold (Trash)' };
-    }
-
-    // [FLOP / TURN DEFENSE]
-    if (['NUTS', 'MONSTER', 'STRONG'].includes(category)) {
-      // [RAISE LOOP FIX] Capping aggression based on raise count
-      const raises = engine.currentStreetRaises || 0;
-
-      if (category === 'STRONG' && raises >= 2) {
-        return { action: 'call', insight: `Postflop Call Strong (Raise Cap: ${raises})` };
-      }
-      if (category === 'MONSTER' && raises >= 3) {
-        return { action: 'call', insight: `Postflop Call Monster (Raise Cap: ${raises})` };
-      }
-
-      if ((category === 'NUTS' || category === 'MONSTER') && Math.random() < 0.3) return { action: 'call', insight: 'Postflop Trap' };
-      return { action: 'raise', amount: currentBet * 3, insight: `Postflop Raise for Value (${category})` };
-    }
-    if (category === 'MARGINAL') {
-      // If Passive Opponent Bets, Respect it (Fold unless Pot Odds are huge)
-      if (adjustment.callBoost < -0.2 && Math.random() < 0.7) {
-        return { action: 'fold', insight: 'Postflop Fold Medium (Respect Passive)' };
-      }
-      return { action: 'call', insight: 'Postflop Call (Marginal)' };
-    }
-    if (['DRAW_STRONG', 'DRAW_WEAK'].includes(drawCategory)) {
-      let equity = 0;
-      if (engine.state === 'TURN') equity = outsData.outs * 2;
-      else equity = outsData.outs * 4;
-
-      if ((equity / 100) > potOdds) {
-        return { action: 'call', insight: `Postflop Call Draw (Eq: ${equity}%)` };
-      }
-    }
-
-    if (category === 'BOARD_CHOP') {
-      return { action: 'call', insight: 'Postflop Call (Board Split)' };
-    }
-
-    return { action: 'fold', insight: `Postflop Fold (${category})` };
+    requiredEquity += raises * 0.08;
+    raiseEquityThreshold += raises * 0.15;
   }
 
-  // --- Scenario C: Probe/Stab Logic (Checkable, Non-Aggressor) ---
-  // If everyone checked in front of us, we can stab at the pot.
+  if (callAmount >= player.chips) bluffFreq = 0;
+  insight += ` [Eq:${(estimatedEquity * 100).toFixed(0)}% / Req:${(requiredEquity * 100).toFixed(0)}%]`;
+
+  // --- 4. Decision ---
+  let action = 'fold';
+  let amount = 0;
+
   if (isCheckable) {
-    // [RIVER] Value Bet & Bluff
-    if (engine.state === 'RIVER') {
-      if (['NUTS', 'MONSTER', 'STRONG'].includes(category)) {
-        let valSize = (category === 'NUTS' || category === 'MONSTER') ? 0.8 : 0.6;
-        valSize *= adjustment.valueBetMultiplier;
-        const note = valSize >= 1.0 ? 'Exploitative Overbet Stab' : 'Value Stab';
-        return { action: 'raise', amount: potSize * valSize, insight: `River ${note} (${category})` };
+    if (estimatedEquity >= raiseEquityThreshold) {
+      action = 'raise'; insight += " (Value)";
+    } else if (Math.random() < bluffFreq) {
+      action = 'raise'; insight += " (Bluff)";
+    } else {
+      action = 'check'; insight += " (Check)";
+    }
+  } else {
+    if (estimatedEquity >= raiseEquityThreshold) {
+      if (potOdds > 0.4 && street !== 'RIVER' && estimatedEquity < 0.85 && myAF < 3.0) {
+        action = 'call'; insight += " (Call Huge/Trap)";
+      } else {
+        action = 'raise'; insight += " (Value Raise)";
       }
-      if (['AIR', 'WEAK'].includes(category) || ['AIR', 'DRAW_MONSTER', 'DRAW_STRONG', 'DRAW_WEAK'].includes(drawCategory)) {
-        const stabFreq = 0.4 + adjustment.bluffBoost;
-        if (Math.random() < stabFreq) {
-          return { action: 'raise', amount: potSize * 0.66, insight: 'River Bluff Stab' };
-        }
+    } else if (estimatedEquity >= requiredEquity) {
+      action = 'call'; insight += " (Call Odds)";
+    } else {
+      const rnd = Math.random();
+      if (rnd < bluffFreq / 2 && street === 'RIVER') {
+        action = 'raise'; amount = player.chips + 10000; insight += " (River Shove Bluff)";
+      } else if (rnd < bluffFreq) {
+        action = 'raise'; insight += " (Pure Bluff)";
+      } else {
+        action = 'fold'; insight += " (Fold)";
       }
     }
-    // [TURN / FLOP] Stab (If checked to)
-    else {
-      // If we have value, bet it
-      if (['NUTS', 'MONSTER', 'STRONG'].includes(category)) {
-        const valSize = 0.6 * adjustment.valueBetMultiplier;
-        const note = valSize >= 1.0 ? 'Exploitative Overbet Stab' : 'Value Stab';
-        return { action: 'raise', amount: potSize * valSize, insight: `Postflop ${note} (${category})` };
-      }
-      // If we have draws, bet for semi-bluff (protection)
-      if (['DRAW_STRONG', 'DRAW_WEAK', 'DRAW_MONSTER'].includes(drawCategory)) {
-        if (Math.random() < 0.6) return { action: 'raise', amount: potSize * 0.6, insight: `Postflop Draw Stab (${drawCategory})` };
-      }
-      // If we have nothing (AIR/WEAK), stab to steal
-      if (['AIR', 'WEAK'].includes(category)) {
-        let stabFreq = 0.45 + adjustment.bluffBoost; // 45% Base Stab
-        if (texture.type === 'WET') stabFreq += 0.1;
-
-        if (Math.random() < stabFreq) {
-          return { action: 'raise', amount: potSize * 0.5, insight: 'Postflop Bluff Stab' };
-        }
-      }
-    }
-    return { action: 'check', insight: 'Postflop Check-Back' };
   }
 
-  return { action: 'check', insight: 'Postflop Check' };
+  if (category === 'BOARD_CHOP') {
+    action = 'call'; insight = "Board Chop";
+  }
+
+  // --- 5. Sizing ---
+  if (action === 'raise') {
+    if (!isCheckable) {
+      let mult = 3.0;
+      if (estimatedEquity > raiseEquityThreshold + 0.20) mult = 4.0;
+      amount = Math.max(amount, Math.floor(currentBet * mult));
+    } else {
+      let potPct = 0.5;
+      if (texture.type === 'DRY') potPct -= 0.15;
+      else if (texture.type === 'WET') potPct += 0.25;
+      else if (estimatedEquity < requiredEquity && drawBonus > 0) potPct += 0.20;
+
+      if (street === 'RIVER' && (estimatedEquity >= 0.90 || estimatedEquity < requiredEquity)) {
+        potPct = 1.0 + (myAF / 2); // Polarized River
+      }
+      amount = Math.max(amount, Math.floor(potSize * potPct));
+    }
+  }
+
+  return { action, amount, insight };
 }
 
 

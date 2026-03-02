@@ -581,6 +581,11 @@ main {
   max-width: 80%;
   box-shadow: 0 0 30px rgba(255, 0, 60, 0.3);
 }
+.terminal-msg.warn {
+  border-color: var(--neon-magenta);
+  background: rgba(255, 115, 0, 0.747);
+  box-shadow: 0 0 30px rgba(255, 0, 60, 0.3);
+}
 
 .terminal-msg.victory {
   border-color: var(--neon-cyan);
@@ -653,7 +658,7 @@ main {
   box-shadow: 0 0 15px var(--neon-magenta) !important;
   filter: brightness(1.2);
 }
-
+.warn {}
 .btn-close {
   margin-top: 2rem;
   background: transparent;
@@ -676,6 +681,28 @@ main {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Center Zoom/Scale Transition (v4-fade) */
+.v4-fade-enter-active,
+.v4-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.v4-fade-enter-from,
+.v4-fade-leave-to {
+  opacity: 0;
+}
+
+/* Specific styling to ensure the modal content itself scales */
+.v4-fade-enter-from .v5-modal,
+.v4-fade-leave-to .v5-modal {
+  transform: scale(0.9);
+}
+
+.v4-fade-enter-active .v5-modal,
+.v4-fade-leave-active .v5-modal {
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 @keyframes glitch-anim {
@@ -1059,3 +1086,58 @@ footer {
   justify-content: flex-end;
   /* right align the size selector */
 }
+
+/* --- Shared Tooltip System --- */
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 20, 28, 0.95);
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+  width: max-content;
+  max-width: 250px;
+  text-align: left;
+  font-family: 'Share Tech Mono', 'DoHyeon-Regular', monospace;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+.cyber-modal {
+  border: 2px solid var(--neon-cyan);
+  /* 네온 블루 */
+  background: #1a1a1a;
+  color: #fff;
+  padding: 20px;
+  box-shadow: 0 0 15px var(--neon-cyan);
+}
+
+/* 배경 어둡게 처리 (backdrop) */
+.cyber-modal::backdrop {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* .buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+.btn-primary { background: #00f3ff; color: #000; border: none; padding: 5px 15px; cursor: pointer; }
+.btn-secondary { background: transparent; color: #eee; border: 1px solid #eee; padding: 5px 15px; cursor: pointer; } */

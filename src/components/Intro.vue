@@ -18,7 +18,7 @@
         CALIBRATE_SYSTEM
       </button>
       <button class="menu-btn" @click="$emit('quit')">
-        SHUT_DOWN
+        EXIT
       </button>
     </div>
 
@@ -27,15 +27,22 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { store } from '../logic/store';
 import LobbyBackground from './LobbyBackground.vue';
 import { audioManager } from '../logic/audioManager';
 
 defineEmits(['start', 'calibrate', 'quit']);
-
+const jitterActive = ref(false);
+let jitterInterval = null;
 onMounted(() => {
   audioManager.playTrackByZoneId('main');
+  jitterInterval = setInterval(() => {
+    if (Math.random() > 0.8) {
+      jitterActive.value = true;
+      setTimeout(() => jitterActive.value = false, 100 + Math.random() * 200);
+    }
+  }, 2000);
 });
 </script>
 

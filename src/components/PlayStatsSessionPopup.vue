@@ -57,7 +57,7 @@
           <div v-if="!isSession" class="stats-section">
             <div class="section-label">LUCK_AND_PEAKS</div>
             <div class="stats-grid">
-              <div class="stat-entry" v-if="!isSession"><span class="label">BANKRUPTCY:</span> <span class="val red">{{
+              <div class="stat-entry"><span class="label">BANKRUPTCY:</span> <span class="val red">{{
                 store.play_stats.bankruptcy_count }}</span></div>
               <div class="stat-entry"><span class="label">MAX_STREAK (WIN):</span> <span class="val green">{{
                 store.play_stats.max_win_streak }}</span></div>

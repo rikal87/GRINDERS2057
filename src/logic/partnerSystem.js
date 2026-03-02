@@ -2,7 +2,12 @@ import { CLASSES_PARTNER } from "./persona";
 import { store, gainBankroll, TYPE_CHANGE_BANKROLL } from "./store";
 import { scheduleEvent, EVENT_ID } from "./eventSystem";
 import { audioManager } from "./audioManager";
-
+export const CONTRACT_TYPE = {
+  SHARE_BENEFIT: 'SHARE_BENEFIT', // your win and lose net share
+  BANKRUPT_RESCUE: 'BANKRUPT_RESCUE', // rescue bankrupt each other
+  A_DATE_WITH_YOU: 'A_DATE_WITH_YOU', // a date with you
+  COLLUSION: 'COLLUSION', // with you gambling then session end share net worth
+}
 export const getPartner = (partnerId = null) => {
   if (!partnerId) return null;
   const partner = store.partners.find(p => p.id === partnerId);
@@ -57,11 +62,18 @@ export const registerPartner = (partnerId = null) => {
   if (!partnerId) return;
   store.partners.push(generatePartner(partnerId));
 }
-export const unregisterPartner = (partnerId = null) => {
+export const joinPartner = (partnerId = null) => {
+  if (!partnerId) return;
+  const partner = store.partners.find(p => p.id === partnerId);
+  if (partner) partner.isJoined = true;
+}
+export const leavePartner = (partnerId = null) => {
   if (!partnerId) return;
   const partner = store.partners.find((p) => p.id === partnerId);
-  if (partner) partnerScheduleEvent(EVENT_ID[partnerId.toUpperCase()]['GONE'], 2, partner, true);
-  store.partners = store.partners.filter((p) => p.id !== partnerId);
+  if (partner) {
+    partnerScheduleEvent(EVENT_ID[partnerId.toUpperCase()]['GONE'], 2, partner, true);
+    partner.find(p => p.id === partnerId).isJoined = false;
+  }
 }
 export const gainPartnersRelationshipOliveBranch = () => {
   store.partners.forEach((partner) => {
@@ -119,6 +131,18 @@ export const debtRepayment = (partner = null, amount = 0, toPlayer = true, contr
   }
   return true;
 }
+
+export const shareBenefitForPartners = (amount = 0) => {
+  const targetPartners = store.partners.filter(p => p.contracts.some(c => c.isJoined));
+  targetPartners.forEach((partner) => {
+    partner.contracts.forEach((contract) => {
+      if (contract.type === CONTRACT_TYPE.SHARE_BENEFIT) {
+        const finalAmount = amount * contract.ratio;
+        shareBenefit(partner.id, finalAmount, contract, false)
+      }
+    });
+  });
+}
 export const shareBenefit = (partner = null, amount = 0, contract = null, toPlayer = true) => {
   if (!partner || !contract) return false;
   const finalAmount = amount * contract.ratio * (toPlayer ? -1 : 1);
@@ -167,12 +191,7 @@ export const PartnerStatus = {
   RESTING: 'RESTING',
   IDLE: 'IDLE',
 }
-export const CONTRACT_TYPE = {
-  SHARE_BENEFIT: 'SHARE_BENEFIT', // your win and lose net share
-  BANKRUPT_RESCUE: 'BANKRUPT_RESCUE', // rescue bankrupt each other
-  A_DATE_WITH_YOU: 'A_DATE_WITH_YOU', // a date with you
-  COLLUSION: 'COLLUSION', // with you gambling then session end share net worth
-}
+
 export const CONTRACT_REQUIRED_RELATIONSHIP = {
   [CONTRACT_TYPE.SHARE_BENEFIT]: 600,
   [CONTRACT_TYPE.BANKRUPT_RESCUE]: 800,
@@ -255,7 +274,7 @@ export const ContractADateWithYou = () => { return { ...Contract(CONTRACT_TYPE.A
 
 
 export class Partner {
-  constructor({ id, name, philosophy, vPIP, AF, WTSD, W$SD, chipMultiply, isPartner, note, initialBankroll = 0, initialRelationship = 0, schedule = [], contracts = [] }) {
+  constructor({ id, name, philosophy, vPIP, AF, WTSD, W$SD, chipMultiply, isPartner, note, initialBankroll = 0, initialRelationship = 0, schedule = [], contracts = [], isAdvanced = false }) {
     this.id = id;
     this.name = name.toUpperCase();
     this.philosophy = philosophy;
@@ -273,9 +292,12 @@ export class Partner {
     this.sessionNetWorth = 0;
     this.contracts = contracts;
     this.schedule = schedule;
+    this.isAdvanced = isAdvanced;
     this.netShareTotal = 0; // +: Gain for partner, -: Gain for you
     this.debt = 0; // +: you owe partner, -: partner owes you
     this.sendedEventIds = []; // partner will not request same event to you
+    this.isJoinedPartner = false;
+    this.isJoinedTable = false;
   }
 }
 export const addSendedEventId = (partnerId, eventId) => {
@@ -361,7 +383,7 @@ export const updatePartnerStatusBySchedule = () => {
   store.partners.forEach(partner => {
     // skip partners without schedule array
     if (partner.relationship === 0) {
-      unregisterPartner(partner.id);
+      leavePartner(partner.id);
       return;
     }
     if (!partner.schedule || !Array.isArray(partner.schedule)) return;
@@ -522,19 +544,4 @@ const partnerScheduleEvent = (eventId, delay = 2, partner, acceptResend = false)
     addSendedEventId(partner.id, eventId);
     scheduleEvent(eventId, delay);
   }
-}
-export const playerNetSharePartners = () => {
-  if (store.sessionNetWorth <= 0) {
-    store.sessionNetWorth = 0;
-    return;
-  }
-  store.partners.forEach(partner => {
-    partner.contracts.forEach(contract => {
-      if (contract.active && contract.type === CONTRACT_TYPE.SHARE_BENEFIT) {
-        gainBankroll(-contract.ratio * store.sessionNetWorth, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
-        gainPartnerBankroll(partner, contract.ratio * store.sessionNetWorth, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
-      }
-    })
-  })
-  store.sessionNetWorth = 0;
 }

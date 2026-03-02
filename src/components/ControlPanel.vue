@@ -77,22 +77,47 @@
       </div>
       <!-- [MOVED] Protector Badge & Effects HUD -->
       <div class="status-row" v-if="player.item">
-        <div class="protector-badge" :title="player.item.desc">
+        <div class="protector-badge" :data-tooltip="player.item.desc">
           {{ player.item.icon }}
         </div>
         <div v-if="player.item.effects && player.item.effects.length > 0" class="effect-hud">
-          <div v-for="eff in player.item.effects" :key="eff.id" class="effect-item"
-            :class="{ 'cooldown': eff.cooldown > 0 }" :title="getEffectDesc(eff)">
-            <div class="eff-icon">{{ eff.icon }}</div>
-            <!-- Cooldown Gauge Overlay -->
-            <div v-if="eff.cooldown > 0" class="cooldown-gauge"
-              :style="{ height: (eff.maxCooldown ? (eff.cooldown / eff.maxCooldown * 100) : 100) + '%' }">
+          <div v-for="eff in player.item.effects" :key="eff.id" class="effect-wrapper"
+            :data-tooltip="getEffectDesc(eff)">
+            <div class="effect-item" :class="{ 'cooldown': eff.cooldown > 0 }">
+              <div class="eff-icon">{{ eff.icon }}</div>
+              <!-- Cooldown Gauge Overlay -->
+              <div v-if="eff.cooldown > 0" class="cooldown-gauge"
+                :style="{ height: (eff.maxCooldown ? (eff.cooldown / eff.maxCooldown * 100) : 100) + '%' }">
+              </div>
+              <div v-if="eff.stack >= 1" class="eff-stack">{{ eff.stack }}</div>
             </div>
-            <div v-if="eff.stack >= 1" class="eff-stack">{{ eff.stack }}</div>
           </div>
         </div>
       </div>
+      <!-- [CASHOUT], [RESERVE EXIT]  -->
+      <div class="status-row exit-controls">
+        <button class="btn-cashout" :disabled="isProcessing" @click="handleCashout">CASHOUT (INSTANT)</button>
+        <button class="btn-reserve-exit" :disabled="isProcessing" @click="handleReserveExit">
+          {{ engine.exitReservationRounds >= 0 ? `EXIT IN ${engine.exitReservationRounds} ROUNDS` : 'RESERVE EXIT' }}
+        </button>
+      </div>
     </div>
+    <!-- Custom Cashout Modal -->
+    <Transition name="fade">
+      <div v-if="showCashoutModal" class="overlay">
+        <div class="terminal-msg danger cyber-modal">
+          <h2 class="glitch-text" data-text="CASHOUT_WARNING">CASHOUT_WARNING</h2>
+          <p class="critical-msg">
+            Are you sure you want to cashout instantly?
+            (Leaving the table immediately after making a profit is considered rude.)
+          </p>
+          <div class="popup-actions">
+            <button class="btn-confirm btn-accept" @click="confirmCashout">CONFIRM</button>
+            <button class="btn-cancel btn-cancel" @click="showCashoutModal = false">CANCEL</button>
+          </div>
+        </div>
+      </div>
+    </Transition>
     <!-- <p class="scanline">NEURAL LINK ESTABLISHED // ENCRYPTED TRAFFIC ONLY</p> -->
   </footer>
 </template>
@@ -138,6 +163,7 @@ const getStaminaColor = computed(() => {
 });
 
 const isProcessing = ref(false);
+const showCashoutModal = ref(false);
 
 watch(isMyTurn, (newVal) => {
   if (newVal) {
@@ -187,19 +213,6 @@ const setBet = (type) => {
   }
 };
 
-const canUse = (skill) => {
-  const p = props.engine.players[0];
-  return (p.ram.used + p.ram.reserved + skill.cost) <= p.class.maxRam;
-};
-
-const useSkill = (skill) => {
-  if (props.engine.executeSkill(props.engine.players[0], skill.id)) {
-    // success
-  } else {
-    // fail
-  }
-};
-
 const getEffectDesc = (effDef) => {
   const base = effDef.desc || effDef.originalDef?.desc || effDef.effect?.type || 'Effect';
   const eff = effDef.effect || effDef;
@@ -209,6 +222,31 @@ const getEffectDesc = (effDef) => {
     return `${base}\n(Stack: ${eff.stack})`;
   }
   return base;
+};
+
+// --- Exit Handlers ---
+const handleCashout = () => {
+  // if (isProcessing.value) return;
+  // Apply full infamy calculation
+  // let msg = ''
+  // if (props.engine.suspicion < 80) msg = `You will gain ${props.engine.infamy} infamy.`
+  // else msg = `You will gain ${props.engine.infamy} infamy and ${props.engine.suspicion * 1.5} suspicion.`
+
+  showCashoutModal.value = true;
+};
+
+const confirmCashout = () => {
+  showCashoutModal.value = false;
+  emit('action', { type: 'cashout' });
+};
+
+const handleReserveExit = () => {
+  if (isProcessing.value) return;
+  // Calculate Reservation Rounds based on Suspicion
+  let roundsToWait = props.engine.exitReservationRoundDefault;
+  if (props.engine.suspicion >= 40) roundsToWait += 20;
+  else if (props.engine.suspicion >= 20) roundsToWait += 10;
+  props.engine.exitReservationRounds = roundsToWait;
 };
 </script>
 
@@ -392,6 +430,47 @@ button {
   padding: 5px;
   border-radius: 4px;
   border: 1px solid rgba(0, 240, 255, 0.2);
+}
+
+.exit-controls {
+  justify-content: space-between;
+  border: 1px solid var(--neon-magenta);
+}
+
+.btn-cashout,
+.btn-reserve-exit {
+  flex: 1;
+  padding: 8px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-cashout {
+  background: var(--neon-magenta);
+  color: #000;
+}
+
+.btn-cashout:hover:not(:disabled) {
+  box-shadow: 0 0 10px var(--neon-magenta);
+}
+
+.btn-reserve-exit {
+  background: transparent;
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+
+.btn-reserve-exit:hover:not(:disabled) {
+  background: rgba(0, 240, 255, 0.1);
+}
+
+.btn-reserve-exit:disabled {
+  border-color: #555;
+  color: #555;
 }
 
 .protector-badge {

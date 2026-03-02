@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { store, resetStore, saveStore, initStore, calculateSessionReport } from './logic/store';
+import { store, resetStore, saveStore, initStore, calculateSessionReport, applySessionExit } from './logic/store';
 import { GameEngine } from './logic/gameEngine';
 import Intro from './components/Intro.vue';
 import Splash from './components/Splash.vue';
@@ -20,11 +20,16 @@ import { audioManager } from './logic/audioManager';
 import { performSleep } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
 import { hydrateStoreItems } from './logic/items';
-import { playerNetSharePartners, hydratePartners, registerPartner } from './logic/partnerSystem';
-// ... imports
+import { hydratePartners, registerPartner, shareBenefitForPartners } from './logic/partnerSystem';
 import { startTimeSystem, formatGameTime, formatGameDate, stopTimeSystem, advanceTime } from './logic/timeSystem';
 // Automated Hand Transition Logic
 import { watch, computed, nextTick } from 'vue';
+const showInvestigationOverlay = ref(false);
+const investigationMessage = computed(() => {
+  return store.settings.language === 'ko'
+    ? '카지노 보안팀이 당신의 파트너와의 공모 혐의를 조사하고 있습니다...'
+    : 'Casino security investigating you for colluding with your partner....';
+})
 
 const handleQuitApp = async () => {
   try {
@@ -89,6 +94,12 @@ onMounted(() => {
     handleJoinTable(e.detail);
   });
 
+  window.addEventListener('trigger-reserved-exit', () => {
+    if (engine.value) {
+      handleAction({ type: 'cashout' });
+    }
+  });
+
   // Global shop refresh check every 10 seconds
   setInterval(checkAutoRefresh, 10000);
 
@@ -101,12 +112,12 @@ onMounted(() => {
 
     currentView.value = 'splash';
     isAppLoading.value = false;
+    registerPartner('max');
+    registerPartner('florence');
   };
 
   initializeApp();
-  // for TEST
-  registerPartner('max');
-  registerPartner('florence');
+
   // Background Auto-Save (Fallback for non-poker events)
   setInterval(() => {
     saveStore();
@@ -118,8 +129,6 @@ const rebootTimer = ref(null);
 const rebootInterval = ref(null);
 const rebootProgress = ref(0);
 const isRebooting = ref(false);
-
-
 
 const cancelReboot = () => {
   if (!isRebooting.value) return;
@@ -140,7 +149,7 @@ const handleStart = (mode) => {
 };
 
 const handleJoinTable = async (payload) => {
-  const { inviteId, size, buyIn, rake, rakeCap, isHighStakes, sb, bb, locationId, locationLV, buyInLimit } = payload;
+  const { inviteId, size, buyIn, rake, rakeCap, isAdvanced, sb, bb, locationId, locationLV, buyInLimit } = payload;
   console.info('handleJoinTable', payload);
   // [CLEANUP] Ensure previous engine is destroyed
   if (engine.value) {
@@ -152,7 +161,7 @@ const handleJoinTable = async (payload) => {
   const finalRake = rake !== undefined ? rake : 0.05;
   const finalRakeCap = rakeCap !== undefined ? rakeCap : (bb * 10);
   // const finalBuyInLimit = buyInLimit !== undefined ? buyInLimit : 999999;
-  engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isHighStakes, locationId, locationLV, buyInLimit, inviteId);
+  engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isAdvanced, locationId, locationLV, buyInLimit, inviteId);
 
   const equipped = store.ownedProtectors.find(p => (p.instanceId || p.id) === store.equippedProtector);
   if (equipped) {
@@ -161,7 +170,19 @@ const handleJoinTable = async (payload) => {
     engine.value.players[0].equippedProtectorInstance = equipped;
   }
 
+
   currentView.value = 'table';
+
+  // Check suspicion block
+  const zoneData = store.status_zone[locationId] || { suspicion: 0 };
+  if (zoneData.suspicion >= 60) {
+    alert("ACCESS DENIED: You are currently banned from this location due to high suspicion.");
+    currentView.value = 'lobby';
+    engine.value.cleanup();
+    engine.value = null;
+    return;
+  }
+
   await engine.value.startNewHand();
 };
 
@@ -189,15 +210,28 @@ const handleAction = async (payload) => {
     case 'raise':
       await engine.value.handlePlayerAction(engine.value.players[0], { type, amount });
       break;
-    case 'main_menu':
     case 'exit':
-      audioManager.playSFX('ui-click');
       showGameOverOverlay.value = false;
-      store.isRealGameOver = false; // Add this to reset game over states if needed
-      engine.value?.exitGame();
-      engine.value = null;
       currentView.value = 'lobby';
-      saveStore(); // Explicit save on exit
+      engine.value.exitGame();
+      engine.value = null;
+      break;
+    case 'cashout':
+      console.info('cashout')
+      audioManager.pause();
+      audioManager.playSFX('paybill');
+      audioManager.playSFX('clear-table')
+      if (engine.value) {
+        const netWinnings = applySessionExit(engine.value.players[0], engine.value);
+        shareBenefitForPartners(netWinnings);
+        currentView.value = 'lobby';
+        showStatsModal.value = true;
+        engine.value.exitGame();
+        engine.value = null;
+      }
+      // setTimeout(() => {
+      //   audioManager.play();
+      // }, 12000);
       break;
     case 'hard_reset':
       audioManager.playSFX('ui-click');
@@ -250,7 +284,6 @@ const handleSleepClick = () => {
     let i = 2;
     loopShowReport(i);
   }, 1000);
-  playerNetSharePartners()
   saveStore(); // Save after sleeping
 };
 function loopShowReport(i) {
@@ -466,21 +499,13 @@ watch(currentView, (newView) => {
                 {{ store.settings.showAsBB ? 'UNIT: BB' : 'UNIT: CR' }}
               </button>
             </div>
-            <div class="setting-item" v-if="currentView === 'table'">
+            <!-- <div class="setting-item" v-if="currentView === 'table'">
               <span class="label">SESSION_LINK:</span>
               <button class="btn-danger" @click="handleAction({ type: 'exit' }); toggleSettings()">LEAVE_TABLE</button>
-            </div>
+            </div> -->
             <div class="setting-item">
               <span class="label">EXIT_GAME:</span>
-              <button @click="handleAction({ type: 'main_menu' }); toggleSettings();">
-                EXIT TO TITLE
-              </button>
-            </div>
-            <div class="setting-item">
-              <span class="label">QUIT_APP:</span>
-              <button class="btn-danger" @click="handleQuitApp">
-                QUIT GAME
-              </button>
+              <button class="btn-danger" @click="handleQuitApp">EXIT</button>
             </div>
           </div>
           <button class="btn-close" @click="toggleSettings">CLOSE_INTERFACE</button>
@@ -517,13 +542,23 @@ watch(currentView, (newView) => {
         </div>
       </div>
     </Transition>
+    <!-- Investigation Overlay -->
+    <Transition name="fade">
+      <div v-if="showInvestigationOverlay" class="overlay investigation-overlay">
+        <div class="terminal-msg danger">
+          <h2 class="glitch-text" data-text="INVESTIGATION">INVESTIGATING...</h2>
+          <p class="critical-msg">{{ investigationMessage() }}</p>
+          <div class="action-row">
+          </div>
+        </div>
+      </div>
+    </Transition>
     <!-- Bankruptcy Overlay -->
     <Transition name="fade">
       <div v-if="showGameOverOverlay" class="overlay bankruptcy-overlay">
         <div class="terminal-msg danger">
-          <h2 class="glitch-text" data-text="CONNECTION TERMINATED">YOU ARE BANKRUPT</h2>
-          <h2 class="danger-title">BANKRUPTCY DETECTED</h2>
-          <p class="critical-msg">Your assets have been liquidated.</p>
+          <h2 class="glitch-text" data-text="CONNECTION TERMINATED">YOU ARE ELIMINATED</h2>
+          <p class="critical-msg">YOU'VE GONE BUST.</p>
           <div class="action-row">
             <button class="btn-reboot reboot-btn" @click="handleAction({ type: 'exit' });">
               <span class="btn-glitch">GO TO LOBBY</span>
@@ -538,11 +573,10 @@ watch(currentView, (newView) => {
         <div class="terminal-msg danger">
           <!-- <div class="danger-icon">⚠️</div> -->
           <h2 class="glitch-text" data-text="CONNECTION TERMINATED">GAME OVER</h2>
-          <h2 class="danger-title">GAME OVER</h2>
           <p class="critical-msg">{{ store.realGameOverReason }}</p>
           <div class="action-row">
             <button class="btn-reboot reboot-btn" @click="handleAction({ type: 'hard_reset' });">
-              <span class="btn-glitch">REBOOT SYSTEM</span>
+              <span class="btn-glitch">GO TO MAIN MENU</span>
             </button>
           </div>
         </div>

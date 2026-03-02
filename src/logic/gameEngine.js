@@ -5,21 +5,62 @@ import { CHAT_TRIGGERS, CLASSES_PARTNER } from './persona.js'
 import { audioManager } from './audioManager.js';
 import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
-import { CONTRACT_TYPE } from './partnerSystem.js';
-import { gainXP, store, saveStore, gainBankroll, TYPE_CHANGE_BANKROLL } from './store.js';
+import { CONTRACT_TYPE, getPartner } from './partnerSystem.js';
+import { gainXP, gainXPEstimate, store, saveStore, gainBankroll, TYPE_CHANGE_BANKROLL, gainSuspicion, getCurrentSuspicion, getCurrentInfamy } from './store.js';
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
 import { zones, LOCATION_ID } from './zone.js';
 
 const eventAdaptor = new EventAdaptor();
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
+export const getPlayStatsTemplate = () => {
+  return {
+    bust_enemy: {
+      'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
+      'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'The_Don': 0,
+      'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
+      'Max': 0, 'Florence': 0
+    },
+    // Economy
+    paid_rake: 0,
+    netWinnings: 0,
+    // Behavior (VPIP/PFR)
+    played_hands: 0,
+    fold: 0,
+    check: 0,
+    call: 0,
+    raise: 0,
+    all_in: 0,
+    wtsd: 0, // Went To Showdown
+    w$sd: 0, // Won $ at Showdown
+    pfr: 0, // Pre-Flop Raise
+    c_bet_count: 0,
+    fold_to_3bet: 0,
+    fold_to_4bet_or_more: 0,
+    donk_bet_count: 0,
+    raise3bet: 0,
+    raise4bet_or_more: 0,
+    vpip_count: 0,
+    // Luck & Probability
+    showdown_win: 0,
+    all_in_win: 0,
+    win_without_showdown: 0,
+    // Records
+    max_win_pot: 0,
+    max_lose_pot: 0,
+    max_win_streak: 0,
+    max_lose_streak: 0,
+    max_lose_equity: 0.0,
+    min_win_equity: 0.0,
+    max_pot: 0,
+  };
+}
 export class GameEngine {
-  constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isHighStakes = false, locationId = 'micro_street_shop', locationLV = 1, buyInLimit = 999999, inviteId = null) {
+  constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isAdvanced = false, locationId = 'micro_street_shop', locationLV = 1, buyInLimit = 999999, inviteId = null) {
     this.locationId = locationId;
     this.tableSize = tableSize;
     this.sb = sb;
     this.bb = bb;
-    this.isHighStakes = isHighStakes;
+    this.isAdvanced = isAdvanced;
     this.rake = rake;
     this.rakeCap = rakeCap;
     this.deck = [];
@@ -31,6 +72,8 @@ export class GameEngine {
     this.isTutorial = false;
     this.mentor = null;
     this.gameOver = false;
+    this.exitReservationRounds = -1; // -1 means no reservation
+    this.exitReservationRoundDefault = 15; // default value
     this.winnerId = null;
     this.playersActedCount = 0;
     this.runoutInProgress = false;
@@ -49,6 +92,9 @@ export class GameEngine {
     this.preflopAggressor = null; // Track who raised preflop for C-Bet logic
     this.buyInLimit = buyInLimit; // only for human?
     this.inviteId = inviteId;
+    this.suspicion = 0;
+    this.infamy = 0;
+    this.play_stats = getPlayStatsTemplate();
     this.players = this.initializePlayers(playerClass, tableSize); // [FIX] Initialize players after all properties are set
     // this.partners = [];
   }
@@ -59,7 +105,6 @@ export class GameEngine {
 
   initializePlayers(humanClass, size) {
     const players = [];
-
     const YOU = {
       id: 'player',
       name: 'YOU',
@@ -78,6 +123,7 @@ export class GameEngine {
       item: store.equippedProtector,
       tempXPBonus: 0.0,
       buyInLimit: this.buyInLimit,
+      totalBuyIn: 0,
       stats: {
         handsPlayed: 0,
         vPIPCount: 0,
@@ -100,6 +146,16 @@ export class GameEngine {
         const bonus = this.item.effects.reduce((sum, e) => (e.id === 'chip_rounding') ? sum + e.value : sum, 0);
         return Math.pow(10, bonus);
       },
+      get infamy_boost() {
+        if (!this.item || !this.item.effects) return 0;
+        const bonus = this.item.effects.reduce((sum, e) => (e.id === 'infamy_boost') ? sum + e.value : sum, 0);
+        return bonus;
+      },
+      get born_villain() {
+        if (!this.item || !this.item.effects) return 0;
+        const bonus = this.item.effects.reduce((sum, e) => (e.id === 'born_villain') ? sum + e.value : sum, 0);
+        return bonus;
+      },
       // get bonusXpToGoldRatio() {
       // if (!this.item || !this.item.effects) return 0;
       // const transGoldToXpRatio = this.item.effects.reduce((sum, e) => (e.id === 'golden_touch') ? sum + e.value : sum, 0);
@@ -119,7 +175,7 @@ export class GameEngine {
         return base + bonus;
       },
 
-      timeBankRemaining: 30, // Initial value
+      timeBankRemaining: 10, // Initial value
       // Helper methods for skills
     }
     this.processBuyIn(YOU)
@@ -247,8 +303,32 @@ export class GameEngine {
     // Optional: Shuffle enemiesToPlace so forced spawns aren't always seated right next to YOU
     enemiesToPlace = enemiesToPlace.sort(() => Math.random() - 0.5);
 
+    // --- Apply Infamy Modifications to NPC Template base on Zone ---
+    // const currentZoneData = store.status_zone[this.locationId] || { infamy: 0, suspicion: 0 };
+    this.infamy = getCurrentInfamy(this.locationId);
+    this.suspicion = getCurrentSuspicion(this.locationId);
     for (let i = 0; i < enemiesToPlace.length; i++) {
-      let villan = enemiesToPlace[i];
+      let villanTemplate = enemiesToPlace[i];
+      // Clone the template so we don't mutate the base CLASSES_ENEMY object directly
+      let villan = { ...villanTemplate };
+
+      // Apply Infamy Modifiers
+      if (this.infamy >= 60) {
+        villan.chipMultiply = (villan.chipMultiply || 1) * 1.5;
+        villan.isAdvanced = true;
+      }
+
+      if (this.infamy >= 40) {
+        villan.vPIP_modifier = (villan.vPIP_modifier || 1) * 0.7;
+        villan.WTSD_modifier = (villan.WTSD_modifier || 1) * 1.3;
+      }
+
+      if (this.infamy >= 20) {
+        // NPC AF = ((3 - {NPC 초기 AF} ) * 0.5) + {NPC 초기 AF} 로 보정.
+        const baseAF = villan.af || 1.0;
+        villan.af_modifier = ((3 - baseAF) * 0.5) + baseAF;
+      }
+
       const aiPlayer = {
         id: `cpu_${i + 1}`,
         name: `${villan.name}`,
@@ -297,6 +377,15 @@ export class GameEngine {
     this.playersActedCount = 0;
     this.currentStreetRaises = 0; // [FIX] Reset raises for new hand
     this.preflopAggressor = null;
+
+    if (this.exitReservationRounds > 0) {
+      this.exitReservationRounds--;
+    } else if (this.exitReservationRounds === 0) {
+      // Time to exit
+      this.handleReservedExit();
+      return;
+    }
+
     this.players.forEach(p => {
       p.hand = [this.deck.pop(), this.deck.pop()];
       p.isFolded = p.chips <= 0; // Out of game if no chips
@@ -431,7 +520,7 @@ export class GameEngine {
       audioManager.playSFX('card-dealt&fold');
       const activePlayers = this.players.filter(p => !p.isFolded);
       if (activePlayers.length === 1) {
-        this.state = 'SHOWDOWN';
+        // this.state = 'SHOWDOWN';
         const currentPot = this.pot; // [FIX] Capture pot before resolution clears it
         eventAdaptor.winAtWithoutShowdown({ player: activePlayers[0], amount: player.totalWagered, pot: currentPot, board: this.board });
         this.resolveShowdown(true);
@@ -463,9 +552,9 @@ export class GameEngine {
         } else {
           // Compare the diff to the pot before the bet to get a sense of size
           const potRatio = diff / (this.pot > 0 ? this.pot : this.bb);
-          if (potRatio < 0.35) {
+          if (potRatio <= 0.30) {
             chatAI(this.mentor, CHAT_TRIGGERS.RAISE_SMALL_FOR_PLAYER);
-          } else if (potRatio > 1.2) {
+          } else if (potRatio >= 0.7) {
             chatAI(this.mentor, CHAT_TRIGGERS.RAISE_BIG_FOR_PLAYER);
           } else {
             chatAI(this.mentor, CHAT_TRIGGERS.RAISE_MEDIUM_FOR_PLAYER);
@@ -624,14 +713,11 @@ export class GameEngine {
   }
 
   async resolveShowdown(withoutShowdownEvent = false) {
-
     // this.runoutInProgress = false; // Reset runout flag
-
     // Delegate to PotManager
     // [FIX] Check board length for No Flop No Drop instead of state (which is likely SHOWDOWN)
     const currentPot = this.pot; // [FIX] Capture pot before clearing
     const result = this.potManager.resolveShowdown(this.players, this.board, this.board.length === 0);
-    eventAdaptor.startStreet('SHOWDOWN');
     this.showdownResults = result;
 
     // Finalize History
@@ -644,10 +730,14 @@ export class GameEngine {
       this.currentHandHistory.detailedPots = result.detailedPots || [];
       this.currentHandHistory.playerResults = result.results || [];
       this.handHistory.unshift(this.currentHandHistory);
-      if (this.handHistory.length > 20) this.handHistory.pop(); // Keep last 20 hands
+      if (this.handHistory.length > 200) this.handHistory.pop(); // Keep last 200 hands
     }
 
-    if (!withoutShowdownEvent) eventAdaptor.showdown({ result, pot: currentPot, runoutInProgress: this.runoutInProgress, board: this.board, result })
+    if (!withoutShowdownEvent) {
+      this.state = 'SHOWDOWN';
+      eventAdaptor.endStreet('SHOWDOWN');
+      eventAdaptor.showdown({ result, pot: currentPot, runoutInProgress: this.runoutInProgress, board: this.board, result })
+    }
     // else eventAdaptor.win({ player: this.players[0], pot: this.pot });
     this.runoutInProgress = false; // Reset runout flag
     // if (isPlayerWinner) {
@@ -657,11 +747,12 @@ export class GameEngine {
     //   eventAdaptor.showdownLose({ winnerResult, pot: currentPot });
     //   if (isAllIn) eventAdaptor.allinLose({ winnerResult, pot: currentPot });
     // }
-    eventAdaptor.endStreet('SHOWDOWN');
+    // Human XP Gain (Estimated)
+    const meResult = result.results.find(r => r.isMe);
+    const me = this.players.find(p => p.isMe);
     // [IMPROVEMENT] Calculate and update XP/Level
     // [AI CHAT] Showdown Result
     const winners = result.results.filter(r => r.isWinner);
-
     if (winners.length > 1 && winners.some(w => w.amountWon === winners[0].amountWon)) {
       // It's a true Chop if multiple people won similar amounts from the same pot
       const aiChoppers = this.players.filter(p => !p.isHuman && !p.isFolded && winners.some(w => w.id === p.id));
@@ -688,16 +779,21 @@ export class GameEngine {
           const complainer = losers[Math.floor(Math.random() * losers.length)];
           const isHuge = this.pot > (this.bb * 40);
           chatAI(complainer, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL);
+
+          // [FIX] Infamy and suspicion system
+          const suspicionGainBase = this.pot / this.bb * (this.infamy === 100 ? 0.4 : 0.2);
+          const suspicionGainBoost = 1.0;
+          const suspicionGainPenalty = me.born_villain * 0.25;
+          gainSuspicion(this.locationId, suspicionGainBase * (suspicionGainBoost - suspicionGainPenalty));
         }
       }
     }
 
-    // Human XP Gain
-    const meResult = result.results.find(r => r.isMe);
-    const me = this.players.find(p => p.isMe);
+
+
     if (meResult && meResult.isWinner) {
-      const gainXPAmount = gainXP(me, meResult.amountWon, this.bb, this.isHighStakes, this.locationLV);
-      eventAdaptor.gainXP({ player: me, amount: gainXPAmount, bb: this.bb, isHighStakes: this.isHighStakes, locationLV: this.locationLV });
+      eventAdaptor.gainXP({ player: me });
+      gainXPEstimate(me, meResult.amountWon, this.bb, this.isAdvanced, this.locationLV);
     }
 
     // Mentor Tutorial Feedback
@@ -737,31 +833,61 @@ export class GameEngine {
     let sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000
     await sleep(sleepTime)
     saveStore(); // Save at the end of every complete hand
+
+    if (this.suspicion > 80) {
+      this.triggerCasinoInvestigation(this.players, store.status_zone[this.locationId]);
+      return;
+    } else if (Math.random() < this.suspicion / 100) {
+      this.triggerCasinoInvestigation(this.players, store.status_zone[this.locationId]);
+      return;
+    }
     this.startNewHand();
   }
 
-  // --- Skill Trigger System ---
-  // checkSkillTriggers(triggerType, context = {}) {
-  //   // Only check for human player (index 0) as AI skills are handled differently or not equipped via store
-  //   const player = this.players[0];
-  //   if (!player || !player.isHuman) return;
+  // --- Reservation Exit Logic ---
+  handleReservedExit() {
+    console.log('[GAME] Reservation round limit reached. Exiting automatically.');
+    this.exitReservationRounds = -1; // Reset
+    eventAdaptor.reservedExitReached();
+    // The App.vue or ControlPanel should handle the actual exit sequence if needed, 
+    // or we can call exitGame directly if we want to force it here.
+    // However, clean exit is usually managed by UI. We will emit a custom event.
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('trigger-reserved-exit'));
+    }
+  }
+  triggerCasinoInvestigation(players) {
+    console.warn('[SECURITY] Casino security investigating player...');
+    const partners = players.filter(p => p.isPartner); // partners with you in this table
+    const you = players.find(p => p.isMe)
+    let cheatingThreshold = 0;
+    const cheatingThresholdMap = {
+      [CONTRACT_TYPE.COLLUSION]: 999, // this is obviously cheating!!
+      [CONTRACT_TYPE.SHARE_BENEFIT]: 25,
+      [CONTRACT_TYPE.BANKRUPT_RESCUE]: 10,
+      [CONTRACT_TYPE.A_DATE_WITH_YOU]: 5,
+    };
+    partners.forEach(p => {
+      const partnerData = getPartner(p.id);
+      const validContracts = partnerData.contracts.filter((c) => c.active);
+      cheatingThreshold += validContracts.reduce((total, c) => total + (cheatingThresholdMap[c.type] || 0), 0);
+    })
+    if (cheatingThreshold > 100) this.triggerCasinoConfiscation(players)
+    else this.cashOut(you); // force exit
+  }
+  triggerCasinoConfiscation(players) {
+    console.warn('[SECURITY] Casino security confiscating player...');
+    gainSuspicion(this.locationId, 100);
+    players.forEach(p => {
+      p.chips = 0
+      if (p.isPartner) {
+        // to-do:Partner's Confiscation event
+      }
+    });
+    this.checkBankruptcy(null, true); // Best winner is null here, they just lost it cleanly
+  }
 
-  //   // Load equipped skills from store
-  //   const equippedIds = store.equippedSkills.filter(id => id);
-
-  //   equippedIds.forEach(skillId => {
-  //     const skill = SKILL_DATA.find(s => s.id === skillId);
-  //     if (skill && skill.trigger === triggerType) {
-  //       console.log(`[SKILL TARGET] ${ skill.name } triggered by ${ triggerType } `);
-  //       // Execute effect
-  //       if (typeof skill.effect === 'function') {
-  //         skill.effect(this, player, context);
-  //       }
-  //     }
-  //   });
-  // }
-
-  checkBankruptcy(bestWinner) {
+  checkBankruptcy(bestWinner, isConfiscation = false) {
     // 1. Bankrupt Players
     this.players.forEach(p => {
       if (p.chips <= 0 && !p.isEliminated) {
@@ -781,7 +907,7 @@ export class GameEngine {
         p.isEliminated = true;
         if (bestWinner && !bestWinner.isMe) chatAI(bestWinner, CHAT_TRIGGERS.ELIMINATED_ENEMY);
         // Handle Human Bankruptcy
-        if (p.isHuman) {
+        if (p.isHuman && !this.isConfiscation) { // only popup when you normally lose
           this.gameOver = true;
           this.winnerId = bestWinner ? bestWinner.id : 'cpu';
           // this.state = 'IDLE';
@@ -796,7 +922,7 @@ export class GameEngine {
       console.log('[GAME] Victory! You are the last survivor.');
       this.winnerId = 'player';
       this.gameOver = true;
-      this.victoryPrize = gainXP(lastSurvior[0], this.bb * 100, this.bb, this.isHighStakes);
+      this.victoryPrize = gainXPEstimate(lastSurvior[0], this.bb * 100, this.bb, this.isAdvanced, this.locationLV);
       audioManager.playSFX('clear-table');
       console.log(`[GAME] Victory Prize Awarded: ${this.bb * 100} `);
 
@@ -807,8 +933,6 @@ export class GameEngine {
   }
   exitGame() {
     eventAdaptor.playerLeaveTable(this.players[0], this.locationId, this.players, this.inviteId);
-    gainBankroll(this.players[0].chips, TYPE_CHANGE_BANKROLL.GAMBLING)
-    saveStore();
     this.cleanup();
   }
   processBuyIn(player) {
@@ -820,6 +944,7 @@ export class GameEngine {
     const targetBuyIn = this.buyIn * player.buyInMultiply;
     const actualBuyIn = Math.min(store.bankroll, targetBuyIn);
     player.chips = Math.round(actualBuyIn);
+    player.totalBuyIn += actualBuyIn;
     player.buyInLimit--;
     gainBankroll(actualBuyIn * -1, TYPE_CHANGE_BANKROLL.GAMBLING);
     console.log(`[BANKROLL] Buy-in deducted: ${actualBuyIn}. Remaining: ${store.bankroll}, ${player.buyInLimit} `);
@@ -952,11 +1077,9 @@ export class GameEngine {
   }
 
   async cashOut() {
-    const player = this.players[0];
-    if (player && player.chips > 0) {
-      gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING)
-      player.chips = 0;
-    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('trigger-reserved-exit'));
+    } else console.warn('[GAME] cashOut failed');
   }
 
   async processTurns() {
@@ -998,7 +1121,6 @@ export class GameEngine {
     player.timeBankRemaining = player.maxTimeBank || 30; // Reset for visualization
     const step = 100;
     let elapsed = 0;
-    console.info('delay', delay)
     // Animate the delay
     while (elapsed < delay) {
       if (this.gameOver || this.state === 'SHOWDOWN' || this.runoutInProgress) break;

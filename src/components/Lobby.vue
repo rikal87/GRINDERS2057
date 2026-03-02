@@ -65,14 +65,19 @@
                 <h3 class="location-name">{{ currentLocation.englishName }}</h3>
                 <!-- <span class="location-subname">{{ currentLocation.name }}</span> -->
               </div>
-
               <div class="location-info">
                 <p class="desc">{{ currentLocation.description }}</p>
 
                 <div class="npc-list">
-                  <span class="label">DETECTED_PERSONAS</span>
+                  <span class="label">TABLE_NOTES</span>
                   <div class="tags">
-                    <span v-for="npc in currentLocation.npcs" :key="npc" class="npc-tag" :title="getNote(npc)"
+                    <span class="npc-tag" :data-tooltip="infamyinfo">
+                      {{ getInfamyNote(currentLocation.id) }}
+                    </span>
+                    <span class="npc-tag" :data-tooltip="suspicioninfo">
+                      {{ getSuspicionNote(currentLocation.id) }}
+                    </span>
+                    <span v-for="npc in currentLocation.npcs" :key="npc" class="npc-tag" :data-tooltip="getNote(npc)"
                       :class="`${npc.toLowerCase()}`">{{
                         npc
                       }}</span>
@@ -132,12 +137,35 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { store } from '../logic/store.js';
+import { getCurrentInfamy, getCurrentSuspicion, store } from '../logic/store.js';
 import { audioManager } from '../logic/audioManager.js';
 import { zones } from '../logic/zone.js';
 import { CLASSES_ENEMY } from '../logic/persona.js';
 const emit = defineEmits(['join', 'view']);
+const infamyinfo = computed(() => store.settings.language === 'ko' ?
+  '악명이 높을수록 NPC의 대응이 정교해지며, 일정 수준 이상부터는 의심 수치가 증가합니다.'
+  : 'Higher Notoriety leads to more balanced NPC play. Beyond a certain point, it starts increasing your Suspect level.');
+const suspicioninfo = computed(() => store.settings.language === 'ko' ?
+  '감시의 눈초리가 깊어지면 자리를 뜨기 쉽지 않습니다. 보안 요원의 검문을 조심하십시오. 의심이 확신이 되는 순간, 이 구역은 출입이 불가하게 될 것입니다.'
+  : 'Under high suspicion, leaving becomes a challenge and security checks become frequent. Once you\'re marked, this entire zone will be off-limits');
 
+
+const getInfamyNote = (locationId) => {
+  const infamy = getCurrentInfamy(locationId);
+  if (infamy >= 80) return 'INFAMY: PUBLIC_ENEMY';
+  else if (infamy >= 60) return 'INFAMY: NOTORIOUS';
+  else if (infamy >= 40) return 'INFAMY: RISING_STAR';
+  else if (infamy >= 20) return 'INFAMY: GHOST';
+  else return 'INFAMY: ' + infamy;
+}
+const getSuspicionNote = (locationId) => {
+  const suspicion = getCurrentSuspicion(locationId);
+  if (suspicion >= 80) return 'SUPICTION: CRITICAL_ALERT';
+  else if (suspicion >= 60) return 'SUPICTION: HIGH_WATCH';
+  else if (suspicion >= 40) return 'SUPICTION: UNDER_SURVEILLANCE';
+  else if (suspicion >= 20) return 'SUPICTION: MINOR_TRACE';
+  else return 'SUPICTION: CLEAN';
+}
 const showSearchPopup = ref(false);
 const selectedSize = ref(6);
 const getNote = (npc) => {
@@ -274,7 +302,7 @@ const confirmJoin = () => {
       buyIn: table.amount,
       rake: currentRake.value,
       rakeCap: table.rakeCap,
-      isHighStakes: table.isHighStakes || false,
+      isAdvanced: table.isAdvanced || false,
       locationLV: currentLocation.value.locationLV,
       sb: table.sb,
       bb: table.bb,

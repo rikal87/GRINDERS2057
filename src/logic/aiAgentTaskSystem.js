@@ -1,7 +1,7 @@
 
 import { store, getEffectiveMaxLT, gainBankroll, TYPE_CHANGE_BANKROLL } from './store';
 import { sendMessage } from './messageSystem';
-import { AI_TASK_DATA } from './agentTaskData';
+import { AI_TASK_DATA } from './aiAgentTaskData';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 import { zones } from './zone';
 // Task Definitions
@@ -175,7 +175,7 @@ export const processAiTasks = () => {
         // Normal Tasks: Check if effect duration has expired
         if (store.gameTime >= taskState.effectEndTime * (1 + durationBonus)) {
           taskState.status = 'COOLDOWN';
-          taskState.cooldownEndTime = store.gameTime + (taskDef.cooldown * 60 * 1000) * (1 - cooldownBonus);
+          taskState.cooldownEndTime = store.gameTime + (taskDef.cooldown * 60 * 1000) * (1 - (cooldownBonus || 0));
           sendMessage('SYSTEM', 'Effect Expired', `${taskDef.name} effect has ended. Cooldown started.`);
 
           // Remove active boosts associated with this task

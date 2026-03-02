@@ -1,7 +1,7 @@
 
 import { store } from './store';
 import { consumeStamina } from './staminaSystem';
-import { processAiTasks } from './aiTaskSystem';
+import { processAiTasks } from './aiAgentTaskSystem';
 import { sendLoreAndSpamMessage } from './messageSystem';
 import { processEvents } from './eventSystem';
 import { simulatePartnersBehavior } from './partnerSystem';
@@ -18,7 +18,18 @@ export const startTimeSystem = () => {
 
   timerInterval = setInterval(() => {
     // Add 1 minute (60000ms) per tick
+    const oldDate = new Date(store.gameTime);
+    const oldDay = oldDate.getDate();
+
     store.gameTime += GAME_MINUTES_PER_TICK * 60 * 1000;
+
+    const newDate = new Date(store.gameTime);
+    const newDay = newDate.getDate();
+
+    if (oldDay !== newDay) {
+      // Daily rollover logic
+      processDailyDecay();
+    }
 
     // Process AI Agent logic (LT regen, Task success check, etc.)
     processAiTasks();
@@ -94,4 +105,23 @@ export const advanceTime = (hours) => {
       simulatePartnersBehavior();
     }
   }
+};
+
+const processDailyDecay = () => {
+  // Infamy and Suspicion decay by 1 each day for inactive zones
+  Object.keys(store.status_zone).forEach(locationId => {
+    // Don't decay the current zone if player is at table
+    if (window.isAtTable && window.currentLocationId === locationId) {
+      return;
+    }
+    const zoneData = store.status_zone[locationId];
+    if (zoneData.infamy > 0) zoneData.infamy = Math.max(0, zoneData.infamy - 1);
+
+    // Handle the field name transition if necessary, ensure it doesn't drop below 0
+    if (zoneData.suspicious !== undefined && zoneData.suspicion === undefined) {
+      zoneData.suspicion = zoneData.suspicious;
+      delete zoneData.suspicious;
+    }
+    if (zoneData.suspicion > 0) zoneData.suspicion = Math.max(0, zoneData.suspicion - 1);
+  });
 };

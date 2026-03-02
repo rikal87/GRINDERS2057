@@ -155,7 +155,7 @@ export const zones = [
           "Maniac",
           "The_Don"
         ],
-        "tables": { amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6, 9], baseRake: 0.1, rakeCap: 10000, isHighStakes: true },
+        "tables": { amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6, 9], baseRake: 0.1, rakeCap: 10000, isAdvanced: true },
       },
       {
         "id": "middle_holdem_house",
@@ -171,7 +171,7 @@ export const zones = [
           "Quant_Pro",
           "Rich_Guy"
         ],
-        "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1000, bb: 2500, available: [6, 9], baseRake: 0.1, rakeCap: 25000, isHighStakes: true },
+        "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1000, bb: 2500, available: [6, 9], baseRake: 0.1, rakeCap: 25000, isAdvanced: true },
       },
       {
         "id": "middle_casino_hotel",
@@ -188,7 +188,7 @@ export const zones = [
           "Shark",
           "Old_Lion"
         ],
-        "tables": { amount: 500000, amount_fmt: '500K', amount_min_fmt: '250K', sb: 2500, bb: 5000, available: [6, 9], baseRake: 0.1, rakeCap: 50000, isHighStakes: true },
+        "tables": { amount: 500000, amount_fmt: '500K', amount_min_fmt: '250K', sb: 2500, bb: 5000, available: [6, 9], baseRake: 0.1, rakeCap: 50000, isAdvanced: true },
       }
     ]
   },
@@ -211,7 +211,7 @@ export const zones = [
           "Quant_Pro",
           "Old_Lion"
         ],
-        "tables": { amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.11, rakeCap: 100000, isHighStakes: true }
+        "tables": { amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.11, rakeCap: 100000, isAdvanced: true }
       },
       {
         "id": "high_grand_casino",
@@ -227,7 +227,7 @@ export const zones = [
           "The_Don",
           "Rich_Guy"
         ],
-        "tables": { amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.11, rakeCap: 500000, isHighStakes: true }
+        "tables": { amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.11, rakeCap: 500000, isAdvanced: true }
       }
     ]
   },
@@ -249,7 +249,7 @@ export const zones = [
           "Musk_V",
           "The_Whale"
         ],
-        "tables": { amount: 1000000000, amount_fmt: '1B', amount_min_fmt: '500M', sb: 5000000, bb: 10000000, available: [6, 9], baseRake: 0.03, rakeCap: 10000000, isHighStakes: true }
+        "tables": { amount: 1000000000, amount_fmt: '1B', amount_min_fmt: '500M', sb: 5000000, bb: 10000000, available: [6, 9], baseRake: 0.03, rakeCap: 10000000, isAdvanced: true }
       }
     ]
   }

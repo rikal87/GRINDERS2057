@@ -267,7 +267,7 @@ export class PotManager {
         hand: p.handRank,
         isMe: p.isMe,
         tempXPBonus: p.tempXPBonus,
-        isWinner: contestedWins[p.id] > 0, // Only mark as winner if they won a contested pot
+        isWinner: contestedWins[p.id] > 0 || activePlayers.length === 1, // Mark as winner if they won a contested pot or are the last player standing
         amountWon: winnings[p.id]
       })),
       winnerId: bestWinner ? bestWinner.id : null,

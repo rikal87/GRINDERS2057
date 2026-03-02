@@ -195,10 +195,10 @@ export const ITEM_EFFECT_DATA = [
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Uncommon',
     cooldown: 0,
-    trigger: ['win'],
+    trigger: ['winAtShowdown', 'winAtShowdownWithAllIn'],
     editable: false,
-    get desc() { return store.settings.language === 'en' ? `Restores +${this.value} LT upon winning` : `승리시 LT +${this.value}`; },
-    value: 1,
+    get desc() { return store.settings.language === 'en' ? `Restores +${this.value} LT win at Showdown` : `쇼다운 승리시 LT +${this.value}`; },
+    value: 2,
     isStackable: true
   },
   {
@@ -380,7 +380,7 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     trigger: ['gainXP'],
     editable: false,
-    get desc() { return store.settings.language === 'en' ? `Adds CR equivalent to ${Math.floor(this.value * 100)}% of the XP you gain to your bankroll.` : `획득하는 경험치의 ${Math.floor(this.value * 100)}% 만큼의 CR이 뱅크롤에 추가됩니다.`; },
+    get desc() { return store.settings.language === 'en' ? `Adds CR equivalent to ${Math.floor(this.value * 100)}% of the XP you gain to your bankroll.` : `획득한 경험치의 ${Math.floor(this.value * 100)}% 만큼의 CR이 뱅크롤에 추가됩니다.`; },
     value: 1,
     isStackable: true
   },
@@ -802,6 +802,34 @@ export const ITEM_EFFECT_DATA = [
     get desc() { return store.settings.language === 'en' ? `Allows you to intercept the thoughts of CPU players this round. (Cooldown: ${this.maxCooldown} rounds)` : `해당 라운드에서 CPU 플레이어들의 생각을 훔쳐볼 수 있다. (쿨타임: ${this.maxCooldown} 라운드)`; },
     value: 1,
     isStackable: false
+  },
+  {
+    icon: '👹',
+    id: 'born_villain',
+    name_ko: '타고난 악당',
+    name_en: 'Born Villain',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Rare',
+    maxCooldown: 0,
+    cooldown: 0,
+    trigger: [],
+    get desc() { return store.settings.language === 'en' ? `Infamy gained +${this.value * 100}%. Suspicion gained or lose -${this.value * 25}%` : `악명 획득량 +${this.value * 100}%, 의심 획득/감소량 +${this.value * 25}%`; },
+    value: 1,
+    isStackable: true
+  },
+  {
+    icon: '😈',
+    id: 'infamy_boost',
+    name_ko: '악명 부스트',
+    name_en: 'Infamy Boost',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Epic',
+    maxCooldown: 0,
+    cooldown: 0,
+    trigger: [],
+    get desc() { return store.settings.language === 'en' ? `Infamy gained +${this.value * 100}%` : `악명 획득량 +${this.value * 100}%`; },
+    value: 0.5,
+    isStackable: true
   },
 ];
 

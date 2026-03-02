@@ -23,11 +23,11 @@ const eventAdaptor = new EventAdaptor();
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 export class GameEngine {
-  constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isHighStakes = false, locationId = 'micro_street_shop') {
+  constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isAdvanced = false, locationId = 'micro_street_shop') {
     this.tableSize = tableSize;
     this.sb = sb;
     this.bb = bb;
-    this.isHighStakes = isHighStakes;
+    this.isAdvanced = isAdvanced;
     this.rake = rake;
     this.rakeCap = rakeCap;
     this.deck = [];

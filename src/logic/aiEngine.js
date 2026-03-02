@@ -81,405 +81,291 @@ function getHeuristicFallback(player, engine) {
   const AF = player.class?.AF || 1;
   const street = engine.state;
   let handCategory = 'AIR';
-  // const activePlayers = engine.players.filter(p => !p.isFolded).length;
-  // const isHeadsUp = activePlayers === 2;
-  const betRatio = pot > 0 ? (callAmt / pot) : 0;
   const raises = engine.currentStreetRaises || 0;
   let dialogue = "";
-  let amount = 0; // [FIX] Initialize amount to avoid ReferenceError
-  // 1. Evaluate Strength
-  let strengthScore = 0;
-  let handRank = 169;
+  let amount = 0;
+  let insight = "";
 
-  let drawInfo = { draws: [] };
-  const isHighStakes = engine.isHighStakes;
+  const vPIP = player.class.vPIP || 0.5;
+  const wtsd = player.class.WTSD || 0.5;
+  const isAdvanced = player.isAdvanced;
   const playerIdx = engine.players.findIndex(p => p.id === player.id);
   const dealerIdx = engine.dealerIndex;
   const playerCount = engine.players.length;
+  const startingStack = player.chips + player.totalWagered;
 
-  let wtsd = player.class?.WTSD ? player.class.WTSD : 0.5;
-  let raiseThreshold = 100 - (AF * 10);
-  let callThreshold = 100 - (wtsd * 100);
-  let bluffFreq = Math.max(0, (AF - 2)) * 0.1; // Base bluff freq
+  // Base Bluff Frequency based on Aggression Factor
+  let bluffFreq = (AF - 2.5) * 0.1 + 0.05;
+  let multiplier = 1.0;
+  const distFromButton = (dealerIdx - playerIdx + playerCount) % playerCount;
 
-  // Distance from Button (0 = Button, 1 = CO, ...)
-  const distFromButton = (dealerIdx - playerIdx + playerCount) % playerCount; // not care about low level player
+  // Short stack Strategy (Multiplies effective equity logic)
+  if (player.chips < 40 * engine.bigBlind) {
+    multiplier = engine.bigBlind * 40 / player.chips;
+  }
+  if (raises > 0 && isAdvanced) multiplier -= Math.min(1, 1 - (3.5 - AF));
+
   const alivePlayers = engine.players.filter(p => !p.isFolded).length;
+
+  // --- 1. Evaluate Estimated Equity ---
+  let estimatedEquity = 0;
+  let handRank = 169;
+  let drawInfo = { draws: [] };
+
   if (street === 'PREFLOP') {
-    // Short stack strategy: Pocket Pair and Big Hand Advantage
-    if (isHighStakes && (player.chips < 30 * engine.bigBlind || alivePlayers <= 2)) handRank = getStartingHandRankHeadsup(player.hand);
-    else handRank = getStartingHandRank96Max(player.hand);
+    if (isAdvanced && (player.chips <= 30 * engine.bigBlind || alivePlayers <= 2)) {
+      handRank = getStartingHandRankHeadsup(player.hand);
+    } else {
+      handRank = getStartingHandRank96Max(player.hand);
+    }
 
-    // [vPIP Logic]
-    const vPIP = player.class.vPIP || 0.4; // Default 50%
-
-    // handRank 1 is best (AA), 169 is worst (72o)
-    // Percentile: 1 - (Rank / 169). e.g., Rank 1 => 0.99 (Top 1%), Rank 169 => 0 (Bottom 0%)
     const percentile = 1 - (handRank / 169);
+    estimatedEquity = percentile; // Simplified: Top 10% hand = 90% equity
 
-    // If our hand is WORSE than our vPIP threshold, we should fold.
-    // vPIP .20 means we play top 20%. So if percentile < .80 (implying rank > ~34), we fold.
-    // Wait, vPIP=1 means play 100%. vPIP=0.1 means play top 10%.
-    // So we play if percentile >= (1 - vPIP).
-    // If there are more players, we should play less.
-    // const vPIPThreshold = 1 - vPIP - (alivePlayers / 20);
+    // vPIP Fold Check (Before any pot odds, unless we are in Big Blind and it's free)
     const vPIPThreshold = 1 - vPIP;
-    // Check for Big Blind: if no raises, we can check regardless of vPIP.
-    // console.info('percentile', percentile, 'vPIPThreshold', vPIPThreshold);
-    if (percentile < vPIPThreshold && callAmt > 0) {
-      // Hand is too weak for our vPIP
-      return { action: 'fold', amount: 0, insight: `vPIP Fold (Rank ${handRank})` };
+    if (percentile < vPIPThreshold && callAmt > 0 && raises > 0) {
+      // Very weak hand compared to VPIP (only when facing a raise or we aren't bb)
+      return { action: 'fold', amount: 0, insight: `vPIP Fold (Eq: ${(estimatedEquity * 100).toFixed(0)}%)` };
     }
-    // Invert rank for score: 1 (AA) -> 100, 169 (72o) -> 0
-    strengthScore = Math.round(Math.max(0, (169 - handRank) / 4));
-    if (handRank <= 7) strengthScore += 80; // Premium bonus
-    else if (handRank <= 13) strengthScore += 60; // Strong bonus, but not over play
-    else if (handRank <= 22) strengthScore += 40; // Good bonus
-    else if (handRank <= 33) strengthScore += 20; // Fair bonus
-    else if (handRank <= 100) strengthScore += 10; // Weak bonus // WIDE range
-    if (isHighStakes) {
-      if (distFromButton <= 1) strengthScore += 10; // Button bonus
-      else if (distFromButton <= 3) strengthScore += 5; // MP bonus
+    if (handRank <= 4) estimatedEquity = 0.9; // AA, KK, QQ, AKs Premium Hand
+    else if (handRank <= 7) estimatedEquity = 0.7; // Semi premium hand
+    else if (handRank <= 11) estimatedEquity = 0.6; // Strong hand
+    else if (handRank <= 13) estimatedEquity = 0.55; // Good hand
+    else if (handRank <= 33) estimatedEquity = 0.5; // Fair hand
+    else if (handRank <= 100) estimatedEquity = 0.4; // Weak hand
+    else estimatedEquity = 0.35; // Trash hand
+
+    if (isAdvanced) {
+      if (distFromButton <= 1) estimatedEquity += 0.05; // Position bonus
+      else if (distFromButton >= alivePlayers - 2) estimatedEquity -= 0.05; // EP penalty
     }
+
   } else {
     // Postflop
     const evaluation = evaluateHand([...player.hand, ...engine.board]);
     const drawCategory = getDrawCategory(player.hand, engine.board);
     handCategory = getSimpleHandCategory(player.hand, engine.board, evaluation);
-    // Baseline Score from Rank
-    // Pair (2) -> ~20-30, Sets (4) -> ~60, FullHouse (7) -> ~90
-    // Category Adjustments
-    if (handCategory === 'NUTS') strengthScore = 125;
-    else if (handCategory === 'MONSTER') strengthScore = 100;
-    else if (handCategory === 'STRONG') strengthScore = 75;
-    else if (handCategory === 'MARGINAL') strengthScore = 50;
-    else if (handCategory === 'WEAK') strengthScore = 30;
-    else if (handCategory === 'ACE_HIGH') strengthScore = 10;
-    else strengthScore = 0;
 
-    if (drawCategory === 'DRAW_MONSTER') strengthScore += 25 * (5 - engine.board.length);
-    if (drawCategory === 'DRAW_STRONG') strengthScore += 18 * (5 - engine.board.length);
-    if (drawCategory === 'DRAW_WEAK') strengthScore += 8 * (5 - engine.board.length);
+    if (handCategory === 'NUTS') estimatedEquity = 0.95;
+    else if (handCategory === 'MONSTER') estimatedEquity = 0.85;
+    else if (handCategory === 'STRONG') estimatedEquity = 0.70;
+    else if (handCategory === 'GOOD') estimatedEquity = 0.60;
+    else if (handCategory === 'MARGINAL') estimatedEquity = 0.50;
+    else if (handCategory === 'WEAK') estimatedEquity = 0.30;
+    else if (handCategory === 'ACE_HIGH') estimatedEquity = 0.15;
+    else estimatedEquity = 0.05; // AIR
 
-    // Multi-way penalty for marginal hands
-    // if (!isHeadsUp && rank <= 4) strengthScore -= 15; // Top Pair or worse is weaker in multiway
-    console.info(`[AI_ENGINE] ${player.name} handCategory:`, handCategory, `strengthScore:`, strengthScore);
+    // Add Draw Equity
+    let drawBonus = 0;
+    if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.25;
+    else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.15;
+    else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.05;
+
+    // Less turns left = less draw value
+    const streetsLeft = street === 'FLOP' ? 2 : (street === 'TURN' ? 1 : 0);
+    drawBonus *= (streetsLeft / 2);
+
+    estimatedEquity = Math.min(0.98, estimatedEquity + drawBonus);
+    console.info(`[AI_ENGINE] ${player.name} Category: ${handCategory}, Base Eq: ${estimatedEquity}`);
   }
 
-  // 2. Establish Contextual Thresholds
-  // Adjust requirements based on Bet Size & Street
+  // Adjust equity based on short stack aggressiveness
+  estimatedEquity = Math.min(0.99, estimatedEquity * (multiplier > 1 ? (1 + (multiplier - 1) * 0.2) : 1));
 
-  const boardAnalysis = analyzeBoardTexture(engine.board);
+  // --- 2. Pot Odds & MDF (Minimum Defense Frequency) ---
+  const totalPotAfterCall = pot + callAmt;
+  let potOdds = callAmt > 0 ? (callAmt / totalPotAfterCall) : 0;
 
+  // Required Equity to Call (Base)
+  let requiredEquity = potOdds;
+
+  // Multi-way penalty: If many players, our hand needs to be stronger to win.
   if (alivePlayers > 2) {
-    const penalty = (alivePlayers - 2) * 5; // Multi-way penalty
-    wtsd = Math.max(0.1, wtsd - penalty);
-    callThreshold += penalty;
-    raiseThreshold += penalty;
+    requiredEquity += (alivePlayers - 2) * 0.05;
   }
-  // [PHASE 4] Commitment Logic (User Feedback: Based on Self Investment)
-  // Old SPR was: const spr = pot > 0 ? (player.chips / pot) : 20;
-  // New: Commitment Ratio = Total Wagered / (Current Chips + Total Wagered)
-  const startingStack = player.chips + player.totalWagered;
+
+  // Commitment Ratio = Total Wagered / (Current Chips + Total Wagered)
   const commitmentRatio = startingStack > 0 ? (player.totalWagered / startingStack) : 0;
   const spr = pot > 0 ? (player.chips / pot) : 20;
-  let insight = `Score: ${Math.floor(strengthScore)} (Thres: ${Math.floor(callThreshold)}/${Math.floor(raiseThreshold)})`;
-  if (isHighStakes) {
+
+  // Adjust required equity based on SPR & Depth
+  if (isAdvanced) {
     if (spr < 1.5) {
-      // [Pot Odds] Pot is huge relative to our stack (even if we didn't put much in).
-      // We get great odds.
-      callThreshold -= 10;
+      requiredEquity *= 0.8; // Great odds, committed
     } else if (spr > 10) {
-      // [Deep Stack] Play tighter against AF (Reverse Implied Odds)
-      // But we can float/bluff more on earlier streets.
-      // But, don't care about low-level player
-      callThreshold += 10;
+      requiredEquity *= 1.1; // Deep stack, reverse implied odds
       if (street !== 'RIVER') bluffFreq += 0.05;
     }
   }
-  // [AI FIX] 3-Bet Specific Adjustment
-  // If facing a raise Preflop, we need a stronger hand to 3-Bet.
-  if (street === 'PREFLOP' && callAmt > 0) {
-    raiseThreshold += 25 * raises; // Require premium strength
-  }
-  if (isHighStakes) {
-    if (street === 'FLOP') {
-      bluffFreq += 0.15; // Attack weakness on Flop
-    } else if (street === 'TURN') {
-      bluffFreq *= 0.66; // Less bluffing on turn
-    } else if (street === 'RIVER') {
-      // River bluff only base aggressive
-    }
-  }
-  // [AI FIX] If we are facing an all_in (or bet > our stack), we cannot bluff.
-  // We have 0 fold equity if we are the one going all_in for our life.
-  if (callAmt >= player.chips) {
-    bluffFreq = 0;
-  }
 
-  // 3. Decision
-  let action = 'fold';
-  // [HIGH STAKES AI] Enhanced Position & C-Bet Logic
-  // console.info('player>>', player.name, 'bluffFreq', bluffFreq);
-  if (isHighStakes) {
-    // We want to see if the Human (or any specific opponent) is exploitable.
-    // For now, we focus on the Human Player.
+  // --- 3. Opponent Profiling (Adjust requiredEquity & Bluff Freq) ---
+  const boardAnalysis = analyzeBoardTexture(engine.board);
+  const isAggressor = engine.preflopAggressor === player.id;
+
+  if (isAdvanced) {
     const human = engine.players.find(p => p.isHuman && !p.isFolded);
     let humanStats = { vPIP: 0, foldToFlop: 0 };
-    if (human && human.stats) {
-      humanStats.vPIP = human.stats.vPIP;
-      // Normalize FoldToFlop: If they faced very few bets, don't trust it yet.
+    if (human && human.stats && human.stats.handsPlayed >= 25) {
       if (human.stats.facedFlopBet >= 3) {
         humanStats.foldToFlop = human.stats.foldToFlop;
       }
-    }
-    // Strategy Matrix
-    // 2. Determine Context
-    const isPreflopAggressor = engine.preflopAggressor === player.id;
-    const isAggressor = isPreflopAggressor;
-    // [BOARD TEXTURE BLUFF ADJUSTMENT]
-    // Dry Board: Hard to hit, so bluffs (stabs) work better. +10% bluff.
-    // Wet Board: Easy to hit, opponents call more. -15% bluff (unless we have draw).
-    // [PHASE 4] Range Advantage
-    // Aggressor favors High Cards (J+). Caller favors Low/Mid.
-    const highCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r >= 9).length : 0; // J,Q,K,A
-    if (isAggressor) {
-      // We are aggressor.
-      if (highCardCount >= 1) {
-        bluffFreq += 0.1 * highCardCount; // Range Match: Bluff more
-        insight += " [Range Adv+]";
-      } else {
-        bluffFreq -= 0.1; // Range Miss: Check back more
-        insight += " [Range Disd-]";
-      }
-    } else {
-      // We are defender.
-      if (highCardCount <= 2 && boardAnalysis.type === 'WET') {
-        // Low & Connected board hits our calling range better.
-        // Donk/Check-Raise opportunity.
-        bluffFreq += 0.1 * (3 - highCardCount); // Range Match: Bluff more
-        raiseThreshold -= 10;
-        insight += " [Range Adv (Def)]";
-      }
-    }
+      humanStats.vPIP = human.stats.vPIP;
 
-    // 1. Position Awareness
-    if (distFromButton <= 1) {
-      // Late Position (Button/CO): Looser requirements
-      raiseThreshold -= 10;
-      callThreshold -= 5;
-      bluffFreq += 0.1;
-    } else if (distFromButton >= Math.floor(alivePlayers / 2)) {
-      // Early Position: Tighter
-      raiseThreshold += 5;
-    }
-
-    // 2. C-Bet Logic (Continuation Bet)
-    // If we raised Preflop, we should keep AF on Flop.
-    if (street === 'FLOP' && isAggressor) {
-      // We are the aggressor.
-      // C-Bet Frequency is high. We accept wider range.
-      raiseThreshold -= 15; // Bet with almost anything decent or air
-      bluffFreq += 0.2; // High bluff chance (C-Bet air)
-    }
-
-    // [PHASE 2] Adaptive Profiling Logic
-    // [PHASE 4] Stat Reliability: Only exploit if we have > 20 hands
-    if (human && human.stats && human.stats.handsPlayed >= 25) {
-      // A. Exploit Tight/Passive (High Fold to Flop)
-      // If Human folds > 60% to flop bets, we should bluff more on Flop/Turn.
+      // Exploit Tight: They fold a lot, bluff more. If they bet, they have it (require more equity to call).
       if (humanStats.foldToFlop > 0.6) {
-        bluffFreq += 0.15; // Bluff more
-        raiseThreshold -= 5; // Bet lighter
+        bluffFreq += 0.15;
+        if (callAmt > 0) requiredEquity += 0.05; // Respect their bets more
         insight += " [Exp:Tight]";
       }
-
-      // B. Exploit Calling Station (High vPIP, Low Fold)
-      // If Human vPIP > 0.6 and FoldToFlop < 0.4
+      // Exploit Station: They don't fold. Don't bluff, value bet thinner.
       if (humanStats.vPIP > 0.6 && humanStats.foldToFlop < 0.4) {
-        bluffFreq -= 0.2; // Don't bluff
-        // Value Bet widening? 
-        // We can actually bet THINNER value because they call wide.
-        raiseThreshold -= 10; // Value bet marginal hands (Top Pair weak kicker etc)
-        callThreshold -= 10;
-        // But ensure we don't bluff air. The bluffFreq reduction handles air.
-        // The raiseThreshold reduction lets us value bet thinner.
+        bluffFreq *= humanStats.foldToFlop;
+        requiredEquity -= 0.05; // We can call lighter because they bluff/bet wide
         insight += " [Exp:Station]";
       }
     }
-  }
-  // [RAISE LOOP FIX] Stabilize thresholds for multi-raise pots
-  const rawRaiseThreshold = raiseThreshold; // Capture logic-ready threshold before betRatio adjustment
 
-  // [FINAL COMMITMENT CHECK] 
-  // User logic: As commitment increases, folding becomes near impossible.
-  // Applied here so it scales down properly and overrides raise penalties. 
+    // Board Texture / Range Advantage
+    const highCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r >= 9).length : 0;
+    if (isAggressor) {
+      if (highCardCount >= 1) {
+        bluffFreq += 0.1; // Range Advantage
+      } else {
+        bluffFreq -= 0.1; // Range Disadvantage
+      }
+      if (street === 'FLOP') bluffFreq += 0.15; // C-Bet
+    } else {
+      if (highCardCount <= 2 && boardAnalysis.type === 'WET') {
+        bluffFreq += 0.1; // Good board to bluff back at aggressor
+      }
+    }
+    // Street adjustments
+    if (street === 'TURN') bluffFreq *= 0.66;
+  }
+
+  // Cap required equity at 0.50 if highly committed, or scale it down.
   if (commitmentRatio > 0.35) {
-    callThreshold = Math.floor(callThreshold * (1 - commitmentRatio));
-    raiseThreshold = Math.floor(raiseThreshold * (1 - commitmentRatio));
-    insight += ` [Committed ${(commitmentRatio * 100).toFixed(0)}%]`;
-
-    // Hard cap for extreme commitment (e.g. stack almost gone)
-    if (commitmentRatio > 0.70) {
-      callThreshold = Math.min(callThreshold, 15);
-    }
+    requiredEquity *= (1 - (commitmentRatio * 0.5));
+    insight += ` [Commt ${(commitmentRatio * 100).toFixed(0)}%]`;
   }
 
-  // If facing a 3-bet or higher, significantly tighten up (Unless Highly Committed)
-  if (isHighStakes && raises >= 2) {
-    if (commitmentRatio > 0.6) {
-      callThreshold += 3 * raises; // Negligible penalty
-    } else {
-      raiseThreshold += 25 * raises;
-      callThreshold += 15 * raises;
-    }
+  // raiseEquityThreshold (Need a clear edge over just calling to value raise)
+  let raiseEquityThreshold = requiredEquity + 0.20;
+  if (isAdvanced && isAggressor && street === 'FLOP') {
+    raiseEquityThreshold -= 0.1; // C-Bet lighter
   }
 
+  // --- 3.5 NPC Playstyle Adjustments ---
+  // lower AF > 3 = Overestimating your own hand, lower AF < 3 = Underestimating your own hand
+  // lower AF > 3 = Overestimating your own hand, lower AF < 3 = Underestimating your own hand
+  raiseEquityThreshold += (3 - AF) * 0.1; // lower AF > 3 = raise more, lower AF < 3 = raise less
+  requiredEquity += (0.5 - (street === 'PREFLOP' ? vPIP : wtsd));
+  if (player.class === 'GAMBLER') { // gambler is draw equity lover
+    const addBonus = drawBonus > 0.0 ? .1 : 0; // bonus for draw equity
+    estimatedEquity = Math.min(0.98, estimatedEquity + addBonus);
+  }
+  // Penalty for facing multiple raises
+  if (callAmt > 0) {
+    requiredEquity += raises * 0.08;
+    raiseEquityThreshold += raises * 0.15;
+  }
+
+  if (callAmt >= player.chips) bluffFreq = 0; // Can't bluff an all-in
+
+  insight += ` [Eq:${(estimatedEquity * 100).toFixed(0)}% / Req:${(requiredEquity * 100).toFixed(0)}%]`;
+  console.info(`[AI_ENGINE] ${player.name} ${insight} raiseEquityThreshold: ${(raiseEquityThreshold * 100).toFixed(0)}%, estimatedEquity: ${(estimatedEquity * 100).toFixed(0)}%, requiredEquity: ${(requiredEquity * 100).toFixed(0)}%`);
+  // --- 4. Decision Making ---
+  let action = 'fold';
   if (callAmt === 0) {
-    // Automatic Check if free
-    if (strengthScore > raiseThreshold * 0.8) {
-      // Value bet / Protection bet
-      action = 'raise';
-      insight = "Value/Protection Bet";
+    if (estimatedEquity >= raiseEquityThreshold) {
+      action = 'raise'; insight += " (Value)";
     } else if (Math.random() < bluffFreq) {
-      action = 'raise';
-      insight = "Pure Bluff bet.";
+      action = 'raise'; insight += " (Bluff)";
     } else {
-      action = 'check';
-      insight = "Check";
+      action = 'check'; insight += " (Check)";
     }
-
   } else {
     // We face a bet
-    if (strengthScore >= raiseThreshold) {
-      // Monster / Strong Value
-      if (betRatio > 1.0 && street !== 'RIVER') {
-        action = 'call'; // Flat call huge overbets with strong hands to keep them in?
-        insight = "Trapping huge bet.";
+    if (estimatedEquity >= raiseEquityThreshold) {
+      if (potOdds > 0.4 && street !== 'RIVER' && estimatedEquity < 0.85) {
+        // Just call big bets if our hand isn't an absolute monster
+        action = 'call'; insight += " (Call Huge)";
       } else {
-        action = 'raise';
-        insight = "Value Raise.";
+        action = 'raise'; insight += " (Value Raise)";
       }
-    } else if (strengthScore >= callThreshold) {
-      // Retain / Call
-      action = 'call';
-      insight = "Calling for value/odds.";
+    } else if (estimatedEquity >= requiredEquity) {
+      action = 'call'; insight += " (Call Odds)";
     } else {
-      // Weak
-      // [PHASE 3] River Overbet Bluff logic
-      if (isHighStakes) {
-        if (Math.random() < bluffFreq) {
-
-        } else {
-          action = 'fold';
-        }
+      // Fold
+      const rnd = Math.random();
+      if (isAdvanced && rnd < bluffFreq / 2 && street === 'RIVER') {
+        action = 'raise'; amount = player.chips + 10000; insight += " (River Shove Bluff)";
+      } else if (rnd < bluffFreq) {
+        action = 'raise'; insight += " (Pure Bluff)";
       } else {
-        const rnd = Math.random()
-        if (isHighStakes && rnd < bluffFreq / 2) {
-          action = 'raise';
-          insight = "River All-in Bluff";
-          amount = player.chips + 10000; // Force All-In logic later
-        } else if (rnd < bluffFreq) {
-          action = 'raise';
-          insight = "Pure Bluff Raise.";
-        } else {
-          action = 'fold';
-        }
+        action = 'fold'; insight += " (Fold)";
       }
     }
   }
 
-  // 4. Sizing (Standard NLH Logic)
-  // amount was initialized to 0
+  if (handCategory === 'BOARD_CHOP') {
+    action = 'call'; insight = "Board Chop";
+  }
+
+  // --- 5. Sizing ---
   if (action === 'raise') {
-    // A. Preflop Sizing
     if (street === 'PREFLOP') {
+      let openSize = 2.5;
+      let mult = player.chips < 20 * engine.bigBlind || spr < 1.8 ? 99999 : 1;
+      if (raises > 0) mult = Math.max(2.2, 5.5 - raises);
+      if (isAdvanced && distFromButton > 3) openSize += 0.5;
+      amount = Math.floor(engine.bb * openSize * mult);
+    } else {
       if (callAmt > 0) {
-        // [3-BET+ / SQUEEZE]
-        // Facing a raise. Standard is 3x the valid bet (callAmt + currentBet). 
-        const multiplier = Math.max(2.2, 5.5 - raises);
-        amount = Math.floor(engine.currentRoundBet * multiplier);
+        let mult = 3.0; // Standard raise over a bet
+        if (estimatedEquity > raiseEquityThreshold + 0.20) mult = 4.0;
+        amount = Math.max(amount, Math.floor(engine.currentRoundBet * mult));
       } else {
-        // [OPEN RAISE]
-        // Standard Open: 2.2BB - 3.5BB
-        let bbAmt = engine.bb;
-        let openSize = 2.5; // Default 2.5x
-        if (isHighStakes && distFromButton > 3) openSize += 0.5;
-        amount = Math.floor(bbAmt * openSize);
-      }
-    }
-    // B. Postflop Sizing
-    else {
-      if (callAmt > 0) {
-        // [RAISE / CHECK-RAISE]
-        // We are facing a bet. Standard raise is 3x the bet (or pot sized).
-        // A "Pot-Sized Raise" is (Pot + 2*Bet).
-        // Let's stick to a multiplier of the bet we are facing. 
-        // engine.currentRoundBet is the bet we face.
-        let multiplier = 3.0;
-        // Adjust for board texture / strength?
-        if (strengthScore > raiseThreshold + 20) multiplier = 4.0 + Math.max(0, (AF - 3)); // Punishment
-
-        amount = Math.max(amount, Math.floor(engine.currentRoundBet * multiplier));
-      } else {
-        // [BET / SEMI-BLUFF] (First to act or checked to)
-        // Bet based on Pot Size %
-        // 33% (Small/Dry), 66% (Standard), 75-100% (Polarized/Wet)
-        const pot = engine.pot;
-        let potPct = 0.5; // Default 1/2 pot
-
-        if (isHighStakes) {
-          // [BOARD TEXTURE ANALYSIS]
-          // Adjust sizing based on board wetness
-
-          if (boardAnalysis.type === 'DRY') {
-            potPct -= 0.2; // Trapping / Inducing or bluff stab?
-          } else if (boardAnalysis.type === 'WET') {
-            potPct += 0.35; // Heavy value or bluff
-          } else if (strengthScore < callThreshold) {
-            if (drawInfo && drawInfo.draws.length > 0) potPct += 0.25;
-          }
+        let potPct = 0.5;
+        if (isAdvanced) {
+          if (boardAnalysis.type === 'DRY') potPct -= 0.15;
+          else if (boardAnalysis.type === 'WET') potPct += 0.25;
+          else if (estimatedEquity < requiredEquity && drawInfo.draws.length > 0) potPct += 0.20; // Semi-bluff larger
         }
-        // [High Stakes Adjustment] Overbets
-        if (isHighStakes && street === 'RIVER' && (strengthScore > raiseThreshold + 50 || strengthScore < callThreshold - 20)) {
-          // Polarized Range: Nuts or Air -> Overbet (Pot)
-          potPct = 1.0 + (AF / 2);
+        if (isAdvanced && street === 'RIVER' && (estimatedEquity >= 0.70)) {
+          if (estimatedEquity >= 0.70) {
+            potPct = AF * 0.1 + 0.7 + (estimatedEquity - 0.7); // Polarized overbet
+          } else {
+            potPct = AF * 0.1 + 0.7 + (requiredEquity - 0.7); // Polarized bluff overbet
+          }
         }
         amount = Math.max(amount, Math.floor(pot * potPct));
       }
     }
   }
-  if (handCategory === 'BOARD_CHOP') {
-    action = 'call';
-    insight = "Board Chop";
+
+  // --- 6. Timing Tells ---
+  let delay = 1000 + Math.random() * 2000;
+  const equityDiff = Math.abs(estimatedEquity - requiredEquity);
+
+  if (estimatedEquity >= raiseEquityThreshold + 0.15) {
+    if (Math.random() < 0.3) delay = 500; else delay = 2000 + Math.random() * 1500;
+  } else if (equityDiff < 0.10) {
+    delay = 2000 + Math.random() * 3000;
+  } else if (action === 'fold' && estimatedEquity < requiredEquity - 0.20) {
+    delay = 600;
   }
-  // [PHASE 3] Timing Tells (Delay)
-  let delay = 1000 + Math.random() * 2000; // Default 1-3s
-  const difficulty = Math.abs(strengthScore - callThreshold); // How close was it?
-  if (strengthScore > raiseThreshold + 40) {
-    // Super Strong:
-    // Snap Call/Raise (0.5s) OR Hollywood Tank (2-3.5s)
-    if (Math.random() < 0.3) delay = 500; // Snap
-    else delay = 2000 + Math.random() * 1500; // Trapping tank
-  } else if (difficulty < 10) {
-    // Borderline decision: Tank
-    delay = 2000 + Math.random() * 3000; // 2-5s
-  } else if (action === 'fold') {
-    // Easy fold? Fast.
-    if (strengthScore < callThreshold - 20) delay = 1000;
+
+  if (action === 'raise' && estimatedEquity < requiredEquity) {
+    if (Math.random() < 0.5) delay = 2000 + Math.random() * 2000; else delay = 1000;
   }
-  // Bluffing Timing:
-  if (action === 'raise' && strengthScore < callThreshold) {
-    // Bluffing.
-    // Sometimes Snap Raise (Confidence), sometimes Tank (Calculation)
-    if (Math.random() < 0.5) delay = 2000 + Math.random() * 2000;
-    else delay = 1000; // "Obvious raise."
-  }
+
   return {
     action,
     amount: action === 'raise' ? amount : (action === 'call' ? engine.currentRoundBet : 0),
     insight: insight + ` (d:${Math.floor(delay)}ms)`,
     dialogue,
-    delay // Pass delay to engine
+    delay
   };
 }

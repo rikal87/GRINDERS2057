@@ -130,8 +130,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { store } from '../logic/store';
-import { AI_TASK_DATA } from '../logic/agentTaskData';
-import { isTaskUnlocked, startTask } from '../logic/aiTaskSystem';
+import { AI_TASK_DATA } from '../logic/aiAgentTaskData';
+import { isTaskUnlocked, startTask } from '../logic/aiAgentTaskSystem';
 import { audioManager } from '../logic/audioManager';
 const getBonusColor = (probBonus) => {
   console.log(probBonus);
