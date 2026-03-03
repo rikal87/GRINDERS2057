@@ -1,9 +1,11 @@
 import { reactive, watch } from 'vue';
+import { createPlayRecordStats, PLAY_RECORD_STATS_MSG_CODE } from './playRecordStats';
 import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
+import { shareBenefitForPartners } from './partnerSystem';
 const SAVE_KEY = 'cyberpoker_save_v1';
 
-const defaultState = {
+const getDefaultState = () => ({
   bankroll: 20000,
   chips: 0, // Chips on table
   // currentBB: 0,
@@ -21,9 +23,9 @@ const defaultState = {
   pendingEvents: [],
   latest_pay_income_base_amount: 0,
   status_zone: {
-    'micro_warehouse_with_max': { suspicion: 0.0, infamy: 0.0 },
-    'micro_underground_bar': { suspicion: 0.0, infamy: 0.0 },
-    'micro_warehouse': { suspicion: 0.0, infamy: 0.0 },
+    'micro_warehouse_with_max': { suspicion: 0.0, infamy: 0.0, isBlacklisted: false },
+    'micro_underground_bar': { suspicion: 0.0, infamy: 0.0, isBlacklisted: false },
+    'micro_warehouse': { suspicion: 0.0, infamy: 0.0, isBlacklisted: false },
   },
   collusion: {
     is_colluding: false,
@@ -42,100 +44,13 @@ const defaultState = {
   partners: [],
   isRealGameOver: false,
   realGameOverReason: '',
-  play_stats: {
-    bust_enemy: {
-      'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
-      'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'The_Don': 0,
-      'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
-      'Max': 0, 'Florence': 0
-    },
-    cleared_zones: {
-      'micro_warehouse_with_max': 0,
-      'micro_underground_bar': 0,
-      'micro_warehouse': 0,
-    },
-    // Economy
-    paid_rake: 0,
-    paid_buy_item: 0,
-    paid_bribe_dealer: 0,
-    paid_penalty: 0,
-    max_level: 0,
-    total_earn_money: 0n,
-    total_lost_money: 0n,
-    // Behavior (VPIP/PFR)
-    played_hands: 0,
-    fold: 0,
-    check: 0,
-    call: 0,
-    raise: 0,
-    all_in: 0,
-    wtsd: 0, // Went To Showdown
-    w$sd: 0, // Won $ at Showdown
-    pfr: 0, // Pre-Flop Raise
-    c_bet_count: 0,
-    fold_to_3bet: 0,
-    fold_to_4bet_or_more: 0,
-    donk_bet_count: 0,
-    raise3bet: 0,
-    raise4bet_or_more: 0,
-    vpip_count: 0,
-    bankruptcy_count: 0,
-    // Luck & Probability
-    showdown_win: 0,
-    all_in_win: 0,
-    win_without_showdown: 0,
-    // Records
-    max_win_pot: 0,
-    max_lose_pot: 0,
-    max_win_streak: 0,
-    max_lose_streak: 0,
-    max_lose_equity: 0.0,
-    min_win_equity: 0.0,
-    // Backward compatibility or UI convenience
-    max_credit: 0,
-    max_bankroll: 0,
-    max_pot: 0,
+  cleared_zones: {
+    'micro_warehouse_with_max': 0,
+    'micro_underground_bar': 0,
+    'micro_warehouse': 0,
   },
-  play_stats_session: {
-    bust_enemy: {
-      'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
-      'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'The_Don': 0,
-      'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
-      'Max': 0, 'Florence': 0
-    },
-    // Economy
-    paid_rake: 0,
-    netWinnings: 0,
-    // Behavior (VPIP/PFR)
-    played_hands: 0,
-    fold: 0,
-    check: 0,
-    call: 0,
-    raise: 0,
-    all_in: 0,
-    wtsd: 0, // Went To Showdown
-    w$sd: 0, // Won $ at Showdown
-    pfr: 0, // Pre-Flop Raise
-    c_bet_count: 0,
-    fold_to_3bet: 0,
-    fold_to_4bet_or_more: 0,
-    donk_bet_count: 0,
-    raise3bet: 0,
-    raise4bet_or_more: 0,
-    vpip_count: 0,
-    // Luck & Probability
-    showdown_win: 0,
-    all_in_win: 0,
-    win_without_showdown: 0,
-    // Records
-    max_win_pot: 0,
-    max_lose_pot: 0,
-    max_win_streak: 0,
-    max_lose_streak: 0,
-    max_lose_equity: 0.0,
-    min_win_equity: 0.0,
-    max_pot: 0,
-  },
+  play_stats: createPlayRecordStats(),
+  play_stats_session: createPlayRecordStats(),
   settings: {
     language: 'en', // Added for i18n
     preflop: [
@@ -192,8 +107,13 @@ const defaultState = {
   session_net_total: 0,
   hasSave: false,
   // last_session_stats: null // Used for settlement popup
-};
-
+});
+export const getLanguage = () => {
+  return store.settings.language;
+}
+export const getGameTime = () => {
+  return store.gameTime;
+}
 export const getBustEnemyCount = (enemyId) => {
   return store.play_stats.bust_enemy[enemyId];
 }
@@ -208,6 +128,12 @@ const bigIntReviver = (key, value) => {
 };
 export const getJoinedPartners = () => {
   return store.partners.filter(p => p.isJoined);
+}
+export const getCurrentBankroll = () => {
+  return store.bankroll;
+}
+export const getPartners = () => {
+  return store.partners;
 }
 export const getCurrentAgent = () => {
   return store.aiAgent ? store.aiAgent.model : AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD];
@@ -259,16 +185,27 @@ export const gainXP = (player) => {
   return xp;
 }
 export const gainSuspicion = (locationId, amount) => {
-  if (!store.status_zone[locationId]) store.status_zone[locationId] = { suspicion: 0, infamy: 0 };
-  store.status_zone[locationId].suspicion = Math.max(0, Math.min(100, store.status_zone[locationId].suspicion + amount));
+  if (!store.status_zone[locationId]) store.status_zone[locationId] = { suspicion: 0, infamy: 0, isBlacklisted: false };
+  const suspicion = Math.ceil(Math.max(0, store.status_zone[locationId].suspicion + Math.min(100, amount)));
+  store.status_zone[locationId].suspicion = suspicion;
+  if (suspicion >= 100) store.status_zone[locationId].isBlacklisted = true;
+}
+export const isBlacklisted = (locationId) => {
+  if (!store.status_zone[locationId]) return false;
+  return store.status_zone[locationId].isBlacklisted;
+}
+export const unlockBlacklist = (locationId) => {
+  if (!store.status_zone[locationId]) store.status_zone[locationId] = { suspicion: 0, infamy: 0, isBlacklisted: false };
+  store.status_zone[locationId].isBlacklisted = false;
 }
 export const getCurrentSuspicion = (locationId) => {
   if (!store.status_zone[locationId]) return 0;
   return store.status_zone[locationId].suspicion;
 }
 export const gainInfamy = (locationId, amount) => {
-  if (!store.status_zone[locationId]) store.status_zone[locationId] = { suspicion: 0, infamy: 0 };
-  store.status_zone[locationId].infamy = Math.max(0, Math.min(100, store.status_zone[locationId].infamy + amount));
+  if (!store.status_zone[locationId]) store.status_zone[locationId] = { suspicion: 0, infamy: 0, isBlacklisted: false };
+  const infamy = Math.ceil(Math.max(0, store.status_zone[locationId].infamy + Math.min(100, amount)));
+  store.status_zone[locationId].infamy = infamy;
 }
 export const getCurrentInfamy = (locationId) => {
   if (!store.status_zone[locationId]) return 0;
@@ -291,7 +228,7 @@ export const checkLevelUp = (xp) => {
 export const getNextLevelThreshold = () => {
   return Math.floor(1000 * Math.pow(1.5, store.level - 1));
 }
-let initialState = { ...defaultState };
+let initialState = getDefaultState();
 export const store = reactive(initialState);
 
 export const initStore = async () => {
@@ -299,12 +236,32 @@ export const initStore = async () => {
     const savedData = await get(SAVE_KEY);
     if (savedData) {
       const parsed = JSON.parse(savedData, bigIntReviver);
+      const defaultState = getDefaultState();
+      if (parsed.play_stats) {
+        if (parsed.play_stats.played_hands !== undefined) {
+          parsed.play_stats.hands_played = parsed.play_stats.played_hands;
+          delete parsed.play_stats.played_hands;
+        }
+        parsed.play_stats = { ...defaultState.play_stats, ...parsed.play_stats };
+      } else {
+        parsed.play_stats = { ...defaultState.play_stats };
+      }
+      if (parsed.play_stats_session) {
+        if (parsed.play_stats_session.played_hands !== undefined) {
+          parsed.play_stats_session.hands_played = parsed.play_stats_session.played_hands;
+          delete parsed.play_stats_session.played_hands;
+        }
+        parsed.play_stats_session = { ...defaultState.play_stats_session, ...parsed.play_stats_session };
+      } else {
+        parsed.play_stats_session = { ...defaultState.play_stats_session };
+      }
       Object.assign(store, { ...defaultState, ...parsed, hasSave: true });
     }
   } catch (e) {
     console.error('Failed to parse save data from IndexedDB:', e);
   }
 };
+
 export const TYPE_CHANGE_BANKROLL = {
   GAMBLING: 'GAMBLING',
   CRYPTO_TRADE: 'CRYPTO_TRADE',
@@ -338,11 +295,11 @@ export const deleteCompletedEvent = (eventId) => {
 
 // ZONE CLEAR SYSTEM
 export const getClearedZoneCount = (zoneId) => {
-  return store.play_stats.cleared_zones[zoneId] || 0;
+  return store.cleared_zones[zoneId] || 0;
 }
 export const gainClearedZoneCount = (locationId) => {
-  if (!store.play_stats.cleared_zones[locationId]) store.play_stats.cleared_zones[locationId] = 1
-  store.play_stats.cleared_zones[locationId]++
+  if (!store.cleared_zones[locationId]) store.cleared_zones[locationId] = 1
+  store.cleared_zones[locationId]++
 }
 
 // CAN USE NAGATIVE AMOUNT
@@ -367,7 +324,7 @@ export const saveStore = async () => {
 };
 
 export const resetStore = async () => {
-  Object.assign(store, { ...defaultState, hasSave: false });
+  Object.assign(store, { ...getDefaultState(), hasSave: false });
   await del(SAVE_KEY);
 };
 export const calculateSessionReport = () => {
@@ -397,14 +354,7 @@ export const calculateSessionReport = () => {
     detailes
   };
 };
-
 export const applySessionExit = (player, engine) => {
-  const { totalHandsPlayed, vPIPCount, pfrCount, wtsdCount, w$sdCount } = player.stats;
-  const vpip = totalHandsPlayed > 0 ? (vPIPCount / totalHandsPlayed) * 100 : 0;
-  const pfr = totalHandsPlayed > 0 ? (pfrCount / totalHandsPlayed) * 100 : 0;
-  const wtsd = totalHandsPlayed > 0 ? (wtsdCount / totalHandsPlayed) * 100 : 0;
-  const wsd = wtsdCount > 0 ? (w$sdCount / wtsdCount) * 100 : 0;
-
   const netWinnings = (player.chips - player.totalBuyIn);
   const winBB = netWinnings / engine.bb;
   let generatedInfamy = winBB * 0.2;
@@ -415,22 +365,24 @@ export const applySessionExit = (player, engine) => {
   if (generatedInfamy > 0) {
     gainInfamy(engine.locationId, generatedInfamy * baseBoostInfamy);
   } else gainInfamy(engine.locationId, generatedInfamy);
-
-
   // [FIX] Share partner benefit
   gainXP(netWinnings);
-
+  gainBankroll(netWinnings, TYPE_CHANGE_BANKROLL.GAMBLING);
+  shareBenefitForPartners(netWinnings);
   // Store for PlayStatsPopup display
-  store.play_stats_session = {
-    netBB: parseFloat(winBB.toFixed(1)),
-    played_hands: totalHandsPlayed,
-    vpip: vpip.toFixed(1),
-    pfr: pfr.toFixed(1),
-    wtsd: wtsd.toFixed(1),
-    wsd: wsd.toFixed(1),
-    generatedInfamy: generatedInfamy * baseBoostInfamy,
-    generatedSuspicion: 0, // Suspicion is added dynamically during the game, but we might want to calculate the diff if needed.
-  };
+  if (winBB > 100) {
+    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.WIN_BIG;
+  } else if (winBB > 50) {
+    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.WIN_MEDIUM;
+  } else if (winBB > 25) {
+    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.WIN_SMALL;
+  } else if (winBB < -100) {
+    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.LOSE_BIG;
+  } else if (winBB < -50) {
+    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.LOSE_MEDIUM;
+  } else if (winBB < -25) {
+    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.LOSE_SMALL;
+  }
   saveStore();
   return netWinnings;
 };

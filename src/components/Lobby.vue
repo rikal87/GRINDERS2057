@@ -15,7 +15,6 @@
       <div class="building-silhouette">
       </div>
     </div>
-
     <div class="lobby-content">
       <div class="user-header">
         <div class="chip-balance">
@@ -23,9 +22,8 @@
           <span class="value">{{ store.bankroll }} CR</span>
         </div>
       </div>
-
       <div class="menu-grid">
-        <div class="grid-item" @click="showSearchPopup = true" @mouseenter="setMapLocation('CASINO')">
+        <div class="grid-item" @click="$emit('openSearch')" @mouseenter="setMapLocation('CASINO')">
           <div class="icon">F</div>
           <div class="label">TABLE_SEARCH</div>
           <div class="desc">CASINO_DISTRICT</div>
@@ -50,194 +48,16 @@
       </div>
     </div>
 
-    <!-- Table Search Popup -->
-    <Transition name="fade">
-      <div v-if="showSearchPopup" class="overlay table-search-overlay" @click.self="showSearchPopup = false">
-        <div class="terminal-msg search-popup">
-          <h2 class="glitch-text" data-text="NET_TABLE_FINDER">NET_TABLE_FINDER</h2>
 
-          <div class="location-browser">
-            <button class="nav-btn prev" @click="prevLocation" :disabled="currentLocationIndex === 0">&lt;</button>
-
-            <div class="location-display" :style="{ backgroundImage: `url(${currentLocation.imgSrc})` }">
-              <div class="location-header">
-                <b class="zone-label">{{ currentLocation.zoneName }}</b>
-                <h3 class="location-name">{{ currentLocation.englishName }}</h3>
-                <!-- <span class="location-subname">{{ currentLocation.name }}</span> -->
-              </div>
-              <div class="location-info">
-                <p class="desc">{{ currentLocation.description }}</p>
-
-                <div class="npc-list">
-                  <span class="label">TABLE_NOTES</span>
-                  <div class="tags">
-                    <span class="npc-tag" :data-tooltip="infamyinfo">
-                      {{ getInfamyNote(currentLocation.id) }}
-                    </span>
-                    <span class="npc-tag" :data-tooltip="suspicioninfo">
-                      {{ getSuspicionNote(currentLocation.id) }}
-                    </span>
-                    <span v-for="npc in currentLocation.npcs" :key="npc" class="npc-tag" :data-tooltip="getNote(npc)"
-                      :class="`${npc.toLowerCase()}`">{{
-                        npc
-                      }}</span>
-                  </div>
-                </div>
-                <div class="table-stats">
-                  <div class="stat-row">
-                    <span class="stat-label">BUY_IN:</span>
-                    <span class="stat-value">{{ currentTableConfig.amount_fmt }} CR</span>
-                  </div>
-                  <div class="stat-row">
-                    <span class="stat-label">BLINDS:</span>
-                    <span class="stat-value">{{ currentTableConfig.sb }}/{{ currentTableConfig.bb }}</span>
-                  </div>
-                  <div class="stat-row">
-                    <span class="stat-label">RAKE:</span>
-                    <span class="stat-value">
-                      <span v-if="currentTableConfig.baseRake !== currentRake"
-                        style="text-decoration: line-through; opacity: 0.5; margin-right: 5px;">
-                        {{ (currentTableConfig.baseRake * 100).toFixed(1) }}%
-                      </span>
-                      {{ (currentRake * 100).toFixed(1) }}% (Max {{ currentTableConfig.rakeCap }})
-                    </span>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-            <button class="nav-btn next" @click="nextLocation"
-              :disabled="currentLocationIndex === flatLocations.length - 1">&gt;</button>
-          </div>
-
-          <div class="search-options">
-            <div class="option-group">
-              <span class="label">TABLE_SIZE:</span>
-              <div class="btn-group">
-                <button class="btn" :class="{ active: selectedSize === 6 }" @click="selectedSize = 6">6-MAX</button>
-                <button class="btn" :class="{ active: selectedSize === 9 }" @click="selectedSize = 9">9-MAX</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="popup-actions">
-            <button class="btn-confirm" :disabled="!canAfford || isLocked" @click="confirmJoin">
-              <span v-if="isLocked">ACCESS_DENIED (KEY_REQUIRED)</span>
-              <span v-else-if="canAfford">INITIATE_LINK</span>
-              <span v-else>INSUFFICIENT_FUNDS</span>
-            </button>
-            <button class="btn-cancel" @click="showSearchPopup = false">ABORT</button>
-          </div>
-        </div>
-      </div>
-    </Transition>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { getCurrentInfamy, getCurrentSuspicion, store } from '../logic/store.js';
+import { store } from '../logic/store.js';
 import { audioManager } from '../logic/audioManager.js';
-import { zones } from '../logic/zone.js';
-import { CLASSES_ENEMY } from '../logic/persona.js';
-const emit = defineEmits(['join', 'view']);
-const infamyinfo = computed(() => store.settings.language === 'ko' ?
-  '악명이 높을수록 NPC의 대응이 정교해지며, 일정 수준 이상부터는 의심 수치가 증가합니다.'
-  : 'Higher Notoriety leads to more balanced NPC play. Beyond a certain point, it starts increasing your Suspect level.');
-const suspicioninfo = computed(() => store.settings.language === 'ko' ?
-  '감시의 눈초리가 깊어지면 자리를 뜨기 쉽지 않습니다. 보안 요원의 검문을 조심하십시오. 의심이 확신이 되는 순간, 이 구역은 출입이 불가하게 될 것입니다.'
-  : 'Under high suspicion, leaving becomes a challenge and security checks become frequent. Once you\'re marked, this entire zone will be off-limits');
 
-
-const getInfamyNote = (locationId) => {
-  const infamy = getCurrentInfamy(locationId);
-  if (infamy >= 80) return 'INFAMY: PUBLIC_ENEMY';
-  else if (infamy >= 60) return 'INFAMY: NOTORIOUS';
-  else if (infamy >= 40) return 'INFAMY: RISING_STAR';
-  else if (infamy >= 20) return 'INFAMY: GHOST';
-  else return 'INFAMY: ' + infamy;
-}
-const getSuspicionNote = (locationId) => {
-  const suspicion = getCurrentSuspicion(locationId);
-  if (suspicion >= 80) return 'SUPICTION: CRITICAL_ALERT';
-  else if (suspicion >= 60) return 'SUPICTION: HIGH_WATCH';
-  else if (suspicion >= 40) return 'SUPICTION: UNDER_SURVEILLANCE';
-  else if (suspicion >= 20) return 'SUPICTION: MINOR_TRACE';
-  else return 'SUPICTION: CLEAN';
-}
-const showSearchPopup = ref(false);
-const selectedSize = ref(6);
-const getNote = (npc) => {
-  const enemy = CLASSES_ENEMY.find(e => e.name === npc);
-  return enemy ? enemy.note : '';
-}
-// Flatten locations efficiently
-const flatLocations = computed(() => {
-  const locs = [];
-  zones.forEach(zone => {
-    zone.locations.forEach(loc => {
-      if (loc.isHidden) return true;
-      locs.push({
-        ...loc,
-        zoneName: zone.name,
-        zoneId: zone.id,
-        locationLV: zone.level
-      });
-    });
-  });
-  return locs;
-});
-
-const currentLocationIndex = ref(0);
-const currentLocation = computed(() => flatLocations.value[currentLocationIndex.value]);
-
-const nextLocation = () => {
-  if (currentLocationIndex.value < flatLocations.value.length - 1) {
-    currentLocationIndex.value++;
-    audioManager.playSFX('ui-click');
-  }
-};
-
-const prevLocation = () => {
-  if (currentLocationIndex.value > 0) {
-    currentLocationIndex.value--;
-    audioManager.playSFX('ui-click');
-  }
-};
-
-const currentTableConfig = computed(() => currentLocation.value.tables);
-
-// Dynamic Rake Calculation
-const currentRake = computed(() => {
-  if (!currentTableConfig.value) return 0;
-  const base = currentTableConfig.value.baseRake;
-  const eventRake = store.eventRake || 0;
-
-  // AI Agent Boost effects
-  let agentRakeDiscount = 0;
-  if (store.activeBoosts && currentLocation.value) {
-    store.activeBoosts.forEach(b => {
-      // Global discount
-      if (b.effect.type === 'rake_discount') {
-        agentRakeDiscount += b.effect.amount;
-      }
-      // Targeted discount (e.g. random location event)
-      if (b.effect.type === 'rake_discount_rnd_mul' && b.effect.targetLocationId === currentLocation.value.id) {
-        agentRakeDiscount += b.effect.amount;
-      }
-    });
-  }
-
-  // Multiply based discount
-  let finalRake = (base - eventRake) * Math.max(0, 1 - agentRakeDiscount);
-  return Math.max(0.00, finalRake); // CAN'T BE LOWER THAN 0
-});
-
-const canAfford = computed(() => {
-  if (!currentTableConfig.value) return false;
-  return store.bankroll >= (currentTableConfig.value.amount * 0.5);
-});
+const emit = defineEmits(['view', 'openSearch']);
 
 const currentMapKey = ref('DEFAULT');
 const mapPositions = {
@@ -249,7 +69,7 @@ const mapPositions = {
 };
 
 const mapPosition = computed(() => mapPositions[currentMapKey.value].pos);
-const currentMapLocationName = computed(() => mapPositions[currentMapKey.value].name); // Renamed to avoid collision
+const currentMapLocationName = computed(() => mapPositions[currentMapKey.value].name);
 
 const setMapLocation = (key) => {
   if (currentMapKey.value !== key) {
@@ -274,48 +94,6 @@ onMounted(() => {
   triggerAnimation();
   audioManager.playTrackByZoneId('lobby');
 });
-
-function testAddLevel() {
-  store.level++;
-}
-
-const isLocked = computed(() => {
-  if (!currentLocation.value) return false;
-  const req = currentLocation.value.requirements;
-  if (!req) return false;
-  // Check against unlockedLocations in store
-  return !(store.unlockedLocations && store.unlockedLocations.includes(req));
-});
-
-const confirmJoin = () => {
-  if (currentLocation.value && canAfford.value && !isLocked.value) {
-    const table = currentTableConfig.value;
-    console.log('table', table);
-    // Check if table size is available
-    if (!table.available.includes(selectedSize.value)) {
-      // Fallback or error? For now just log or do nothing. 
-      // Ideally UI should disable join if size not supported, currently we support 6/9 for all
-      return;
-    }
-    emit('join', {
-      size: selectedSize.value,
-      buyIn: table.amount,
-      rake: currentRake.value,
-      rakeCap: table.rakeCap,
-      isAdvanced: table.isAdvanced || false,
-      locationLV: currentLocation.value.locationLV,
-      sb: table.sb,
-      bb: table.bb,
-      locationId: currentLocation.value.id,
-      locationName: currentLocation.value.name,
-      backgroundDescription: currentLocation.value.backgroundDescription,
-      buyInLimit: table.buyInLimit
-    });
-    showSearchPopup.value = false;
-  } else {
-    audioManager.playSFX('ui-error');
-  }
-};
 </script>
 
 <style scoped>
@@ -546,206 +324,7 @@ const confirmJoin = () => {
   color: var(--neon-yellow);
 }
 
-/* Search Popup Styles */
-.table-search-overlay {
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(5px);
-  z-index: 100;
-}
 
-.search-popup {
-  width: 95%;
-  max-width: 900px;
-  /* Wider for the new layout */
-  background: #050a0e;
-  border: 2px solid var(--neon-cyan);
-  padding: 2rem;
-  display: flex;
-  flex-direction: column;
-  background-position: center center;
-}
-
-.location-browser {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin: 1.5rem 0;
-  gap: 1rem;
-}
-
-.location-display {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto 1fr;
-  gap: 1.5rem;
-  /* background: rgba(0, 240, 255, 0.02); */
-  background-size: cover;
-  background-position: center center;
-  border: 1px solid var(--glass-border);
-  padding: 1.5rem;
-  height: 50vh;
-}
-
-.location-header {
-  grid-column: 1 / -1;
-  border-bottom: 1px solid var(--glass-border);
-  padding-bottom: 0.5rem;
-}
-
-.zone-label {
-  font-size: 0.7rem;
-  color: var(--neon-magenta);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  text-shadow: 0 0 3px #050a0e;
-}
-
-.location-name {
-  font-size: 1.8rem;
-  color: #fff;
-  margin: 0.2rem 0;
-
-  text-shadow: 0 0 5px rgba(0, 240, 255, 0.3);
-}
-
-.location-subname {
-  font-size: 0.8rem;
-  color: #888;
-  font-style: italic;
-}
-
-/* removed .location-visual and .visual-placeholder styles */
-
-.location-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-
-  /* Glassmorphism for better readability over background image */
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(0, 240, 255, 0.2);
-  padding: 1.5rem;
-  border-radius: 4px;
-}
-
-.location-info .desc {
-  font-size: 1.2rem;
-  color: #fff;
-  line-height: 1.6;
-  text-align: left;
-  word-break: keep-all;
-  overflow-wrap: break-word;
-  margin: 0;
-}
-[lang="en"] .location-info .desc {
-  font-size: 1rem;
-}
-
-.npc-list {
-  margin-top: auto;
-}
-
-.npc-list .label {
-  display: block;
-  font-size: 0.7rem;
-  color: var(--neon-green);
-  margin-bottom: 0.5rem;
-}
-
-.tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.npc-tag {
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  background: rgba(0, 255, 65, 0.1);
-  border: 1px solid;
-  /* border: 1px solid var(--neon-green);
-  color: var(--neon-green); */
-  cursor: help;
-}
-.npc-tag.mr_call {
-  border-color: var(--neon-marine);
-  color: var(--neon-marine);
-}
-.npc-tag.fish {
-  border-color: var(--neon-green);
-  color: var(--neon-green);
-}
-.npc-tag.broke {
-  border-color: var(--neon-brown);
-  color: var(--neon-brown);
-}
-.npc-tag.gambler {
-  border-color: var(--neon-purple);
-  color: var(--neon-purple);
-}
-.npc-tag.rich_guy {
-  border-color: var(--accent-magenta);
-  color: var(--accent-magenta);
-}
-.npc-tag.maniac {
-  border-color: var(--neon-violet);
-  color: var(--neon-violet);
-}
-.npc-tag.old_lion {
-  border-color: var(--neon-gold);
-  color: var(--neon-gold);
-}
-.npc-tag.quant_pro {
-  border-color: var(--neon-cyan);
-  color: var(--neon-cyan);
-}
-.npc-tag.shark {
-  border-color: var(--neon-indigo);
-  color: var(--neon-indigo);
-}
-.npc-tag.the_whale {
-  border-color: var(--neon-shine-gold);
-  color: var(--neon-shine-gold);
-}
-.npc-tag.gangster {
-  border-color: var(--neon-orange);
-  color: var(--neon-orange);
-}
-.npc-tag.the_don {
-  border-color: var(--neon-red);
-  color: var(--neon-red);
-}
-.npc-tag.nit {
-  border-color: var(--neon-grey);
-  color: var(--neon-grey);
-}
-
-
-.npc-tag.named_pro {
-  border-color: var(--neon-red);
-  color: var(--neon-gold);
-}
-.npc-tag.unknown_woman {}
-.table-stats {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 1rem;
-  border: 1px solid #333;
-  /* margin-top: 1rem; */
-}
-
-.stat-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-
-  font-size: 0.8rem;
-}
-
-.stat-row:last-child {
-  margin-bottom: 0;
-}
 
 .stat-label {
   color: #888;
@@ -760,18 +339,6 @@ const confirmJoin = () => {
   font-size: 0.7rem;
   animation: blink 2s infinite;
 }
-
-.option-group {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.option-group .label {
-  margin-bottom: 0;
-}
-
-
 
 .popup-actions {
   display: flex;

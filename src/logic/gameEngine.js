@@ -2,10 +2,11 @@ import { calculateEquity, createDeck } from './poker.js';
 import { getAIAction, chatAI, } from './aiEngine.js';
 import { getAdvancedAIAction } from './aiEngineAdvanced.js';
 import { CHAT_TRIGGERS, CLASSES_PARTNER } from './persona.js'
+import { CONTRACT_TYPE } from './partnerContractSystem.js'
 import { audioManager } from './audioManager.js';
 import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
-import { CONTRACT_TYPE, getPartner } from './partnerSystem.js';
+import { getPartner } from './partnerSystem.js';
 import { gainXP, gainXPEstimate, store, saveStore, gainBankroll, TYPE_CHANGE_BANKROLL, gainSuspicion, getCurrentSuspicion, getCurrentInfamy } from './store.js';
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
 import { zones, LOCATION_ID } from './zone.js';
@@ -23,6 +24,8 @@ export const getPlayStatsTemplate = () => {
     // Economy
     paid_rake: 0,
     netWinnings: 0,
+    total_earn_money: 0n,
+    total_lost_money: 0n,
     // Behavior (VPIP/PFR)
     played_hands: 0,
     fold: 0,
@@ -94,7 +97,6 @@ export class GameEngine {
     this.inviteId = inviteId;
     this.suspicion = 0;
     this.infamy = 0;
-    this.play_stats = getPlayStatsTemplate();
     this.players = this.initializePlayers(playerClass, tableSize); // [FIX] Initialize players after all properties are set
     // this.partners = [];
   }
@@ -163,7 +165,7 @@ export class GameEngine {
       // },
 
       get maxTimeBank() {
-        const base = 30; // Default 30 seconds
+        const base = 15; // Default 15 seconds
         if (!this.item || !this.item.effects) return base;
         const bonus = this.item.effects.reduce((sum, e) => (e.id === 'time_bank') ? sum + e.value : sum, 0);
         return base + bonus;
@@ -455,10 +457,10 @@ export class GameEngine {
       firstToActIndex = activePlayersIndices[(currentActiveDealerIdx + 3) % activeCount];
     }
 
-    this.placeBet(this.players[sbIndex], this.sb, true);
+    this.placeBet(this.players[sbIndex], this.sb, true, this.bb);
     this.players[sbIndex].isBlind = true;
 
-    this.placeBet(this.players[bbIndex], this.bb, true);
+    this.placeBet(this.players[bbIndex], this.bb, true, this.bb);
     this.players[bbIndex].isBlind = true;
 
     this.currentPlayerIndex = firstToActIndex;
@@ -468,16 +470,30 @@ export class GameEngine {
     this.processTurns();
   }
 
-  placeBet(player, amount, isBlind) {
+  placeBet(player, amount, isBlind, bb) {
+    const previousRoundBet = this.potManager.currentRoundBet;
     const raised = this.potManager.placeBet(player, amount);
     this.pot = this.potManager.pot; // [FIX] Sync reactive pot immediately
     if (!isBlind && amount > 0) {
       player.voluntarilyInteracted = true;
     }
-    if (raised && !isBlind) {
-      // If someone raises, others need a chance to respond
-      eventAdaptor.bet({ player, amount, pot: this.pot, street: this.state });
-      this.playersActedCount = 0; // Reset to 0, handlePlayerAction will increment to 1
+
+    // Check if player's action is mathematically a raise or a call based on the pot/bet
+    // If not a blind, and the amount placed raises the current round bet, it's a raise
+    if (!isBlind) {
+      const isAllIn = player.chips === 0;
+      const amountIncreased = this.potManager.currentRoundBet - previousRoundBet;
+
+      // It's a genuine raise if they increased the round's bet by at least a BB, 
+      // or if they went all-in to increase it.
+      const isGenuineRaise = raised && (amountIncreased >= bb || (isAllIn && amountIncreased > 0));
+
+      if (isGenuineRaise) {
+        eventAdaptor.raise({ player, amount, pot: this.pot, street: this.state });
+        this.playersActedCount = 0; // Reset to 0, handlePlayerAction will increment to 1
+      } else if (amount > 0) {
+        eventAdaptor.call({ player, amount, pot: this.pot, street: this.state });
+      }
     }
     return raised;
   }
@@ -515,17 +531,8 @@ export class GameEngine {
       if (player.isHuman && this.state === 'FLOP' && this.potManager.currentRoundBet > 0) {
         player.stats.foldedToFlopBet++;
       }
-
       eventAdaptor.fold({ player, amount: player.totalWagered, pot: this.pot, board: this.board, street: this.state });
       audioManager.playSFX('card-dealt&fold');
-      const activePlayers = this.players.filter(p => !p.isFolded);
-      if (activePlayers.length === 1) {
-        // this.state = 'SHOWDOWN';
-        const currentPot = this.pot; // [FIX] Capture pot before resolution clears it
-        eventAdaptor.winAtWithoutShowdown({ player: activePlayers[0], amount: player.totalWagered, pot: currentPot, board: this.board });
-        this.resolveShowdown(true);
-        return;
-      }
       // this.checkItemTriggers('fold', { phase: this.state }); // Trigger Fold Effects
     } else if (action.type === 'call' || action.type === 'check') {
       const diff = this.potManager.currentRoundBet - player.currentBet;
@@ -534,14 +541,17 @@ export class GameEngine {
       if (player.stats.calls === undefined) player.stats.calls = 0;
 
       if (diff > 0) {
+        action.type = 'call';
         player.stats.calls++; // [STATS] Track Call only if chips added
         audioManager.playSFX('puti-n-chip');
-        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CALL_FOR_PLAYER)
+        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CALL_FOR_PLAYER);
       } else {
         action.type = 'check';
         audioManager.playSFX('check');
-        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CHECK_FOR_PLAYER)
+        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CHECK_FOR_PLAYER);
       }
+
+      // if (player.isMe) eventAdaptor.action({ player, type: action.type.toUpperCase(), amount: diff, street: this.state });
     } else if (action.type === 'raise' || action.type === 'bet' || action.type === 'all_in') {
       const diff = action.amount - player.currentBet;
       const raised = this.placeBet(player, diff);
@@ -566,12 +576,14 @@ export class GameEngine {
 
       player.stats.aggressiveActions++; // [STATS] Track Raise/Bet
       if (action.amount > 0 && player.chips === 0) {
+        action.type = 'all_in';
         audioManager.playSFX('all_in');
         if (player.isMe) audioManager.enableTensionMode('reverb');
         setTimeout(() => {
           audioManager.playSFX('all_in-sign');
         }, 1000);
       } else {
+        action.type = 'raise'; // Normalize to raise or keep bet
         audioManager.playSFX('puti-n-chip');
       }
 
@@ -583,7 +595,6 @@ export class GameEngine {
         }
       }
     }
-    // [FIX] Show dialogue/insight AFTER delay (Synchronized with Action)
     player.lastDialogue = action.dialogue || action.type.toLocaleUpperCase() + '.';
     player.lastThought = action.insight;
     if (player.dialogueTimeoutId) {
@@ -614,7 +625,7 @@ export class GameEngine {
 
     // Check All-In Condition before moving (in case this action sealed it)
     // await this.checkAllInCondition();
-
+    if (player.isMe) eventAdaptor.action({ player, type: action.type.toUpperCase(), street: this.state });
     if (!this.runoutInProgress) {
       await this.moveToNextPlayer();
       // processTurns is called inside moveToNextPlayer
@@ -666,6 +677,14 @@ export class GameEngine {
     this.pressureActive = false; // Reset pressure skill effect each street
     this.players.forEach(p => p.hasFacedFlopBet = false);
 
+    const activePlayers = this.players.filter(p => !p.isFolded);
+    if (activePlayers.length === 1) {
+      // this.state = 'SHOWDOWN';
+      // const currentPot = this.pot; // [FIX] Capture pot before resolution clears it
+      // eventAdaptor.winAtWithoutShowdown({ player: activePlayers[0], amount: player.totalWagered, pot: currentPot, board: this.board });
+      this.resolveShowdown(true);
+      return;
+    }
     // Determine next active player (even if they can't bet, strictly speaking we need a pointer, 
     // but if we are auto-running it matters less. We follow standard logic to find first non-folded player left of button)
     let nextIdx = (this.dealerIndex + 1) % this.players.length;
@@ -735,8 +754,10 @@ export class GameEngine {
 
     if (!withoutShowdownEvent) {
       this.state = 'SHOWDOWN';
-      eventAdaptor.endStreet('SHOWDOWN');
       eventAdaptor.showdown({ result, pot: currentPot, runoutInProgress: this.runoutInProgress, board: this.board, result })
+      eventAdaptor.endStreet('SHOWDOWN');
+    } else {
+      eventAdaptor.winAtWithoutShowdown({ result, pot: currentPot, runoutInProgress: this.runoutInProgress, board: this.board, result });
     }
     // else eventAdaptor.win({ player: this.players[0], pot: this.pot });
     this.runoutInProgress = false; // Reset runout flag
@@ -781,15 +802,15 @@ export class GameEngine {
           chatAI(complainer, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL);
 
           // [FIX] Infamy and suspicion system
-          const suspicionGainBase = this.pot / this.bb * (this.infamy === 100 ? 0.4 : 0.2);
-          const suspicionGainBoost = 1.0;
-          const suspicionGainPenalty = me.born_villain * 0.25;
-          gainSuspicion(this.locationId, suspicionGainBase * (suspicionGainBoost - suspicionGainPenalty));
+          if (this.infamy >= 80) {
+            const suspicionGainBase = this.pot / this.bb * (this.infamy === 100 ? 0.4 : 0.2);
+            const suspicionGainBoost = 1.0;
+            const suspicionGainPenalty = me.born_villain * 0.25;
+            gainSuspicion(this.locationId, suspicionGainBase * (suspicionGainBoost - suspicionGainPenalty));
+          }
         }
       }
     }
-
-
 
     if (meResult && meResult.isWinner) {
       eventAdaptor.gainXP({ player: me });
@@ -830,17 +851,12 @@ export class GameEngine {
     });
 
     eventAdaptor.roundEnd(this.players, 'ROUND_END');
+    if (this.checkTriggerCasinoInvestigation()) return;
     let sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000
     await sleep(sleepTime)
     saveStore(); // Save at the end of every complete hand
 
-    if (this.suspicion > 80) {
-      this.triggerCasinoInvestigation(this.players, store.status_zone[this.locationId]);
-      return;
-    } else if (Math.random() < this.suspicion / 100) {
-      this.triggerCasinoInvestigation(this.players, store.status_zone[this.locationId]);
-      return;
-    }
+
     this.startNewHand();
   }
 
@@ -848,7 +864,7 @@ export class GameEngine {
   handleReservedExit() {
     console.log('[GAME] Reservation round limit reached. Exiting automatically.');
     this.exitReservationRounds = -1; // Reset
-    eventAdaptor.reservedExitReached();
+    // eventAdaptor.reservedExitReached();
     // The App.vue or ControlPanel should handle the actual exit sequence if needed, 
     // or we can call exitGame directly if we want to force it here.
     // However, clean exit is usually managed by UI. We will emit a custom event.
@@ -856,10 +872,9 @@ export class GameEngine {
       window.dispatchEvent(new CustomEvent('trigger-reserved-exit'));
     }
   }
-  triggerCasinoInvestigation(players) {
+  async triggerCasinoInvestigation(players) {
     console.warn('[SECURITY] Casino security investigating player...');
     const partners = players.filter(p => p.isPartner); // partners with you in this table
-    const you = players.find(p => p.isMe)
     let cheatingThreshold = 0;
     const cheatingThresholdMap = {
       [CONTRACT_TYPE.COLLUSION]: 999, // this is obviously cheating!!
@@ -872,19 +887,45 @@ export class GameEngine {
       const validContracts = partnerData.contracts.filter((c) => c.active);
       cheatingThreshold += validContracts.reduce((total, c) => total + (cheatingThresholdMap[c.type] || 0), 0);
     })
+    gainSuspicion(this.locationId, cheatingThreshold); // You will be held liable even if no intentional misconduct occurred
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('trigger-investigation'));
+    }
+    audioManager.pause();
+    await sleep(1500);
+    audioManager.playSFX('investigation');
+    await sleep(5000 + Math.random() * 2000);
     if (cheatingThreshold > 100) this.triggerCasinoConfiscation(players)
-    else this.cashOut(you); // force exit
+    else {
+      window.dispatchEvent(new CustomEvent('trigger-investigation-result'));
+      // audioManager.play(); this.handleReservedExit();
+    }
   }
-  triggerCasinoConfiscation(players) {
+  checkTriggerCasinoInvestigation() {
+    if (this.suspicion >= 80) {
+      this.triggerCasinoInvestigation(this.players);
+      return true;
+    } else if (Math.random() <= (this.suspicion - 40) / 50) {
+      this.triggerCasinoInvestigation(this.players);
+      return true;
+    }
+    return false;
+  }
+  async triggerCasinoConfiscation(players) {
+    audioManager.playSFX('confiscation');
     console.warn('[SECURITY] Casino security confiscating player...');
-    gainSuspicion(this.locationId, 100);
     players.forEach(p => {
       p.chips = 0
+      p.gainedXp = 0
       if (p.isPartner) {
-        // to-do:Partner's Confiscation event
+        p.shouldLeave = true;
       }
     });
-    this.checkBankruptcy(null, true); // Best winner is null here, they just lost it cleanly
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('trigger-confiscation'));
+    }
+    await sleep(5000);
+    audioManager.play();
   }
 
   checkBankruptcy(bestWinner, isConfiscation = false) {
@@ -1076,9 +1117,15 @@ export class GameEngine {
     }
   }
 
-  async cashOut() {
+  async cashOut(isForceExit = false) {
+    if (!isForceExit) {
+      const rounds = this.exitReservationRoundDefault - this.exitReservationRounds;
+      gainSuspicion(this.locationId, rounds);
+    }
+    if (this.checkTriggerCasinoInvestigation()) return;
+
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('trigger-reserved-exit'));
+      window.dispatchEvent(new CustomEvent('trigger-reserved-exit', { detail: { isForceExit } }));
     } else console.warn('[GAME] cashOut failed');
   }
 

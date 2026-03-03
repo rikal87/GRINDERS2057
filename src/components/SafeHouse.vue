@@ -312,7 +312,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-          }} UNREAD]</small>
+              }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
@@ -364,7 +364,8 @@ import { markAsRead, handleMessageAction as processMsgAction } from '../logic/me
 import { AI_TASK_DATA } from '../logic/aiAgentTaskData';
 import { audioManager } from '../logic/audioManager';
 import { deleteMessage } from '../logic/messageSystem';
-import { signContract, breakContract, CONTRACT_TYPE, CONTRACT_TYPE_DESC, debtRepayment } from '../logic/partnerSystem';
+import { CONTRACT_TYPE, CONTRACT_TYPE_DESC } from '../logic/partnerContractSystem';
+import { signContract, breakContract, debtRepayment } from '../logic/partnerSystem';
 // import { formatGameTime, formatGameDate } from '../logic/timeSystem';
 const getRelationClass = (v) => {
   if (v > 700) return 'high';

@@ -1,5 +1,5 @@
 import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_RESOLVE_TYPE } from "./messageSystem.js";
-import { store } from "./store.js";
+import { store, getLanguage } from "./store.js";
 import { PARTNER_ID, gainRelationship } from "./partnerSystem.js";
 // import { scheduleEvent, processEvents } from "./eventSystem.js";
 
@@ -29,7 +29,8 @@ const pay_rent_bill = 5000;
 export const EVENT_FLORENCE = new Proxy({}, {
   get: (target, prop) => `FLORENCE_${prop}`
 });
-const SENDER = store.settings.language === 'en' ? 'Florence' : '플로렌스';
+const SENDER_EN = 'Florence';
+const SENDER_KO = '플로렌스';
 export const EventData = [
 
   {
@@ -43,7 +44,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       leavePartner(PARTNER_ID.FLORENCE);
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -56,7 +57,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -69,7 +70,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -82,7 +83,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -95,7 +96,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -127,7 +128,7 @@ export const EventData = [
             resolveType: MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT,
           }
         }
-      ], SENDER)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
 
@@ -155,7 +156,7 @@ export const EventData = [
           currency: 'CR',
           resolveType: MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT,
         }
-      }], SENDER)
+      }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -196,7 +197,7 @@ export const EventData = [
             nextEvent: getRelationship(PARTNER_ID.FLORENCE) < 200 ? EVENT_FLORENCE.BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_FLORENCE.BANKRUPT_REFUSE_RESCUE
           }
         }
-      ], SENDER)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -210,7 +211,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       gainRelationship(PARTNER_ID.FLORENCE, 300);
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -224,7 +225,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       gainRelationship(PARTNER_ID.FLORENCE, 300);
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -239,7 +240,7 @@ export const EventData = [
     func() {
       gainRelationship(PARTNER_ID.FLORENCE, -150);
       gainPartnerBankroll(PARTNER_ID.FLORENCE, 25000); // 초기 자금 지원
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -254,7 +255,7 @@ export const EventData = [
     func() {
       gainRelationship(PARTNER_ID.FLORENCE, -150);
       gainPartnerBankroll(PARTNER_ID.FLORENCE, 50000); // 초기 자금 지원
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -266,7 +267,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: true
   },
@@ -279,7 +280,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: true
   },
@@ -292,7 +293,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: true
   },

@@ -613,7 +613,12 @@ function getPostflopAction(player, engine, myPos) {
     insight += " [Exp:Aggressive]";
   }
 
+  let raiseEquityThreshold = requiredEquity + 0.20;
+
   const AF = player.class?.AF || 1.5;
+  const myVPIP = player.stats ? player.stats.vPIP : 0.3;
+  const myAF = player.stats ? player.stats.aggressionFactor : 1.5;
+
   // --- 3.5 NPC Playstyle Adjustments ---
   estimatedEquity *= 1 + ((AF - 3) * 0.1); // lower AF > 3 = Overestimating your own hand, lower AF < 3 = Underestimating your own hand
   raiseEquityThreshold *= 1 + ((AF - 3) * 0.1); // lower AF > 3 = raise more, lower AF < 3 = raise less
@@ -641,7 +646,6 @@ function getPostflopAction(player, engine, myPos) {
     insight += ` [Commt ${(commitmentRatio * 100).toFixed(0)}%]`;
   }
 
-  let raiseEquityThreshold = requiredEquity + 0.20;
   if (isAggressor && street === 'FLOP') raiseEquityThreshold -= 0.1;
   if (myAF > 3.0) raiseEquityThreshold *= 0.75; // Maniac raises easier
   if (myVPIP < 0.2 && myAF < 1.5) raiseEquityThreshold *= 1.15; // Nit requires more

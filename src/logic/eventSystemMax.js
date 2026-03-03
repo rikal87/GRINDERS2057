@@ -1,6 +1,6 @@
 // for first player
 import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE } from "./messageSystem.js";
-import { store, registerCompletedEvent } from "./store.js";
+import { store, registerCompletedEvent, getLanguage } from "./store.js";
 import { PARTNER_ID, gainRelationship, registerPartner, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
 import { scheduleEvent } from "./eventSystem.js";
 import { recoverStamina } from "./staminaSystem.js";
@@ -64,7 +64,6 @@ export const EVENT_MAX = new Proxy({}, {
 });
 const SENDER_EN = 'Max';
 const SENDER_KO = '맥스';
-const SENDER = store.settings.language === 'en' ? SENDER_EN : SENDER_KO;
 export const EventData = [
   {
     id: EVENT_MAX.BANKRUPT_RESCUE_REPAYMENT_DONE,
@@ -76,7 +75,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -89,7 +88,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -102,7 +101,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -115,7 +114,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -128,7 +127,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -141,7 +140,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -157,7 +156,7 @@ export const EventData = [
       return store.bankroll > 100000 || getRelationship(PARTNER_ID.MAX) >= 600;
     },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_MAX.REGISTERED_PARTNER, 1);
     },
   },
@@ -172,7 +171,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       joinPartner(PARTNER_ID.MAX);
-      sendMessage(MESSAGE_TYPE.SYSTEM, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SYSTEM, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -190,7 +189,7 @@ export const EventData = [
       // return true // for test
     },
     func() {
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], SENDER);
+      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
     },
   },
   {
@@ -220,7 +219,7 @@ export const EventData = [
             location_id: LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX
           }
         },
-      ], SENDER)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -233,7 +232,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_MAX.MAIN_STORY_1_3_MEET_AT_CLUB_DONE, 20)
     },
   },
@@ -247,7 +246,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_MAX.MAIN_STORY_1_3_MEET_AT_CLUB_DONE, 10)
     },
   },
@@ -261,7 +260,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_MAX.MAIN_STORY_1_5_MEET_AT_CLUB_DONE, 20)
     },
   },
@@ -275,7 +274,7 @@ export const EventData = [
   //   get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
   //   get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
   //   func() {
-  //     sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+  //     sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [],  getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
   //     scheduleEvent(EVENT_MAX.MAIN_STORY_1_5_MEET_AT_CLUB_DONE, 20)
   //   },
   // },
@@ -289,7 +288,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_MAX.MAIN_STORY_1_6_MEET_AT_CLUB_DONE, 12)
     },
   },
@@ -303,7 +302,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE, 15)
     },
   },
@@ -317,7 +316,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -331,7 +330,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       leavePartner(PARTNER_ID.MAX)
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -344,7 +343,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -357,7 +356,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -370,7 +369,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -393,7 +392,7 @@ export const EventData = [
           currency: 'CR',
           to: partner.name,
         }
-      }], SENDER)
+      }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -416,7 +415,7 @@ export const EventData = [
           currency: 'CR',
           to: partner.name,
         }
-      }], SENDER)
+      }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -430,7 +429,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       gainRelationship(PARTNER_ID.MAX, 200);
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -444,7 +443,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       gainRelationship(PARTNER_ID.MAX, 50);
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -489,7 +488,7 @@ export const EventData = [
             nextEvent: getRelationship(PARTNER_ID.MAX) < 200 ? EVENT_MAX.BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_MAX.BANKRUPT_REFUSE_RESCUE
           }
         }
-      ], SENDER)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -503,7 +502,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       gainRelationship(PARTNER_ID.MAX, 400);
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -517,7 +516,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       gainRelationship(PARTNER_ID.MAX, 400);
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -532,7 +531,7 @@ export const EventData = [
     func() {
       gainRelationship(PARTNER_ID.MAX, -50);
       gainPartnerBankroll(PARTNER_ID.MAX, 5000); // 초기 자금 지원
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -546,7 +545,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       gainRelationship(PARTNER_ID.MAX, -999);
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -558,7 +557,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: true
   },
@@ -571,7 +570,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: true
   },
@@ -584,7 +583,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: true
   },
@@ -603,7 +602,7 @@ export const EventData = [
     },
     func() {
       recoverStamina(15)
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: false
   },
@@ -627,7 +626,7 @@ export const EventData = [
           amount: 2500,
           currency: 'CR'
         }
-      }], SENDER)
+      }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: false
   },
@@ -667,7 +666,7 @@ export const EventData = [
             nextEvent: EVENT_MAX.FISH_HUNTER_REFUSE
           }
         }
-      ], SENDER)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: true // if repeatable is true, do not register store.completedEvents
   },
@@ -684,7 +683,7 @@ export const EventData = [
       return getRelationship(PARTNER_ID.MAX) >= 500;
     },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -711,7 +710,7 @@ export const EventData = [
             guest: 'Max'
           }
         }
-      ], SENDER)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: false // if repeatable is true, do not register store.completedEvents
   },
@@ -739,7 +738,7 @@ export const EventData = [
             location_id: LOCATION_ID.FREE_STREET_SHOP_WITH_MAX,
           }
         }
-      ], SENDER)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: false
   },
@@ -768,7 +767,7 @@ export const EventData = [
             location_id: LOCATION_ID.FREE_STREET_SHOP_WITH_MAX,
           }
         }
-      ], SENDER)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: false
   },
@@ -787,7 +786,7 @@ export const EventData = [
     },
     func() {
       gainPartnerRelationship(PARTNER_ID.MAX, 100);
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_MAX.TUTORIAL_WIN_AFTER, 1); // 연계 튜토리얼 2탄 스케줄 예약 가능
     },
     repeatable: false
@@ -806,7 +805,7 @@ export const EventData = [
       return getRelationship(PARTNER_ID.MAX) >= 500;
     },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       registerCompletedEvent(EVENT_MAX.TUTORIAL_DONE);
     },
     repeatable: false
@@ -834,7 +833,7 @@ export const EventData = [
             amount: taxiFee
           }
         }
-      ], SENDER)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_MAX.TUTORIAL_WIN_AFTER, 1);
     },
     repeatable: false
@@ -849,7 +848,7 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: false
   },
@@ -867,7 +866,7 @@ export const EventData = [
     },
     func() {
       scheduleEvent(EVENT_MAX.TUTORIAL_THEN_LOSE_RETRY, 60); // 1시간 뒤 이어서 재도전 메시지 발송 
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: false
   },
@@ -884,7 +883,7 @@ export const EventData = [
       return getRelationship(PARTNER_ID.MAX) >= 500;
     },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER);
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
       scheduleEvent(EVENT_MAX.TUTORIAL_THEN_LEAVE_RETRY, 60);
     },
     repeatable: false
@@ -900,7 +899,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       registerCompletedEvent(EVENT_MAX.TUTORIAL_DONE);
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], SENDER)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: false
   }

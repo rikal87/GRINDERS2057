@@ -1,5 +1,7 @@
 import { store } from "./store.js";
-import { CONTRACT_TYPE } from "./partnerSystem.js";
+// import {  } from "./partnerSystem.js";
+import { CONTRACT_TYPE } from "./partnerContractSystem.js";
+
 
 export const CHAT_TRIGGERS = {
   GAME_START: 'GAME_START',

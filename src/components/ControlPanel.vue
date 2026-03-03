@@ -96,8 +96,9 @@
       </div>
       <!-- [CASHOUT], [RESERVE EXIT]  -->
       <div class="status-row exit-controls">
-        <button class="btn-cashout" :disabled="isProcessing" @click="handleCashout">CASHOUT (INSTANT)</button>
-        <button class="btn-reserve-exit" :disabled="isProcessing" @click="handleReserveExit">
+        <button class="btn-cashout" :disabled="isProcessing || !player.isFolded" @click="handleCashout">CASHOUT
+          (INSTANT)</button>
+        <button class="btn-reserve-exit" :disabled="isProcessing || !player.isFolded" @click="handleReserveExit">
           {{ engine.exitReservationRounds >= 0 ? `EXIT IN ${engine.exitReservationRounds} ROUNDS` : 'RESERVE EXIT' }}
         </button>
       </div>
@@ -107,9 +108,12 @@
       <div v-if="showCashoutModal" class="overlay">
         <div class="terminal-msg danger cyber-modal">
           <h2 class="glitch-text" data-text="CASHOUT_WARNING">CASHOUT_WARNING</h2>
-          <p class="critical-msg">
+          <h3 class="critical-msg">
             Are you sure you want to cashout instantly?
-            (Leaving the table immediately after making a profit is considered rude.)
+          </h3>
+          <p>
+            (Leaving the table without prior notification is a violation of house rules, regardless of your current
+            standing)
           </p>
           <div class="popup-actions">
             <button class="btn-confirm btn-accept" @click="confirmCashout">CONFIRM</button>
@@ -237,7 +241,8 @@ const handleCashout = () => {
 
 const confirmCashout = () => {
   showCashoutModal.value = false;
-  emit('action', { type: 'cashout' });
+  props.engine.cashOut();
+  // emit('action', { type: 'cashout' });
 };
 
 const handleReserveExit = () => {
@@ -251,6 +256,9 @@ const handleReserveExit = () => {
 </script>
 
 <style scoped>
+.critical-msg {
+  color: var(--neon-red);
+}
 .control-panel {
   display: flex;
   flex-direction: column;

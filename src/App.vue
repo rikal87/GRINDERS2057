@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { store, resetStore, saveStore, initStore, calculateSessionReport, applySessionExit } from './logic/store';
+import { createPlayRecordStats } from './logic/playRecordStats';
 import { GameEngine } from './logic/gameEngine';
 import Intro from './components/Intro.vue';
 import Splash from './components/Splash.vue';
@@ -16,19 +17,33 @@ import AgentTaskPopup from './components/AgentTaskPopup.vue';
 import AiAgentPopup from './components/AiAgentPopup.vue';
 import SkillSelectorModal from './components/SkillSelectorModal.vue';
 import PlayStatsPopup from './components/PlayStatsPopup.vue';
+import TableSearchPopup from './components/TableSearchPopup.vue';
 import { audioManager } from './logic/audioManager';
 import { performSleep } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
 import { hydrateStoreItems } from './logic/items';
-import { hydratePartners, registerPartner, shareBenefitForPartners } from './logic/partnerSystem';
+import { hydratePartners, registerPartner } from './logic/partnerSystem';
 import { startTimeSystem, formatGameTime, formatGameDate, stopTimeSystem, advanceTime } from './logic/timeSystem';
 // Automated Hand Transition Logic
 import { watch, computed, nextTick } from 'vue';
 const showInvestigationOverlay = ref(false);
+const showInvestigationResultOverlay = ref(false);
+const showConfiscationOverlay = ref(false);
+const searchPopupRef = ref(null);
 const investigationMessage = computed(() => {
   return store.settings.language === 'ko'
-    ? '카지노 보안팀이 당신의 파트너와의 공모 혐의를 조사하고 있습니다...'
-    : 'Casino security investigating you for colluding with your partner....';
+    ? '하우스 보안 관계자가 당신을 수상하게 여기고, 신상 및 혐의를 조사하고 있습니다...'
+    : 'House security is vetting your ID and investigating potential violations...';
+})
+const investigationResultMessage = computed(() => {
+  return store.settings.language === 'ko'
+    ? '조사 결과 명확한 혐의점은 발견되지 않았습니다. 당신은 혐의를 벗었으나, 이 시설에서 나가야 했습니다.'
+    : 'Investigation result: No violations found. You are released, but must leave the facility.';
+})
+const confiscationMessage = computed(() => {
+  return store.settings.language === 'ko'
+    ? '파트너와의 불법 계약 확인. 당신은 모든 칩을 압수당했습니다!'
+    : 'Illegal contract with partner confirmed. You lost all your chips!';
 })
 
 const handleQuitApp = async () => {
@@ -41,7 +56,7 @@ const handleQuitApp = async () => {
       await tau.exit(0);
     } else {
       console.warn("Running in pure web mode. Cannot close the window automatically.");
-      alert('웹 브라우저에서는 게임을 닫을 수 없습니다.');
+      alert('브라우저에서는 게임을 닫을 수 없습니다.');
     }
   } catch (error) {
     console.warn("Failed to exit properly", error);
@@ -97,6 +112,32 @@ onMounted(() => {
   window.addEventListener('trigger-reserved-exit', () => {
     if (engine.value) {
       handleAction({ type: 'cashout' });
+    }
+  });
+
+  window.addEventListener('trigger-confiscation', () => {
+    if (engine.value) {
+      showInvestigationOverlay.value = false;
+      showConfiscationOverlay.value = true;
+      // setTimeout(() => {
+      //   showConfiscationOverlay.value = false;
+      //   handleAction({ type: 'exit' });
+      // }, 3500);
+    }
+  });
+
+  window.addEventListener('trigger-investigation', () => {
+    if (engine.value) {
+      showInvestigationOverlay.value = true;
+      // setTimeout(() => {
+      //   showInvestigationOverlay.value = false;
+      // }, 5500);
+    }
+  });
+  window.addEventListener('trigger-investigation-result', () => {
+    if (engine.value) {
+      showInvestigationResultOverlay.value = true;
+      showInvestigationOverlay.value = false;
     }
   });
 
@@ -157,6 +198,9 @@ const handleJoinTable = async (payload) => {
     engine.value = null;
   }
 
+  // Initialize session stats
+  store.play_stats_session = createPlayRecordStats();
+
   // Use passed rake or default
   const finalRake = rake !== undefined ? rake : 0.05;
   const finalRakeCap = rakeCap !== undefined ? rakeCap : (bb * 10);
@@ -173,15 +217,15 @@ const handleJoinTable = async (payload) => {
 
   currentView.value = 'table';
 
-  // Check suspicion block
-  const zoneData = store.status_zone[locationId] || { suspicion: 0 };
-  if (zoneData.suspicion >= 60) {
-    alert("ACCESS DENIED: You are currently banned from this location due to high suspicion.");
-    currentView.value = 'lobby';
-    engine.value.cleanup();
-    engine.value = null;
-    return;
-  }
+  // // Check suspicion block
+  // const zoneData = store.status_zone[locationId] || { suspicion: 0 };
+  // if (zoneData.suspicion >= 60) {
+  //   alert("ACCESS DENIED: You are currently banned from this location due to high suspicion.");
+  //   currentView.value = 'lobby';
+  //   engine.value.cleanup();
+  //   engine.value = null;
+  //   return;
+  // }
 
   await engine.value.startNewHand();
 };
@@ -211,6 +255,9 @@ const handleAction = async (payload) => {
       await engine.value.handlePlayerAction(engine.value.players[0], { type, amount });
       break;
     case 'exit':
+      showConfiscationOverlay.value = false;
+      showInvestigationOverlay.value = false;
+      showInvestigationResultOverlay.value = false;
       showGameOverOverlay.value = false;
       currentView.value = 'lobby';
       engine.value.exitGame();
@@ -218,20 +265,20 @@ const handleAction = async (payload) => {
       break;
     case 'cashout':
       console.info('cashout')
+      showConfiscationOverlay.value = false;
+      showInvestigationOverlay.value = false;
+      showInvestigationResultOverlay.value = false;
+      showGameOverOverlay.value = false;
       audioManager.pause();
       audioManager.playSFX('paybill');
       audioManager.playSFX('clear-table')
       if (engine.value) {
-        const netWinnings = applySessionExit(engine.value.players[0], engine.value);
-        shareBenefitForPartners(netWinnings);
+        applySessionExit(engine.value.players[0], engine.value);
         currentView.value = 'lobby';
         showStatsModal.value = true;
         engine.value.exitGame();
         engine.value = null;
       }
-      // setTimeout(() => {
-      //   audioManager.play();
-      // }, 12000);
       break;
     case 'hard_reset':
       audioManager.playSFX('ui-click');
@@ -410,7 +457,8 @@ watch(currentView, (newView) => {
           @quit="handleQuitApp" />
         <section class="game-container" :style="{ filter: `blur(${staminaBlur}px)` }">
           <!-- Lobby View -->
-          <Lobby v-if="currentView === 'lobby'" @join="handleJoinTable" @view="handleView" />
+          <Lobby v-if="currentView === 'lobby'" @join="handleJoinTable" @view="handleView"
+            @openSearch="searchPopupRef?.open()" />
 
           <!-- Shop View -->
           <Shop v-else-if="currentView === 'shop'" @back="handleView('lobby')" />
@@ -542,13 +590,39 @@ watch(currentView, (newView) => {
         </div>
       </div>
     </Transition>
-    <!-- Investigation Overlay -->
     <Transition name="fade">
       <div v-if="showInvestigationOverlay" class="overlay investigation-overlay">
-        <div class="terminal-msg danger">
+        <div class="terminal-msg warn">
           <h2 class="glitch-text" data-text="INVESTIGATION">INVESTIGATING...</h2>
-          <p class="critical-msg">{{ investigationMessage() }}</p>
+          <p class="critical-msg">{{ investigationMessage }}</p>
           <div class="action-row">
+          </div>
+        </div>
+      </div>
+    </Transition>
+    <Transition name="fade">
+      <div v-if="showInvestigationResultOverlay" class="overlay investigation-overlay">
+        <div class="terminal-msg warn">
+          <h2 class="glitch-text" data-text="INVESTIGATION_RESULT">INVESTIGATION_RESULT</h2>
+          <p class="critical-msg">{{ investigationResultMessage }}</p>
+          <div class="action-row">
+            <button class="btn-reboot reboot-btn"
+              @click="handleAction({ type: 'cashout' }); showInvestigationResultOverlay = false">
+              <span class="btn-glitch">GO TO LOBBY</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+    <Transition name="fade">
+      <div v-if="showConfiscationOverlay" class="overlay confiscation-overlay">
+        <div class="terminal-msg danger">
+          <h2 class="glitch-text" data-text="CONFISCATION">CONFISCATION</h2>
+          <p class="critical-msg">{{ confiscationMessage }}</p>
+          <div class="action-row">
+            <button class="btn-reboot reboot-btn" @click="handleAction({ type: 'exit' });">
+              <span class="btn-glitch">GO TO LOBBY</span>
+            </button>
           </div>
         </div>
       </div>
@@ -582,6 +656,7 @@ watch(currentView, (newView) => {
         </div>
       </div>
     </Transition>
+    <TableSearchPopup ref="searchPopupRef" @join="handleJoinTable" />
   </div>
 </template>
 

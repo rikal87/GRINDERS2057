@@ -6,6 +6,7 @@ import { zones, LOCATION_ID } from './zone.js';
 import { scheduleEvent, EVENT_ID } from './eventSystem.js';
 import { deleteMessage } from './messageSystem.js'
 import { PARTNER_ID } from './partnerSystem.js';
+import { recordPlayStatsSession, PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
 
 // const cleanupInvites = (locationId) => {
 //   store.messages = store.messages.filter(m => {
@@ -23,8 +24,8 @@ export class EventAdaptor {
   }
   roundStart(players, { sb, bb }) {
     console.info('roundStart');
-    store.play_stats.played_hands++; // Increment every new hand
     players.forEach(p => {
+      recordPlayStatsSession(p, PLAY_RECORD_STATS_TYPE.HANDS_PLAYED);
       p.item?.effects?.forEach(e => {
         if (e.trigger.includes('round_start')) {
           this.executeItemEffect(p, e, { sb, bb });
@@ -51,10 +52,10 @@ export class EventAdaptor {
         if (e.cooldown > 0) e.cooldown--;
       });
     });
-    // Update bankroll peaks
-    if (store.play_stats.max_bankroll < store.bankroll) {
-      store.play_stats.max_bankroll = store.bankroll;
-    }
+    // // Update bankroll peaks
+    // if (store.play_stats.max_bankroll < store.bankroll) {
+    //   store.play_stats.max_bankroll = store.bankroll;
+    // }
   }
   gameOver({ winnerId }) {
     console.info('gameOver', winnerId);
@@ -62,7 +63,8 @@ export class EventAdaptor {
   playerBankrupt(player, bestWinner, locationId, inviteId) {
     console.info('playerBankrupt', player.name);
     if (player.isMe) {
-      store.play_stats.bankruptcy_count++;
+      // store.play_stats.bankruptcy_count++;
+      recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.BANKRUPT);
       player.item?.effects?.forEach(e => {
         if (e.trigger.includes('bankrupt')) {
           this.executeItemEffect(player, e, {});
@@ -82,11 +84,7 @@ export class EventAdaptor {
       if (bestWinner && bestWinner.isMe) {
         // Player bankrupted the NPC
         const persona = player.persona || player.name;
-        if (store.play_stats.bust_enemy[persona] !== undefined) {
-          store.play_stats.bust_enemy[persona]++;
-        } else {
-          store.play_stats.bust_enemy['Fish']++;
-        }
+        recordPlayStatsSession(bestWinner, PLAY_RECORD_STATS_TYPE.BUST_ENEMY, { enemyClass: persona });
 
         if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX && player.name === 'Max') {
           scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 1);
@@ -102,6 +100,7 @@ export class EventAdaptor {
       }
     }
   }
+  // TODO: CHANGE WON LOGIC
   gameWon(player, prize, locationId, inviteId) {
     console.info('gameWon', player.name, prize);
     // cleanupInvites(locationId);
@@ -135,6 +134,7 @@ export class EventAdaptor {
       scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 2);
     }
   }
+  // TODO: THIS IS NOT USED MAYBE COMBINE TO CASHOUT LOGIC
   playerLeaveTable(player, locationId, allPlayers, inviteId) {
     console.info('playerLeaveTable', player.name, locationId, inviteId);
     if (!player.isMe) return;
@@ -159,14 +159,16 @@ export class EventAdaptor {
     }
   }
 
-  bet({ player, amount, pot, street }) {
-    if (player.isMe) {
-      store.play_stats.raise++;
-      store.play_stats.vpip_count++;
-      if (street === 'PREFLOP') store.play_stats.pfr++;
-    }
+  raise({ player, amount, pot, street }) {
     player.item?.effects?.forEach(e => {
-      if (e.trigger.includes('bet')) {
+      if (e.trigger.includes('raise') || e.trigger.includes('bet')) {
+        this.executeItemEffect(player, e, { amount, pot });
+      }
+    });
+  }
+  call({ player, amount, pot, street }) {
+    player.item?.effects?.forEach(e => {
+      if (e.trigger.includes('call')) {
         this.executeItemEffect(player, e, { amount, pot });
       }
     });
@@ -180,33 +182,30 @@ export class EventAdaptor {
     });
   }
   showdown({ result, amount, pot, runoutInProgress, board }) {
-    const me = result.results.find(r => r.player.isMe);
-    if (me) {
-      store.play_stats.wtsd++;
-    }
-    if (result.rake) {
-      store.play_stats.paid_rake += result.rake;
-    }
-
     result.results.forEach(r => {
+      recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WTSD);
       if (r.isWinner) {
+        recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, equity: r.player.equity, rake: result.rake, isShowDown: true });
         if (runoutInProgress) this.winAtShowdownWithAllIn({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board });
         else this.winAtShowdown({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board });
       } else {
+        recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.LOSE, { amount: r.player.totalWagered, pot, equity: r.player.equity, isShowDown: true });
         if (runoutInProgress) this.loseAtShowdownWithAllIn({ player: r.player, amount: 0, pot, hand: r.hand, board });
         else this.loseAtShowdown({ player: r.player, amount: 0, pot, hand: r.hand, board });
       }
     });
-
-    if (me && me.isWinner) {
-      store.play_stats.w$sd++;
-    }
+  }
+  winAtWithoutShowdown({ result, amount, pot, board }) {
+    result.results.forEach(r => {
+      recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, rake: result.rake, isShowDown: false });
+      r.player.item?.effects?.forEach(e => {
+        if (e.trigger.includes('winWithoutShowdown') || e.trigger.includes('win')) {
+          this.executeItemEffect(r.player, e, { amount: r.amountWon, pot: r.amountWon, hand: r.player.hand, board, isWin: true });
+        }
+      });
+    });
   }
   winAtShowdown({ player, amount, pot, hand, board }) {
-    if (player.isMe) {
-      store.play_stats.showdown_win++;
-      this.updateWinPost(amount);
-    }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('winAtShowdown') || e.trigger.includes('win')) {
         this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: true });
@@ -214,32 +213,14 @@ export class EventAdaptor {
     });
   }
   winAtShowdownWithAllIn({ player, amount, pot, hand, board }) {
-    if (player.isMe) {
-      store.play_stats.showdown_win++;
-      store.play_stats.all_in_win++;
-      this.updateWinPost(amount);
-    }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('winAtShowdownWithAllIn') || e.trigger.includes('win')) {
         this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: true });
       }
     });
   }
-  winAtWithoutShowdown({ player, amount, pot, hand, board }) {
-    if (player.isMe) {
-      store.play_stats.win_without_showdown++;
-      this.updateWinPost(pot);
-    }
-    player.item?.effects?.forEach(e => {
-      if (e.trigger.includes('winWithoutShowdown') || e.trigger.includes('win')) {
-        this.executeItemEffect(player, e, { amount, pot, hand, board, isWin: true });
-      }
-    });
-  }
+
   loseAtShowdownWithAllIn({ player, amount, pot, hand, board }) {
-    if (player.isMe) {
-      this.updateLosePost(pot, player.equity);
-    }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('loseAtShowdownWithAllIn') || e.trigger.includes('lose')) {
         this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: false });
@@ -248,9 +229,6 @@ export class EventAdaptor {
   }
 
   loseAtShowdown({ player, amount, pot, hand, board }) {
-    if (player.isMe) {
-      this.updateLosePost(pot, player.equity);
-    }
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('loseAtShowdown') || e.trigger.includes('lose')) {
         this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: false });
@@ -258,30 +236,20 @@ export class EventAdaptor {
     });
   }
 
-  updateWinPost(pot) {
-    store.play_stats.total_earn_money += BigInt(pot);
-    if (store.play_stats.max_win_pot < pot) store.play_stats.max_win_pot = pot;
-    store.play_stats.max_win_streak++;
-    store.play_stats.max_lose_streak = 0;
-  }
-
-  updateLosePost(pot, equity) {
-    store.play_stats.total_lost_money += BigInt(pot);
-    if (store.play_stats.max_lose_pot < pot) store.play_stats.max_lose_pot = pot;
-    store.play_stats.max_lose_streak++;
-    store.play_stats.max_win_streak = 0;
-    if (equity > 50 && equity > store.play_stats.max_lose_equity) {
-      store.play_stats.max_lose_equity = equity;
-    }
-  }
-
   fold({ player, amount, pot, board, street }) {
-    if (player.isMe) {
-      store.play_stats.fold++;
+    if (street === 'FLOP' && player.totalWagered > 0) {
+      recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.FOLDED_TO_FLOP_BET);
     }
+    if (player.totalWagered > 0) {
+      recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.LOSE, { amount: player.totalWagered, pot });
+    }
+    recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.FOLD);
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('fold')) {
         this.executeItemEffect(player, e, { amount, pot, board, street });
+      }
+      if (player.totalWagered > 0 && e.trigger.includes('lose')) {
+        this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand: player.hand, board, isWin: false });
       }
     });
   }
@@ -319,31 +287,25 @@ export class EventAdaptor {
 
     // store.xp = 0;
   }
-  action({ player, type, amount, street }) {
-    if (!player.isMe) return;
-
+  action({ player, type, street }) {
     switch (type) {
       case 'CHECK':
-        store.play_stats.check++;
+        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.CHECK);
         break;
       case 'CALL':
-        store.play_stats.call++;
-        store.play_stats.vpip_count++;
+        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.CALL);
+        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.VPIP);
         break;
+      case 'ALL_IN':
       case 'RAISE':
-        store.play_stats.raise++;
-        store.play_stats.vpip_count++;
+      case 'BET':
+        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.RAISE);
+        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.VPIP);
         if (street === 'PREFLOP') {
-          store.play_stats.pfr++;
+          recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.PFR);
         }
         break;
-      case 'ALLIN':
-        store.play_stats.all_in++;
-        break;
     }
-  }
-  useSkill({ player, skill }) {
-
   }
   executeItemEffect(player, effect, context) {
     if (effect.cooldown > 0) {

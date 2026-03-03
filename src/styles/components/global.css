@@ -583,7 +583,7 @@ main {
 }
 .terminal-msg.warn {
   border-color: var(--neon-magenta);
-  background: rgba(255, 115, 0, 0.747);
+  background: rgba(255, 115, 0, 0.3);
   box-shadow: 0 0 30px rgba(255, 0, 60, 0.3);
 }
 
@@ -1009,8 +1009,11 @@ footer {
   padding: 40px;
   box-shadow: 0 0 50px rgba(0, 240, 255, 0.2);
 }
-.modal-title.glitch-text {
+.glitch-text {
   color: var(--neon-cyan);
+}
+.glitch-text.logo {
+  color: var(--neon-yellow);
 }
 .v5-modal-list {
   max-height: 60vh;
@@ -1136,6 +1139,15 @@ footer {
 /* 배경 어둡게 처리 (backdrop) */
 .cyber-modal::backdrop {
   background: rgba(0, 0, 0, 0.8);
+}
+.option-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.option-group .label {
+  margin-bottom: 0;
 }
 
 /* .buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
