@@ -1,7 +1,7 @@
 // for first player
 import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE } from "./messageSystem.js";
-import { store, registerCompletedEvent, getLanguage } from "./store.js";
-import { PARTNER_ID, gainRelationship, registerPartner, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
+import { store, registerCompletedEvent, getLanguage, getCurrentBankroll } from "./store.js";
+import { PARTNER_ID, gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
 import { scheduleEvent } from "./eventSystem.js";
 import { recoverStamina } from "./staminaSystem.js";
 import { getBustEnemyCount, getClearedZoneCount } from "./store.js";
@@ -614,9 +614,9 @@ export const EventData = [
     body_en: 'Knowin\' when to walk away from a cold table is a skill itself. Go order yourself a pizza, I already put it on my tab. Eat up and take a breather.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    timer: 5, // after 5 minutes(in game)
+    timer: 15, // after 5 minutes(in game)
     condition() {
-      return getRelationship(PARTNER_ID.MAX) >= 500 && store.bankroll < 5000;
+      return getRelationship(PARTNER_ID.MAX) >= 300 && getCurrentBankroll() === 0;
     },
     func() {
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [{
@@ -785,9 +785,9 @@ export const EventData = [
       return getRelationship(PARTNER_ID.MAX) >= 500;
     },
     func() {
-      gainPartnerRelationship(PARTNER_ID.MAX, 100);
+      gainRelationship(PARTNER_ID.MAX, 100);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_MAX.TUTORIAL_WIN_AFTER, 1); // 연계 튜토리얼 2탄 스케줄 예약 가능
+      scheduleEvent(EVENT_MAX.TUTORIAL_WIN_AFTER, 15); // 연계 튜토리얼 2탄 스케줄 예약 가능
     },
     repeatable: false
   },
@@ -824,7 +824,7 @@ export const EventData = [
     label_en: 'OK',
     func() {
       const taxiFee = 2500;
-      gainPartnerRelationship(PARTNER_ID.MAX, 50);
+      gainRelationship(PARTNER_ID.MAX, 50);
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
         {
           label: this.label,

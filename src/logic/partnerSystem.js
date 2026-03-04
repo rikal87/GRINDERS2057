@@ -1,13 +1,18 @@
 import { CLASSES_PARTNER } from "./persona";
-import { store, getPartners, gainBankroll, TYPE_CHANGE_BANKROLL, getCurrentBankroll, getGameTime } from "./store";
+import { store, gainBankroll, TYPE_CHANGE_BANKROLL, getCurrentBankroll, getGameTime } from "./store";
 import { scheduleEvent, EVENT_ID } from "./eventSystem";
 import { audioManager } from "./audioManager";
 import { CONTRACT_TYPE, Contract, ContractBankruptRescue, ContractShareBenefit, ContractADateWithYou, ContractCollusion } from "./partnerContractSystem";
-
+export const getPartners = () => {
+  return store.partners;
+}
 export const getPartner = (partnerId = null) => {
   if (!partnerId) return null;
   const partner = getPartners().find(p => p.id === partnerId);
   return partner;
+}
+export const getJoinedPartners = () => {
+  return store.partners.filter(p => p.isJoined);
 }
 export const createContractObject = (type, ratio) => {
   if (type === CONTRACT_TYPE.SHARE_BENEFIT) return ContractShareBenefit(ratio ?? 0.5);
@@ -16,48 +21,11 @@ export const createContractObject = (type, ratio) => {
   if (type === CONTRACT_TYPE.COLLUSION) return ContractCollusion(ratio ?? 0.5);
   return Contract(type);
 };
-
-export const hydratePartners = () => {
-  const partners = getPartners();
-  partners.forEach(existingPartner => {
-    // 1. Restore missing properties on saved contracts
-    if (Array.isArray(existingPartner.contracts)) {
-      existingPartner.contracts = existingPartner.contracts.map(c => {
-        const defaultContract = createContractObject(c.type, c.ratio);
-        return { ...defaultContract, ...c };
-      });
-    } else {
-      existingPartner.contracts = [];
-    }
-
-    // 2. Add any missing contracts based on CLASSES_PARTNER base data
-    const canContracts = CLASSES_PARTNER.find((p) => p.id === existingPartner.id)?.canContracts || [];
-    canContracts.forEach((contractType) => {
-      if (!existingPartner.contracts.some((c) => c.type === contractType)) {
-        existingPartner.contracts.push(createContractObject(contractType));
-      }
-    });
-
-    // 3. Optional: Restore any missing fields from base data (version compatibility)
-    const baseData = CLASSES_PARTNER.find((p) => p.id === existingPartner.id);
-    if (baseData) {
-      Object.keys(baseData).forEach(key => {
-        if (existingPartner[key] === undefined && key !== 'initialBankroll' && key !== 'initialRelationship' && key !== 'canContracts') {
-          existingPartner[key] = baseData[key];
-        }
-      });
-    }
-  });
-};
 export const getRelationship = (partnerId = null) => {
   if (!partnerId) return null;
   const partner = getPartners().find((p) => p.id === partnerId);
   if (!partner) return null;
   return partner.relationship;
-}
-export const registerPartner = (partnerId = null) => {
-  if (!partnerId) return;
-  getPartners().push(generatePartner(partnerId));
 }
 export const joinPartner = (partnerId = null) => {
   if (!partnerId) return;
@@ -182,7 +150,7 @@ export const PARTNER_ID = {
   MAX: 'Max',
   FLORENCE: 'Florence',
 }
-export const PartnerStatus = {
+export const PARTNER_STATUS = {
   GAMBLING: 'GAMBLING', // IN CASINO
   SLEEPING: 'SLEEPING',
   EATING: 'EATING',
@@ -190,34 +158,34 @@ export const PartnerStatus = {
   RESTING: 'RESTING',
   IDLE: 'IDLE',
 }
-
-export class Partner {
-  constructor({ id, name, philosophy, vPIP, AF, WTSD, W$SD, chipMultiply, isPartner, note, initialBankroll = 0, initialRelationship = 0, schedule = [], contracts = [], isAdvanced = false }) {
-    this.id = id;
-    this.name = name.toUpperCase();
-    this.philosophy = philosophy;
-    this.vPIP = vPIP;
-    this.AF = AF;
-    this.WTSD = WTSD;
-    this.W$SD = W$SD;
-    this.relationship = initialRelationship;
-    this.chipMultiply = chipMultiply;
-    this.isPartner = isPartner;
-    this.note = note;
-    this.bankroll = initialBankroll;
-    this.status = PartnerStatus.IDLE;
-    this.netWorthHistory = [];
-    this.sessionNetWorth = 0;
-    this.contracts = contracts;
-    this.schedule = schedule;
-    this.isAdvanced = isAdvanced;
-    this.netShareTotal = 0; // +: Gain for partner, -: Gain for you
-    this.debt = 0; // +: you owe partner, -: partner owes you
-    this.sendedEventIds = []; // partner will not request same event to you
-    this.isJoinedPartner = false;
-    this.isJoinedTable = false;
+export const Partner = ({ id, name, philosophy, vPIP, AF, WTSD, W$SD, chipMultiply, isPartner, note, initialBankroll = 0, initialRelationship = 0, schedule = [], contracts = [], isAdvanced = false }) => {
+  return {
+    id: id,
+    name: name,
+    philosophy: philosophy,
+    vPIP: vPIP,
+    AF: AF,
+    WTSD: WTSD,
+    W$SD: W$SD,
+    relationship: initialRelationship,
+    chipMultiply: chipMultiply,
+    isPartner: isPartner,
+    note: note,
+    bankroll: initialBankroll,
+    status: PARTNER_STATUS.IDLE,
+    netWorthHistory: [],
+    contracts: contracts,
+    isAdvanced: isAdvanced,
+    sessionNetWorth: 0,
+    schedule: schedule,
+    netShareTotal: 0, // +: Gain for partner, -: Gain for you
+    debt: 0, // +: you owe partner, -: partner owes you
+    sendedEventIds: [], // partner will not request same event to you
+    isJoinedPartner: false,
+    isJoinedTable: false,
   }
 }
+
 export const addSendedEventId = (partnerId, eventId) => {
   const partner = store.partners.find((p) => p.id === partnerId);
   if (!partner) return false;
@@ -298,14 +266,14 @@ export const updatePartnerStatusBySchedule = () => {
   const currentDayNum = date.getDay(); // 0: Sun, 1: Mon, ..., 6: Sat
   const currentHour = date.getHours();
 
-  store.partners.forEach(partner => {
+  getJoinedPartners().forEach(partner => {
     // skip partners without schedule array
     if (partner.relationship === 0) {
       leavePartner(partner.id);
       return;
     }
     if (!partner.schedule || !Array.isArray(partner.schedule)) return;
-    let newStatus = PartnerStatus.IDLE; // Default status if nothing matches
+    let newStatus = PARTNER_STATUS.IDLE; // Default status if nothing matches
 
     for (const rule of partner.schedule) {
       const targetDays = parseDayString(rule.days);
@@ -314,29 +282,29 @@ export const updatePartnerStatusBySchedule = () => {
         // Handle normal range (e.g. 13-23)
         if (start < end) {
           if (currentHour >= start && currentHour < end) {
-            newStatus = PartnerStatus[rule.status] || PartnerStatus.IDLE;
+            newStatus = PARTNER_STATUS[rule.status] || PARTNER_STATUS.IDLE;
             break;
           }
         }
         // Handle overnight range (e.g. 20-04 means 20 to 23 and 0 to 3)
         else if (start > end) {
           if (currentHour >= start || currentHour < end) {
-            newStatus = PartnerStatus[rule.status] || PartnerStatus.IDLE;
+            newStatus = PARTNER_STATUS[rule.status] || PARTNER_STATUS.IDLE;
             break;
           }
         }
       }
     }
     // Don't wake up bankrupt partners to gamble
-    if (newStatus === PartnerStatus.GAMBLING && partner.bankroll <= 0) {
-      newStatus = PartnerStatus.IDLE;
+    if (newStatus === PARTNER_STATUS.GAMBLING && partner.bankroll <= 0) {
+      newStatus = PARTNER_STATUS.IDLE;
     }
     partner.status = newStatus;
     partner.contracts.forEach(contract => {
       if (contract.cooldown > 0) contract.cooldown--;
       if (contract.debtRepaymentDue > 0) contract.debtRepaymentDue--;
     });
-    if (partner.status === PartnerStatus.GAMBLING) return;
+    if (partner.status === PARTNER_STATUS.GAMBLING) return;
     // --- POST-GAMBLING / IDLE CHECKS ---
     // 겜블링 중에는 계약 파기나 빚 독촉을 하지 않는다(당연하게도? 데이트도 불가!)
     // 관계도 
@@ -412,11 +380,11 @@ export const simulatePartnersBehavior = () => {
 }
 export const simulatePartnersNetWorth = () => {
   // simulate partner's net worth logic
-  store.partners.forEach(partner => {
-    if (partner.status === PartnerStatus.GAMBLING) {
+  getJoinedPartners().forEach(partner => {
+    if (partner.status === PARTNER_STATUS.GAMBLING) {
       // 잔고가 0 이하(파산)인 경우 도박 종료
       if (partner.bankroll <= 0) {
-        partner.status = PartnerStatus.IDLE;
+        partner.status = PARTNER_STATUS.IDLE;
         return;
       }
       if ((partner.vPIP + partner.WTSD) / 2 > Math.random()) {
@@ -435,7 +403,7 @@ export const simulatePartnersNetWorth = () => {
         } else { // 패배 시
           netWorthChange = -Math.ceil(100 * volatility);
         }
-        gainPartnerBankroll(partner, netWorthChange);
+        gainPartnerBankroll(partner, netWorthChange, TYPE_CHANGE_BANKROLL.GAMBLING);
         partner.netWorthHistory.push({ time: store.gameTime, netWorth: partner.bankroll });
         partner.sessionNetWorth += netWorthChange;
         console.info(partner.name, partner.sessionNetWorth);
@@ -453,7 +421,7 @@ export const generatePartner = (partnerId = 'max') => {
     const contract = createContractObject(type);
     if (contract) contracts.push(contract);
   });
-  return new Partner({ ...p, contracts });
+  return Partner({ ...p, contracts });
 };
 const partnerScheduleEvent = (eventId, delay = 2, partner, acceptResend = false) => {
   if (acceptResend) {
@@ -462,4 +430,12 @@ const partnerScheduleEvent = (eventId, delay = 2, partner, acceptResend = false)
     addSendedEventId(partner.id, eventId);
     scheduleEvent(eventId, delay);
   }
+}
+
+export const initializePartners = () => {
+  const partners = [];
+  CLASSES_PARTNER.forEach((partner) => {
+    partners.push(generatePartner(partner.id));
+  });
+  return partners;
 }

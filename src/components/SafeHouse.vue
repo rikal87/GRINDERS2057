@@ -56,7 +56,6 @@
                 </div>
               </div>
             </div>
-
           </div>
         </div>
         <button class="btn" @click="$emit('sleep')">SLEEP</button>
@@ -327,8 +326,10 @@
               <button v-for="(act, idx) in selectedMessage.actions" :key="idx" class="btn"
                 @click="triggerMessageAction(selectedMessage.id, idx)">
                 {{ act.label }}
-                {{ act.amount ? ' ' + act.amount.toLocaleString() : '' }}
-                {{ act.currency ? ' ' + act.currency : '' }}
+                <span v-if="act.payload">
+                  {{ act.payload.amount ? ' ' + act.payload.amount.toLocaleString() : '' }}
+                  {{ act.payload.currency ? ' ' + act.payload.currency : '' }}
+                </span>
               </button>
             </div>
           </div>
@@ -358,14 +359,14 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import { store, getNextLevelThreshold, getEffectiveMaxStamina, gainBankroll, TYPE_CHANGE_BANKROLL, getJoinedPartners } from '../logic/store';
+import { store, getNextLevelThreshold, getEffectiveMaxStamina, gainBankroll, TYPE_CHANGE_BANKROLL } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
 import { AI_TASK_DATA } from '../logic/aiAgentTaskData';
 import { audioManager } from '../logic/audioManager';
 import { deleteMessage } from '../logic/messageSystem';
 import { CONTRACT_TYPE, CONTRACT_TYPE_DESC } from '../logic/partnerContractSystem';
-import { signContract, breakContract, debtRepayment } from '../logic/partnerSystem';
+import { signContract, breakContract, debtRepayment, getJoinedPartners } from '../logic/partnerSystem';
 // import { formatGameTime, formatGameDate } from '../logic/timeSystem';
 const getRelationClass = (v) => {
   if (v > 700) return 'high';

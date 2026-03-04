@@ -19,7 +19,7 @@
       <div class="user-header">
         <div class="chip-balance">
           <span class="label">CREDITS_AVAILABLE</span>
-          <span class="value">{{ store.bankroll }} CR</span>
+          <span class="value">{{ getCurrentBankroll().toLocaleString() }} CR</span>
         </div>
       </div>
       <div class="menu-grid">
@@ -39,7 +39,7 @@
           <div class="desc">UNRESTRICTED_ZONE</div>
         </div>
         <!-- TODO: Need a Crypto Trade rebuild -->
-        <div class="grid-item" :disabled="true" @click="$emit('view', 'crypto')"
+        <div class="grid-item" disabled="disabled" @click="$emit('view', 'crypto')"
           @mouseenter="setMapLocation('EXCHANGE')">
           <div class="icon">C</div>
           <div class="label">CRYPTO_NEXUS</div>
@@ -54,18 +54,18 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { store } from '../logic/store.js';
+import { getCurrentBankroll, store } from '../logic/store.js';
 import { audioManager } from '../logic/audioManager.js';
 
 const emit = defineEmits(['view', 'openSearch']);
 
 const currentMapKey = ref('DEFAULT');
 const mapPositions = {
-  DEFAULT: { pos: '50% 50%', name: 'NIGHT_CITY_HUB' },
-  CASINO: { pos: '-12% 100%', name: 'CASINO_STRIP' },
+  DEFAULT: { pos: '50% 50%', name: 'FINDING_LOCATION...' },
+  CASINO: { pos: '1% 90%', name: 'CASINO_STRIP' },
   SAFE_HOUSE: { pos: '53% 54%', name: 'SAFE_HOUSE' },
-  BLACK_MARKET: { pos: '115% -20%', name: 'KBT_UNDERGROUND' },
-  EXCHANGE: { pos: '10% 20%', name: 'FINANCIAL_SECTOR' }
+  BLACK_MARKET: { pos: '100% 0%', name: 'KBT_UNDERGROUND' },
+  EXCHANGE: { pos: '17% 10%', name: 'FINANCIAL_SECTOR' }
 };
 
 const mapPosition = computed(() => mapPositions[currentMapKey.value].pos);
@@ -109,20 +109,13 @@ onMounted(() => {
 }
 
 .city-skyline {
-  height: 45%;
+  height: 100%;
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2.5rem;
 }
 
-
-@media (min-width: 1200px) {
-  .city-skyline {
-    height: 55%;
-  }
-}
 
 .minimap-viewport {
   width: 90%;
@@ -143,10 +136,10 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('../assets/image/minimap.v3.png');
-  background-size: 200% 200%;
+  background-image: url('../assets/image/minimap.v4.png');
+  /* background-size: 200% 200%; */
   transition: background-position 1.2s cubic-bezier(0.23, 1, 0.32, 1);
-  opacity: 0.6;
+  opacity: 0.75;
 }
 
 .minimap-scanner {
@@ -195,29 +188,13 @@ onMounted(() => {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 75px;
-  height: 75px;
+  width: 100px;
+  height: 100px;
   color: #f8ef00;
   border: 4px solid rgba(248, 239, 0, 0.5);
   transform: translate(-50%, -50%);
 }
 
-.building-silhouette {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  opacity: 0.15;
-  z-index: 1;
-}
-
-.building {
-  background: var(--neon-cyan);
-  width: 60px;
-  clip-path: polygon(0 20%, 50% 0, 100% 20%, 100% 100%, 0 100%);
-}
 
 .b1 {
   height: 150px;

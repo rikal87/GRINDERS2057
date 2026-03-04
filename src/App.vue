@@ -22,7 +22,7 @@ import { audioManager } from './logic/audioManager';
 import { performSleep } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
 import { hydrateStoreItems } from './logic/items';
-import { hydratePartners, registerPartner } from './logic/partnerSystem';
+import { getPartners } from './logic/partnerSystem';
 import { startTimeSystem, formatGameTime, formatGameDate, stopTimeSystem, advanceTime } from './logic/timeSystem';
 // Automated Hand Transition Logic
 import { watch, computed, nextTick } from 'vue';
@@ -37,8 +37,8 @@ const investigationMessage = computed(() => {
 })
 const investigationResultMessage = computed(() => {
   return store.settings.language === 'ko'
-    ? '조사 결과 명확한 혐의점은 발견되지 않았습니다. 당신은 혐의를 벗었으나, 이 시설에서 나가야 했습니다.'
-    : 'Investigation result: No violations found. You are released, but must leave the facility.';
+    ? '조사 결과 명확한 혐의점은 발견되지 않았습니다. 당신은 혐의를 벗었으나, 즉시 시설에서 떠나야 했습니다.'
+    : 'Investigation result: No violations found. You are released, but must leave the facility immediately.';
 })
 const confiscationMessage = computed(() => {
   return store.settings.language === 'ko'
@@ -109,7 +109,7 @@ onMounted(() => {
     handleJoinTable(e.detail);
   });
 
-  window.addEventListener('trigger-reserved-exit', () => {
+  window.addEventListener('trigger-cashout', () => {
     if (engine.value) {
       handleAction({ type: 'cashout' });
     }
@@ -149,12 +149,9 @@ onMounted(() => {
     stopTimeSystem()
     await initStore();
     hydrateStoreItems();
-    hydratePartners();
-
+    console.info('store.partners', getPartners())
     currentView.value = 'splash';
     isAppLoading.value = false;
-    registerPartner('max');
-    registerPartner('florence');
   };
 
   initializeApp();
@@ -171,6 +168,24 @@ const rebootInterval = ref(null);
 const rebootProgress = ref(0);
 const isRebooting = ref(false);
 
+const startReboot = () => {
+  if (isRebooting.value) return;
+  isRebooting.value = true;
+  rebootProgress.value = 0;
+
+  // Visual Progress Update (every 50ms)
+  rebootInterval.value = setInterval(() => {
+    rebootProgress.value += (100 / (3000 / 50));
+    if (rebootProgress.value >= 100) rebootProgress.value = 100;
+  }, 50);
+
+  // Trigger Action after 3s
+  rebootTimer.value = setTimeout(() => {
+    handleAction({ type: 'hard_reset' });
+    cancelReboot(); // Reset after trigger
+    toggleSettings(); // Close menu
+  }, 3000);
+};
 const cancelReboot = () => {
   if (!isRebooting.value) return;
   isRebooting.value = false;
@@ -245,6 +260,10 @@ const handleAction = async (payload) => {
   console.info('handleAction', payload);
   if (type === 'main_menu') {
     currentView.value = 'intro';
+  } else if (type === 'hard_reset') {
+    resetStore().then(() => {
+      window.location.reload();
+    });
   }
   if (!engine.value) return;
   switch (type) {
@@ -259,9 +278,13 @@ const handleAction = async (payload) => {
       showInvestigationOverlay.value = false;
       showInvestigationResultOverlay.value = false;
       showGameOverOverlay.value = false;
-      currentView.value = 'lobby';
-      engine.value.exitGame();
-      engine.value = null;
+      if (engine.value) {
+        applySessionExit(engine.value.players[0], engine.value);
+        currentView.value = 'lobby';
+        showStatsModal.value = true;
+        engine.value.exitGame();
+        engine.value = null;
+      }
       break;
     case 'cashout':
       console.info('cashout')
@@ -279,12 +302,6 @@ const handleAction = async (payload) => {
         engine.value.exitGame();
         engine.value = null;
       }
-      break;
-    case 'hard_reset':
-      audioManager.playSFX('ui-click');
-      resetStore().then(() => {
-        window.location.reload();
-      });
       break;
   }
 };
@@ -515,8 +532,8 @@ watch(currentView, (newView) => {
             <div class="audio-widget-area">
               <AudioPlayer />
             </div>
-            <!-- <div class="setting-item">
-              <span class="label">SYSTEM_REBOOT:</span>
+            <div class="setting-item">
+              <span class="label">RESET_GAME_DATA:</span>
               <button class="reboot-hold-btn" @mousedown="startReboot" @touchstart.prevent="startReboot"
                 @mouseup="cancelReboot" @touchend="cancelReboot" @mouseleave="cancelReboot"
                 :class="{ 'rebooting': isRebooting }">
@@ -525,8 +542,8 @@ watch(currentView, (newView) => {
                   HOLD BUTTON
                 </span>
               </button>
-            </div> -->
-            <!-- Global Actions -->
+            </div>
+            <!-- Global Actions
 
             <!-- Accessibility -->
             <div class="setting-item">

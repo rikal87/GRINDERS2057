@@ -96,9 +96,13 @@
       </div>
       <!-- [CASHOUT], [RESERVE EXIT]  -->
       <div class="status-row exit-controls">
-        <button class="btn-cashout" :disabled="isProcessing || !player.isFolded" @click="handleCashout">CASHOUT
-          (INSTANT)</button>
-        <button class="btn-reserve-exit" :disabled="isProcessing || !player.isFolded" @click="handleReserveExit">
+        <button class="btn-cashout" :disabled="!player.isFolded" @click="handleCashout"
+          :data-tooltip="cashoutTooltip">CASHOUT</button>
+        <button class="btn-reserve-exit" :class="{ 'inactive': engine.exitReservationRounds === -1 }"
+          :data-tooltip="reserveExitTooltip" :disabled="!player.isFolded || engine.exitReservationRounds !== -1"
+          @click="handleReserveExit" :style="engine.exitReservationRounds >= 0 ? {
+            '--gauge-percent': `${(engine.exitReservationRounds / Math.max(engine.exitReservationRoundsMax, 1)) * 100}%`
+          } : { '--gauge-percent': '0%' }">
           {{ engine.exitReservationRounds >= 0 ? `EXIT IN ${engine.exitReservationRounds} ROUNDS` : 'RESERVE EXIT' }}
         </button>
       </div>
@@ -129,15 +133,24 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { evaluateHand } from '../logic/poker.js';
-
-import { store, getEffectiveMaxStamina } from '../logic/store';
+import { store, getEffectiveMaxStamina, getLanguage } from '../logic/store';
+import { audioManager } from '../logic/audioManager.js';
 
 const props = defineProps({
   engine: Object
 });
 
 const emit = defineEmits(['action', 'skill']);
-
+const cashoutTooltip = computed(() => {
+  return getLanguage() === 'ko' ?
+    '현재 가지고 있는 칩을 즉시 현금화하여 테이블을 떠납니다.(패널티 존재)'
+    : 'Cash out your current chips and leave the table immediately. (Penalty applies)';
+});
+const reserveExitTooltip = computed(() => {
+  return getLanguage() === 'ko' ?
+    '지정된 라운드 후에 칩을 현금화하고 테이블을 떠납니다.(패널티 없음)'
+    : 'Cash out and leave the table after the specified rounds. (No penalty)';
+});
 const player = computed(() => props.engine.players[0]);
 const isMyTurn = computed(() => props.engine.currentPlayerIndex === 0 && props.engine.state !== 'IDLE' && props.engine.state !== 'SHOWDOWN');
 const playerChips = computed(() => player.value.chips);
@@ -235,11 +248,12 @@ const handleCashout = () => {
   // let msg = ''
   // if (props.engine.suspicion < 80) msg = `You will gain ${props.engine.infamy} infamy.`
   // else msg = `You will gain ${props.engine.infamy} infamy and ${props.engine.suspicion * 1.5} suspicion.`
-
+  audioManager.playSFX('ui-click');
   showCashoutModal.value = true;
 };
 
 const confirmCashout = () => {
+  audioManager.playSFX('ui-click');
   showCashoutModal.value = false;
   props.engine.cashOut();
   // emit('action', { type: 'cashout' });
@@ -247,10 +261,12 @@ const confirmCashout = () => {
 
 const handleReserveExit = () => {
   if (isProcessing.value) return;
+  audioManager.playSFX('ui-click');
   // Calculate Reservation Rounds based on Suspicion
   let roundsToWait = props.engine.exitReservationRoundDefault;
   if (props.engine.suspicion >= 40) roundsToWait += 20;
   else if (props.engine.suspicion >= 20) roundsToWait += 10;
+  props.engine.exitReservationRoundsMax = roundsToWait;
   props.engine.exitReservationRounds = roundsToWait;
 };
 </script>
@@ -444,7 +460,10 @@ button {
   justify-content: space-between;
   border: 1px solid var(--neon-magenta);
 }
-
+.btn-reserve-exit:disabled {
+  opacity: 1;
+  filter: brightness(1.5) contrast(1.5);
+}
 .btn-cashout,
 .btn-reserve-exit {
   flex: 1;
@@ -467,16 +486,18 @@ button {
 }
 
 .btn-reserve-exit {
-  background: transparent;
+  background: linear-gradient(to right, rgba(0, 240, 255, 0.2) var(--gauge-percent, 0%), transparent var(--gauge-percent, 0%));
   border: 1px solid var(--neon-cyan);
   color: var(--neon-cyan);
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 10px var(--neon-cyan);
 }
 
 .btn-reserve-exit:hover:not(:disabled) {
-  background: rgba(0, 240, 255, 0.1);
+  background: linear-gradient(to right, rgba(0, 240, 255, 0.4) var(--gauge-percent, 0%), rgba(0, 240, 255, 0.1) var(--gauge-percent, 0%));
 }
 
-.btn-reserve-exit:disabled {
+.btn-reserve-exit.inactive:disabled {
   border-color: #555;
   color: #555;
 }

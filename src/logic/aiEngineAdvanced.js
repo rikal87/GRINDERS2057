@@ -698,11 +698,18 @@ function getPostflopAction(player, engine, myPos) {
 
   // --- 5. Sizing ---
   if (action === 'raise') {
+    let currentBet = engine.currentRoundBet || 0;
+
     if (!isCheckable) {
-      let mult = 3.0;
-      if (estimatedEquity > raiseEquityThreshold + 0.20) mult = 4.0;
-      amount = Math.max(amount, Math.floor(currentBet * mult));
+      // 2-1. 상대가 벳을 친 상태 -> 보통 상대 벳의 3~4배를 레이즈
+      let mult = Math.max(2.2, 4.5 - raises);
+      // if (estimatedEquity > raiseEquityThreshold + 0.20) mult += .5;
+
+      amount = Math.floor(currentBet * mult);
+      // [보정] 무조건 상대방 베팅의 2배 이상은 레이즈하게 하한선 보장
+      amount = Math.max(amount, currentBet * 2);
     } else {
+      // 2-2. 아무도 베팅 안함 -> 팟 사이즈 비율로 "첫 배팅"
       let potPct = 0.5;
       if (texture.type === 'DRY') potPct -= 0.15;
       else if (texture.type === 'WET') potPct += 0.25;
@@ -711,7 +718,9 @@ function getPostflopAction(player, engine, myPos) {
       if (street === 'RIVER' && (estimatedEquity >= 0.90 || estimatedEquity < requiredEquity)) {
         potPct = 1.0 + (myAF / 2); // Polarized River
       }
-      amount = Math.max(amount, Math.floor(potSize * potPct));
+      amount = Math.floor(potSize * potPct);
+      // [보정] 아무리 작아도 1 빅블라인드 이상은 치도록 보장
+      amount = Math.max(amount, engine.bb || 2);
     }
   }
 

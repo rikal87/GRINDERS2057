@@ -3,53 +3,63 @@
     <div v-if="show" class="v5-modal-overlay">
       <div class="v5-modal stats-modal">
         <h2 class="glitch-text" data-text="PERFORMANCE_REPORT">PERFORMANCE_REPORT</h2>
-        <h3 v-if="currentStats.msgCode" :class="currentStats.msgCode">"{{ getMsg(currentStats.msgCode) }}"</h3>
+        <h3 v-if="showMsg && currentStats.msgCode" class="final-message" :class="currentStats.msgCode">"{{
+          getMsg(currentStats.msgCode) }}"</h3>
         <div class="stats-container">
           <!-- Economic Stats -->
-          <div class="stats-section">
-            <div class="section-label">ECONOMIC_METRICS</div>
-            <div class="stats-grid">
-              <div class="stat-entry"><span class="label">TOTAL_EARNED:</span> <span class="val cyan">{{
-                (currentStats.total_earn_money || 0n).toLocaleString() }} CR</span></div>
-              <div class="stat-entry"><span class="label">TOTAL_LOST:</span> <span class="val red">{{
-                (currentStats.total_lost_money || 0n).toLocaleString() }} CR</span></div>
-              <div class="stat-entry"><span class="label">PAID_RAKE:</span> <span class="val yellow">{{
-                (currentStats.paid_rake || 0).toLocaleString() }} CR</span></div>
-              <div class="stat-entry"><span class="label">MAX_WIN_POT:</span> <span class="val white">{{
-                (currentStats.max_win_pot || 0).toLocaleString() }} CR</span></div>
-              <div class="stat-entry"><span class="label">MAX_LOSE_POT:</span> <span class="val white">{{
-                (currentStats.max_lose_pot || 0).toLocaleString() }} CR</span></div>
-            </div>
-          </div>
-          <!-- Behavioral Stats -->
-          <div class="stats-section">
-            <div class="section-label">BEHAVIORAL_HUD</div>
-            <div class="stats-grid">
-              <div class="stat-entry"><span class="label">HANDS_PLAYED:</span> <span class="val">{{
-                currentStats.hands_played }}</span></div>
-              <div class="stat-entry"><span class="label">VPIP:</span> <span class="val cyan">{{ vpip }}%</span></div>
-              <div class="stat-entry"><span class="label">PFR:</span> <span class="val yellow">{{ pfr }}%</span></div>
-              <div class="stat-entry"><span class="label">WTSD:</span> <span class="val white">{{ wtsd }}%</span>
+          <Transition name="slide-fade">
+            <div class="stats-section" v-if="showEcon">
+              <div class="section-label">ECONOMIC_METRICS</div>
+              <div class="stats-grid">
+                <div class="stat-entry"><span class="label">NET_WINNING:</span> <span class="val"
+                    :class="netWinning >= 0 ? 'green' : 'red'">{{
+                      Math.floor(animatedStats.netWinning).toLocaleString() }} CR</span></div>
+                <div class="stat-entry"><span class="label">PAID_RAKE:</span> <span class="val yellow">{{
+                  Math.floor(animatedStats.paid_rake).toLocaleString() }} CR</span></div>
+                <div class="stat-entry"><span class="label">MAX_WIN_POT:</span> <span class="val white">{{
+                  Math.floor(animatedStats.max_win_pot).toLocaleString() }} CR</span></div>
+                <div class="stat-entry"><span class="label">MAX_LOSE_POT:</span> <span class="val white">{{
+                  Math.floor(animatedStats.max_lose_pot).toLocaleString() }} CR</span></div>
               </div>
-              <div class="stat-entry"><span class="label">W$SD:</span> <span class="val green">{{ wsd }}%</span></div>
             </div>
-          </div>
+          </Transition>
+          <!-- Behavioral Stats -->
+          <Transition name="slide-fade">
+            <div class="stats-section" v-if="showBehav">
+              <div class="section-label">BEHAVIORAL_HUD</div>
+              <div class="stats-grid">
+                <div class="stat-entry"><span class="label">HANDS_PLAYED:</span> <span class="val">{{
+                  Math.floor(animatedStats.hands_played) }}</span></div>
+                <div class="stat-entry"><span class="label">VPIP:</span> <span class="val cyan">{{ (animatedStats.vpip
+                  || 0).toFixed(1) }}%</span></div>
+                <div class="stat-entry"><span class="label">PFR:</span> <span class="val yellow">{{ (animatedStats.pfr
+                  || 0).toFixed(1) }}%</span></div>
+                <div class="stat-entry"><span class="label">WTSD:</span> <span class="val white">{{ (animatedStats.wtsd
+                  || 0).toFixed(1) }}%</span>
+                </div>
+                <div class="stat-entry"><span class="label">W$SD:</span> <span class="val green">{{ (animatedStats.wsd
+                  || 0).toFixed(1) }}%</span></div>
+              </div>
+            </div>
+          </Transition>
           <!-- Luck & Performance -->
-          <div class="stats-section">
-            <div class="section-label">LUCK_AND_PEAKS</div>
-            <div class="stats-grid">
-              <div class="stat-entry" v-if="!isSession"><span class="label">BANKRUPTCY:</span> <span class="val red">{{
-                currentStats.bankruptcy_count }}</span></div>
-              <div class="stat-entry"><span class="label">MAX_STREAK (WIN):</span> <span class="val green">{{
-                currentStats.max_win_streak }}</span></div>
-              <div class="stat-entry"><span class="label">MAX_STREAK (LOSE):</span> <span class="val red">{{
-                currentStats.max_lose_streak }}</span></div>
-              <div class="stat-entry"><span class="label">BAD_BEAT_PEAK:</span> <span class="val yellow">{{
-                (currentStats.max_lose_equity || 0).toFixed(1) }}%</span></div>
+          <Transition name="slide-fade">
+            <div class="stats-section" v-if="showLuck">
+              <div class="section-label">LUCK_AND_PEAKS</div>
+              <div class="stats-grid">
+                <div class="stat-entry" v-if="!isSession"><span class="label">BANKRUPTCY:</span> <span
+                    class="val red">{{
+                      Math.floor(animatedStats.bankruptcy_count) }}</span></div>
+                <div class="stat-entry"><span class="label">MAX_STREAK (WIN):</span> <span class="val green">{{
+                  Math.floor(animatedStats.max_win_streak) }}</span></div>
+                <div class="stat-entry"><span class="label">MAX_STREAK (LOSE):</span> <span class="val red">{{
+                  Math.floor(animatedStats.max_lose_streak) }}</span></div>
+                <div class="stat-entry"><span class="label">BAD_BEAT_PEAK:</span> <span class="val yellow">{{
+                  (animatedStats.max_lose_equity).toFixed(1) }}%</span></div>
+              </div>
             </div>
-          </div>
+          </Transition>
         </div>
-
         <div class="modal-actions" style="margin-top:20px">
           <button @click="handleClose" class="btn cyan">CLOSE_REPORT</button>
         </div>
@@ -59,38 +69,137 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, watch, computed, onMounted } from 'vue';
 import { store } from '../logic/store';
 import { pickRandomMessage } from '../logic/playRecordStats';
+import { audioManager } from '../logic/audioManager';
+
 const props = defineProps({
   show: Boolean
 });
 
 const emit = defineEmits(['close']);
 const getMsg = (msgCode) => {
-  return store.settings.language === 'ko' ? pickRandomMessage(msgCode).ko : pickRandomMessage(msgCode).en;
+  const msgObj = pickRandomMessage(msgCode);
+  if (!msgObj) return '';
+  return store.settings.language === 'ko' ? msgObj.ko : msgObj.en;
 }
 const isSession = computed(() => !!store.play_stats_session);
 const sessionStats = computed(() => store.play_stats_session || {});
 const currentStats = computed(() => isSession.value ? sessionStats.value : store.play_stats);
+const netWinning = ref(0);
+// Animation States
+const showEcon = ref(false);
+const showBehav = ref(false);
+const showLuck = ref(false);
+const showMsg = ref(false);
+
+const animatedStats = ref({
+  netWinning: 0,
+  total_earn_money: 0,
+  total_lost_money: 0,
+  paid_rake: 0,
+  max_win_pot: 0,
+  max_lose_pot: 0,
+  hands_played: 0,
+  vpip: 0,
+  pfr: 0,
+  wtsd: 0,
+  wsd: 0,
+  bankruptcy_count: 0,
+  max_win_streak: 0,
+  max_lose_streak: 0,
+  max_lose_equity: 0
+});
+
+const animateValue = (key, endValue, duration) => {
+  let startTimestamp = null;
+  const startValue = animatedStats.value[key];
+
+  const step = (timestamp) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+
+    // Ease-out cubic
+    const easeProgress = 1 - Math.pow(1 - progress, 3);
+
+    animatedStats.value[key] = startValue + (endValue - startValue) * easeProgress;
+
+    if (progress < 1) {
+      window.requestAnimationFrame(step);
+    } else {
+      animatedStats.value[key] = endValue;
+    }
+  };
+  window.requestAnimationFrame(step);
+};
+watch(() => props.show, (newVal) => {
+  if (newVal) {
+    // Reset states
+    showEcon.value = false;
+    showBehav.value = false;
+    showLuck.value = false;
+    showMsg.value = false;
+    const earn = currentStats.value.total_earn_money || 0n;
+    const lost = currentStats.value.total_lost_money || 0n;
+    netWinning.value = Number(earn) - Number(lost);
+
+    // Reset numbers
+    Object.keys(animatedStats.value).forEach(k => animatedStats.value[k] = 0);
+
+    // Sequence animations
+    setTimeout(() => {
+      showEcon.value = true;
+      animateValue('netWinning', Number(netWinning.value || 0), 1000);
+      animateValue('paid_rake', currentStats.value.paid_rake || 0, 1000);
+      animateValue('max_win_pot', currentStats.value.max_win_pot || 0, 1000);
+      animateValue('max_lose_pot', currentStats.value.max_lose_pot || 0, 1000);
+    }, 300);
+
+    setTimeout(() => {
+      showBehav.value = true;
+      animateValue('hands_played', currentStats.value.hands_played || 0, 1000);
+      animateValue('vpip', Number(vpipTarget.value), 1000);
+      animateValue('pfr', Number(pfrTarget.value), 1000);
+      animateValue('wtsd', Number(wtsdTarget.value), 1000);
+      animateValue('wsd', Number(wsdTarget.value), 1000);
+    }, 1300);
+
+    setTimeout(() => {
+      showLuck.value = true;
+      animateValue('bankruptcy_count', currentStats.value.bankruptcy_count || 0, 1000);
+      animateValue('max_win_streak', currentStats.value.max_win_streak || 0, 1000);
+      animateValue('max_lose_streak', currentStats.value.max_lose_streak || 0, 1000);
+      animateValue('max_lose_equity', currentStats.value.max_lose_equity || 0, 1000);
+    }, 2300);
+
+    if (currentStats.value.msgCode) {
+      setTimeout(() => {
+        audioManager.playSFX('swoosh');
+        showMsg.value = true;
+      }, 3500);
+    }
+  }
+});
 
 // HUD Metrics
-const vpip = computed(() => {
+// Targets for HUD Metrics
+const vpipTarget = computed(() => {
   if (!currentStats.value.hands_played) return 0;
   return ((currentStats.value.vpip_count / currentStats.value.hands_played) * 100).toFixed(1);
 });
 
-const pfr = computed(() => {
+const pfrTarget = computed(() => {
   if (!currentStats.value.hands_played) return 0;
   return ((currentStats.value.pfr / currentStats.value.hands_played) * 100).toFixed(1);
 });
 
-const wtsd = computed(() => {
+const wtsdTarget = computed(() => {
   if (!currentStats.value.hands_played) return 0;
   return ((currentStats.value.wtsd / currentStats.value.hands_played) * 100).toFixed(1);
 });
 
-const wsd = computed(() => {
+const wsdTarget = computed(() => {
   if (!currentStats.value.wtsd) return 0;
   return ((currentStats.value.w$sd / currentStats.value.wtsd) * 100).toFixed(1);
 });
@@ -99,6 +208,8 @@ const handleClose = () => {
   if (isSession.value) {
     store.play_stats_session = null;
   }
+  audioManager.playSFX('ui-click')
+  audioManager.play();
   emit('close');
 };
 </script>
@@ -118,22 +229,62 @@ const handleClose = () => {
   font-size: 1.2rem;
   font-weight: 800;
 }
-.lose_big {
+.LOSE_BIG {
   color: var(--neon-megenta);
 }
-.lose_medium {
+.LOSE_MEDIUM {
   color: var(--neon-orange);
 }
-.lose_small {
+.LOSE_SMALL {
   color: var(--neon-yellow);
 }
-.win_big {
+.WIN_BIG {
   color: var(--neon-green);
 }
-.win_medium {
+.WIN_MEDIUM {
   color: var(--neon-green);
 }
-.win_small {
+.WIN_SMALL {
   color: var(--neon-yellow);
+}
+.final-message {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px currentColor;
+}
+
+/* Animations */
+.slide-fade-enter-active {
+  transition: all 0.5s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+  filter: blur(4px);
+}
+
+.pop-in-enter-active {
+  animation: pop-in-anim 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes pop-in-anim {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(20px);
+    filter: blur(5px);
+  }
+  70% {
+    transform: scale(1.1) translateY(-5px);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+    text-shadow: 0 0 15px currentColor, 0 0 5px currentColor;
+  }
 }
 </style>

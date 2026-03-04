@@ -62,101 +62,43 @@ export class EventAdaptor {
   }
   playerBankrupt(player, bestWinner, locationId, inviteId) {
     console.info('playerBankrupt', player.name);
-    if (player.isMe) {
-      // store.play_stats.bankruptcy_count++;
-      recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.BANKRUPT);
-      player.item?.effects?.forEach(e => {
-        if (e.trigger.includes('bankrupt')) {
-          this.executeItemEffect(player, e, {});
-        }
-      });
-
-      // cleanupInvites(locationId);
-      deleteMessage(inviteId);
-
-      if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX) {
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_PLAYER, 0);
-      } else if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX) {
-        scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_3_MEET_AT_CLUB_LOSE, 0);
+    recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.BANKRUPT);
+    player.item?.effects?.forEach(e => {
+      if (e.trigger.includes('bankrupt')) {
+        this.executeItemEffect(player, e, {});
       }
-    } else {
-      // An NPC went bankrupt
-      if (bestWinner && bestWinner.isMe) {
-        // Player bankrupted the NPC
-        const persona = player.persona || player.name;
-        recordPlayStatsSession(bestWinner, PLAY_RECORD_STATS_TYPE.BUST_ENEMY, { enemyClass: persona });
-
-        if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX && player.name === 'Max') {
-          scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 1);
-        } else if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX && player.name === 'Max') {
-          scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_3_MEET_AT_CLUB_WIN, 1); // if max wins complate main story 1-3
-        }
-
-      } else {
-        // Someone else bankrupted the NPC
-        if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX && player.name === 'Max') {
-          scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_MAX, 1);
-        }
-      }
+    });
+    // An NPC went bankrupt
+    if ([LOCATION_ID.FREE_STREET_SHOP_WITH_MAX, LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX].includes(locationId) && player.id === PARTNER_ID.MAX) {
+      scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_MAX, 1);
     }
   }
   // TODO: CHANGE WON LOGIC
   gameWon(player, prize, locationId, inviteId) {
     console.info('gameWon', player.name, prize);
-    // cleanupInvites(locationId);
-    deleteMessage(inviteId);
-    let firstClearReward = null;
-    for (const tier of zones) {
-      const loc = tier.locations.find(l => l.id === locationId);
-      if (loc && loc.firstClearReward) {
-        firstClearReward = loc.firstClearReward;
-        break;
-      }
-    }
-    if (firstClearReward) {
-      if (!store.unlockedLocations) store.unlockedLocations = [];
-      if (!store.unlockedLocations.includes(firstClearReward)) {
-        store.unlockedLocations.push(firstClearReward);
-        console.log(`[GAME] First Clear Reward Awarded: ${firstClearReward}`);
-      }
-    }
-    if (locationId) gainClearedZoneCount(locationId);
-    // [Tutorial] Handled edge cases for the tutorial table
-    if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX) {
-      if (player.isMe) {
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 2);
-      } else if (player.id === PARTNER_ID.MAX) {
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN_MAX, 2);
-      }
-    }
-    // MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS
-    if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX || player.isMe) {
-      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 2);
-    }
+    // // cleanupInvites(locationId);
+    // deleteMessage(inviteId);
+    // let firstClearReward = null;
+    // for (const tier of zones) {
+    //   const loc = tier.locations.find(l => l.id === locationId);
+    //   if (loc && loc.firstClearReward) {
+    //     firstClearReward = loc.firstClearReward;
+    //     break;
+    //   }
+    // }
+    // if (firstClearReward) {
+    //   if (!store.unlockedLocations) store.unlockedLocations = [];
+    //   if (!store.unlockedLocations.includes(firstClearReward)) {
+    //     store.unlockedLocations.push(firstClearReward);
+    //     console.log(`[GAME] First Clear Reward Awarded: ${firstClearReward}`);
+    //   }
+    // }
   }
   // TODO: THIS IS NOT USED MAYBE COMBINE TO CASHOUT LOGIC
   playerLeaveTable(player, locationId, allPlayers, inviteId) {
     console.info('playerLeaveTable', player.name, locationId, inviteId);
     if (!player.isMe) return;
     // cleanupInvites(locationId);
-
-    deleteMessage(inviteId);
-    if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX) {
-      // Run away early -> Max gets mad
-      if (!player.isEliminated) {
-        if (store.completedEvents.includes(EVENT_ID.MAX.TUTORIAL_LEAVE)) {
-          scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE_AGAIN, 2);
-        } else {
-          scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE, 2);
-        }
-      }
-    } else if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX) {
-      if (store.sessionNetWorth >= 100000) {
-        scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 3);
-      } else {
-        scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_FAILED, 3);
-      }
-    }
   }
 
   raise({ player, amount, pot, street }) {
@@ -185,11 +127,11 @@ export class EventAdaptor {
     result.results.forEach(r => {
       recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WTSD);
       if (r.isWinner) {
-        recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, equity: r.player.equity, rake: result.rake, isShowDown: true });
+        recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, amount: r.player.totalWagered, equity: r.player.equity, rake: result.rake, isShowDown: true });
         if (runoutInProgress) this.winAtShowdownWithAllIn({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board });
         else this.winAtShowdown({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board });
       } else {
-        recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.LOSE, { amount: r.player.totalWagered, pot, equity: r.player.equity, isShowDown: true });
+        recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.LOSE, { pot: r.player.totalWagered, amount: r.amountWon, equity: r.player.equity, isShowDown: true });
         if (runoutInProgress) this.loseAtShowdownWithAllIn({ player: r.player, amount: 0, pot, hand: r.hand, board });
         else this.loseAtShowdown({ player: r.player, amount: 0, pot, hand: r.hand, board });
       }
@@ -197,7 +139,7 @@ export class EventAdaptor {
   }
   winAtWithoutShowdown({ result, amount, pot, board }) {
     result.results.forEach(r => {
-      recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, rake: result.rake, isShowDown: false });
+      recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, amount: r.player.totalWagered, rake: result.rake, isShowDown: false });
       r.player.item?.effects?.forEach(e => {
         if (e.trigger.includes('winWithoutShowdown') || e.trigger.includes('win')) {
           this.executeItemEffect(r.player, e, { amount: r.amountWon, pot: r.amountWon, hand: r.player.hand, board, isWin: true });
@@ -241,7 +183,7 @@ export class EventAdaptor {
       recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.FOLDED_TO_FLOP_BET);
     }
     if (player.totalWagered > 0) {
-      recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.LOSE, { amount: player.totalWagered, pot });
+      recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.LOSE, { pot: player.totalWagered, amount: 0 });
     }
     recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.FOLD);
     player.item?.effects?.forEach(e => {
@@ -287,23 +229,28 @@ export class EventAdaptor {
 
     // store.xp = 0;
   }
-  action({ player, type, street }) {
+  action({ player, type, street, amount }) {
+
     switch (type) {
       case 'CHECK':
         recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.CHECK);
         break;
       case 'CALL':
         recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.CALL);
-        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.VPIP);
+        if (street === 'PREFLOP' && !player.isJoinPot) {
+          recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.VPIP);
+          player.isJoinPot = true;
+        }
         break;
       case 'ALL_IN':
       case 'RAISE':
       case 'BET':
         recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.RAISE);
-        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.VPIP);
-        if (street === 'PREFLOP') {
-          recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.PFR);
+        if (street === 'PREFLOP' && !player.isJoinPot) {
+          recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.VPIP);
+          player.isJoinPot = true;
         }
+        if (street === 'PREFLOP') recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.PFR);
         break;
     }
   }

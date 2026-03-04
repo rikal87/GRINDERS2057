@@ -6,8 +6,8 @@ import { CONTRACT_TYPE } from './partnerContractSystem.js'
 import { audioManager } from './audioManager.js';
 import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
-import { getPartner } from './partnerSystem.js';
-import { gainXP, gainXPEstimate, store, saveStore, gainBankroll, TYPE_CHANGE_BANKROLL, gainSuspicion, getCurrentSuspicion, getCurrentInfamy } from './store.js';
+import { getPartner, getJoinedPartners } from './partnerSystem.js';
+import { gainXPEstimate, store, saveStore, gainBankroll, TYPE_CHANGE_BANKROLL, gainSuspicion, getCurrentSuspicion, getCurrentInfamy } from './store.js';
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
 import { zones, LOCATION_ID } from './zone.js';
 
@@ -76,6 +76,7 @@ export class GameEngine {
     this.mentor = null;
     this.gameOver = false;
     this.exitReservationRounds = -1; // -1 means no reservation
+    this.exitReservationRoundsMax = -1;
     this.exitReservationRoundDefault = 15; // default value
     this.winnerId = null;
     this.playersActedCount = 0;
@@ -212,32 +213,30 @@ export class GameEngine {
     console.log('this.buyInLimit', this.buyInLimit);
     let enemiesToPlace = [];
     // 0. partners Spawns (Top Priority from zone.js config)
-    if (store.partners && Array.isArray(store.partners)) {
-      store.partners.forEach(partner => {
-        const validContract = partner.contracts.find(contract => contract.type === CONTRACT_TYPE.COLLUSION && contract.active);
-        const targetId = partner.id.toLocaleUpperCase();
-        const template = CLASSES_PARTNER.find(e => e.name.toUpperCase() === targetId)
-        if (template && validContract) {
-          enemiesToPlace.push({ ...template });
-        } else {
-          console.warn(`[GAME] Partner persona '${partner.name}' not found in CLASSES.`);
-        }
-      });
-    }
+    const joinedPartners = getJoinedPartners();
+    joinedPartners.forEach(partner => {
+      const validContract = partner.contracts.find(contract => contract.type === CONTRACT_TYPE.COLLUSION && contract.active);
+      const template = CLASSES_PARTNER.find(e => e.id === partner.id)
+      if (template && validContract) {
+        enemiesToPlace.push({ ...template });
+      } else {
+        console.warn(`[GAME] Partner ${partner.name} is not with you`);
+      }
+    });
 
     // 1. Guests Spawns (Top Priority from zone.js config)
     if (locationConfig.guests && Array.isArray(locationConfig.guests)) {
-      locationConfig.guests.forEach(companionName => {
+      locationConfig.guests.forEach(guestName => {
         if (enemiesToPlace.length >= size - 1) return;
-        const targetId = companionName.toLowerCase();
-        const template = CLASSES_PARTNER.find(e => e.name.toLowerCase() === targetId)
+        const targetId = guestName.toLowerCase();
+        const template = CLASSES_ENEMY.find(e => e.name.toLowerCase() === targetId)
         if (template) {
           enemiesToPlace.push({ ...template });
           setTimeout(() => {
             chatAI(template, CHAT_TRIGGERS.GAME_START);
           }, 2000);
         } else {
-          console.warn(`[GAME] Companion persona '${companionName}' not found in CLASSES.`);
+          console.warn(`[GAME] Companion persona '${guestName}' not found in CLASSES.`);
         }
       });
     }
@@ -332,7 +331,7 @@ export class GameEngine {
       }
 
       const aiPlayer = {
-        id: `cpu_${i + 1}`,
+        id: villan.isPartner ? villan.id : `cpu_${i + 1}`,
         name: `${villan.name}`,
         tempXPBonus: 0,
         class: villan,
@@ -384,7 +383,7 @@ export class GameEngine {
       this.exitReservationRounds--;
     } else if (this.exitReservationRounds === 0) {
       // Time to exit
-      this.handleReservedExit();
+      this.cashOut();
       return;
     }
 
@@ -394,6 +393,7 @@ export class GameEngine {
       p.currentBet = 0;
       p.totalWagered = 0;
       p.isBlind = false; // Reset blind status
+      p.isJoinPot = false; // Reset VPIP tracker
       if (p.stats) p.stats.handsPlayed++;
     });
 
@@ -633,7 +633,7 @@ export class GameEngine {
   }
   async moveToNextPlayer() {
     // Current active players include those with chips OR those who already made a bet this street (all_ins)
-    const activePlayers = this.players.filter(p => !p.isFolded && (p.chips > 0 || p.currentBet > 0));
+    const activePlayers = this.players.filter(p => !p.isFolded && !p.isEliminated);
 
     // Check if betting round is over
     // A player is matched if they match the currentRoundBet OR if they are all_in
@@ -677,7 +677,7 @@ export class GameEngine {
     this.pressureActive = false; // Reset pressure skill effect each street
     this.players.forEach(p => p.hasFacedFlopBet = false);
 
-    const activePlayers = this.players.filter(p => !p.isFolded);
+    const activePlayers = this.players.filter(p => !p.isFolded && !p.isEliminated);
     if (activePlayers.length === 1) {
       // this.state = 'SHOWDOWN';
       // const currentPot = this.pot; // [FIX] Capture pot before resolution clears it
@@ -851,12 +851,10 @@ export class GameEngine {
     });
 
     eventAdaptor.roundEnd(this.players, 'ROUND_END');
-    if (this.checkTriggerCasinoInvestigation()) return;
-    let sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000
+    const sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000
     await sleep(sleepTime)
-    saveStore(); // Save at the end of every complete hand
-
-
+    saveStore();
+    if (this.checkTriggerCasinoInvestigation()) return;
     this.startNewHand();
   }
 
@@ -869,7 +867,7 @@ export class GameEngine {
     // or we can call exitGame directly if we want to force it here.
     // However, clean exit is usually managed by UI. We will emit a custom event.
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('trigger-reserved-exit'));
+      window.dispatchEvent(new CustomEvent('trigger-cashout'));
     }
   }
   async triggerCasinoInvestigation(players) {
@@ -964,10 +962,9 @@ export class GameEngine {
       this.winnerId = 'player';
       this.gameOver = true;
       this.victoryPrize = gainXPEstimate(lastSurvior[0], this.bb * 100, this.bb, this.isAdvanced, this.locationLV);
-      audioManager.playSFX('clear-table');
       console.log(`[GAME] Victory Prize Awarded: ${this.bb * 100} `);
-
       eventAdaptor.gameWon(lastSurvior[0], this.bb * 100, this.locationId, this.inviteId);
+      this.cashOut(true);
     }
 
     return false;
@@ -1079,19 +1076,15 @@ export class GameEngine {
     });
 
     audioManager.enableTensionMode();
-
     calculateEquity(this.players, this.board);
     // Notify System/UI
     // EventAdaptor.allInModeActivated(); // If exists
-
     await this.runNextStep();
   }
 
   async runNextStep() {
-    if (this.state === 'SHOWDOWN' || this.gameOver) return;
-
+    if (this.checkSkipAction()) return;
     await sleep(1500); // 1.5s delay
-
     console.log(`[RUNOUT] Step processing... State: ${this.state}`);
 
     // If we are still in runout mode
@@ -1121,22 +1114,26 @@ export class GameEngine {
     if (!isForceExit) {
       const rounds = this.exitReservationRoundDefault - this.exitReservationRounds;
       gainSuspicion(this.locationId, rounds);
+      if (this.checkTriggerCasinoInvestigation()) return;
     }
-    if (this.checkTriggerCasinoInvestigation()) return;
 
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('trigger-reserved-exit', { detail: { isForceExit } }));
+      window.dispatchEvent(new CustomEvent('trigger-cashout', { detail: { isForceExit } }));
     } else console.warn('[GAME] cashOut failed');
   }
 
   async processTurns() {
-    if (this.state === 'IDLE') return;
-    if (this.gameOver || this.state === 'SHOWDOWN' || this.runoutInProgress) return;
+    if (this.checkSkipAction() || this.runoutInProgress) return;
+    const activePlayers = this.players.filter(p => !p.isFolded && !p.isEliminated);
+    if (activePlayers.length === 1) {
+      this.resolveShowdown(true);
+      return;
+    }
 
     const player = this.players[this.currentPlayerIndex];
     if (!player) return;
 
-    if (player.isFolded || player.chips <= 0) {
+    if (player.isFolded || player.isEliminated) {
       this.moveToNextPlayer();
       return;
     }
@@ -1170,16 +1167,18 @@ export class GameEngine {
     let elapsed = 0;
     // Animate the delay
     while (elapsed < delay) {
-      if (this.gameOver || this.state === 'SHOWDOWN' || this.runoutInProgress) break;
+      if (this.checkSkipAction() || this.runoutInProgress) break;
       await sleep(step);
       elapsed += step;
       player.timeBankRemaining = Math.max(0, player.timeBankRemaining - (step / 1000));
     }
-    if (this.gameOver || this.state === 'SHOWDOWN' || this.runoutInProgress || this.state === 'IDLE') return;
+    if (this.checkSkipAction() || this.runoutInProgress) return;
     await this.handlePlayerAction(player, action);
 
   }
-
+  checkSkipAction() {
+    return this.gameOver || this.state === 'SHOWDOWN' || this.state === 'IDLE'
+  }
   // --- Timebank System ---
 
   startTurnTimer(player) {

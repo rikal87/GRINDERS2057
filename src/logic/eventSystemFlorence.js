@@ -1,6 +1,6 @@
 import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_RESOLVE_TYPE } from "./messageSystem.js";
+import { PARTNER_ID, gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
 import { store, getLanguage } from "./store.js";
-import { PARTNER_ID, gainRelationship } from "./partnerSystem.js";
 // import { scheduleEvent, processEvents } from "./eventSystem.js";
 
 const pay_rent_bill = 5000;

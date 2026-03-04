@@ -77,7 +77,7 @@
         <div class="popup-actions">
           <button class="btn-accept" :disabled="!canAfford || isLocked || isBlacklisted(currentLocation.id)"
             @click="confirmJoin">
-            <span v-if="isLocked">ACCESS_DENIED (KEY_REQUIRED)</span>
+            <span v-if="isLocked">ACCESS_DENIED</span>
             <span v-else-if="canAfford">INITIATE_LINK</span>
             <span v-else>INSUFFICIENT_FUNDS</span>
           </button>

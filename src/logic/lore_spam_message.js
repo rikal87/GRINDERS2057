@@ -736,8 +736,12 @@ const lore_spam_message = [
   {
     "type": "SOCIAL",
     "sender": "Bad_Beat_Barry",
-    "title": "리버 억까 레전드",
-    "body": "플랍 셋(Set)이었는데 리버에 상대 원카드 스트레이트 완성됨. 키보드 부셨다. 추천 키보드 받는다...",
+    "title_ko": "리버 억까 레전드",
+    "title_en": "River Bad Beat Legend",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "플랍 셋(Set)이었는데 리버에 상대 원카드 스트레이트 완성됨. 키보드 부셨다. 추천 키보드 받는다...",
+    "body_en": "I had a Set on the flop, but the river gave my opponent a straight with one card. I broke my keyboard. Send me keyboard recommendations...",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     "trigger_loss": true
   },
   {

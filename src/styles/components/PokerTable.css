@@ -580,7 +580,8 @@
 /* Dialogue Bubble */
 .dialogue-bubble {
   position: absolute;
-  bottom: 60%;
+  top: -12%;
+  /* bottom: 60%; */
   /* left: 50%; */
   /* transform: translateX(-50%); */
   min-width: 100px;

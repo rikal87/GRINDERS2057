@@ -1,5 +1,5 @@
 
-import { store } from './store';
+import { store, gainInfamy, gainSuspicion } from './store';
 import { consumeStamina } from './staminaSystem';
 import { processAiTasks } from './aiAgentTaskSystem';
 import { sendLoreAndSpamMessage } from './messageSystem';
@@ -114,14 +114,10 @@ const processDailyDecay = () => {
     if (window.isAtTable && window.currentLocationId === locationId) {
       return;
     }
-    const zoneData = store.status_zone[locationId];
-    if (zoneData.infamy > 0) zoneData.infamy = Math.max(0, zoneData.infamy - 1);
-
-    // Handle the field name transition if necessary, ensure it doesn't drop below 0
-    if (zoneData.suspicious !== undefined && zoneData.suspicion === undefined) {
-      zoneData.suspicion = zoneData.suspicious;
-      delete zoneData.suspicious;
-    }
-    if (zoneData.suspicion > 0) zoneData.suspicion = Math.max(0, zoneData.suspicion - 1);
+    // if (store.status_zone[locationId].isBlacklisted) {
+    //   return;
+    // }
+    gainInfamy(locationId, -1);
+    gainSuspicion(locationId, -1);
   });
 };

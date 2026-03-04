@@ -112,7 +112,7 @@
 
           <div class="popup-actions">
             <button class="btn-confirm" :disabled="!canAfford || isLocked" @click="confirmJoin">
-              <span v-if="isLocked">ACCESS_DENIED (KEY_REQUIRED)</span>
+              <span v-if="isLocked">ACCESS_DENIED</span>
               <span v-else-if="canAfford">INITIATE_LINK</span>
               <span v-else>INSUFFICIENT_FUNDS</span>
             </button>
@@ -188,7 +188,7 @@ const canAfford = computed(() => {
 
 const currentMapKey = ref('DEFAULT');
 const mapPositions = {
-  DEFAULT: { pos: '50% 50%', name: 'NIGHT_CITY_HUB' },
+  // DEFAULT: { pos: '50% 50%', name: 'NIGHT_CITY_HUB' },
   CASINO: { pos: '-12% 100%', name: 'CASINO_STRIP' },
   SAFE_HOUSE: { pos: '53% 54%', name: 'SAFE_HOUSE' },
   BLACK_MARKET: { pos: '115% -20%', name: 'KBT_UNDERGROUND' },

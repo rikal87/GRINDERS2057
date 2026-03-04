@@ -315,32 +315,49 @@ function getHeuristicFallback(player, engine) {
 
   // --- 5. Sizing ---
   if (action === 'raise') {
+    let currentBet = engine.currentRoundBet || 0;
+
     if (street === 'PREFLOP') {
-      let openSize = 2.5;
+      // [1] 프리플랍: 아직 앞사람의 "레이즈"가 없는 경우 기본 오픈 레이즈 사이즈
+      let openSizeBase = player.isAdvanced ? engine.bb * 2.2 : engine.bb * 2 + Math.max(0, (AF - 2.5) * 0.1);
+      if (isAdvanced && distFromButton > 3) openSizeBase += 0.5;
+
       let mult = player.chips < 20 * engine.bigBlind || spr < 1.8 ? 99999 : 1;
-      if (raises > 0) mult = Math.max(2.2, 5.5 - raises);
-      if (isAdvanced && distFromButton > 3) openSize += 0.5;
-      amount = Math.floor(engine.bb * openSize * mult);
-    } else {
-      if (callAmt > 0) {
-        let mult = 3.0; // Standard raise over a bet
-        if (estimatedEquity > raiseEquityThreshold + 0.20) mult = 4.0;
-        amount = Math.max(amount, Math.floor(engine.currentRoundBet * mult));
+
+      // 누군가 레이즈를 했다면 (오픈레이즈가 아닌 3-bet+ 상황)
+      if (raises > 0) {
+        mult = Math.max(2.2, 5 - raises);
+        amount = Math.floor(currentBet * mult); // 앞선 베팅액 * 배수
       } else {
+        // 본인이 최초의 레이즈 (오픈, 스퀴즈 추가)
+        amount = Math.floor((openSizeBase + (player.isAdvanced ? pot : 0)) * mult);
+      }
+    } else {
+      // [2] 포스트 플랍
+      if (callAmt > 0) {
+        // 2-1. 상대가 벳을 친 상태 -> 보통 상대 벳의 3~4배를 레이즈
+        let mult = Math.max(2.2, 4.5 - raises);
+        // if (estimatedEquity > raiseEquityThreshold + 0.20) mult += .5;
+
+        amount = Math.floor(currentBet * mult);
+        // [보정] 무조건 상대방 베팅의 2배 이상은 레이즈하게 하한선 보장
+        amount = Math.max(amount, currentBet * 2);
+      } else {
+        // 2-2. 아무도 베팅 안함 -> 팟 사이즈 비율로 "첫 배팅"
         let potPct = 0.5;
-        if (isAdvanced) {
-          if (boardAnalysis.type === 'DRY') potPct -= 0.15;
-          else if (boardAnalysis.type === 'WET') potPct += 0.25;
-          else if (estimatedEquity < requiredEquity && drawInfo.draws.length > 0) potPct += 0.20; // Semi-bluff larger
-        }
-        if (isAdvanced && street === 'RIVER' && (estimatedEquity >= 0.70)) {
+        if (boardAnalysis.type === 'DRY') potPct -= 0.15;
+        else if (boardAnalysis.type === 'WET') potPct += 0.25;
+        else if (estimatedEquity < requiredEquity && drawInfo.draws.length > 0) potPct += 0.20; // 쎼미블러프
+        if (street === 'RIVER' && (estimatedEquity >= 0.70)) {
           if (estimatedEquity >= 0.70) {
-            potPct = AF * 0.1 + 0.7 + (estimatedEquity - 0.7); // Polarized overbet
+            potPct = AF * 0.1 + 0.7 + (estimatedEquity - 0.7); // 강한 핸드의 양극화 오버벳
           } else {
-            potPct = AF * 0.1 + 0.7 + (requiredEquity - 0.7); // Polarized bluff overbet
+            potPct = AF * 0.1 + 0.7 + (requiredEquity - 0.7); // 블러프 양극화 오버벳
           }
         }
-        amount = Math.max(amount, Math.floor(pot * potPct));
+        amount = Math.floor(pot * potPct);
+        // [보정] 아무리 작아도 1 빅블라인드 이상은 치도록 보장
+        amount = Math.max(amount, engine.bb || 2);
       }
     }
   }
@@ -354,7 +371,7 @@ function getHeuristicFallback(player, engine) {
   } else if (equityDiff < 0.10) {
     delay = 2000 + Math.random() * 3000;
   } else if (action === 'fold' && estimatedEquity < requiredEquity - 0.20) {
-    delay = 600;
+    delay = 500 + Math.random() * 300;
   }
 
   if (action === 'raise' && estimatedEquity < requiredEquity) {

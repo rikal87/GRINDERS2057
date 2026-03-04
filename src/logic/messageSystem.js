@@ -1,5 +1,5 @@
 
-import { gainBankroll, store } from './store';
+import { gainBankroll, store, TYPE_CHANGE_BANKROLL } from './store';
 import { zones } from './zone';
 import { getRndLoreSpamMessage } from './lore_spam_message';
 import { audioManager } from './audioManager';
@@ -19,6 +19,14 @@ export const MESSAGE_ACTION_TYPE = {
   DEBT_REPAYMENT: 'DEBT_REPAYMENT',
   PAY_INCOME_TAX: 'PAY_INCOME_TAX',
   ACCEPT_INVITE: 'ACCEPT_INVITE',
+}
+export const MESSAGE_ACTION_LABEL_TYPE = {
+  PAY: 'PAY',
+  PAY_RENT: 'PAY',
+  PAY_FINE: 'PAY',
+  DEBT_REPAYMENT: 'REPAYMENT',
+  PAY_INCOME_TAX: 'PAY',
+  ACCEPT_INVITE: 'ACCEPT',
 }
 export const MESSAGE_ACTION_RESOLVE_TYPE = {
   ACCEPT: 'ACCEPT',

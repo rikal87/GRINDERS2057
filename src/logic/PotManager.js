@@ -18,7 +18,7 @@ export class PotManager {
     if (amount > player.chips) amount = player.chips;
     player.chips -= amount;
     player.currentBet += amount;
-    player.totalWagered = (player.totalWagered || 0) + amount;
+    player.totalWagered = (player.totalWagered || 0) + amount; // 이번 핸드에서 플레이어가 총 베팅으로 넣은 전체 금액입니다.
     this.pot += amount;
 
     if (player.currentBet > this.currentRoundBet) {
@@ -267,7 +267,7 @@ export class PotManager {
         hand: p.handRank,
         isMe: p.isMe,
         isWinner: contestedWins[p.id] > 0 || activePlayers.length === 1, // Mark as winner if they won a contested pot or are the last player standing
-        amountWon: winnings[p.id]
+        amountWon: winnings[p.id] //  해당 플레이어가 쇼다운 결과로 돌려받는(승리 또는 무승부/사이드팟으로 얻는) 칩의 양입니다. 완전히 패배했다면 0이 됩니다. (간혹 여러 명이 올인하여 사이드팟을 먹었다면 0이 아닌 일부 금액을 돌려받을 수 있습니다.)
       })),
       winnerId: bestWinner ? bestWinner.id : null,
       rake: totalRakeCollected,

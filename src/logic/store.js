@@ -1,12 +1,16 @@
 import { reactive, watch } from 'vue';
-import { createPlayRecordStats, PLAY_RECORD_STATS_MSG_CODE } from './playRecordStats';
+import { createPlayRecordStats, GAME_RESULT_CODE } from './playRecordStats';
 import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
-import { shareBenefitForPartners } from './partnerSystem';
+import { PARTNER_ID, shareBenefitForPartners, initializePartners } from './partnerSystem';
+import { setLanguageGetter } from './persona.js';
+import { deleteMessage } from './messageSystem';
+import { LOCATION_ID, zones } from './zone.js';
+import { scheduleEvent, EVENT_ID } from './eventSystem.js';
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const getDefaultState = () => ({
-  bankroll: 20000,
+  bankroll: 9999999,
   chips: 0, // Chips on table
   // currentBB: 0,
   xp: 0,
@@ -40,8 +44,8 @@ const getDefaultState = () => ({
     income_tax: 0,
     fine: 0,
   },
-
-  partners: [],
+  partners: initializePartners(),
+  // partners: [], // initialized dynamically to avoid persona.js -> store.js circular dependency
   isRealGameOver: false,
   realGameOverReason: '',
   cleared_zones: {
@@ -108,6 +112,36 @@ const getDefaultState = () => ({
   hasSave: false,
   // last_session_stats: null // Used for settlement popup
 });
+const RENT_BILL_MAX_MISS = 3;
+const INCOME_TAX_MAX_MISS = 3;
+const FINE_MAX_MISS = 3;
+export const MISSED_PAYMENT_TYPE = {
+  RENT_BILL: 'rent_bill',
+  INCOME_TAX: 'income_tax',
+  FINE: 'fine',
+}
+export const MAX_MISS = {
+  [MISSED_PAYMENT_TYPE.RENT_BILL]: RENT_BILL_MAX_MISS,
+  [MISSED_PAYMENT_TYPE.INCOME_TAX]: INCOME_TAX_MAX_MISS,
+  [MISSED_PAYMENT_TYPE.FINE]: FINE_MAX_MISS,
+}
+export const getTotalIncomeTaxCalculated = () => {
+  const amount = store.bankroll - store.latest_pay_income_base_amount;
+  if (amount <= 0) return 0;
+  let progressive_income_tax = 0.1;
+  if (amount >= 100000) progressive_income_tax += 0.05;
+  if (amount >= 500000) progressive_income_tax += 0.1;
+  if (amount >= 1000000) progressive_income_tax += 0.15;
+  if (amount >= 5000000) progressive_income_tax += 0.2;
+  if (amount >= 10000000) progressive_income_tax += 0.25;
+  return Math.ceil(amount * progressive_income_tax);
+}
+export const gainMissedPayments = (type, amount) => {
+  store.missedPayments[type] = (store.missedPayments[type] || 0) + amount;
+}
+export const getMissedPayments = (type) => {
+  return store.missedPayments[type];
+}
 export const getLanguage = () => {
   return store.settings.language;
 }
@@ -126,15 +160,11 @@ const bigIntReviver = (key, value) => {
   }
   return value;
 };
-export const getJoinedPartners = () => {
-  return store.partners.filter(p => p.isJoined);
-}
+
 export const getCurrentBankroll = () => {
   return store.bankroll;
 }
-export const getPartners = () => {
-  return store.partners;
-}
+
 export const getCurrentAgent = () => {
   return store.aiAgent ? store.aiAgent.model : AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD];
 }
@@ -230,6 +260,7 @@ export const getNextLevelThreshold = () => {
 }
 let initialState = getDefaultState();
 export const store = reactive(initialState);
+setLanguageGetter(() => store.settings.language);
 
 export const initStore = async () => {
   try {
@@ -256,9 +287,12 @@ export const initStore = async () => {
         parsed.play_stats_session = { ...defaultState.play_stats_session };
       }
       Object.assign(store, { ...defaultState, ...parsed, hasSave: true });
+    } else {
+      // store.partners = initializePartners();
     }
   } catch (e) {
     console.error('Failed to parse save data from IndexedDB:', e);
+    // store.partners = initializePartners();
   }
 };
 
@@ -298,6 +332,7 @@ export const getClearedZoneCount = (zoneId) => {
   return store.cleared_zones[zoneId] || 0;
 }
 export const gainClearedZoneCount = (locationId) => {
+  if (!locationId) return;
   if (!store.cleared_zones[locationId]) store.cleared_zones[locationId] = 1
   store.cleared_zones[locationId]++
 }
@@ -308,13 +343,8 @@ export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
   if (Number.isNaN(amount)) return;
   const intAmount = Math.ceil(amount);
   store.bankroll = Math.max(0, store.bankroll + intAmount);
-
-  if (!store.all_time_bankroll_stats[type]) store.all_time_bankroll_stats[type] = 0;
-  store.all_time_bankroll_stats[type] += intAmount;
-
   store.session_net_history.push({ amount: intAmount, type, timestamp: Date.now() });
   if (store.session_net_history.length > 200) store.session_net_history.shift();
-  if (type === TYPE_CHANGE_BANKROLL.GAMBLING) store.sessionNetWorth += intAmount;
 }
 
 export const saveStore = async () => {
@@ -354,8 +384,20 @@ export const calculateSessionReport = () => {
     detailes
   };
 };
+export const gameResult = (winBB) => {
+  if (winBB >= 100) return GAME_RESULT_CODE.WIN_BIG;
+  if (winBB >= 50) return GAME_RESULT_CODE.WIN_MEDIUM;
+  if (winBB >= 30) return GAME_RESULT_CODE.WIN_SMALL;
+  if (winBB <= -100) return GAME_RESULT_CODE.LOSE_BIG;
+  if (winBB <= -50) return GAME_RESULT_CODE.LOSE_MEDIUM;
+  if (winBB <= -30) return GAME_RESULT_CODE.LOSE_SMALL;
+  return GAME_RESULT_CODE.NEUTRAL;
+}
 export const applySessionExit = (player, engine) => {
+  console.info('player.chips', player.chips)
+  console.info('player.totalBuyIn', player.totalBuyIn)
   const netWinnings = (player.chips - player.totalBuyIn);
+  console.info('netWinnings', netWinnings)
   const winBB = netWinnings / engine.bb;
   let generatedInfamy = winBB * 0.2;
 
@@ -366,23 +408,72 @@ export const applySessionExit = (player, engine) => {
     gainInfamy(engine.locationId, generatedInfamy * baseBoostInfamy);
   } else gainInfamy(engine.locationId, generatedInfamy);
   // [FIX] Share partner benefit
-  gainXP(netWinnings);
-  gainBankroll(netWinnings, TYPE_CHANGE_BANKROLL.GAMBLING);
-  shareBenefitForPartners(netWinnings);
   // Store for PlayStatsPopup display
-  if (winBB > 100) {
-    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.WIN_BIG;
-  } else if (winBB > 50) {
-    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.WIN_MEDIUM;
-  } else if (winBB > 25) {
-    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.WIN_SMALL;
-  } else if (winBB < -100) {
-    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.LOSE_BIG;
-  } else if (winBB < -50) {
-    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.LOSE_MEDIUM;
-  } else if (winBB < -25) {
-    store.play_stats_session.msgCode = PLAY_RECORD_STATS_MSG_CODE.LOSE_SMALL;
-  }
+  store.play_stats_session.msgCode = gameResult(winBB)
+  processMissionResult(player, winBB, engine);
+  gainXP(player);
+  gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING); // returned chips
+  shareBenefitForPartners(netWinnings);
   saveStore();
   return netWinnings;
 };
+const firstClearReward = (locationId) => {
+  let firstClearReward = null;
+  for (const tier of zones) {
+    const loc = tier.locations.find(l => l.id === locationId);
+    if (loc && loc.firstClearReward) {
+      firstClearReward = loc.firstClearReward;
+      break;
+    }
+  }
+  if (firstClearReward) {
+    if (!store.unlockedLocations) store.unlockedLocations = [];
+    if (!store.unlockedLocations.includes(firstClearReward)) {
+      store.unlockedLocations.push(firstClearReward);
+      console.log(`[GAME] First Clear Reward Awarded: ${firstClearReward}`);
+    }
+  }
+}
+const processMissionResult = (player, winBB, engine) => {
+  const locationId = engine.locationId;
+  const inviteId = engine.inviteId;
+  // Mission FREE_STREET_SHOP_WITH_MAX
+  deleteMessage(inviteId);
+  if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX) {
+    const client = engine.players.find(p => p.id === PARTNER_ID.MAX);
+    console.info('client', client)
+    if (!client) return;
+    const result = gameResult(winBB);
+    if (result.indexOf('WIN') !== -1) {
+      if (result === GAME_RESULT_CODE.WIN_BIG) firstClearReward(locationId);
+      if (client.chips > player.chips) {
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN_MAX, 30);
+      } else {
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 30);
+      }
+      gainClearedZoneCount(locationId);
+    } else if (result.indexOf('LOSE') !== -1) {
+      if (!client.isEliminated) {
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_PLAYER, 30);
+      }
+    } else {
+      if (store.completedEvents.includes(EVENT_ID.MAX.TUTORIAL_LEAVE)) {
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE_AGAIN, 30);
+      } else {
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE, 30);
+      }
+    }
+  }
+  // Mission LOW_UNDERGROUND_CLUB_MEET_MAX
+  if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX) {
+    const client = engine.players.find(p => p.id === PARTNER_ID.MAX);
+    const result = gameResult(winBB);
+    if (result.indexOf('WIN') !== -1) {
+      if (result === GAME_RESULT_CODE.WIN_BIG) firstClearReward(locationId);
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 30);
+      gainClearedZoneCount(locationId);
+    } else {
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_FAILED, 30);
+    }
+  }
+}

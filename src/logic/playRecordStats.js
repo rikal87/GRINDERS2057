@@ -79,56 +79,57 @@ export const PLAY_RECORD_STATS_TYPE = {
   MAX_WIN_EQUITY: 'max_win_equity',
   BUST_ENEMY: 'bust_enemy',
 }
-export const PLAY_RECORD_STATS_MSG_CODE = {
-  WIN_BIG: 'win_big',
-  WIN_MEDIUM: 'win_medium',
-  WIN_SMALL: 'win_small',
-  LOSE_BIG: 'lose_big',
-  LOSE_MEDIUM: 'lose_medium',
-  LOSE_SMALL: 'lose_small',
+export const GAME_RESULT_CODE = {
+  WIN_BIG: 'WIN_BIG',
+  WIN_MEDIUM: 'WIN_MEDIUM',
+  WIN_SMALL: 'WIN_SMALL',
+  LOSE_BIG: 'LOSE_BIG',
+  LOSE_MEDIUM: 'LOSE_MEDIUM',
+  LOSE_SMALL: 'LOSE_SMALL',
 }
 export const pickRandomMessage = (msgCode) => {
   const messages = PLAY_RECORD_STATS_MSG_TEXTS[msgCode];
+  if (!messages || messages.length === 0) return null;
   const msg = messages[Math.floor(Math.random() * messages.length)];
   return msg;
 }
 export const PLAY_RECORD_STATS_MSG_TEXTS = {
-  [PLAY_RECORD_STATS_MSG_CODE.WIN_BIG]: [
+  [GAME_RESULT_CODE.WIN_BIG]: [
     { ko: '완벽한 운영이었습니다.', en: 'Clinical execution.' },
     { ko: '상대를 완전히 압도했습니다.', en: 'You controlled the flow.' },
     { ko: '흐름을 완벽히 장악했습니다.', en: 'You read the table perfectly.' },
     { ko: '칩 스택이 기하급수적으로 불어납니다.', en: 'Massive stack builder.' },
     { ko: '그라인더의 정석입니다. 기회를 놓치지 않았군요.', en: 'Textbook grinder spot. Max value taken.' }
   ],
-  [PLAY_RECORD_STATS_MSG_CODE.WIN_MEDIUM]: [
+  [GAME_RESULT_CODE.WIN_MEDIUM]: [
     { ko: '침착하게 거둔 훌륭한 성과입니다.', en: 'Solid performance.' },
     { ko: '꾸준히 빈틈을 파고든 결과입니다.', en: 'Solid grind.' },
     { ko: '이성적인 판단이 돋보였습니다.', en: 'Disciplined session.' },
     { ko: '당신의 엣지를 확실히 증명했습니다.', en: 'Locked in profit.' },
     { ko: '차곡차곡 쌓아가는 게 진짜 실력입니다.', en: 'Stacking value, piece by piece.' }
   ],
-  [PLAY_RECORD_STATS_MSG_CODE.WIN_SMALL]: [
+  [GAME_RESULT_CODE.WIN_SMALL]: [
     { ko: '작지만 의미 있는 블라인드 수익입니다.', en: 'Small edge secured.' },
     { ko: '기회를 놓치지 않고 챙겼습니다.', en: 'You took the spot.' },
     { ko: '리스크 없이 확실한 팟만 챙겼습니다.', en: 'Nice minimal-risk pickup.' },
     { ko: '새는 칩을 막고 이익을 챙겼습니다.', en: 'Plugging leaks, making bank.' },
     { ko: '이런 작은 팟이 그라인더의 원동력입니다.', en: 'Every pot counts for a grinder.' }
   ],
-  [PLAY_RECORD_STATS_MSG_CODE.LOSE_SMALL]: [
+  [GAME_RESULT_CODE.LOSE_SMALL]: [
     { ko: '자연스러운 배리언스의 일부입니다.', en: 'Calculated risk.' },
     { ko: '손실 통제가 아주 잘 되었습니다.', en: 'Within variance.' },
     { ko: '통제 가능한 수준의 지출입니다.', en: 'Still manageable.' },
     { ko: '싼 값에 테이블 정보를 얻었습니다.', en: 'Cheap information.' },
     { ko: '이 정도면 언제든 복구할 수 있습니다.', en: 'Easy minor setback.' }
   ],
-  [PLAY_RECORD_STATS_MSG_CODE.LOSE_MEDIUM]: [
+  [GAME_RESULT_CODE.LOSE_MEDIUM]: [
     { ko: '폴드 타이밍이 한 템포 늦었습니다.', en: 'Marginal spot.' },
     { ko: '손절이 필요했던 까다로운 구간입니다.', en: 'Should have folded.' },
     { ko: '배리언스의 타격을 입었습니다.', en: 'Variance hit.' },
     { ko: '상대의 레인지에 너무 관대했습니다.', en: 'Too loose against their range.' },
     { ko: '멘탈을 유지하세요. 아직 기회는 많습니다.', en: 'Tough spot, keep the discipline.' }
   ],
-  [PLAY_RECORD_STATS_MSG_CODE.LOSE_BIG]: [
+  [GAME_RESULT_CODE.LOSE_BIG]: [
     { ko: '과감한 선택이었지만 런아웃이 무자비했습니다.', en: 'Brutal runout.' },
     { ko: '오늘 세션에서 가장 뼈아픈 타격입니다.', en: 'Brutal swing.' },
     { ko: '하이 리스크 하이 리턴의 반대 면입니다.', en: 'High risk, high cost. Stay focused.' },
@@ -175,10 +176,9 @@ export const recordPlayStatsSession = (player, action, payload = {}) => {
 
       sessionStats.current_lose_streak = 0
       sessionStats.current_win_streak++;
-      console.info('payload.pot', payload.pot)
-      if (Number.isInteger(payload.pot)) {
-        sessionStats.total_earn_money += BigInt(payload.pot);
-        totalStats.total_earn_money += BigInt(payload.pot);
+      if (Number.isInteger(payload.pot) && Number.isInteger(payload.amount)) {
+        sessionStats.total_earn_money += BigInt(payload.pot - payload.amount);
+        totalStats.total_earn_money += BigInt(payload.pot - payload.amount);
       }
 
       if (sessionStats.current_win_streak > sessionStats.max_win_streak) {
@@ -207,11 +207,15 @@ export const recordPlayStatsSession = (player, action, payload = {}) => {
       if (sessionStats.current_lose_streak > sessionStats.max_lose_streak) {
         sessionStats.max_lose_streak = sessionStats.current_lose_streak;
       }
-      sessionStats.max_lose_pot = Math.max(payload.pot || 0, sessionStats.max_lose_pot);
-      totalStats.max_lose_pot = Math.max(payload.pot || 0, totalStats.max_lose_pot);
       sessionStats.max_lose_equity = Math.max(payload.equity || 0, sessionStats.max_lose_equity);
       totalStats.max_lose_equity = Math.max(payload.equity || 0, totalStats.max_lose_equity);
-      sessionStats.total_lost_money += BigInt(payload.amount);
+      sessionStats.max_lose_pot = Math.max(payload.pot || 0, sessionStats.max_lose_pot);
+      totalStats.max_lose_pot = Math.max(payload.pot || 0, totalStats.max_lose_pot);
+      if (Number.isInteger(payload.pot) && Number.isInteger(payload.amount)) {
+        sessionStats.total_lost_money += BigInt(payload.pot - payload.amount);
+        totalStats.total_lost_money += BigInt(payload.pot - payload.amount);
+      }
+
       break;
     case PLAY_RECORD_STATS_TYPE.BUST:
       sessionStats.bust++;
@@ -227,9 +231,7 @@ export const recordPlayStatsSession = (player, action, payload = {}) => {
       break;
     case PLAY_RECORD_STATS_TYPE.PFR:
       sessionStats.pfr++;
-      sessionStats.vpip_count++;
       totalStats.pfr++;
-      totalStats.vpip_count++;
       break;
     case PLAY_RECORD_STATS_TYPE.WTSD:
       sessionStats.wtsd++;

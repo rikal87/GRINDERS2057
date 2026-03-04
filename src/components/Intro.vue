@@ -8,10 +8,11 @@
       <h1 class="logo static-logo" data-text="GRINDERS 2057">GRINDERS 2057</h1>
     </div>
     <div class="menu-list">
-      <button class="menu-btn glitch-hover" data-text="INITIALIZE_LINK" @click="$emit('start', 'new')">
+      <button class="menu-btn glitch-hover" data-text="INITIALIZE_LINK" @click="$emit('start', 'new')"
+        v-if="!store.hasSave">
         INITIALIZE_LINK
       </button>
-      <button class="menu-btn" :disabled="!store.hasSave" @click="$emit('start', 'continue')">
+      <button class="menu-btn" v-else @click="$emit('start', 'continue')">
         RESUME_LINK
       </button>
       <button class="menu-btn" @click="$emit('calibrate')">

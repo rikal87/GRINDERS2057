@@ -506,7 +506,7 @@ export const ITEM_EFFECT_DATA = [
     editable: false,
     trigger: ['win'],
     get desc() { return store.settings.language === 'en' ? `Grants +${Math.floor(this.value * 100)}% XP bonus when winning with a Flush.` : `플러시로 승리시 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: 2,
+    value: 5,
     isStackable: true
   },
   {
@@ -521,7 +521,7 @@ export const ITEM_EFFECT_DATA = [
     unique: true,
     trigger: ['win'],
     get desc() { return store.settings.language === 'en' ? `Grants +${Math.floor(this.value * 100)}% XP bonus when winning with a Full House.` : `풀하우스로 승리시 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: 3,
+    value: 7,
     isStackable: true
   },
   {
@@ -536,7 +536,7 @@ export const ITEM_EFFECT_DATA = [
     unique: true,
     trigger: ['win'],
     get desc() { return store.settings.language === 'en' ? `Grants +${Math.floor(this.value * 100)}% XP bonus when winning with a Straight Flush.` : `스트레이트 플러시로 승리시 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: 9,
+    value: 30,
     isStackable: true
   },
   {
@@ -551,7 +551,7 @@ export const ITEM_EFFECT_DATA = [
     unique: true,
     trigger: ['win'],
     get desc() { return store.settings.language === 'en' ? `Grants +${Math.floor(this.value * 100)}% XP bonus when winning with Four of a Kind.` : `포 카드로 승리시 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: 5,
+    value: 15,
     isStackable: true
   },
   {
@@ -566,7 +566,7 @@ export const ITEM_EFFECT_DATA = [
     unique: true,
     trigger: ['win'],
     get desc() { return store.settings.language === 'en' ? `Grants +${Math.floor(this.value * 100)}% XP bonus when winning with a Royal Flush.` : `로열 플러시로 승리시 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: 25,
+    value: 100,
     isStackable: true
   },
   {
@@ -581,7 +581,7 @@ export const ITEM_EFFECT_DATA = [
     unique: true,
     trigger: ['win', 'lose'],
     get desc() { return store.settings.language === 'en' ? `If your hand is AJ, grants +${Math.floor(this.value * 100)}% XP bonus that persists until your next win.` : `내 핸드가 AJ인 경우, 다음 승리시 까지 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: 0.21,
+    value: 2.1,
     isStackable: true
   },
   {
@@ -596,7 +596,7 @@ export const ITEM_EFFECT_DATA = [
     unique: true,
     trigger: ['win'],
     get desc() { return store.settings.language === 'en' ? `Grants +${Math.floor(this.value * 100)}% XP bonus when winning with One Pair or Two Pair.` : `원페어 또는 투페어로 승리시 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: .1,
+    value: .22,
     isStackable: true
   },
   {
@@ -611,7 +611,7 @@ export const ITEM_EFFECT_DATA = [
     unique: true,
     trigger: ['win'],
     get desc() { return store.settings.language === 'en' ? `Grants +${Math.floor(this.value * 100)}% XP bonus when winning with a Set.` : `세트로 승리시 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: .3,
+    value: 3,
     isStackable: true
   },
   {
@@ -625,7 +625,7 @@ export const ITEM_EFFECT_DATA = [
     editable: false,
     trigger: ['loseAtShowdown'],
     get desc() { return store.settings.language === 'en' ? `If you lose a Showdown with a Full House+, grants +${Math.floor(this.value * 100)}% XP bonus on your next win.` : `쇼다운에서 풀하우스 이상의 족보로 패배시, 다음 승리 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: 3,
+    value: 5,
     isStackable: true
   },
   {
@@ -639,7 +639,7 @@ export const ITEM_EFFECT_DATA = [
     editable: false,
     trigger: ['loseAtShowdown'],
     get desc() { return store.settings.language === 'en' ? `If you lose a Showdown to the same rank (kicked out), grants +${Math.floor(this.value * 100)}% XP bonus on your next win.` : `쇼다운에서 같은 족보로 패배시, 다음 승리 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: .5,
+    value: 1,
     isStackable: true
   },
   {
@@ -688,7 +688,7 @@ export const ITEM_EFFECT_DATA = [
     editable: false,
     trigger: ['win'],
     get desc() { return store.settings.language === 'en' ? `Grants +${Math.floor(this.value * 100)}% XP bonus when winning with a Straight.` : `스트레이트 족보로 승리 시 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: 0.5,
+    value: 3,
     isStackable: true
   },
   {

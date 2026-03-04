@@ -1,6 +1,6 @@
 // for first player
-import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE } from "./messageSystem.js";
-import { store, saveStore } from "./store.js";
+import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_LABEL_TYPE } from "./messageSystem.js";
+import { store, saveStore, getLanguage, gainMissedPayments, getMissedPayments, MISSED_PAYMENT_TYPE, getTotalIncomeTaxCalculated } from "./store.js";
 import { EVENT_FLORENCE, EventData as FlorenceEventData } from "./eventSystemFlorence.js";
 import { EVENT_MAX, EventData as MaxEventData } from "./eventSystemMax.js";
 import { ENEMY_ID } from "./persona.js";
@@ -12,6 +12,7 @@ export const EVENT_ID = {
   FIRST_PAY_RENT_BILL: 'first_pay_rent_bill',
   PAY_RENT_BILL_WARNING: 'pay_rent_bill_warning',
   PAY_RENT_BILL: 'pay_rent_bill',
+  PAY_RENT_BILL_EVICTION: 'pay_rent_bill_eviction',
   INCOME_TAX: 'income_tax',
   MAX: EVENT_MAX,
   FLORENCE: EVENT_FLORENCE,
@@ -53,8 +54,8 @@ export const EventData = [
     "title_ko": "경고장",
     "title_en": "Warning Letter",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    "body_ko": "우리 구역에서 장사하려면 상납금을 내야지? 이번엔 말로 하지만, 다음엔 네 놈의 그 예쁜 손가락을 가져가겠다. - The_Syndicate",
-    "body_en": "If you want to do business in our district, you must pay tributes, right? This time it's just words, but next time I'll take those pretty fingers of yours. - The_Syndicate",
+    "body_ko": "이봐, 우리 구역에서 노름을 하고 싶으면 상납금을 내야지? 이번엔 말로 하지만, 다음엔 네 놈의 그 예쁜 손가락을 가져가겠다. - The_Syndicate",
+    "body_en": "Listen up, if you want to play poker in our district, you must pay tributes, right? This time it's just words, but next time I'll take those pretty fingers of yours. - The_Syndicate",
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     condition: () => {
       return getBustEnemyCount(ENEMY_ID.GANGSTER) > 0;
@@ -65,40 +66,19 @@ export const EventData = [
     },
     repeatable: false
   },
-
   {
     id: EVENT_ID.FIRST_PAY_RENT_BILL,
     scenario: '게임 시작 후 얼마지나지 않아 첫 주거 렌트비 지불 메시지',
-    title_ko: '첫 주거 렌트비 지불',
-    title_en: 'Pay Rent Bill',
-    body_ko: '납부해야 할 주거 렌트비가 있습니다. 연체료를 피하려면 지금 납부하세요.',
-    body_en: 'You have a rent bill to pay. Pay it now to avoid penalties.',
-    sender_ko: '시스템',
-    sender_en: 'System',
-    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    get sender() { return store.settings.language === 'en' ? this.sender_en : this.sender_ko; },
-    get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
-    label_ko: '지불',
-    label_en: 'Pay',
-    timer: 120, // after 2 hour(in game)
+    timer: 30 * 60, // after 1 DAY 6 hour(in game)
     func() {
-
-      sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body, [{
-        label: this.label,
-        actionType: MESSAGE_ACTION_TYPE.PAY_RENT,
-        payload: {
-          amount: pay_rent_bill,
-          currency: 'CR'
-        }
-      }], this.sender)
+      scheduleEvent(EVENT_ID.PAY_RENT_BILL, 3)
+      scheduleEvent(EVENT_ID.PAY_RENT_BILL_WARNING, 5)
     },
     repeatable: false
   },
   {
     id: EVENT_ID.PAY_RENT_BILL_WARNING,
-    scenario: '게임시작후 얼마지나지 않아 임대인의 렌트비 독촉 메시지',
-    timer: 150, // after 2.5 hour(in game)
+    scenario: '게임시작후 얼마 지나지 않아 임대인의 렌트비 독촉 메시지',
     func() {
       const title = store.settings.language === 'en' ? '[Final Warning] Rent Payment Overdue' : '[최후 통첩] 밀린 렌트비 납부 요망';
       const body = store.settings.language === 'en' ? "You've been missing rent payments lately. Act right. If you miss 3 times, you're immediately evicted, so figure it out. Deposit 5000 CR right now." : '요즘 자꾸 렌트비가 밀리고 있어. 처신 똑바로 해. 3번 이상 밀리면 즉시 퇴거 조치니까 알아서 해라. 당장 5000 CR 입금해.';
@@ -108,26 +88,22 @@ export const EventData = [
     repeatable: false
   },
   {
-    id: 'pay_rent_bill',
+    id: EVENT_ID.PAY_RENT_BILL,
     scenario: '렌트비 지불 (주기)',
     timer: 7 * 24 * 60, // 7 days
     func() {
-      store.missedPayments.rent_bill = (store.missedPayments.rent_bill || 0) + 1;
-
-      if (store.missedPayments.rent_bill > 3) {
+      gainMissedPayments(MISSED_PAYMENT_TYPE.RENT_BILL, 1);
+      if (getMissedPayments(MISSED_PAYMENT_TYPE.RENT_BILL) >= 3) {
         const reason = store.settings.language === 'en' ? '[Eviction] You were kicked out onto the streets due to 3 missed rent payments.' : '[퇴거 조치] 렌트비 3회 미납으로 인해 길거리로 쫓겨났습니다.';
         handleGameOver(reason);
         return;
       }
-
       const title = store.settings.language === 'en' ? 'Pay Rent Bill' : '렌트비 고지서';
-      const body = store.settings.language === 'en' ? `You have a rent bill to pay. Pay it now to avoid eviction. (Missed: ${store.missedPayments.rent_bill - 1}/3)` : `납부해야 할 주거 렌트비가 있습니다. 퇴거 조치를 피하려면 지금 납부하세요. (미납: ${store.missedPayments.rent_bill - 1}/3)`;
-      const sender = store.settings.language === 'en' ? 'System' : '시스템';
-      const label = store.settings.language === 'en' ? `Pay (${pay_rent_bill} CR)` : `지불 (${pay_rent_bill} CR)`;
-
+      const body = store.settings.language === 'en' ? `You have a rent bill to pay. (Missed: ${getMissedPayments(MISSED_PAYMENT_TYPE.RENT_BILL)}/3)` : `납부해야 할 주거 렌트비가 있습니다. (미납: ${getMissedPayments(MISSED_PAYMENT_TYPE.RENT_BILL)}/3)`;
+      const sender = store.settings.language === 'en' ? 'System' : 'System';
       sendMessage(MESSAGE_TYPE.FINANCE, title, body, [{
-        label: label,
-        actionType: PAY_RENT,
+        label: MESSAGE_ACTION_LABEL_TYPE.PAY,
+        actionType: MESSAGE_ACTION_TYPE.PAY_RENT,
         payload: {
           currency: 'CR',
           amount: pay_rent_bill
@@ -141,33 +117,21 @@ export const EventData = [
     scenario: '소득세를 지불 (주기)',
     timer: 90 * 24 * 60, // 90 days
     func() {
-      const income_amount = (store.bankroll - store.latest_pay_income_base_amount);
-      if (income_amount <= 0) return;
-
-      store.missedPayments.income_tax = (store.missedPayments.income_tax || 0) + 1;
-
-      if (store.missedPayments.income_tax > 3) {
+      const pay_income_tax = getTotalIncomeTaxCalculated();
+      if (pay_income_tax <= 0) return;
+      gainMissedPayments(MISSED_PAYMENT_TYPE.INCOME_TAX, 1);
+      if (getMissedPayments(MISSED_PAYMENT_TYPE.INCOME_TAX) >= MAX_MISS[MISSED_PAYMENT_TYPE.INCOME_TAX]) {
         const reason = store.settings.language === 'en' ? '[Asset Seizure] All your assets have been seized by the IRS due to 3 missed income tax payments.' : '[자산 압류] 소득세 3회 미납으로 인해 국세청에 모든 자산을 압류당했습니다.';
         handleGameOver(reason);
         return;
       }
-
-      let progressive_income_tax = 0.1;
-      if (income_amount > 100000) progressive_income_tax += 0.05;
-      if (income_amount > 500000) progressive_income_tax += 0.1;
-      if (income_amount > 1000000) progressive_income_tax += 0.15;
-      if (income_amount > 5000000) progressive_income_tax += 0.2;
-      if (income_amount > 10000000) progressive_income_tax += 0.25;
-      const pay_income_tax = income_amount * progressive_income_tax;
-
       const title = store.settings.language === 'en' ? 'Pay Income Tax' : '소득세 고지서';
-      const body = store.settings.language === 'en' ? `You have an income tax to pay. Pay it now to avoid penalties. (Missed: ${store.missedPayments.income_tax - 1}/3)` : `납부해야 할 소득세가 있습니다. 연체료를 피하려면 지금 납부하세요. (미납: ${store.missedPayments.income_tax - 1}/3)`;
-      const sender = store.settings.language === 'en' ? 'System' : '시스템';
-      const label = store.settings.language === 'en' ? 'Pay' : '지불';
+      const body = store.settings.language === 'en' ? `You have an income tax to pay. (Missed: ${getMissedPayments(MISSED_PAYMENT_TYPE.INCOME_TAX)}/3)` : `납부해야 할 소득세가 있습니다. (미납: ${getMissedPayments(MISSED_PAYMENT_TYPE.INCOME_TAX)}/3)`;
+      const sender = store.settings.language === 'en' ? 'System' : 'System';
 
       sendMessage(MESSAGE_TYPE.FINANCE, title, body, [{
-        label: label,
-        actionType: 'PAY_INCOME_TAX',
+        label: MESSAGE_ACTION_LABEL_TYPE.PAY,
+        actionType: MESSAGE_ACTION_TYPE.PAY_INCOME_TAX,
         payload: {
           currency: 'CR',
           amount: Math.ceil(pay_income_tax)
@@ -176,9 +140,7 @@ export const EventData = [
     },
     repeatable: true
   },
-
 ];
-
 const START_TIME = new Date('2057-01-20T09:00:00').getTime();
 
 export const scheduleEvent = (eventId, delayMinutes = 0) => {
