@@ -117,7 +117,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
-    id: 'an_unknown_woman', name: 'An_Unknown_Woman', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, W$SD: 0.53, chipMultiply: 1,
+    id: 'an_unknown_woman', name: 'An_Unknown_Woman', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, W$SD: 0.53, chipMultiply: 4.32,
     schedule: [CONTRACT_TYPE.A_DATE_WITH_YOU],
     isAdvanced: true,
     isPartner: false,
@@ -138,7 +138,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'fish',
-    name: 'Fish', philosophy: 'TAP', vPIP: .36, AF: 1, WTSD: .25, chipMultiply: 1, isAdvanced: false,
+    name: 'Fish', philosophy: 'LAP', vPIP: .7, AF: 1, WTSD: .25, chipMultiply: 1, isAdvanced: false,
     note_ko: '판돈을 불리는 데는 일등 공신이지만, 막상 끝까지 가는 배짱은 없어서 정교한 블러핑 한 방이면 칩을 고스란히 헌납할 겁니다.',
     note_en: 'He is a great contributor to increasing the pot, but he lacks the courage to go all the way, so a single sophisticated bluff will cost him all his chips.',
     get note() {
@@ -147,7 +147,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'broke',
-    name: 'Broke', philosophy: 'LAP', vPIP: .45, AF: 2, WTSD: .6, chipMultiply: 0.5, isAdvanced: false,
+    name: 'Broke', philosophy: 'TAP', vPIP: .38, AF: 2, WTSD: .6, chipMultiply: 0.5, isAdvanced: false,
     note_ko: '내일이 없는 친구입니다. 리버에 기적이 일어나길 빌며 모든 걸 걸었다가, 결국 오늘도 빈털터리로 돌아갑니다',
     note_en: 'He is a friend with no tomorrow. He bets everything hoping for a miracle on the river, only to end up broke again today.',
     get note() {
@@ -174,9 +174,9 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'rich_guy',
-    name: 'Rich_Guy', philosophy: 'LAP', vPIP: .6, AF: 1.5, WTSD: .35, chipMultiply: 3, isAdvanced: false,
-    note_ko: '기업의 꽤 높은 분이거나 운 좋게 코인 대박이 터진 부자입니다. 돈이 많아서 거의 모든 팟에 참여하길 원합니다. 테이블에 앉아있는 스릴을 즐기지만, 상황이 심각해지면 쉽게 접는 경향이 있습니다.',
-    note_en: 'He is a high-ranking executive of a company or a rich man who got lucky with a crypto boom. A wealthy amateur who buys his way into almost every pot. He plays for the thrill of being at the table, but tends to fold when things get too intense.',
+    name: 'Rich_Guy', philosophy: 'TAP', vPIP: .38, AF: 1.5, WTSD: .35, chipMultiply: 3, isAdvanced: false,
+    note_ko: '기업의 꽤 높은 분이거나 운 좋게 코인 대박이 터진 부자입니다. 테이블에 앉아있는 스릴을 즐기지만, 상황이 심각해지면 쉽게 접는 경향이 있습니다.',
+    note_en: 'He is a high-ranking executive of a company or a rich man who got lucky with a crypto boom. He plays for the thrill of being at the table, but tends to fold when things get too intense.',
     get note() {
       return getSettingLanguage() === 'en' ? this.note_en : this.note_ko;
     }
@@ -184,8 +184,8 @@ export const CLASSES_ENEMY = [
   {
     id: 'gangster',
     name: 'Gangster', philosophy: 'TAG', vPIP: .38, AF: 4, WTSD: .44, chipMultiply: 1, isAdvanced: false,
-    note_ko: '확실한 판에서만 무섭게 몰아붙이는 실력파 무법자입니다. 그의 레이즈는 단순한 베팅이 아니라 테이블 전체를 압박하는 폭력에 가깝습니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.',
-    note_en: 'A dangerous professional who treats poker like street warfare. He only plays strong hands, but when he does, his bets feel more like a threat than a game. He has a habit of betting with a stern look in his eyes. Be careful, as he seems like he might flip the table if the cards don\'t go his way.',
+    note_ko: '확실한 판에서만 무섭게 몰아붙이는 무법자입니다. 그의 베팅은 테이블 전체를 압박하는 폭력에 가깝습니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.',
+    note_en: 'He\'s an outlaw who strikes ruthlessly only when the odds are in his favor. His betting is akin to violence, suffocating the entire table. Be careful—when the cards don\'t go his way, you can see him itching to flip the table.',
     get note() {
       return getSettingLanguage() === 'en' ? this.note_en : this.note_ko;
     }

@@ -274,6 +274,7 @@ export const zones = [
         get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
         "atmosphere": "시끄러움, 혼란스러움, 들뜸",
         "requirements": null,
+        "firstClearRewards": "club_membership",
         isHidden: true,
         "level": 5,
         "npcs": [

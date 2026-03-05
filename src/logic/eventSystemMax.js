@@ -44,8 +44,8 @@ import { isEventCompleted } from "./eventSystem.js";
  * @property {string} JOIN_PARTNER // 맥스가 정식 파트너가 되기로 결심합니다.
  * @property {string} REGISTERED_PARTNER // 맥스를 정식 파트너로 등록했습니다.
  * @property {string} MAIN_STORY_1_MEET_AT_CLUB // 맥스가 클럽에서 플레이어를 만납니다.
- * @property {string} MAIN_STORY_1_2_MEET_AT_CLUB_FAILED
- * @property {string} MAIN_STORY_1_3_MEET_AT_CLUB_WIN
+ * @property {string} MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS // 맥스와 플레이어가 클럽에서 게임을 합니다. (승리)
+ * @property {string} MAIN_STORY_1_2_MEET_AT_CLUB_FAILED // 맥스와 플레이어가 클럽에서 게임을 합니다. (패배)
  * @property {string} GONE
  * @property {string} BANKRUPT_REPAYMENT
  * @property {string} BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER
@@ -233,15 +233,16 @@ export const EventData = [
   },
   {
     id: EVENT_MAX.JOIN_PARTNER,
-    scenario: '맥스가 정식 파트너가 되기로 결심합니다. (플레이어의 자산이 10만 달러 이상일 때)',
+    scenario: '맥스가 정식 파트너가 되기로 결심합니다. (플레이어의 자산이 3만 CR 이상 또는 관계도 600 이상일 때)',
     title_ko: '텍사스 듀오 결성 제안',
     title_en: 'Texas Duo Proposal',
     body_ko: '하하! 실력이 아주 물이 올랐구만 친구! 뒷골목 피쉬들 돈이나 뜯어먹기엔 이제 아까운 실력이야. 이 정도면 나랑 본격적으로 등 맞대고 뛰어도 되겠어. 제대로 텍사스 마초 듀오를 결성해 볼까?',
     body_en: 'Haha! You\'ve really sharpened those claws, friend! You\'re too good to just be swiping chips from back-alley fish now. With skills like that, you\'re ready to watch my back. What do you say we form a real Texas macho duo?',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    timer: 30,
     condition: () => {
-      return store.bankroll > 100000 || getRelationship(PARTNER_ID.MAX) >= 600;
+      return getCurrentBankroll() > 30000 || getRelationship(PARTNER_ID.MAX) >= 600;
     },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
@@ -271,11 +272,6 @@ export const EventData = [
     body_en: 'Listen up buddy, a grinder I know over at the Neon Lounge just gave me a sweet tip. Tonight, the VIP room at H.B.D Club is gonna be crawling with rich suckers stinking of cash. I\'ll call you later tonight, so get ready.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    timer: 3 * 60, // 3 hours
-    condition: () => {
-      return getClearedZoneCount(LOCATION_ID.LOW_UNDERGROUND_CLUB) > 0;
-      // return true // for test
-    },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
     },
@@ -294,7 +290,7 @@ export const EventData = [
     get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
     timer: 32,
     condition: () => {
-      return getClearedZoneCount(LOCATION_ID.LOW_UNDERGROUND_CLUB) > 0 && isEventCompleted(EVENT_MAX.MAIN_STORY_1_MEET_AT_CLUB) && new Date(store.gameTime).getHours() >= 22;
+      return isEventCompleted(EVENT_MAX.MAIN_STORY_1_MEET_AT_CLUB) && new Date(store.gameTime).getHours() >= 22;
       // return new Date(store.gameTime).getHours() >= 22 // for test
     },
     func() {
@@ -857,7 +853,7 @@ export const EventData = [
         }
       ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
-    repeatable: false
+    repeatable: true
   },
   {
     id: EVENT_MAX.TUTORIAL_WIN,
@@ -870,7 +866,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
     condition() {
-      return getRelationship(PARTNER_ID.MAX) >= 500;
+      return getRelationship(PARTNER_ID.MAX) >= 400;
     },
     func() {
       gainRelationship(PARTNER_ID.MAX, 100);
@@ -890,7 +886,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
     condition() {
-      return getRelationship(PARTNER_ID.MAX) >= 500;
+      return getRelationship(PARTNER_ID.MAX) >= 400;
     },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
@@ -911,8 +907,8 @@ export const EventData = [
     label_ko: '알았어',
     label_en: 'OK',
     func() {
-      const taxiFee = 1000;
-      gainRelationship(PARTNER_ID.MAX, 50);
+      const taxiFee = 2000;
+
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
         {
           label: this.label,
@@ -940,7 +936,6 @@ export const EventData = [
       return getRelationship(PARTNER_ID.MAX) >= 500;
     },
     func() {
-      scheduleEvent(EVENT_MAX.TUTORIAL_THEN_LOSE_RETRY, 60); // 1시간 뒤 이어서 재도전 메시지 발송 
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: false

@@ -1,3 +1,4 @@
+import { store } from "./store.js";
 export const CONTRACT_TYPE = {
   SHARE_BENEFIT: 'SHARE_BENEFIT', // your win and lose net share
   BANKRUPT_RESCUE: 'BANKRUPT_RESCUE', // rescue bankrupt each other
@@ -13,8 +14,8 @@ export const CONTRACT_REQUIRED_RELATIONSHIP = {
 export const CONTRACT_BREAK_RELATIONSHIP = {
   [CONTRACT_TYPE.SHARE_BENEFIT]: 300,
   [CONTRACT_TYPE.BANKRUPT_RESCUE]: 500,
-  [CONTRACT_TYPE.A_DATE_WITH_YOU]: 500,
-  [CONTRACT_TYPE.COLLUSION]: 0 // for TEST
+  [CONTRACT_TYPE.A_DATE_WITH_YOU]: 700,
+  [CONTRACT_TYPE.COLLUSION]: 800 // for TEST
 }
 export const CONTRACT_TYPE_DESC = {
   [CONTRACT_TYPE.COLLUSION]: {

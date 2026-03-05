@@ -389,7 +389,8 @@ function getHeuristicFallback(player, engine) {
   }
 
   if (action === 'raise' && estimatedEquity < requiredEquity) {
-    if (Math.random() < 0.5) delay = 2000 + Math.random() * 2000; else delay = 1000;
+    if (Math.random() < 0.5) delay = 2000 + Math.random() * 2000;
+    else delay = 1300;
   }
 
   return {

@@ -243,12 +243,6 @@
                               </span>
                             </label>
                           </p>
-                          <p>
-                            <input type="range" min="0.0" max="1.0" step="0.01" :disabled="contract.debt > 0"
-                              v-model="contract.ratio">
-                            <label class="label"> {{ Math.round((contract.debt * contract.ratio)) }} CR
-                            </label>
-                          </p>
                         </div>
                         <p v-if="!contract.activeRepayment">
                           <button class="btn"
@@ -311,7 +305,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-              }} UNREAD]</small>
+          }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">

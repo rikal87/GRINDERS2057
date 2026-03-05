@@ -460,6 +460,7 @@ const processMissionResult = (player, result, engine) => {
       if (!client.isEliminated) {
         scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_PLAYER, 30);
       }
+      scheduleEvent(EVENT_ID.MAX.TUTORIAL_THEN_LOSE_RETRY, 45);
     } else {
       if (store.completedEvents.includes(EVENT_ID.MAX.TUTORIAL_LEAVE)) {
         scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE_AGAIN, 30);
@@ -486,6 +487,12 @@ const processMissionResult = (player, result, engine) => {
       }
     } else {
       scheduleEvent(EVENT_ID.MAX.PLAYER_LEAVE, 30);
+    }
+  }
+  if (locationId === LOCATION_ID.LOW_NEON_LOUNGE) {
+    // timer: 3 * 60,
+    if ([GAME_RESULT_CODE.WIN_BIG, GAME_RESULT_CODE.WIN_MEDIUM].includes(result)) {
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_MEET_AT_CLUB, 2 * 60);
     }
   }
   // Mission LOW_UNDERGROUND_CLUB_MEET_MAX
