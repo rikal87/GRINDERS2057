@@ -1,10 +1,10 @@
 // for first player
 import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_LABEL_TYPE } from "./messageSystem.js";
-import { store, saveStore, getLanguage, gainMissedPayments, getMissedPayments, MISSED_PAYMENT_TYPE, getTotalIncomeTaxCalculated } from "./store.js";
+import { store, saveStore, getLanguage, gainMissedPayments, getMissedPayments, MISSED_PAYMENT_TYPE, isUnlockedLocation, getBustEnemyCount, getTotalIncomeTaxCalculated } from "./store.js";
 import { EVENT_FLORENCE, EventData as FlorenceEventData } from "./eventSystemFlorence.js";
 import { EVENT_MAX, EventData as MaxEventData } from "./eventSystemMax.js";
 import { ENEMY_ID } from "./persona.js";
-import { getBustEnemyCount } from "./store.js";
+import { LOCATION_ID } from "./zone.js";
 
 const pay_rent_bill = 5000;
 
@@ -18,6 +18,16 @@ export const EVENT_ID = {
   FLORENCE: EVENT_FLORENCE,
   SHARK_HUNTER_APPEARS: 'SHARK_HUNTER_APPEARS',
   GANGSTER_WARNING: 'GANGSTER_WARNING',
+  UNLOCK_ZONE: {
+    HIGH_ROYAL_ROOM: 'HIGH_ROYAL_ROOM',
+    MIDDLE_HOLDEM_HOUSE: 'MIDDLE_HOLDEM_HOUSE',
+    LOW_UNDERGROUND_CLUB: 'LOW_UNDERGROUND_CLUB',
+    MIDDLE_UNDERGROUND_CASINO: 'MIDDLE_UNDERGROUND_CASINO',
+    MICRO_UNDERGROUND_BAR: 'MICRO_UNDERGROUND_BAR',
+    HIGH_HOLDEM_HOUSE: 'HIGH_HOLDEM_HOUSE',
+  },
+  SYSTEM_PARTNER_BANKRUPT_RESCUE_FOR_PLAYER: 'SYSTEM_PARTNER_BANKRUPT_RESCUE_FOR_PLAYER',
+  SYSTEM_PLAYER_BANKRUPT_RESCUE_FOR_PARTNER: 'SYSTEM_PLAYER_BANKRUPT_RESCUE_FOR_PARTNER',
 };
 
 const handleGameOver = async (reason) => {
@@ -28,6 +38,100 @@ const handleGameOver = async (reason) => {
 export const EventData = [
   ...FlorenceEventData,
   ...MaxEventData,
+  {
+    id: EVENT_ID.SYSTEM_PARTNER_BANKRUPT_RESCUE_FOR_PLAYER,
+    scenario: '플레이어가 파산했고 [파산 구제]를 계약한 파트너가 자금을 대출해줌.(시스템 발신용)',
+    title_ko: '긴급 채무 집행',
+    title_en: 'Emergency Debt Issued',
+    func(payload) {
+      const partnerName = payload.partnerName;
+      const body = store.settings.language === 'en'
+        ? `${payload.amount.toLocaleString()} CR has been loaned via [${partnerName}]. (This balance is subject to future repayment)`
+        : `[${partnerName}]의 승인에 따라 ${payload.amount.toLocaleString()} CR이 대출되었습니다. (해당 금액은 향후 상환 대상입니다.)`;
+      const sender = store.settings.language === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.FINANCE, this.title, body, [], sender)
+    },
+  },
+  {
+    id: EVENT_ID.SYSTEM_PLAYER_BANKRUPT_RESCUE_FOR_PARTNER,
+    scenario: '파트너가 파산했고 [파산 구제]를 계약한 플레이어가 자금을 대출해줌.(시스템 발신용)',
+    title_ko: '긴급 채무 집행',
+    title_en: 'Emergency Debt Issued',
+    func(payload) {
+      const partner = payload.partner;
+      const body = store.settings.language === 'en'
+        ? `${payload.amount.toLocaleString()} CR has been loaned to [${partner.name}]. (This balance is subject to future repayment)`
+        : `당신의 승인에 따라 [${partner.name}]에게 ${payload.amount.toLocaleString()} CR이 대출되었습니다. (해당 금액은 향후 상환 대상입니다.)`;
+      const sender = store.settings.language === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.FINANCE, this.title, body, [], sender)
+    },
+  },
+  {
+    id: EVENT_ID.UNLOCK_ZONE.MICRO_UNDERGROUND_BAR,
+    scenario: '[언더그라운드 바] 잠금 해제',
+    condition: () => {
+      return isUnlockedLocation(LOCATION_ID.MICRO_UNDERGROUND_BAR);
+    },
+    func() {
+      const title = store.settings.language === 'en' ? 'Reward for unlocking [Underground Bar]' : '[언더그라운드 바] 이용가능';
+      const body = store.settings.language === 'en' ? "You can now access the [Underground Bar]." : '[지하 바]의 접근 권한이 해제되었습니다.';
+      const sender = store.settings.language === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.REWARD, title, body, [], sender)
+    },
+  },
+
+  {
+    id: EVENT_ID.UNLOCK_ZONE.LOW_UNDERGROUND_CLUB,
+    scenario: '[H.B.D 클럽] 잠금 해제',
+    condition: () => {
+      return isUnlockedLocation(LOCATION_ID.LOW_UNDERGROUND_CLUB);
+    },
+    func() {
+      const title = store.settings.language === 'en' ? 'Reward for unlocking [H.B.D Club]' : '[H.B.D 클럽] 이용가능';
+      const body = store.settings.language === 'en' ? "You can now access the [H.B.D Club]." : '[H.B.D 클럽]의 접근 권한이 해제되었습니다.';
+      const sender = store.settings.language === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.REWARD, title, body, [], sender)
+    },
+  },
+  {
+    id: EVENT_ID.UNLOCK_ZONE.MIDDLE_UNDERGROUND_CASINO,
+    scenario: '[The Bunker] 잠금 해제',
+    condition: () => {
+      return isUnlockedLocation(LOCATION_ID.MIDDLE_UNDERGROUND_CASINO);
+    },
+    func() {
+      const title = store.settings.language === 'en' ? 'Reward for unlocking [The Bunker]' : '[더 벙커] 이용가능';
+      const body = store.settings.language === 'en' ? "You can now access the [The Bunker]." : '[더 벙커]의 접근 권한이 해제되었습니다.';
+      const sender = store.settings.language === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.REWARD, title, body, [], sender)
+    },
+  },
+  {
+    id: EVENT_ID.UNLOCK_ZONE.MIDDLE_HOLDEM_HOUSE,
+    scenario: '[홀덤 하우스] 잠금 해제',
+    condition: () => {
+      return isUnlockedLocation(LOCATION_ID.MIDDLE_HOLDEM_HOUSE);
+    },
+    func() {
+      const title = store.settings.language === 'en' ? 'Reward for unlocking [Holdem House]' : '[홀덤 하우스] 이용가능';
+      const body = store.settings.language === 'en' ? "You can now access the [Holdem House]." : '[홀덤 하우스]의 접근 권한이 해제되었습니다.';
+      const sender = store.settings.language === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.REWARD, title, body, [], sender)
+    },
+  },
+  {
+    id: EVENT_ID.UNLOCK_ZONE.HIGH_ROYAL_ROOM,
+    scenario: '[로열 프라이빗 카드룸] 잠금 해제',
+    condition: () => {
+      return isUnlockedLocation(LOCATION_ID.HIGH_ROYAL_ROOM);
+    },
+    func() {
+      const title = store.settings.language === 'en' ? 'Reward for unlocking [Royal Private Cardroom]' : '[로열 프라이빗 카드룸] 이용가능';
+      const body = store.settings.language === 'en' ? "You can now access the [Royal Private Cardroom]." : '[로열 프라이빗 카드룸]의 접근 권한이 해제되었습니다.';
+      const sender = store.settings.language === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.REWARD, title, body, [], sender)
+    },
+  },
   {
     id: EVENT_ID.SHARK_HUNTER_APPEARS,
     "type": "SOCIAL",
@@ -143,13 +247,13 @@ export const EventData = [
 ];
 const START_TIME = new Date('2057-01-20T09:00:00').getTime();
 
-export const scheduleEvent = (eventId, delayMinutes = 0) => {
+export const scheduleEvent = (eventId, delayMinutes = 0, payload = {}) => {
   // Prevent duplicate scheduling if it's already pending or completed
   if (store.completedEvents.includes(eventId)) return;
   if (store.pendingEvents.some(e => e.id === eventId)) return;
 
   const triggerTime = store.gameTime + (delayMinutes * 60000);
-  store.pendingEvents.push({ id: eventId, triggerTime });
+  store.pendingEvents.push({ id: eventId, triggerTime, payload });
   console.log(`[EVENT] Scheduled '${eventId}' for +${delayMinutes}m`);
 };
 export const isEventCompleted = (eventId) => {
@@ -214,7 +318,7 @@ export const processEvents = () => {
       const eventDef = EventData.find(e => e.id === pending.id);
       if (eventDef) {
         console.info(`[EVENT] Triggering '${pending.id}'`);
-        eventDef.func(); // 대기열에서 조건 달성 즉시 실행
+        eventDef.func(pending.payload); // 대기열에서 조건 달성 즉시 실행
         if (!eventDef.repeatable) {
           store.completedEvents.push(pending.id);
         }

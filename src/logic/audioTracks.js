@@ -132,7 +132,7 @@ export const TRACK_INFO = {
   },
   [TRACK_ENUM.Grainders2057]: {
     "title": "Grainders 2057 Main Theme",
-    "artist": "Rikal87",
+    "artist": "-",
     "license": "",
     "file": BGM_Grainders2057,
   },

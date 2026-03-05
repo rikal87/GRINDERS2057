@@ -45,7 +45,7 @@ export const CLASSES = {
 // export 
 export const CLASSES_PARTNER = [
   {
-    id: 'Max', name: 'Max', philosophy: 'LAG', vPIP: .36, AF: 3.5, WTSD: .31, W$SD: 0.53, chipMultiply: 1.2,
+    id: 'Max', name: 'Max', fullName: 'Max Houston', philosophy: 'LAG', vPIP: .36, AF: 3.5, WTSD: .31, W$SD: 0.53, chipMultiply: 1.2,
     canContracts: [CONTRACT_TYPE.SHARE_BENEFIT, CONTRACT_TYPE.BANKRUPT_RESCUE],
     schedule: [
       { days: '월-토', hours: '13:00-23:00', status: 'GAMBLING' },
@@ -64,7 +64,7 @@ export const CLASSES_PARTNER = [
     }
   },
   {
-    id: 'Florence', name: 'Florence', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, W$SD: 0.57, chipMultiply: 1.1,
+    id: 'Florence', name: 'Florence', fullName: 'Florence Quinn', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, W$SD: 0.57, chipMultiply: 1.1,
     age: 32,
     isAdvanced: false,
     isPartner: true,
@@ -85,6 +85,9 @@ export const CLASSES_PARTNER = [
 
 ];
 export const ENEMY_ID = {
+  MAX: 'Max',
+  FLORENCE: 'Florence',
+  AN_UNKNOWN_WOMAN: 'An_Unknown_Woman',
   MR_CALL: 'MR_CALL',
   FISH: 'Fish',
   BROKE: 'Broke',
@@ -135,7 +138,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'fish',
-    name: 'Fish', philosophy: 'LAP', vPIP: .75, AF: 1, WTSD: .25, chipMultiply: 1, isAdvanced: false,
+    name: 'Fish', philosophy: 'TAP', vPIP: .36, AF: 1, WTSD: .25, chipMultiply: 1, isAdvanced: false,
     note_ko: '판돈을 불리는 데는 일등 공신이지만, 막상 끝까지 가는 배짱은 없어서 정교한 블러핑 한 방이면 칩을 고스란히 헌납할 겁니다.',
     note_en: 'He is a great contributor to increasing the pot, but he lacks the courage to go all the way, so a single sophisticated bluff will cost him all his chips.',
     get note() {
@@ -144,7 +147,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'broke',
-    name: 'Broke', philosophy: 'LAP', vPIP: .45, AF: 2, WTSD: .55, chipMultiply: 0.5, isAdvanced: false,
+    name: 'Broke', philosophy: 'LAP', vPIP: .45, AF: 2, WTSD: .6, chipMultiply: 0.5, isAdvanced: false,
     note_ko: '내일이 없는 친구입니다. 리버에 기적이 일어나길 빌며 모든 걸 걸었다가, 결국 오늘도 빈털터리로 돌아갑니다',
     note_en: 'He is a friend with no tomorrow. He bets everything hoping for a miracle on the river, only to end up broke again today.',
     get note() {
@@ -153,7 +156,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'gambler',
-    name: 'Gambler', philosophy: 'LAG', vPIP: .4, AF: 3, WTSD: .45, chipMultiply: 1, isAdvanced: false,
+    name: 'Gambler', philosophy: 'LAG', vPIP: .4, AF: 3, WTSD: .4, chipMultiply: 1, isAdvanced: false,
     note_ko: '인생은 한 방, 아주 낮은 확률의 드로우만 보여도 리버까지 멈추지 않는 브레이크 고장난 도박꾼입니다.',
     note_en: 'Life is a gamble. He\'ll chase even the thinnest draw all the way to the river, never letting up on the bets',
     get note() {
@@ -162,7 +165,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'maniac',
-    name: 'Maniac', philosophy: 'LAG', vPIP: .7, AF: 6, WTSD: .55, chipMultiply: 1, isAdvanced: false,
+    name: 'Maniac', philosophy: 'LAG', vPIP: .5, AF: 6, WTSD: .5, chipMultiply: 1, isAdvanced: false,
     note_ko: '팟을 개판으로 만드는 주범입니다. 정말 미친놈 같습니다..',
     note_en: 'He is the main culprit who messes up the pot. He seems like a really crazy guy..',
     get note() {
@@ -243,7 +246,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'shark',
-    name: 'Shark', philosophy: 'TAG', vPIP: .27, AF: 3.5, WTSD: .27, chipMultiply: 1.5, isAdvanced: false,
+    name: 'Shark', philosophy: 'TAG', vPIP: .27, AF: 3.5, WTSD: .27, chipMultiply: 1.5, isAdvanced: false, isBoss: true,
     note_ko: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.',
     note_en: 'The most frightening thing is not his hand, but his patience.',
     get note() {

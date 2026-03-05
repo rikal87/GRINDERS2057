@@ -113,7 +113,7 @@ export class GameEngine {
       name: 'YOU',
       class: CLASSES[humanClass],
       hand: [],
-      chips: this.buyIn * this.buyInMultiply, // Will be validated against bankroll in constructor or UI
+      chips: Math.floor(this.buyIn * this.buyInMultiply), // Will be validated against bankroll in constructor or UI
       currentBet: 0,
       totalWagered: 0,
       ram: { used: 0, reserved: 0 },
@@ -144,11 +144,11 @@ export class GameEngine {
         const effect = this.item.effects.find(e => e.id === 'synapse_reading');
         return effect ? effect.isActivated : false;
       },
-      get chipRounding() {
-        if (!this.item || !this.item.effects) return 1;
-        const bonus = this.item.effects.reduce((sum, e) => (e.id === 'chip_rounding') ? sum + e.value : sum, 0);
-        return Math.pow(10, bonus);
-      },
+      // get chipRounding() {
+      //   if (!this.item || !this.item.effects) return 1;
+      //   const bonus = this.item.effects.reduce((sum, e) => (e.id === 'chip_rounding') ? sum + e.value : sum, 0);
+      //   return Math.pow(10, bonus);
+      // },
       get infamy_boost() {
         if (!this.item || !this.item.effects) return 0;
         const bonus = this.item.effects.reduce((sum, e) => (e.id === 'infamy_boost') ? sum + e.value : sum, 0);
@@ -531,7 +531,7 @@ export class GameEngine {
       if (player.isHuman && this.state === 'FLOP' && this.potManager.currentRoundBet > 0) {
         player.stats.foldedToFlopBet++;
       }
-      eventAdaptor.fold({ player, amount: player.totalWagered, pot: this.pot, board: this.board, street: this.state });
+      eventAdaptor.fold({ player, amount: player.totalWagered, pot: this.pot, board: this.board, street: this.state, players: this.players });
       audioManager.playSFX('card-dealt&fold');
       // this.checkItemTriggers('fold', { phase: this.state }); // Trigger Fold Effects
     } else if (action.type === 'call' || action.type === 'check') {
@@ -635,9 +635,8 @@ export class GameEngine {
     // Current active players include those with chips OR those who already made a bet this street (all_ins)
     const activePlayers = this.players.filter(p => !p.isFolded && !p.isEliminated);
 
-    // Check if betting round is over
-    // A player is matched if they match the currentRoundBet OR if they are all_in
-    const allMatched = activePlayers.every(p => p.currentBet === this.potManager.currentRoundBet || p.chips === 0);
+    // A player is matched if they match the currentRoundBet OR if they are all_in (less than 1 chip)
+    const allMatched = activePlayers.every(p => p.currentBet === this.potManager.currentRoundBet || Math.floor(p.chips) === 0);
 
     // Only wait for players who can actually act (have chips)
     const playersWithChips = activePlayers.filter(p => p.chips > 0);
@@ -657,7 +656,7 @@ export class GameEngine {
     }
 
     // Safety: If everyone is all_in or folded (no one left to act), force next state
-    if (attempts >= this.players.length) {
+    if (attempts >= this.players.length || !playersWithChips.find(p => p.chips >= 1)) {
       console.log('[GAME] Everyone is All-In or Folded. Forcing next street.');
       await this.nextStreet();
       return;
@@ -1053,11 +1052,8 @@ export class GameEngine {
     if (this.state === 'SHOWDOWN' || this.runoutInProgress || this.gameOver) return;
 
     const activePlayers = this.players.filter(p => !p.isFolded);
-    const playersWithChips = activePlayers.filter(p => p.chips > 0);
-
-    // Condition: More than 1 active player, but 1 or 0 have chips left (meaning others are all_in)
-    // AND all bets are matched (no pending actions)
-    const allMatched = activePlayers.every(p => p.currentBet === this.potManager.currentRoundBet || p.chips === 0);
+    const playersWithChips = activePlayers.filter(p => p.chips >= 1);
+    const allMatched = activePlayers.every(p => p.currentBet === this.potManager.currentRoundBet || p.chips < 1);
 
     if (activePlayers.length > 1 && playersWithChips.length <= 1 && allMatched) {
       console.log('[GAME] All-In Condition Met. Starting Runout.');

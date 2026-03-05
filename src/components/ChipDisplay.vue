@@ -18,9 +18,9 @@ const displayValue = ref(props.value);
 const formattedValue = computed(() => {
   if (store.settings.showAsBB && props.bb > 0) {
     const bbVal = displayValue.value / props.bb;
-    return bbVal.toFixed(1) + ' BB';
+    return bbVal.toFixed(1).toLocaleString() + ' BB';
   }
-  return Math.floor(displayValue.value) + ' CR';
+  return Math.floor(displayValue.value).toLocaleString() + ' CR';
 });
 
 let animationFrame = null;

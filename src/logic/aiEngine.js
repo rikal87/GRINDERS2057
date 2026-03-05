@@ -244,10 +244,22 @@ function getHeuristicFallback(player, engine) {
     if (street === 'TURN') bluffFreq *= 0.66;
   }
 
-  // Cap required equity at 0.50 if highly committed, or scale it down.
-  if (commitmentRatio > 0.35) {
-    requiredEquity *= (1 - (commitmentRatio * 0.5));
-    insight += ` [Commt ${(commitmentRatio * 100).toFixed(0)}%]`;
+  // [NEW] 2.5 Virtually Committed Check (Hard Cap to Prevent Absurd Folds)
+  const isVirtuallyCommitted = callAmt > 0 && (
+    (player.chips <= (engine.bb * 2)) || // Has 2bb or less currently
+    (player.chips / (pot + player.chips) < 0.1) // Remaining stack is < 10% of the pot
+  );
+
+  if (isVirtuallyCommitted) {
+    // Override math: 100% committed, never fold
+    requiredEquity = 0;
+    insight += " [V-Committed]";
+  } else {
+    // Normal soft commitment scaling
+    if (commitmentRatio > 0.35) {
+      requiredEquity *= Math.max(0, 1 - (commitmentRatio * 0.5));
+      insight += ` [Commt ${(commitmentRatio * 100).toFixed(0)}%]`;
+    }
   }
 
   // raiseEquityThreshold (Need a clear edge over just calling to value raise)
@@ -257,7 +269,6 @@ function getHeuristicFallback(player, engine) {
   }
 
   // --- 3.5 NPC Playstyle Adjustments ---
-  // lower AF > 3 = Overestimating your own hand, lower AF < 3 = Underestimating your own hand
   // lower AF > 3 = Overestimating your own hand, lower AF < 3 = Underestimating your own hand
   raiseEquityThreshold += (3 - AF) * 0.1; // lower AF > 3 = raise more, lower AF < 3 = raise less
   requiredEquity += (0.5 - (street === 'PREFLOP' ? vPIP : wtsd));
@@ -319,7 +330,7 @@ function getHeuristicFallback(player, engine) {
 
     if (street === 'PREFLOP') {
       // [1] 프리플랍: 아직 앞사람의 "레이즈"가 없는 경우 기본 오픈 레이즈 사이즈
-      let openSizeBase = player.isAdvanced ? engine.bb * 2.2 : engine.bb * 2 + Math.max(0, (AF - 2.5) * 0.1);
+      let openSizeBase = player.isAdvanced ? engine.bb * 2.2 : engine.bb * 2.5;
       if (isAdvanced && distFromButton > 3) openSizeBase += 0.5;
 
       let mult = player.chips < 20 * engine.bigBlind || spr < 1.8 ? 99999 : 1;
@@ -329,8 +340,11 @@ function getHeuristicFallback(player, engine) {
         mult = Math.max(2.2, 5 - raises);
         amount = Math.floor(currentBet * mult); // 앞선 베팅액 * 배수
       } else {
-        // 본인이 최초의 레이즈 (오픈, 스퀴즈 추가)
-        amount = Math.floor((openSizeBase + (player.isAdvanced ? pot : 0)) * mult);
+        // 본인이 최초의 레이즈 (오픈, 림퍼 상대로 한 스퀴즈 추가)
+        // 팟에 있는 1.5bb(SB+BB)를 제외한 나머지 순수 림퍼들의 참여 금액만 기본 오픈 사이즈에 더함
+        let blindMoney = (engine.bb || engine.bigBlind) * 1.5;
+        let limperMoney = Math.max(0, pot - blindMoney);
+        amount = Math.floor((openSizeBase + limperMoney) * mult);
       }
     } else {
       // [2] 포스트 플랍

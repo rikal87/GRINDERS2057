@@ -86,6 +86,7 @@ export const GAME_RESULT_CODE = {
   LOSE_BIG: 'LOSE_BIG',
   LOSE_MEDIUM: 'LOSE_MEDIUM',
   LOSE_SMALL: 'LOSE_SMALL',
+  NEUTRAL: 'NEUTRAL',
 }
 export const pickRandomMessage = (msgCode) => {
   const messages = PLAY_RECORD_STATS_MSG_TEXTS[msgCode];
@@ -136,7 +137,14 @@ export const PLAY_RECORD_STATS_MSG_TEXTS = {
     { ko: '쿨러에 당했습니다. 평정심부터 되찾으세요.', en: 'Big cooler. Focus on the next hand.' },
     { ko: '틸트 경고. 잠시 쉬거나 하향 이동을 고려하세요.', en: 'Tilt warning. Consider a break or stepping down.' }
   ],
-
+  [GAME_RESULT_CODE.NEUTRAL]: [
+    { ko: 'EV 기준 중립 결과입니다.', en: 'EV-neutral outcome.' },
+    { ko: '큰 변동 없이 지나간 핸드입니다.', en: 'No significant change this hand.' },
+    { ko: '균형 잡힌 선택이었습니다.', en: 'Balanced decision.' },
+    { ko: '의사결정 품질은 유지되었습니다.', en: 'Decision quality maintained.' },
+    { ko: '장기 수익률에 영향 없는 결과입니다.', en: 'No impact on long-term ROI.' },
+    { ko: '분산 범위 내 정상 구간입니다.', en: 'Within standard variance band.' }
+  ],
 }
 
 export const recordPlayStatsSession = (player, action, payload = {}) => {

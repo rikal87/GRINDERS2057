@@ -263,7 +263,7 @@ const formatUnit = (val) => {
     const baseBB = props.engine.bb;
     if (baseBB > 0) return (val / baseBB).toFixed(1) + ' BB';
   }
-  return val + ' CR';
+  return val.toLocaleString() + ' CR';
 };
 
 const winnerHandInfo = computed(() => {

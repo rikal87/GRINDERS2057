@@ -129,7 +129,7 @@ export const requestRescueDebt = (partner = null) => {
   }
   return false;
 }
-export const rescueDebt = (partner = null, ratio = 0.3, contract = null, toPlayer = false) => {
+export const triggerRescueDebt = (partner = null, ratio = 0.3, contract = null, toPlayer = false) => {
   if (!contract || !partner) return false;
   if (contract.active) {
     ratio = contract.ratio;
@@ -142,9 +142,22 @@ export const rescueDebt = (partner = null, ratio = 0.3, contract = null, toPlaye
 
   gainBankroll(amount, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
   gainPartnerBankroll(partner, -amount, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
-  const getEvent = EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_ACCEPT_RESCUE' + (partner.relationship < 200 ? '_LOW_RELATIONSHIPSHIP' : '')]
-  if (getEvent) partnerScheduleEvent(getEvent, 2, partner, true);
-  return false;
+  audioManager.playSFX('ATM');
+  if (!toPlayer) {
+    const getEvent = EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_ACCEPT_RESCUE' + (partner.relationship < 200 ? '_LOW_RELATIONSHIPSHIP' : '')]
+    if (getEvent) {
+
+      scheduleEvent(EVENT_ID.SYSTEM_PLAYER_BANKRUPT_RESCUE_FOR_PARTNER, 2, { partnerName: partner.fullName, amount })
+      partnerScheduleEvent(getEvent, 15, partner, true);
+    }
+  } else {
+    // EVENT_ID.MAX.BANKRUPT_RESCUE_FOR_PLAYER is only for Max
+    if (partner.id === PARTNER_ID.MAX) {
+      partnerScheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_FOR_PLAYER, 15, partner, true);
+    }
+    scheduleEvent(EVENT_ID.SYSTEM_PARTNER_BANKRUPT_RESCUE_FOR_PLAYER, 2, { partnerName: partner.fullName, amount })
+  }
+  return true;
 }
 export const PARTNER_ID = {
   MAX: 'Max',
@@ -158,10 +171,11 @@ export const PARTNER_STATUS = {
   RESTING: 'RESTING',
   IDLE: 'IDLE',
 }
-export const Partner = ({ id, name, philosophy, vPIP, AF, WTSD, W$SD, chipMultiply, isPartner, note, initialBankroll = 0, initialRelationship = 0, schedule = [], contracts = [], isAdvanced = false }) => {
+export const Partner = ({ id, name, fullName, philosophy, vPIP, AF, WTSD, W$SD, chipMultiply, isPartner, note, initialBankroll = 0, initialRelationship = 0, schedule = [], contracts = [], isAdvanced = false }) => {
   return {
     id: id,
     name: name,
+    fullName: fullName,
     philosophy: philosophy,
     vPIP: vPIP,
     AF: AF,
@@ -360,11 +374,8 @@ export const updatePartnerStatusBySchedule = () => {
     }
     // check bankrupt partner
     if (partner.bankroll <= 0) {
-      const hasRescueBankruptContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BANKRUPT_RESCUE && c.active);
-      if (hasRescueBankruptContract) {
-        rescueDebt(partner, 0.3, hasRescueBankruptContract, false);
-        // Removed the extra RESOLVED_DEBT trigger here because rescueDebt triggers BANKRUPT_ACCEPT_RESCUE natively.
-      } else if (partner.debt > 0) {
+      const isTriggered = triggerBankruptRescueForPartner(partner);
+      if (!isTriggered && partner.debt > 0) {
         partnerScheduleEvent(EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_HAS_DEBT' + (partner.relationship <= 200 ? '_LOW_RELATIONSHIP' : '')], 2, partner);
       } else {
         const firstRequest = requestRescueDebt(partner);
@@ -373,6 +384,23 @@ export const updatePartnerStatusBySchedule = () => {
     }
   });
 };
+export const triggerBankruptRescueForPlayer = () => {
+  let isTriggered = false;
+  const partners = getJoinedPartners()
+  partners.forEach(partner => {
+    const hasRescueBankruptContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BANKRUPT_RESCUE && c.active);
+    isTriggered = triggerRescueDebt(partner, 0.3, hasRescueBankruptContract, true);
+  });
+  return isTriggered;
+}
+export const triggerBankruptRescueForPartner = (partner) => {
+  let isTriggered = false;
+  const hasRescueBankruptContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BANKRUPT_RESCUE && c.active);
+  if (hasRescueBankruptContract) {
+    isTriggered = triggerRescueDebt(partner, 0.3, hasRescueBankruptContract, false);
+  }
+  return isTriggered;
+}
 // for 1hr (in-game time)
 export const simulatePartnersBehavior = () => {
   simulatePartnersNetWorth();

@@ -11,6 +11,7 @@ export const MESSAGE_TYPE = {
   SPAM: 'SPAM',
   TUTORIAL: 'TUTORIAL',
   MISSION: 'MISSION',
+  REWARD: 'REWARD',
 }
 export const MESSAGE_ACTION_TYPE = {
   RECEIVE: 'RECEIVE',

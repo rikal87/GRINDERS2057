@@ -69,8 +69,11 @@ export class EventAdaptor {
       }
     });
     // An NPC went bankrupt
-    if ([LOCATION_ID.FREE_STREET_SHOP_WITH_MAX, LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX].includes(locationId) && player.id === PARTNER_ID.MAX) {
-      scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_MAX, 1);
+    if (player.id === PARTNER_ID.MAX) {
+      scheduleEvent(EVENT_ID.MAX.ELIMINATED, 5);
+    }
+    if (player.id === PARTNER_ID.FLORENCE) {
+      scheduleEvent(EVENT_ID.FLORENCE.ELIMINATED, 5);
     }
   }
   // TODO: CHANGE WON LOGIC
@@ -178,7 +181,7 @@ export class EventAdaptor {
     });
   }
 
-  fold({ player, amount, pot, board, street }) {
+  fold({ player, amount, pot, board, street, players }) {
     if (street === 'FLOP' && player.totalWagered > 0) {
       recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.FOLDED_TO_FLOP_BET);
     }
@@ -188,7 +191,7 @@ export class EventAdaptor {
     recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.FOLD);
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('fold')) {
-        this.executeItemEffect(player, e, { amount, pot, board, street });
+        this.executeItemEffect(player, e, { amount, pot, board, street, players });
       }
       if (player.totalWagered > 0 && e.trigger.includes('lose')) {
         this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand: player.hand, board, isWin: false });
@@ -259,6 +262,29 @@ export class EventAdaptor {
       return;
     }
     switch (effect.id) {
+      case 'show_me_your_bluff':
+        // to-do: 어케 만들지
+        const playerCount = context.players.filter(p => !p.isFold).length;
+        if (context.street === 'RIVER' && playerCount === 1) {
+          if (Math.random() < effect.value) {
+            console.log('[EFFECT] Show Me Bluff ACTIVATED!');
+            // player.seeingHoleCards = true;
+            effect.cooldown = effect.maxCooldown;
+          }
+        }
+        break;
+      case 'last_regret':
+        // to-do 어케만들지
+        if (context.street === 'TURN') {
+          const playerCount = context.players.filter(p => !p.isFold).length; // 6명이로 나오던데?
+          console.log('playerCount', playerCount);
+          if (playerCount === 1) {
+            console.log('[EFFECT] Last Regret ACTIVATED!');
+            // context.engine.dealRiver();
+            effect.cooldown = effect.maxCooldown;
+          }
+        }
+        break;
       case 'cooldown_reduction':
         player.item?.effects?.forEach(e => {
           if (e.id !== 'cooldown_reduction') {
@@ -319,7 +345,7 @@ export class EventAdaptor {
         // Trigger: 'bet'
         if (context.amount > 0 && Math.random() < effect.value) {
           const refund = context.amount;
-          player.chips += refund;
+          player.chips += Math.ceil(refund);
           // this.potManager.pot -= refund; // Keeping pot same as "Free Bet"
           console.log(`[ITEM EFFECT] Bet Refund triggered! +${refund}`);
         }
@@ -368,9 +394,9 @@ export class EventAdaptor {
         effect.cooldown = effect.maxCooldown;
         break;
       case 'chip_rounding':
-        const unit = player.chipRounding;
-        const bonusChips = Math.ceil(player.totalWagered / unit) * unit;
-        player.chips += bonusChips - player.totalWagered;
+        const unit = Math.pow(100, effect.value);
+        player.chips = Math.ceil(player.chips / unit) * unit;
+        effect.cooldown = effect.maxCooldown;
         break;
       case 'rake_reduction':
         // Trigger: 'win' or 'showdown_win'

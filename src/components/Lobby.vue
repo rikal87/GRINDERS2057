@@ -39,8 +39,8 @@
           <div class="desc">UNRESTRICTED_ZONE</div>
         </div>
         <!-- TODO: Need a Crypto Trade rebuild -->
-        <div class="grid-item" disabled="disabled" @click="$emit('view', 'crypto')"
-          @mouseenter="setMapLocation('EXCHANGE')">
+        <!-- @click="$emit('view', 'crypto')" -->
+        <div class="grid-item disabled" disabled="disabled" @mouseenter="setMapLocation('EXCHANGE')">
           <div class="icon">C</div>
           <div class="label">CRYPTO_NEXUS</div>
           <div class="desc">FINANCIAL_DISTRICT</div>
@@ -247,6 +247,12 @@ onMounted(() => {
   .menu-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+}
+
+.grid-item.disabled {
+  opacity: 0.5;
+  filter: grayscale(0.5);
+  cursor: not-allowed;
 }
 
 .grid-item {

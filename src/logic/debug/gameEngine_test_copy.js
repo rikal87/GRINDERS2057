@@ -125,7 +125,7 @@ export class GameEngine {
       const diff = this.currentRoundBet - player.currentBet;
       this.placeBet(player, diff);
       audioManager.playSFX('puti-n-chip');
-    } else if (action.type === 'raise') {
+    } else if (action.type === 'raise' || action.type === 'all-in') {
       const diff = action.amount - player.currentBet;
       this.placeBet(player, diff);
       // Check for all-in

@@ -243,7 +243,7 @@ export class PotManager {
     activePlayers.forEach(p => {
       let amountWon = winnings[p.id];
       if (amountWon > 0) {
-        p.chips += amountWon;
+        p.chips += Math.floor(amountWon);
       }
     });
 

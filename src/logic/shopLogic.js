@@ -44,7 +44,7 @@ const selectWeightedItem = (pool, manualRefreshCount) => {
 };
 
 export const generateShopItems = (level) => {
-  const maxTier = Math.min(6, Math.floor(level / 4)); // Cap at level 6 tier logic
+  const maxTier = Math.min(6, Math.floor(level / 5)); // Cap at level 6 tier logic
 
   let shadyDealBonus = 0;
   if (store.equippedProtector) {

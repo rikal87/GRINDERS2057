@@ -1,7 +1,9 @@
 <template>
   <footer class="control-panel" v-if="engine">
     <aside class="inbox-panel">
-      <div class="inbox-header">SYS.COMM.LOG //</div>
+      <div class="inbox-header">
+        SYS.COMM.LOG //
+      </div>
       <div class="message-list">
         <div v-for="msg in store.messages" :key="msg.id" class="message-item" :class="{ 'unread': !msg.isRead }">
           <span class="msg-indicator" v-if="!msg.isRead">*</span>
@@ -28,10 +30,9 @@
           <button @click="setBet(1.2)">120%</button>
         </template>
       </div>
-
       <!-- Slider Area -->
       <div class="slider-area">
-        <input type="range" :min="minRaise" :max="playerChips" step="1" v-model.number="currentBetValue"
+        <input type="range" :min="minRaise" :max="playerTotalAvailable" step="1" v-model.number="currentBetValue"
           class="bet-slider" />
         <div class="bet-display">
           <span class="value">{{ formatUnit(currentBetValue) }}</span>
@@ -47,14 +48,11 @@
           <p>{{ formatUnit(callAmountRaw) }}</p>
         </button>
         <button class="btn-raise" :disabled="!isMyTurn || isProcessing || currentBetValue < minRaise"
-          @click="handleAction({ type: currentBetValue >= playerChips ? 'all_in' : 'raise', amount: currentBetValue + player.currentBet })">
+          @click="handleAction({ type: isAllInSelection ? 'all_in' : 'raise', amount: isAllInSelection ? playerTotalAvailable : currentBetValue })">
           <p>
-            {{ (currentBetValue >= playerChips) ? 'ALL-IN' : (player.hasFacedFlopBet || engine.state ===
-              'PREFLOP') ?
-              'RAISE'
-              : 'BET' }}
+            {{ isAllInSelection ? 'ALL-IN' : 'RAISE' }}
           </p>
-          <p>{{ formatUnit(currentBetValue) }}</p>
+          <p>{{ formatUnit(isAllInSelection ? playerTotalAvailable : currentBetValue) }}</p>
         </button>
       </div>
     </div>
@@ -116,8 +114,8 @@
             Are you sure you want to cashout instantly?
           </h3>
           <p>
-            (Leaving the table without prior notification is a violation of house rules, regardless of your current
-            standing)
+            Leaving the table without prior notification is a violation of house rules, regardless of your current
+            standing
           </p>
           <div class="popup-actions">
             <button class="btn-confirm btn-accept" @click="confirmCashout">CONFIRM</button>
@@ -154,15 +152,26 @@ const reserveExitTooltip = computed(() => {
 const player = computed(() => props.engine.players[0]);
 const isMyTurn = computed(() => props.engine.currentPlayerIndex === 0 && props.engine.state !== 'IDLE' && props.engine.state !== 'SHOWDOWN');
 const playerChips = computed(() => player.value.chips);
+const playerTotalAvailable = computed(() => player.value.chips + player.value.currentBet);
+const isAllInSelection = computed(() => {
+  const remaining = playerTotalAvailable.value - currentBetValue.value;
+  return remaining < (props.engine.bb || 2);
+});
+
 const callAmountRaw = computed(() => Math.min(props.engine.currentRoundBet - player.value.currentBet, playerChips.value));
-const minRaise = computed(() => Math.min(props.engine.currentRoundBet + (props.engine.bb || 2), playerChips.value));
+const minRaise = computed(() => {
+  const currentBet = props.engine.currentRoundBet || 0;
+  const bb = props.engine.bb || 2;
+  const logicalMin = Math.max(currentBet * 2, bb);
+  return Math.min(logicalMin, playerTotalAvailable.value);
+});
 const currentBetValue = ref(minRaise.value);
 
 const formatUnit = (val) => {
   if (store.settings.showAsBB && props.engine.bb > 0) {
     return (val / props.engine.bb).toFixed(1) + ' BB';
   }
-  return val + ' CR';
+  return val.toLocaleString() + ' CR';
 };
 
 const currentHandRank = computed(() => {
@@ -187,20 +196,21 @@ watch(isMyTurn, (newVal) => {
     isProcessing.value = false;
   }
 });
-
+watch(() => props.engine.state, () => {
+  if (props.engine.state === 'PREFLOP') currentBetValue.value = minRaise.value; // Reset slider when street/round changes
+});
 watch(minRaise, (newVal) => {
-  currentBetValue.value = newVal;
+  currentBetValue.value = Math.max(currentBetValue.value, newVal);
 });
 
 const handleAction = (payload) => {
   if (!isMyTurn.value || isProcessing.value) return;
   isProcessing.value = true;
   emit('action', payload);
-
   // Safety timeout in case the turn change doesn't happen fast enough
   setTimeout(() => {
     isProcessing.value = false;
-  }, 1000);
+  }, 500);
 };
 
 const setBet = (type) => {
@@ -216,14 +226,14 @@ const setBet = (type) => {
       currentBetValue.value = Math.max(minRaise.value, Math.min(Math.floor(bb * 2.2), playerChips.value));
       break;
     case 'pot':
-      currentBetValue.value = pot;
+      currentBetValue.value = Math.min(pot, playerTotalAvailable.value);
       break;
     default: {
       if (typeof type === 'number') {
         if (type > 100) { // Assume All-in for huge numbers
-          currentBetValue.value = playerChips.value;
+          currentBetValue.value = playerTotalAvailable.value;
         } else {
-          currentBetValue.value = Math.max(minRaise.value, Math.min(Math.floor((pot + currentRoundBet) * type), playerChips.value));
+          currentBetValue.value = Math.max(minRaise.value, Math.min(Math.floor((pot + currentRoundBet) * type), playerTotalAvailable.value));
         }
       }
     } break;
@@ -273,13 +283,14 @@ const handleReserveExit = () => {
 
 <style scoped>
 .critical-msg {
+  font-size: 1.5rem;
   color: var(--neon-red);
 }
 .control-panel {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  z-index: 999;
+  z-index: 1;
   position: relative;
   /* Ensure z-index works */
 }

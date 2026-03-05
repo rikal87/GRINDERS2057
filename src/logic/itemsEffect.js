@@ -223,9 +223,10 @@ export const ITEM_EFFECT_DATA = [
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Common',
     cooldown: 0,
-    trigger: ['win'],
+    trigger: ['round_end'],
+    maxCooldown: 5,
     editable: false,
-    get desc() { return store.settings.language === 'en' ? `Rounds up your total bet amount to the nearest ${Math.pow(10, this.value)} units when winning.` : `승리 시 본인 배팅 총액을 ${Math.pow(10, this.value)}단위로 올림하여 획득합니다.`; },
+    get desc() { return store.settings.language === 'en' ? `At the end of the round, rounds up your chips to the next ${Math.pow(100, this.value)} units. (Cooldown: ${this.maxCooldown} rounds)` : `라운드 종료 시, 보유 칩을 ${Math.pow(100, this.value)}단위로 올림합니다.(쿨타임: ${this.maxCooldown} 라운드)`; },
     value: 1,
     isStackable: true
   },
@@ -277,7 +278,7 @@ export const ITEM_EFFECT_DATA = [
     trigger: ['round_start'],
     editable: false,
     get desc() { return store.settings.language === 'en' ? `Restores +${Math.floor(this.value)} LT at the start of a round (Cooldown: ${this.maxCooldown} rounds)` : `라운드시 시작시 LT +${Math.floor(this.value)} 회복 (쿨타임: ${this.maxCooldown} 라운드)`; },
-    value: 1,
+    value: 2,
     isStackable: true
   },
   {
@@ -570,7 +571,7 @@ export const ITEM_EFFECT_DATA = [
     isStackable: true
   },
   {
-    icon: '🃏',
+    icon: '♠',
     id: 'blackjack_master',
     name_ko: '블랙잭 전문가',
     name_en: 'Blackjack Master',
@@ -692,7 +693,7 @@ export const ITEM_EFFECT_DATA = [
     isStackable: true
   },
   {
-    icon: '👻',
+    icon: '🎴',
     id: 'ghost_bet',
     name_ko: '유령 배팅',
     name_en: 'Ghost Bet',
@@ -702,7 +703,7 @@ export const ITEM_EFFECT_DATA = [
     editable: false,
     trigger: ['bet'],
     get desc() { return store.settings.language === 'en' ? `Grants a ${Math.floor(this.value * 100)}% chance to refund your bet amount.` : `배팅 시 ${Math.floor(this.value * 100)}% 확률로 배팅 금액을 환급`; },
-    value: 0.15,
+    value: 0.25,
     isStackable: false
   },
   {
@@ -794,7 +795,7 @@ export const ITEM_EFFECT_DATA = [
     name_en: 'Synapse Reading',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Unique',
-    maxCooldown: 60,
+    maxCooldown: 30,
     cooldown: 0,
     isActivated: false,
     editable: false,
@@ -830,6 +831,61 @@ export const ITEM_EFFECT_DATA = [
     get desc() { return store.settings.language === 'en' ? `Infamy gained +${this.value * 100}%` : `악명 획득량 +${this.value * 100}%`; },
     value: 0.5,
     isStackable: true
+  },
+  {
+    icon: '🪖',
+    id: 'tactical_mindset',
+    name_ko: '전술적 사고',
+    name_en: 'Tactical Mindset',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Unique',
+    maxCooldown: 0,
+    cooldown: 0,
+    trigger: [],
+    get desc() { return store.settings.language === 'en' ? `Reduces the size of raises you face by ${this.value * 100}%.` : `상대방의 레이즈 크기를 ${this.value * 100}% 감소시킵니다.`; },
+    value: 0.1,
+    isStackable: true
+  },
+  // to-do
+  {
+    icon: '😇',
+    id: 'good_influence',
+    name_ko: '선한 영향력',
+    name_en: 'Good Influence',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Unique',
+    maxCooldown: 0,
+    cooldown: 0,
+    trigger: [],
+    get desc() { return store.settings.language === 'en' ? `Infamy gained -${this.value * 100}%` : `악명 획득량 -${this.value * 100}%`; },
+    value: 0.2,
+    isStackable: true
+  },
+  {
+    icon: '🧐',
+    id: 'show_me_your_bluff',
+    name_ko: '블러프를 보여줘!',
+    name_en: 'Show me your bluff!',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Unique',
+    cooldown: 0,
+    maxCooldown: 20,
+    trigger: ['fold'],
+    get desc() { return store.settings.language === 'en' ? `When you make the fold at the [River], the winner reveals their hand with a ${this.value * 100}% probability.(Cooldown: ${this.maxCooldown} rounds)` : `당신이 리버에서 폴드하면 승자의 핸드를 ${this.value * 100}% 확률로 볼 수 있습니다.(쿨타임: ${this.maxCooldown} 라운드)`; },
+    value: 0.25,
+  },
+  {
+    icon: '🚬',
+    id: 'last_regret',
+    name_ko: '마지막 미련',
+    name_en: 'Last Regret',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Unique',
+    cooldown: 0,
+    maxCooldown: 10,
+    trigger: ['fold'],
+    get desc() { return store.settings.language === 'en' ? `When you make the fold at the [Turn], you can see the [River] card.(Cooldown: ${this.maxCooldown} rounds)` : `당신이 [턴]에서 폴드하면 [리버]에 깔릴 카드를 볼 수 있습니다.(쿨타임: ${this.maxCooldown} 라운드)`; },
+    value: 1,
   },
 ];
 

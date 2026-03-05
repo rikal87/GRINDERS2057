@@ -417,11 +417,11 @@ const lore_spam_message = [
   {
     "type": "SOCIAL",
     "sender": "Crypto_Bro",
-    "title_ko": "VITECOIN 2057 떡상!",
-    "title_en": "VITECOIN 2057 Rocket!",
+    "title_ko": "VITECOIN 떡상!",
+    "title_en": "VITECOIN Rocket!",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     "body_ko": "야, 내가 뭐랬냐? 비트코인 지금 50% 올랐다. 포커 접고 코인이나 해라. 아직 저점이다. 지금이라도 타라.",
-    "body_en": "Told ya! Bitcoin is up 50% right now. Quit poker and buy crypto. It's still early. Get in now.",
+    "body_en": "Told ya! Vitecoin is up 50% right now. Quit poker and buy crypto. It's still early. Get in now.",
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     "trigger_day": 8
   },

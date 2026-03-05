@@ -1,8 +1,8 @@
-import { reactive, watch } from 'vue';
+import { reactive } from 'vue';
 import { createPlayRecordStats, GAME_RESULT_CODE } from './playRecordStats';
 import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
-import { PARTNER_ID, shareBenefitForPartners, initializePartners } from './partnerSystem';
+import { PARTNER_ID, shareBenefitForPartners, initializePartners, triggerBankruptRescueForPlayer, gainRelationship } from './partnerSystem';
 import { setLanguageGetter } from './persona.js';
 import { deleteMessage } from './messageSystem';
 import { LOCATION_ID, zones } from './zone.js';
@@ -10,7 +10,7 @@ import { scheduleEvent, EVENT_ID } from './eventSystem.js';
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const getDefaultState = () => ({
-  bankroll: 9999999,
+  bankroll: 20000,
   chips: 0, // Chips on table
   // currentBB: 0,
   xp: 0,
@@ -135,6 +135,9 @@ export const getTotalIncomeTaxCalculated = () => {
   if (amount >= 5000000) progressive_income_tax += 0.2;
   if (amount >= 10000000) progressive_income_tax += 0.25;
   return Math.ceil(amount * progressive_income_tax);
+}
+export const isUnlockedLocation = (locationId) => {
+  return store.unlockedLocations.includes(locationId);
 }
 export const gainMissedPayments = (type, amount) => {
   store.missedPayments[type] = (store.missedPayments[type] || 0) + amount;
@@ -394,64 +397,65 @@ export const gameResult = (winBB) => {
   return GAME_RESULT_CODE.NEUTRAL;
 }
 export const applySessionExit = (player, engine) => {
-  console.info('player.chips', player.chips)
-  console.info('player.totalBuyIn', player.totalBuyIn)
   const netWinnings = (player.chips - player.totalBuyIn);
-  console.info('netWinnings', netWinnings)
   const winBB = netWinnings / engine.bb;
   let generatedInfamy = winBB * 0.2;
-
   // Cap Infamy between 0 and 100
-  console.info('player.born_villain', player.born_villain, generatedInfamy)
   let baseBoostInfamy = (engine.exitReservationRounds === -1 ? 1.0 : 0.5) + player.born_villain + player.infamy_boost;
   if (generatedInfamy > 0) {
     gainInfamy(engine.locationId, generatedInfamy * baseBoostInfamy);
   } else gainInfamy(engine.locationId, generatedInfamy);
-  // [FIX] Share partner benefit
-  // Store for PlayStatsPopup display
-  store.play_stats_session.msgCode = gameResult(winBB)
-  processMissionResult(player, winBB, engine);
+
+  const result = gameResult(winBB);
+  store.play_stats_session.msgCode = result
+  if (result === GAME_RESULT_CODE.WIN_BIG) gainClearReward(engine.locationId);
+  if (result.indexOf('WIN') !== -1) {
+    gainClearedZoneCount(engine.locationId);
+  }
+  processMissionResult(player, result, engine);
   gainXP(player);
   gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING); // returned chips
   shareBenefitForPartners(netWinnings);
+  if (store.bankroll === 0) triggerBankruptRescueForPlayer();
   saveStore();
   return netWinnings;
 };
-const firstClearReward = (locationId) => {
-  let firstClearReward = null;
+const gainClearReward = (locationId) => {
+  let reward = null;
   for (const tier of zones) {
     const loc = tier.locations.find(l => l.id === locationId);
-    if (loc && loc.firstClearReward) {
-      firstClearReward = loc.firstClearReward;
+    if (loc && loc.firstClearRewards) {
+      reward = loc.firstClearRewards;
       break;
     }
   }
-  if (firstClearReward) {
+  if (reward) {
     if (!store.unlockedLocations) store.unlockedLocations = [];
-    if (!store.unlockedLocations.includes(firstClearReward)) {
-      store.unlockedLocations.push(firstClearReward);
-      console.log(`[GAME] First Clear Reward Awarded: ${firstClearReward}`);
+    if (!store.unlockedLocations.includes(reward)) {
+      store.unlockedLocations.push(reward);
+      scheduleEvent(EVENT_ID.UNLOCK_ZONE[reward.toUpperCase()], 1);
+      console.log(`[GAME] First Clear Reward Awarded: ${reward}`);
     }
   }
 }
-const processMissionResult = (player, winBB, engine) => {
+const processMissionResult = (player, result, engine) => {
   const locationId = engine.locationId;
   const inviteId = engine.inviteId;
+
   // Mission FREE_STREET_SHOP_WITH_MAX
   deleteMessage(inviteId);
   if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX) {
     const client = engine.players.find(p => p.id === PARTNER_ID.MAX);
     console.info('client', client)
     if (!client) return;
-    const result = gameResult(winBB);
     if (result.indexOf('WIN') !== -1) {
-      if (result === GAME_RESULT_CODE.WIN_BIG) firstClearReward(locationId);
       if (client.chips > player.chips) {
+        gainRelationship(client.id, 50);
         scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN_MAX, 30);
       } else {
+        gainRelationship(client.id, 100);
         scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 30);
       }
-      gainClearedZoneCount(locationId);
     } else if (result.indexOf('LOSE') !== -1) {
       if (!client.isEliminated) {
         scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_PLAYER, 30);
@@ -464,14 +468,32 @@ const processMissionResult = (player, winBB, engine) => {
       }
     }
   }
+  if (locationId === LOCATION_ID.MICRO_WAREHOUSE_WITH_MAX) {
+    const client = engine.players.find(p => p.id === PARTNER_ID.MAX);
+    console.info('client', client)
+    if (!client) return;
+    if (result.indexOf('WIN') !== -1) {
+      if (client.chips > player.chips) {
+        gainRelationship(client.id, 50);
+        scheduleEvent(EVENT_ID.MAX.WIN_PLAYER, 30);
+      } else {
+        gainRelationship(client.id, 100);
+        scheduleEvent(EVENT_ID.MAX.WIN_MAX, 30);
+      }
+    } else if (result.indexOf('LOSE') !== -1) {
+      if (!client.isEliminated) {
+        scheduleEvent(EVENT_ID.MAX.PLAYER_ELIMINATED, 30);
+      }
+    } else {
+      scheduleEvent(EVENT_ID.MAX.PLAYER_LEAVE, 30);
+    }
+  }
   // Mission LOW_UNDERGROUND_CLUB_MEET_MAX
   if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX) {
     const client = engine.players.find(p => p.id === PARTNER_ID.MAX);
-    const result = gameResult(winBB);
     if (result.indexOf('WIN') !== -1) {
-      if (result === GAME_RESULT_CODE.WIN_BIG) firstClearReward(locationId);
+      gainRelationship(client.id, 50);
       scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 30);
-      gainClearedZoneCount(locationId);
     } else {
       scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_FAILED, 30);
     }

@@ -61,7 +61,7 @@
           </Transition>
         </div>
         <div class="modal-actions" style="margin-top:20px">
-          <button @click="handleClose" class="btn cyan">CLOSE_REPORT</button>
+          <button @click="handleClose" :disabled="isProcessing" class="btn cyan">CLOSE_REPORT</button>
         </div>
       </div>
     </div>
@@ -93,7 +93,7 @@ const showEcon = ref(false);
 const showBehav = ref(false);
 const showLuck = ref(false);
 const showMsg = ref(false);
-
+const isProcessing = ref(true);
 const animatedStats = ref({
   netWinning: 0,
   total_earn_money: 0,
@@ -140,10 +140,10 @@ watch(() => props.show, (newVal) => {
     showBehav.value = false;
     showLuck.value = false;
     showMsg.value = false;
+    isProcessing.value = true;
     const earn = currentStats.value.total_earn_money || 0n;
     const lost = currentStats.value.total_lost_money || 0n;
     netWinning.value = Number(earn) - Number(lost);
-
     // Reset numbers
     Object.keys(animatedStats.value).forEach(k => animatedStats.value[k] = 0);
 
@@ -171,13 +171,14 @@ watch(() => props.show, (newVal) => {
       animateValue('max_win_streak', currentStats.value.max_win_streak || 0, 1000);
       animateValue('max_lose_streak', currentStats.value.max_lose_streak || 0, 1000);
       animateValue('max_lose_equity', currentStats.value.max_lose_equity || 0, 1000);
+      if (!currentStats.value.msgCode) isProcessing.value = false;
     }, 2300);
-
     if (currentStats.value.msgCode) {
       setTimeout(() => {
         audioManager.playSFX('swoosh');
         showMsg.value = true;
-      }, 3500);
+        isProcessing.value = false;
+      }, 4500);
     }
   }
 });
@@ -208,8 +209,12 @@ const handleClose = () => {
   if (isSession.value) {
     store.play_stats_session = null;
   }
-  audioManager.playSFX('ui-click')
-  audioManager.play();
+  audioManager.playSFX('ui-click');
+  if (audioManager.currentZoneId.value) {
+    audioManager.playTrackByZoneId(audioManager.currentZoneId.value);
+  } else {
+    audioManager.play(); // Fallback if no zone ID is cached
+  }
   emit('close');
 };
 </script>
@@ -230,7 +235,7 @@ const handleClose = () => {
   font-weight: 800;
 }
 .LOSE_BIG {
-  color: var(--neon-megenta);
+  color: var(--neon-magenta);
 }
 .LOSE_MEDIUM {
   color: var(--neon-orange);
@@ -245,7 +250,7 @@ const handleClose = () => {
   color: var(--neon-green);
 }
 .WIN_SMALL {
-  color: var(--neon-yellow);
+  color: var(--neon-green);
 }
 .final-message {
   text-align: center;

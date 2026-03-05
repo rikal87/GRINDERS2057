@@ -57,6 +57,12 @@ import { isEventCompleted } from "./eventSystem.js";
  * @property {string} MAIN_STORY_1_5_MEET_AT_CLUB_DONE
  * @property {string} MAIN_STORY_1_6_MEET_AT_CLUB_DONE
  * @property {string} MAIN_STORY_1_7_MEET_AT_CLUB_DONE
+ * @property {string} BANKRUPT_RESCUE_FOR_PLAYER
+ * @property {string} ELIMINATED
+ * @property {string} PLAYER_LEAVE
+ * @property {string} PLAYER_ELIMINATED
+ * @property {string} WIN_MAX
+ * @property {string} WIN_PLAYER
  */
 /** @type {MaxEvents} */
 export const EVENT_MAX = new Proxy({}, {
@@ -65,6 +71,88 @@ export const EVENT_MAX = new Proxy({}, {
 const SENDER_EN = 'Max';
 const SENDER_KO = '맥스';
 export const EventData = [
+  {
+    id: EVENT_MAX.WIN_MAX,
+    scenario: '플레이어와 맥스가 승리시(MAX CHIP > PLAYER)',
+    title_ko: '크하하! 봤냐? 이게 텍사스 스타일이지!',
+    title_en: 'Hahaha! Did ya see that? That\'s Texas style, baby!',
+    body_ko: '너도 제법 치긴 했는데, 아직 이 형님 따라오려면 멀었다 짜샤! ㅋㅋㅋ 그래도 등딱지 안 털리고 살아남은 건 칭찬해주마. 끝나고 맥주나 한 잔 하러 가자고!',
+    body_en: 'You didn\'t do half bad out there, but you\'ve still got a long way to go to catch up to me, kid! Still, gotta give you props for surviving. Let\'s grab some beers to celebrate!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
+  {
+    id: EVENT_MAX.WIN_PLAYER,
+    scenario: '플레이어와 맥스가 승리시(MAX.CHIPS < PLAYER.CHIPS)',
+    title_ko: '이런 썅... 내 칩이 너보다 적다니?!',
+    title_en: 'Well I\'ll be damned... You beat my stack?!',
+    body_ko: '와, 너 이자식 텍사스 소 떼마냥 미쳐 날뛰더만! 솔직히 좀 쫄았다. 뭐, 나같이 훌륭한 스승 밑에서 배웠으니 당연한 거려나? 크하하! 아무튼 기특하네 내 친구!',
+    body_en: 'Whoa, you were running wild like a herd of Texas longhorns out there! Gotta admit, I was a little nervous. Guess it\'s only natural with a great teacher like me, huh? Hahaha! Damn proud of you, buddy!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition() {
+      return getRelationship(PARTNER_ID.MAX) >= 500;
+    },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_MAX.TUTORIAL_WIN_AFTER, 15); // 연계 튜토리얼 2탄 스케줄 예약 가능
+    },
+  },
+  {
+    id: EVENT_MAX.PLAYER_ELIMINATED,
+    scenario: '플레이어가 맥스보다 먼저 패배시',
+    title_ko: '아이고 이 화상아!',
+    title_en: 'Lord have mercy!',
+    body_ko: '내가 가르쳐준 그 알량한 텍사스 스킬들은 다 어디다 팔아먹었냐? 으휴... 일단 바에 가서 시원한 맥주나 한잔 하고 있어라. 형님이 네 몫까지 복수해줄 테니까!',
+    body_en: 'Did you already forget every Texas trick I taught you?! Sheesh... Go grab a cold beer at the bar. Your big brother\'s gonna avenge your stack! Just watch and learn!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
+  {
+    id: EVENT_MAX.ELIMINATED,
+    scenario: 'Max가 먼저 버스트 당했습니다.',
+    title_ko: '아오 썅! 빌어먹을 리버 카드!!',
+    title_en: 'Son of a gun! That damn river card!!',
+    body_ko: '오늘 딜러가 나랑 웬수라도 졌나, 패가 개판이네! 크흠... 아무튼 난 먼저 올인났다. 파트너, 내 칩까지 다 긁어모아서 저놈들 콧대를 팍 꺾어버려 줘!',
+    body_en: 'The dealer must have a personal vendetta against me today, these cards are trash! Ahem... anyway, I\'m busted. Partner, scoop up every last chip on that table and break their damn pride for me!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
+  {
+    id: EVENT_MAX.PLAYER_LEAVE,
+    scenario: '플레이어가 Max와 함께 게임을 즐기다가 먼저 떠납니다.',
+    title_ko: '어이쿠, 야반도주냐?!',
+    title_en: 'Whoa there, making a run for it?!',
+    body_ko: '먼저 간다고? 아하, 칩 좀 땄다 이거냐? 농담이고, 뭐 급한 일 있으면 어쩔 수 없지. 등 뒤는 내가 지킬 테니 몸조심하고 나중에 연락해라 짜샤!',
+    body_en: 'Bailin\' out early? Aha, guess your pockets are full enough, huh? Just pullin\' your leg. If it\'s urgent, can\'t be helped. I\'ll hold down the fort here, so stay safe and hit me up later!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+  },
+  {
+    id: EVENT_MAX.BANKRUPT_RESCUE_FOR_PLAYER,
+    scenario: '플레이어가 파산했고 맥스가 자금을 지원했습니다.',
+    title_ko: '역시 내 친구다!',
+    title_en: 'That\'s My Friend!',
+    body_ko: '이런, 꼴딱 다 까먹었다니! 하지만 걱정 마, 친구! 내가 가진 거 전부 털어서 어떻게든 다시 일으켜 세워줄게. 텍사스 사나이의 의리는 이런 때 빛나는 법이지!',
+    body_en: 'Damn, you lost it all! But don\'t sweat it, friend! I\'ll put everything I\'ve got into getting you back on your feet. That\'s what Texas loyalty is all about!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
   {
     id: EVENT_MAX.BANKRUPT_RESCUE_REPAYMENT_DONE,
     scenario: '맥스가 플레이어에게 빚진 돈을 모두 갚았습니다.',
@@ -823,7 +911,7 @@ export const EventData = [
     label_ko: '알았어',
     label_en: 'OK',
     func() {
-      const taxiFee = 2500;
+      const taxiFee = 1000;
       gainRelationship(PARTNER_ID.MAX, 50);
       sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
         {
@@ -838,20 +926,7 @@ export const EventData = [
     },
     repeatable: false
   },
-  {
-    id: EVENT_MAX.TUTORIAL_LOSE_MAX,
-    desc_for_dev: 'Max가 플레이어에게 포커를 가르쳐주는 이벤트 연계(Max가 먼저 파산시)',
-    title_ko: '아오 ㅆ... 오늘 패가 왜 이따위냐!!',
-    title_en: 'Dammit... what are these cards today!!',
-    body_ko: '진짜 난 운이 더럽게 없네 썅! 야, 나는 먼저 올인났으니 너라도 딴 놈들 다 이겨봐라!',
-    body_en: 'My luck is absolute trash right now. Hey, I\'m busted, so you better win this whole thing for both of us!',
-    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-    },
-    repeatable: false
-  },
+
   {
     id: EVENT_MAX.TUTORIAL_LOSE_PLAYER,
     desc_for_dev: 'Max가 플레이어에게 포커를 가르쳐주는 이벤트 연계(Max 보다 먼저 패배)',
@@ -870,6 +945,8 @@ export const EventData = [
     },
     repeatable: false
   },
+
+
   {
     id: EVENT_MAX.TUTORIAL_LEAVE,
     desc_for_dev: 'Max가 플레이어에게 포커를 가르쳐주는 이벤트 연계(테이블 이탈)',
@@ -888,6 +965,7 @@ export const EventData = [
     },
     repeatable: false
   },
+
   {
     id: EVENT_MAX.TUTORIAL_LEAVE_AGAIN,
     desc_for_dev: 'Max가 플레이어에게 포커를 가르쳐주는 이벤트 연계(테이블 재 이탈)',

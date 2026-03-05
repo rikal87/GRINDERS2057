@@ -360,24 +360,6 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.MAX_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE_FAIL,
-    scenario: 'Max가 파산했지만, 플레이어와 계약했지만, 자금이 부족하여 초기 자원을 지원할 수 없었습니다. (계약은 해지됩니다.)',
-    title_ko: '자동 이체',
-    title_en: 'Automatic Transfer',
-    body_ko: '귀하의 계좌에서 [Max]님에게 $ CR 자동이체를 실패했습니다.',
-    body_en: 'Automatic transfer of $ CR from your account to Max failed because you don\'t have enough money.',
-    sender_ko: '시스템',
-    sender_en: 'SYSTEM',
-    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    get sender() { return store.settings.language === 'en' ? this.sender_en : this.sender_ko; },
-    func() {
-      const partner = store.partners.find(partner => partner.id === PARTNER_ID.MAX);
-      if (!partner) return;
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body.replace('$', partner.initialBankroll), [], this.sender)
-    },
-  },
-  {
     id: EVENT_ID.MAX_BANKRUPT_ACCEPT_RESCUE,
     scenario: 'Max가 파산했고 플레이어가 자금을 지원했습니다.',
     title_ko: '역시 내 친구다!',

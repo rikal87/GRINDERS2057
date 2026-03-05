@@ -1,3 +1,4 @@
+import { get } from "idb-keyval";
 import { getItemEffect, getRndItemBucket } from "./itemsEffect";
 import { store } from './store.js';
 
@@ -18,6 +19,36 @@ export const ITEM_DATA = [
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [getItemEffect('xp_boost')]
   },
+  // {
+  //   id: 'last_regret',
+  //   name_ko: '마지막 미련',
+  //   name_en: 'Last Regret',
+  //   get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+  //   icon: '🚬',
+  //   class: 'Item',
+  //   tier: 'T1',
+  //   price: 1,
+  //   editable: false,
+  //   desc_ko: '하... 리버엔 분명 뜰 것 같았는데...',
+  //   desc_en: 'I was sure it would come on the river...',
+  //   get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+  //   effects: [getItemEffect('last_regret')]
+  // },
+  // {
+  //   id: 'sucker',
+  //   name_ko: '호구',
+  //   name_en: 'Sucker',
+  //   get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+  //   icon: '🧐',
+  //   class: 'Item',
+  //   tier: 'T1',
+  //   price: 1,
+  //   editable: false,
+  //   desc_ko: '"예림이, 그 패 봐봐. 장이지?"',
+  //   desc_en: '"Check the card, Yerim. It\'s a Dime, for sure."',
+  //   get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+  //   effects: [getItemEffect('show_me_your_bluff'), getItemEffect('show_me_your_bluff'), getItemEffect('show_me_your_bluff')]
+  // },
   // {
   //   id: 'devil_shape',
   //   name_ko: '악마의 형상',
@@ -406,8 +437,6 @@ export const ITEM_DATA = [
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [getItemEffect('last_stand')]
   },
-
-
   {
     id: 'quick_fold_manual',
     name_ko: '쾌속 폴드 지침서',
@@ -1048,18 +1077,32 @@ export const ITEM_DATA = [
   },
   // --- T5 items (Rare + 2 Random, 200000 - 500000 CR) ---
   {
-    id: 'black_market_ring',
-    name_ko: '암상인의 반지',
-    name_en: 'Black Market Ring',
+    id: 'fusion_core_mini',
+    name_ko: '소형 융합 코어',
+    name_en: 'Mini Fusion Core',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    icon: '💍',
+    icon: '☢️',
+    class: 'Item',
+    tier: 'T5',
+    price: 199000,
+    desc_ko: '작은 도시 절반을 밝힐 에너지를 에이전트에 집중시킵니다. 인류의 미래보다 당신의 성공이 더 중요하니까요.',
+    desc_en: 'Focuses enough energy to light up half a small city into the Agent. Because your success is more important than humanity\'s future.',
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    effects: [getItemEffect('lt_regen_plus'), getItemEffect('lt_regen_plus'), getItemEffect('lt_regen_plus')]
+  },
+  {
+    id: 'rosary',
+    name_ko: '묵주',
+    name_en: 'Rosary',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    icon: '📿',
     class: 'Item',
     tier: 'T5',
     price: 220000,
-    desc_ko: '이 반지는 암시장에서 통용되는 상징입니다.',
-    desc_en: 'This ring is a commonly accepted symbol in the black market.',
+    desc_ko: '이걸 쥐고 있다고 해서 무조건 성인이 되는 건 아닙니다. 그저 죄를 지을 때 죄책감을 덜어줄 도구가 하나 늘었을 뿐이죠.',
+    desc_en: 'Holding this doesn\'t make you a saint. It just gives you something to squeeze while you\'re breaking all ten commandments.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('loyalty_card'), getItemEffect('straight_flush_master'), getRndItemBucket]
+    effects: [getItemEffect('allin_insurance'), getItemEffect('infamy_boost'), getItemEffect('diamond_collector')]
   },
 
   {
@@ -1070,11 +1113,11 @@ export const ITEM_DATA = [
     icon: '🏺',
     class: 'Item',
     tier: 'T5',
-    price: 398000,
+    price: 298000,
     desc_ko: '이 항아리에 깃든 고대의 행운은 과학적으로 증명되지 않았습니다. 하지만 당신의 팟을 키워준다는 소문만은 시장에서 아주 비싸게 팔리죠',
     desc_en: 'The ancient luck dwelling in this pot is not scientifically proven. However, the rumor that it grows your pot sells for a very high price on the market.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getRndItemBucket, getRndItemBucket]
+    effects: [getItemEffect('pot_bonus'), getItemEffect('pot_bonus'), getItemEffect('pot_bonus')]
   },
   {
     id: 'eiffel_tower',
@@ -1098,7 +1141,7 @@ export const ITEM_DATA = [
     icon: '🧊',
     class: 'Item',
     tier: 'T5',
-    price: 390000,
+    price: 270000,
     desc_ko: '극도의 시원함으로 잠이 확 깹니다.',
     desc_en: 'The extreme coolness wakes you up instantly.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
@@ -1229,7 +1272,7 @@ export const ITEM_DATA = [
     desc_ko: '세계에서 가장 큰 "자연산" 다이몬드 입니다! ...요즘은 더 이상 의미없긴 하지만요!',
     desc_en: 'The largest "natural" diamond in the world! ...Although it doesn\'t mean much anymore these days!',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('allin_insurance'), getItemEffect('diamond_collector'), getRndItemBucket]
+    effects: [getItemEffect('diamond_collector'), getItemEffect('diamond_collector'), getItemEffect('diamond_collector')]
   },
   {
     id: 'loan_shark_funding',
@@ -1416,20 +1459,7 @@ export const ITEM_DATA = [
   },
 
   // --- T6 items (Epic + 2 Random, 500000+ CR) ---
-  {
-    id: 'fusion_core_mini',
-    name_ko: '소형 융합 코어',
-    name_en: 'Mini Fusion Core',
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    icon: '☢️',
-    class: 'Item',
-    tier: 'T6',
-    price: 1990000,
-    desc_ko: '작은 도시 절반을 밝힐 에너지를 에이전트에 집중시킵니다. 인류의 미래보다 당신의 성공이 더 중요하니까요.',
-    desc_en: 'Focuses enough energy to light up half a small city into the Agent. Because your success is more important than humanity\'s future.',
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('lt_regen_plus'), getItemEffect('lt_regen_plus'), getItemEffect('lt_regen_plus')]
-  },
+
   {
     id: 'card_of_the_card_shark',
     name_ko: '타짜의 화투',
@@ -1442,45 +1472,7 @@ export const ITEM_DATA = [
     desc_ko: '동작 그만, 밑장 빼기냐?',
     desc_en: 'Hold it right there, are you dealing from the bottom?',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('ghost_bet'), getItemEffect('golden_touch'), getRndItemBucket]
-  },
-  {
-    id: 'destiny_rewriter',
-    name_ko: '운명 변조기',
-    name_en: 'Destiny Rewriter',
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    icon: '✍️',
-    class: 'Item',
-    tier: 'T6',
-    price: 2200000,
-    desc_ko: '이미 정해진 카드의 운명조차 당신의 뜻대로 바꿉니다.',
-    desc_en: 'Alters even the predetermined fate of the cards to your will.',
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('quantum_luck'), getRndItemBucket, getRndItemBucket]
-  },
-  // {
-  //   id: 'golden_empire_mainframe',
-  //   name: '황금 제국 메인프레임',
-  //   icon: '🏰',
-  //   class: 'Item',
-  //   tier: 'T6',
-  //   price: 1600000,
-  //   desc: '제국의 부가 집적된 거대 연산 시스템입니다.',
-  //   effects: [getItemEffect('golden_touch'), getRndItemBucket, getRndItemBucket]
-  // },
-  {
-    id: 'serendipity_node',
-    name_ko: '우연한 행운의 노드',
-    name_en: 'Serendipity Node',
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    icon: '🍀',
-    class: 'Item',
-    tier: 'T6',
-    price: 2100000,
-    desc_ko: '모든 우연을 필연적인 승리로 연결합니다.',
-    desc_en: 'Connects all coincidences into inevitable victory.',
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('quantum_luck'), getItemEffect('quantum_luck'), getRndItemBucket]
+    effects: [getItemEffect('ghost_bet')]
   },
   {
     id: 'code_of_creation',
@@ -1496,16 +1488,6 @@ export const ITEM_DATA = [
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [getRndItemBucket, getRndItemBucket, getRndItemBucket]
   },
-  // {
-  //   id: 'alchemists_ultimate_vial',
-  //   name: '연금술사의 궁극 시약',
-  //   icon: '🧪',
-  //   class: 'Item',
-  //   tier: 'T6',
-  //   price: 1700000,
-  //   desc: '한 방울만으로도 평범한 데이터를 황금으로 바꿉니다.',
-  //   effects: [getItemEffect('golden_touch'), getRndItemBucket, getRndItemBucket]
-  // },
   {
     id: 'miracle_worker_script',
     name_ko: '기적 구현 스크립트',
@@ -1518,23 +1500,8 @@ export const ITEM_DATA = [
     desc_ko: '확률적으로 불가능한 일들을 현실로 만들어냅니다.',
     desc_en: 'Makes probabilistically impossible things a reality.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('straight_flush_master'), getItemEffect('quantum_luck'), getItemEffect('golden_touch')]
+    effects: [getItemEffect('quantum_luck'), getItemEffect('quantum_luck'), getItemEffect('quantum_luck')]
   },
-  {
-    id: 'deus_ex_machina_mod',
-    name_ko: '데우스 엑스 마키나',
-    name_en: 'Deus Ex Machina',
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    icon: '🤖',
-    class: 'Item',
-    tier: 'T6',
-    price: 2600000,
-    desc_ko: '절체절명의 순간, 기계 신이 강림하여 운명을 바꿉니다.',
-    desc_en: 'In a desperate moment, the machine god descends and changes destiny.',
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('quantum_luck'), getItemEffect('quantum_luck'), getItemEffect('golden_touch')]
-  },
-
   {
     id: 'aurum_processor_z',
     name_ko: '오럼 프로세서 Z',
@@ -1558,10 +1525,10 @@ export const ITEM_DATA = [
     class: 'Item',
     tier: 'T6',
     price: 2250000,
-    desc_ko: '운명과 벌이는 마지막 도박에서 반드시 승리하게 해줍니다.',
-    desc_en: 'Ensures victory in the final gamble against fate.',
+    desc_ko: '자, 굴려 봅시다.',
+    desc_en: 'LET\'S GO GAMBLING.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('omen'), getItemEffect('lucky_7_collector'), getRndItemBucket]
+    effects: [getItemEffect('omen'), getItemEffect('lucky_7_collector'), getItemEffect('dopamine_addiction')]
   },
   {
     id: 'synapse_reading_protocol',
@@ -1571,11 +1538,11 @@ export const ITEM_DATA = [
     icon: '👁️',
     class: 'Item',
     tier: 'T6',
-    price: 880000,
+    price: 3250000,
     desc_ko: '상대방의 생각을 꿰뚫어 봅니다...',
     desc_en: 'Sees through the opponent\'s thoughts...',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [getItemEffect('synapse_reading'), getItemEffect('time_bank_plus'), getItemEffect('time_bank_plus')]
+    effects: [getItemEffect('synapse_reading')]
   },
   {
     id: 'royal_flush_crown',

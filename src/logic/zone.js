@@ -16,6 +16,8 @@ import { store } from './store.js';
 export const LOCATION_ID = {
   "FREE_SAFE_HOUSE": "free_safe_house",
   "FREE_STREET_SHOP_WITH_MAX": "free_street_shop_with_max",
+  "MICRO_WAREHOUSE": "micro_warehouse",
+  "MICRO_UNDERGROUND_BAR": "micro_underground_bar",
   "LOW_NEON_LOUNGE": "low_neon_lounge",
   "LOW_UNDERGROUND_CLUB": "low_underground_club",
   "LOW_OLD_CASINO": "low_old_casino",
@@ -181,7 +183,7 @@ export const zones = [
         "description_en": "An illegal gambling den operated by squatting in the underground cellar of an abandoned building. Mainly visited by the local lower class or vagrants seeking stimulation.",
         get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
         "requirements": null,
-        "firstClearRewards": ["underground_bar_invite"],
+        "firstClearRewards": 'underground_bar_invite',
         "level": 2,
         "npcs": [
           "Fish",
@@ -307,7 +309,7 @@ export const zones = [
           "Gambler",
           "Gangster"
         ],
-        "tables": { amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 100, bb: 250, available: [6, 9], baseRake: 0.06, rakeCap: 1000 },
+        "tables": { amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 125, bb: 250, available: [6, 9], baseRake: 0.06, rakeCap: 1000 },
         "theme": {
           "background": "radial-gradient(circle, #2e001f 0%, #1a0011 100%)",
           "borderColor": "#ff0080",
@@ -424,8 +426,9 @@ export const zones = [
           "The_Don",
           "Quant_Pro",
           "Old_Lion"
+          // "Shark"
         ],
-        "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1000, bb: 2500, available: [6, 9], baseRake: 0.06, rakeCap: 25000, isAdvanced: true },
+        "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1250, bb: 2500, available: [6, 9], baseRake: 0.06, rakeCap: 25000, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #001a33 0%, #000a14 100%)",
           "borderColor": "#ffd700",
@@ -435,7 +438,7 @@ export const zones = [
       },
       {
         "id": "middle_holdem_house",
-        "name_ko": "홀덤 하우스 시설",
+        "name_ko": "홀덤 하우스",
         "name_en": "Hold'em House",
         get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
         "imgSrc": imgMiddleHoldemHouse,
@@ -502,7 +505,7 @@ export const zones = [
         "name_en": "Safe House",
         get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
         "imgSrc": null,
-        "description_ko": "안전 가옥으로 유명한 실력자들을 초대하였습니다.",
+        "description_ko": "유명한 실력자들을 초대하였습니다.",
         "description_en": "Invited famous skilled players to the safe house.",
         get description() { return store.settings.language === 'en' ? this.description_en : this.description_ko; },
         "atmosphere": "다소 어두움, 진지한 분위기",
@@ -602,7 +605,7 @@ export const zones = [
         "requirements": "orbit_lounge_network_hacking",
         "level": 10,
         "npcs": [
-          "Musk_V",
+          // "Musk_V",
           "The_Whale"
         ],
         "tables": { amount: 100000000, amount_fmt: '100M', amount_min_fmt: '50M', sb: 500000, bb: 1000000, available: [6, 9], baseRake: 0.03, rakeCap: 5000000, isAdvanced: false },
