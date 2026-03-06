@@ -188,6 +188,16 @@
                         <span class="label">CURRENT_DEBT</span>
                         <span class="val" :class="getProfitClass(partner.debt)">{{ partner.debt.toLocaleString() }}
                           <small>CR</small></span>
+                        <p>
+                          <input type="range" min="0.0" max="1" step="0.05" value="0" :disabled="partner.debt >= 0"
+                            v-model="repaymentRatio">
+                          <label class="label text-align-right">
+                            {{ Math.round(getCurrentBankroll() * repaymentRatio).toLocaleString() }} CR ({{
+                              Math.round(repaymentRatio * 100) }}%)
+                            <button class="set-up-agent-btn" @click="sendDebtRepayment(partner)"
+                              :disabled="repaymentRatio > 0.0">REPAYMENT</button>
+                          </label>
+                        </p>
                       </div>
                       <div class="stat-box">
                         <span class="label">NET_WORTH</span>
@@ -207,12 +217,12 @@
                       <div class="stat-box" v-for="contract in partner.contracts" :key="contract.type">
                         <span class="label">{{ contract.type }}</span>
                         <p class="v5-class-desc">
-                          {{ CONTRACT_TYPE_DESC[contract.type].desc }}
+                          {{ getLocalizedText(CONTRACT_TYPE_DESC[contract.type], CONTRACT_TYPE_DESC_FIELD.DESC) }}
                         </p>
                         <p class="v5-class-desc note">
-                          {{ CONTRACT_TYPE_DESC[contract.type].note }}
+                          {{ getLocalizedText(CONTRACT_TYPE_DESC[contract.type], CONTRACT_TYPE_DESC_FIELD.NOTE) }}
                         </p>
-                        <div v-if="contract.type === CONTRACT_TYPE.SHARE_BENEFIT">
+                        <div v-if="[CONTRACT_TYPE.SHARE_BENEFIT, CONTRACT_TYPE.COLLUSION].includes(contract.type)">
                           <p>
                             <label class="ratio-group">
                               <span class="label">PARTNER</span>
@@ -227,9 +237,9 @@
                           </p>
                           <p>
                             <label class="label">
-                              <span class="label">PROFIT_TOTAL(FOR_PARTNER)</span>
+                              <span class="label">PROFIT_BALANCE (FOR_PARTNER)</span>
                               <span class="val" :class="getProfitClass(contract.profitTotal)">{{
-                                contract.profitTotal.toLocaleString() }} <small>CR</small>
+                                Math.round(contract.profitTotal).toLocaleString() }} <small>CR</small>
                               </span>
                             </label>
                           </p>
@@ -244,16 +254,15 @@
                             </label>
                           </p>
                         </div>
-                        <p v-if="!contract.activeRepayment">
-                          <button class="btn"
-                            :disabled="partner.relationship < contract.requiredRelationship || contract.active || contract.cooldown > 0"
+                        <p>
+                          <button class="sign" :disabled="checkDisableContractSign(partner, contract)"
                             @click="signContract(partner.id, contract.type, contract.ratio)">SIGN</button>
-                          <button class="btn" :disabled="!contract.active || contract.cooldown > 0"
+                          <button class="cancel" :disabled="!contract.active || contract.cooldown > 0"
                             @click="breakContract(partner.id, contract.type)">CANCEL</button>
                         </p>
-                        <p v-else>
+                        <!-- <p v-else>
                           <button class="btn" @click="sendDebtRepayment(partner.id, contract.type)">REPAYMENT</button>
-                        </p>
+                        </p> -->
                       </div>
                     </div>
                   </div>
@@ -305,7 +314,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-          }} UNREAD]</small>
+              }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
@@ -346,22 +355,20 @@
         </div>
       </section>
     </div>
-
-
   </div>
 </template>
 
 <script setup>
 import { computed, ref } from 'vue';
-import { store, getNextLevelThreshold, getEffectiveMaxStamina, gainBankroll, TYPE_CHANGE_BANKROLL } from '../logic/store';
+import { store, getNextLevelThreshold, getEffectiveMaxStamina, gainBankroll, getCurrentBankroll, getLocalizedText } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
 import { AI_TASK_DATA } from '../logic/aiAgentTaskData';
 import { audioManager } from '../logic/audioManager';
 import { deleteMessage } from '../logic/messageSystem';
-import { CONTRACT_TYPE, CONTRACT_TYPE_DESC } from '../logic/partnerContractSystem';
-import { signContract, breakContract, debtRepayment, getJoinedPartners } from '../logic/partnerSystem';
-// import { formatGameTime, formatGameDate } from '../logic/timeSystem';
+import { debtRepayment, getJoinedPartners } from '../logic/partnerSystem';
+import { signContract, breakContract, CONTRACT_TYPE_DESC, CONTRACT_TYPE_DESC_FIELD } from '../logic/partnerContractSystem';
+import { TYPE_CHANGE_BANKROLL, CONTRACT_TYPE } from '../logic/constants.js'
 const getRelationClass = (v) => {
   if (v > 700) return 'high';
   if (v < 300) return 'low';
@@ -372,23 +379,33 @@ const getProfitClass = (v) => {
   if (v < 0.0) return 'low';
   else return '';
 }
+const checkDisableContractSign = (partner, contract) => {
+  if (contract.type === CONTRACT_TYPE.SHARE_BENEFIT) {
+    const partners = getJoinedPartners();
+    const contractCount = partners.filter(p => p.contracts.find(c => c.type === CONTRACT_TYPE.SHARE_BENEFIT && c.active)).length
+    if (contractCount >= 1) {
+      return true;
+    }
+  }
+  if (partner.relationship <= contract.requiredRelationship || contract.active || contract.cooldown > 0) return true
+
+  return false
+}
 const emit = defineEmits(['sleep', 'back', 'open-task-selector', 'open-agent-modal', 'open-skill-selector', 'open-stats-modal']);
 const mainTab = ref('hardware');
 const selectedMessage = ref(null);
 
-
-const repaymentAmount = ref(0);
-const sendDebtRepayment = (partner, contract) => {
-  debtRepayment(partner, Math.round(contract.debt * contract.ratio), false, contract);
-  repaymentAmount.value = 0;
+const repaymentRatio = ref(0.0);
+const sendDebtRepayment = (partner) => {
+  const amount = Math.round(getCurrentBankroll() * repaymentRatio.value);
+  debtRepayment(partner, amount, false);
+  repaymentRatio.value = 0;
 };
 
 // Task Selector Logic
 const openTaskSelector = (idx) => {
   emit('open-task-selector', idx);
 };
-
-
 
 // Long press logic
 const longPressIdx = ref(-1);

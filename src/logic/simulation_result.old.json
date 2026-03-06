@@ -1,0 +1,71 @@
+{
+  "Florence": {
+    "Hands Played(avg)": 16951,
+    "Profit": -71808,
+    "VPIP": 21.6,
+    "PFR": 17.8,
+    "3B": 5,
+    "4B+": 1.3,
+    "chips": 5730,
+    "Folds": {
+      "PF": 26926,
+      "F": 622,
+      "T": 115,
+      "R": 43
+    },
+    "bankrupt_count": 16,
+    "_meta": {
+      "totalHandsRaw": 33902,
+      "vpipCountRaw": 7335,
+      "pfrCountRaw": 6040,
+      "threeBetCountRaw": 1712,
+      "fourBetCountRaw": 441
+    }
+  },
+  "Old_Lion": {
+    "Hands Played(avg)": 19602.5,
+    "Profit": 159274,
+    "VPIP": 25.6,
+    "PFR": 20.8,
+    "3B": 4.1,
+    "4B+": 0.9,
+    "chips": 38485,
+    "Folds": {
+      "PF": 29787,
+      "F": 989,
+      "T": 159,
+      "R": 64
+    },
+    "bankrupt_count": 6,
+    "_meta": {
+      "totalHandsRaw": 39205,
+      "vpipCountRaw": 10035,
+      "pfrCountRaw": 8167,
+      "threeBetCountRaw": 1606,
+      "fourBetCountRaw": 349
+    }
+  },
+  "Gangster": {
+    "Hands Played(avg)": 14882.5,
+    "Profit": -125335,
+    "VPIP": 29,
+    "PFR": 22.8,
+    "3B": 8.1,
+    "4B+": 2.1,
+    "chips": 13703,
+    "Folds": {
+      "PF": 21590,
+      "F": 684,
+      "T": 122,
+      "R": 34
+    },
+    "bankrupt_count": 21,
+    "_meta": {
+      "totalHandsRaw": 29765,
+      "vpipCountRaw": 8630,
+      "pfrCountRaw": 6793,
+      "threeBetCountRaw": 2415,
+      "fourBetCountRaw": 629
+    }
+  }
+}

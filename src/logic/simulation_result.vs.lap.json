@@ -1,0 +1,71 @@
+{
+  "mr_call": {
+    "Hands Played(avg)": 2324,
+    "Profit": -6549,
+    "VPIP": 80.3,
+    "PFR": 5.9,
+    "3B": 2.5,
+    "4B+": 0.2,
+    "chips": 0,
+    "Folds": {
+      "PF": 607,
+      "F": 1213,
+      "T": 211,
+      "R": 172
+    },
+    "bankrupt_count": 4,
+    "_meta": {
+      "totalHandsRaw": 4648,
+      "vpipCountRaw": 3732,
+      "pfrCountRaw": 274,
+      "threeBetCountRaw": 116,
+      "fourBetCountRaw": 9
+    }
+  },
+  "fish": {
+    "Hands Played(avg)": 3538,
+    "Profit": 18899,
+    "VPIP": 51,
+    "PFR": 12.9,
+    "3B": 3.7,
+    "4B+": 0.2,
+    "chips": 38615,
+    "Folds": {
+      "PF": 2809,
+      "F": 1411,
+      "T": 220,
+      "R": 252
+    },
+    "bankrupt_count": 1,
+    "_meta": {
+      "totalHandsRaw": 7076,
+      "vpipCountRaw": 3610,
+      "pfrCountRaw": 914,
+      "threeBetCountRaw": 265,
+      "fourBetCountRaw": 15
+    }
+  },
+  "shark": {
+    "Hands Played(avg)": 1977,
+    "Profit": -35162,
+    "VPIP": 33.5,
+    "PFR": 25,
+    "3B": 1.5,
+    "4B+": 1.5,
+    "chips": 15262,
+    "Folds": {
+      "PF": 2520,
+      "F": 190,
+      "T": 64,
+      "R": 30
+    },
+    "bankrupt_count": 6,
+    "_meta": {
+      "totalHandsRaw": 3954,
+      "vpipCountRaw": 1326,
+      "pfrCountRaw": 988,
+      "threeBetCountRaw": 60,
+      "fourBetCountRaw": 60
+    }
+  }
+}

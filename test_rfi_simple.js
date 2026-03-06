@@ -21,7 +21,7 @@ const engine = {
   state: 'PREFLOP',
   currentRoundBet: 20, // BB amount
   currentStreetRaises: 0, // Unopened
-  preflopAggressor: null,
+  aggressor: null,
   potManager: { currentRoundBet: 20 },
   board: []
 };

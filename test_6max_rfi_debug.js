@@ -39,7 +39,7 @@ const createEngine = (heroPosName) => {
     state: 'PREFLOP',
     currentRoundBet: 20,
     currentStreetRaises: 0,
-    preflopAggressor: null,
+    aggressor: null,
     potManager: { currentRoundBet: 20 },
     board: []
   };

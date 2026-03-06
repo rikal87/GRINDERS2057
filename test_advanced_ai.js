@@ -19,7 +19,7 @@ function createMockEngine(state, dealerIdx, playerCount) {
     state,
     currentRoundBet: 2,
     currentStreetRaises: 0,
-    preflopAggressor: null,
+    aggressor: null,
     potManager: { currentRoundBet: 2 },
     board: [],
     pot: 10
@@ -68,7 +68,7 @@ try {
     const player = engine.players[0]; // BTN
     player.hand = ["As", "Ks"];
     engine.board = ["Ah", "9d", "2c"]; // A high dry
-    engine.preflopAggressor = 'p0'; // We raised pre
+    engine.aggressor = 'p0'; // We raised pre
     engine.potManager.currentRoundBet = 0; // Check to us
 
     return { player, engine };
@@ -80,7 +80,7 @@ try {
     const player = engine.players[0]; // BTN
     player.hand = ["7s", "6s"];
     engine.board = ["Ah", "9d", "2c"];
-    engine.preflopAggressor = 'p0';
+    engine.aggressor = 'p0';
 
     return { player, engine };
   }, 20); // Frequency Check (60%)
@@ -91,7 +91,7 @@ try {
     const player = engine.players[2]; // BB
     player.hand = ["Js", "Ts"];
     engine.board = ["As", "5s", "2d"]; // Flush draw
-    engine.preflopAggressor = 'p0'; // BTN Aggressor
+    engine.aggressor = 'p0'; // BTN Aggressor
 
     // BTN bets 5 into pot of 10
     engine.pot = 10;

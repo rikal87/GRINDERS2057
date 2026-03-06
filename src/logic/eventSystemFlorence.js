@@ -1,9 +1,9 @@
-import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_RESOLVE_TYPE } from "./messageSystem.js";
-import { PARTNER_ID, gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
-import { store, getLanguage } from "./store.js";
+import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE } from "./messageSystem.js";
+import { store, registerCompletedEvent, getLanguage, getCurrentBankroll } from "./store.js";
+import { gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
+import { scheduleEvent } from "./eventSystem.js";
 // import { scheduleEvent, processEvents } from "./eventSystem.js";
-
-const pay_rent_bill = 5000;
+import { PARTNER_ID, LOCATION_ID } from './constants.js'
 /**
  * @typedef {Object} FlorenceEvents
  * @property {string} REFUSE_CONTRACT_CAUSE_YOU_HAS_DEBT
@@ -24,6 +24,8 @@ const pay_rent_bill = 5000;
  * @property {string} SIGN_CONTRACT_BANKRUPT_RESCUE
  * @property {string} SIGN_CONTRACT_DATE_WITH_ME
  * @property {string} GONE
+ * @property {string} JOIN_PARTNER // 플로렌스가 정식 파트너가 되기로 결심합니다.
+ * @property {string} JOINED_PARTNER // 프로렌스를 정식 파트너로 등록했습니다.
  */
 /** @type {FlorenceEvents} */
 export const EVENT_FLORENCE = new Proxy({}, {
@@ -32,7 +34,40 @@ export const EVENT_FLORENCE = new Proxy({}, {
 const SENDER_EN = 'Florence';
 const SENDER_KO = '플로렌스';
 export const EventData = [
-
+  {
+    id: EVENT_FLORENCE.JOIN_PARTNER,
+    scenario: '플로렌스가 정식 파트너가 되기로 결심합니다. (조건 달성시)',
+    title_ko: '신뢰의 증명',
+    title_en: 'Proof of Trust',
+    body_ko: '당신과 함께라면 꽤나 합리적인 기대수익(EV)을 기대할 수 있겠군요. 정식으로 파트너 계약을 제안합니다. 아, 물론 비즈니스일 뿐이니 오해는 말아주셨으면 해요.',
+    body_en: 'I believe partnering with you will yield a fairly reasonable expected value (EV). Consider this a formal proposal. And... please don\'t get the wrong idea. This is strictly business.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    timer: 30,
+    condition: () => {
+      // return getCurrentBankroll() > 500000 || getRelationship(PARTNER_ID.FLORENCE) >= 500;
+      return getCurrentBankroll() > 3000 || getRelationship(PARTNER_ID.FLORENCE) >= 150;
+    },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.JOINED_PARTNER, 1);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_FLORENCE.JOINED_PARTNER,
+    scenario: '플로렌스가 파트너로 등록되었습니다.(시스템 안내용)',
+    title_ko: '[플로렌스]가 파트너로 등록되었습니다.',
+    title_en: '[Florence] Registered as Partner',
+    body_ko: '신규 파트너 [플로렌스]가 추가되었습니다. [안전가옥] > [파트너] 탭에서 확인 가능합니다.',
+    body_en: 'New partner [Florence] has been added. You can check it in the [Partner] tab of the [Safe House].',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      joinPartner(PARTNER_ID.FLORENCE);
+      sendMessage(MESSAGE_TYPE.SYSTEM, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
   {
     id: EVENT_FLORENCE.GONE,
     scenario: '플로렌스는 사라졌습니다 (관계악화, 관계도 < 0)',

@@ -1,0 +1,71 @@
+{
+  "gangster": {
+    "Hands Played(avg)": 2800.5,
+    "Profit": -28613,
+    "VPIP": 39.8,
+    "PFR": 33,
+    "3B": 15.1,
+    "4B+": 1.9,
+    "chips": 6567,
+    "Folds": {
+      "PF": 3635,
+      "F": 186,
+      "T": 21,
+      "R": 4
+    },
+    "bankrupt_count": 4,
+    "_meta": {
+      "totalHandsRaw": 5601,
+      "vpipCountRaw": 2230,
+      "pfrCountRaw": 1847,
+      "threeBetCountRaw": 844,
+      "fourBetCountRaw": 105
+    }
+  },
+  "maniac": {
+    "Hands Played(avg)": 1489,
+    "Profit": -8471,
+    "VPIP": 41.3,
+    "PFR": 26.1,
+    "3B": 13.7,
+    "4B+": 9.1,
+    "chips": 50419,
+    "Folds": {
+      "PF": 1852,
+      "F": 91,
+      "T": 17,
+      "R": 3
+    },
+    "bankrupt_count": 6,
+    "_meta": {
+      "totalHandsRaw": 2978,
+      "vpipCountRaw": 1229,
+      "pfrCountRaw": 777,
+      "threeBetCountRaw": 407,
+      "fourBetCountRaw": 271
+    }
+  },
+  "shark": {
+    "Hands Played(avg)": 2358.5,
+    "Profit": 27016,
+    "VPIP": 23.3,
+    "PFR": 16.9,
+    "3B": 3.8,
+    "4B+": 3.5,
+    "chips": 0,
+    "Folds": {
+      "PF": 3276,
+      "F": 98,
+      "T": 11,
+      "R": 2
+    },
+    "bankrupt_count": 4,
+    "_meta": {
+      "totalHandsRaw": 4717,
+      "vpipCountRaw": 1097,
+      "pfrCountRaw": 797,
+      "threeBetCountRaw": 178,
+      "fourBetCountRaw": 163
+    }
+  }
+}

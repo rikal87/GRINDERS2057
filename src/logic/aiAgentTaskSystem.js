@@ -1,9 +1,10 @@
 
-import { store, getEffectiveMaxLT, gainBankroll, TYPE_CHANGE_BANKROLL } from './store';
+import { store, getEffectiveMaxLT, gainBankroll } from './store';
 import { sendMessage } from './messageSystem';
 import { AI_TASK_DATA } from './aiAgentTaskData';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 import { zones } from './zone';
+import { TYPE_CHANGE_BANKROLL } from './constants.js'
 // Task Definitions
 // Logic to process tasks every game tick (e.g. hourly)
 // Actually we can process minutely, but probability is per hour.

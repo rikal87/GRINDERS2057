@@ -1,4 +1,4 @@
-import { store, getEffectiveMaxStamina, TYPE_CHANGE_BANKROLL } from './store';
+import { store, getEffectiveMaxStamina } from './store';
 import { audioManager } from './audioManager';
 
 const DEPOSITION_RATE_IDLE = 2 / 60; // 2 per hour = 2/60 per minute

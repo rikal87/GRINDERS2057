@@ -1024,7 +1024,25 @@
   width: fit-content;
   letter-spacing: 1px;
 }
-
+.partner-stats-grid button.sign,
+.partner-stats-grid button.cancel {
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0 5px;
+  min-width: 120px;
+}
+.partner-stats-grid button.sign {
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+.partner-stats-grid button.cancel {
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid var(--neon-red);
+  color: var(--neon-red);
+}
 .status-tag[data-status="GAMBLING"] {
   color: var(--neon-cyan);
 }
@@ -1075,10 +1093,12 @@
   display: block;
   font-size: 0.55rem;
   color: #607080;
-  margin-bottom: 5px;
+  /* margin: 5px; */
   letter-spacing: 1px;
 }
-
+.text-align-right {
+  text-align: right;
+}
 .partner-stats-grid .stat-box .val {
   font-size: 1.1rem;
   font-weight: bold;
@@ -1176,3 +1196,9 @@
   transition: d 0.5s ease;
   filter: drop-shadow(0 0 2px var(--neon-cyan));
 }
+input[type="range"] {
+  width: -webkit-fill-available;
+}
+/* .text-align-right {
+  text-align: right;
+} */

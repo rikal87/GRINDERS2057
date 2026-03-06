@@ -70,11 +70,11 @@
 
 <script setup>
 import { computed, ref, watch } from 'vue';
-import { store, gainBankroll, TYPE_CHANGE_BANKROLL } from '../logic/store';
+import { store, gainBankroll } from '../logic/store';
 import { AI_AGENT_MODEL_AND_PLAN_DATA } from '../logic/aiAgentModelClasses';
 import { validateTaskSlots } from '../logic/aiAgentTaskSystem';
 import { audioManager } from '../logic/audioManager';
-
+import { TYPE_CHANGE_BANKROLL } from '../logic/constants.js'
 const props = defineProps({
   show: Boolean
 });

@@ -12,14 +12,17 @@
               <div class="section-label">ECONOMIC_METRICS</div>
               <div class="stats-grid">
                 <div class="stat-entry"><span class="label">NET_WINNING:</span> <span class="val"
-                    :class="netWinning >= 0 ? 'green' : 'red'">{{
-                      Math.floor(animatedStats.netWinning).toLocaleString() }} CR</span></div>
+                    :class="animatedStats.net_winning >= 0 ? 'green' : 'red'">{{
+                      Math.floor(animatedStats.net_winning).toLocaleString() }} CR</span></div>
                 <div class="stat-entry"><span class="label">PAID_RAKE:</span> <span class="val yellow">{{
                   Math.floor(animatedStats.paid_rake).toLocaleString() }} CR</span></div>
                 <div class="stat-entry"><span class="label">MAX_WIN_POT:</span> <span class="val white">{{
                   Math.floor(animatedStats.max_win_pot).toLocaleString() }} CR</span></div>
                 <div class="stat-entry"><span class="label">MAX_LOSE_POT:</span> <span class="val white">{{
                   Math.floor(animatedStats.max_lose_pot).toLocaleString() }} CR</span></div>
+                <div class="stat-entry"><span class="label">NET_SHARE(Partner):</span> <span class="val"
+                    :class="animatedStats.net_share >= 0 ? 'green' : 'red'">{{
+                      Math.floor(animatedStats.net_share).toLocaleString() }} CR</span></div>
               </div>
             </div>
           </Transition>
@@ -87,7 +90,6 @@ const getMsg = (msgCode) => {
 const isSession = computed(() => !!store.play_stats_session);
 const sessionStats = computed(() => store.play_stats_session || {});
 const currentStats = computed(() => isSession.value ? sessionStats.value : store.play_stats);
-const netWinning = ref(0);
 // Animation States
 const showEcon = ref(false);
 const showBehav = ref(false);
@@ -95,7 +97,8 @@ const showLuck = ref(false);
 const showMsg = ref(false);
 const isProcessing = ref(true);
 const animatedStats = ref({
-  netWinning: 0,
+  net_winning: 0,
+  net_share: 0,
   total_earn_money: 0,
   total_lost_money: 0,
   paid_rake: 0,
@@ -141,19 +144,15 @@ watch(() => props.show, (newVal) => {
     showLuck.value = false;
     showMsg.value = false;
     isProcessing.value = true;
-    const earn = currentStats.value.total_earn_money || 0n;
-    const lost = currentStats.value.total_lost_money || 0n;
-    netWinning.value = Number(earn) - Number(lost);
-    // Reset numbers
     Object.keys(animatedStats.value).forEach(k => animatedStats.value[k] = 0);
-
     // Sequence animations
     setTimeout(() => {
       showEcon.value = true;
-      animateValue('netWinning', Number(netWinning.value || 0), 1000);
+      animateValue('net_winning', currentStats.value.net_winning || 0, 1000);
       animateValue('paid_rake', currentStats.value.paid_rake || 0, 1000);
       animateValue('max_win_pot', currentStats.value.max_win_pot || 0, 1000);
       animateValue('max_lose_pot', currentStats.value.max_lose_pot || 0, 1000);
+      animateValue('net_share', currentStats.value.net_share || 0, 1000);
     }, 300);
 
     setTimeout(() => {

@@ -9,12 +9,12 @@
 
           <div class="location-display" :style="{ backgroundImage: `url(${currentLocation.imgSrc})` }">
             <div class="location-header">
-              <b class="zone-label">{{ currentLocation.zoneName }}</b>
-              <h3 class="location-name">{{ currentLocation.englishName }}</h3>
+              <b class="zone-label">{{ getLocalizedText(currentLocation, 'name') }}</b>
+              <h3 class="location-name">{{ getLocalizedText(currentLocation, 'name') }}</h3>
               <!-- <span class="location-subname">{{ currentLocation.name }}</span> -->
             </div>
             <div class="location-info">
-              <p class="desc">{{ currentLocation.description }}</p>
+              <p class="desc">{{ getLocalizedText(currentLocation, 'description') }}</p>
 
               <div class="npc-list">
                 <span class="label">TABLE_NOTES</span>
@@ -33,7 +33,8 @@
                 </div>
                 <div class="stat-row">
                   <span class="stat-label">BLINDS:</span>
-                  <span class="stat-value">{{ currentTableConfig.sb }}/{{ currentTableConfig.bb }}</span>
+                  <span class="stat-value">{{ currentTableConfig.sb.toLocaleString() }}/{{
+                    currentTableConfig.bb.toLocaleString() }}</span>
                 </div>
                 <div class="stat-row">
                   <span class="stat-label">RAKE:</span>
@@ -42,14 +43,14 @@
                       style="text-decoration: line-through; opacity: 0.5; margin-right: 5px;">
                       {{ (currentTableConfig.baseRake * 100).toFixed(1) }}%
                     </span>
-                    {{ (currentRake * 100).toFixed(1) }}% (Max {{ currentTableConfig.rakeCap }})
+                    {{ (currentRake * 100).toFixed(1) }}% (Max {{ currentTableConfig.rakeCap.toLocaleString() }})
                   </span>
                 </div>
               </div>
 
             </div>
             <div class="house-status">
-              <span class="tag critical" :data-tooltip="blacklistInfo" v-if="isBlacklisted(currentLocation.id)">
+              <span class="tag CRITICAL" :data-tooltip="blacklistInfo" v-if="isBlacklisted(currentLocation.id)">
                 {{ getBlacklistNote(currentLocation.id) }}
               </span>
               <span class="tag" :data-tooltip="infamyinfo" :class="`${getInfamyColorlabel(currentLocation.id)}`">
@@ -75,8 +76,7 @@
         </div>
 
         <div class="popup-actions">
-          <button class="btn-accept" :disabled="!canAfford || isLocked || isBlacklisted(currentLocation.id)"
-            @click="confirmJoin">
+          <button class="btn-accept" :disabled="!canAfford || !isLocked" @click="confirmJoin">
             <span v-if="isLocked">ACCESS_DENIED</span>
             <span v-else-if="canAfford">INITIATE_LINK</span>
             <span v-else>INSUFFICIENT_FUNDS</span>
@@ -90,7 +90,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { getCurrentInfamy, getCurrentSuspicion, store, isBlacklisted } from '../logic/store.js';
+import { getCurrentInfamy, getCurrentSuspicion, store, isBlacklisted, getLocalizedText } from '../logic/store.js';
 import { audioManager } from '../logic/audioManager.js';
 import { zones } from '../logic/zone.js';
 import { CLASSES_ENEMY } from '../logic/persona.js';
@@ -123,8 +123,8 @@ const suspicioninfo = computed(() => store.settings.language === 'ko' ?
   '감시의 눈초리가 깊어지면 자리를 뜨기 쉽지 않습니다. 보안 요원의 검문을 조심하십시오. 의심이 확신이 되는 순간, 이 구역은 출입이 불가하게 될 것입니다.'
   : 'Under high suspicion, leaving becomes a challenge and security checks become frequent. Once you\'re marked, this entire zone will be off-limits');
 const getBlacklistNote = (locationId) => {
-  const isBlacklisted = isBlacklisted(locationId);
-  return isBlacklisted ? 'BLACKLISTED' : 'CLEARED';
+  const isTrue = isBlacklisted(locationId);
+  return isTrue ? 'BLACKLISTED' : 'CLEARED';
 }
 const getInfamyColorlabel = (locationId) => {
   const suspicion = getCurrentInfamy(locationId);
@@ -233,10 +233,9 @@ const canAfford = computed(() => {
 });
 
 const isLocked = computed(() => {
-  if (!currentLocation.value) return false;
+  if (isBlacklisted(currentLocation.value.id)) return true;
   const req = currentLocation.value.requirements;
   if (!req) return false;
-  // Check against unlockedLocations in store
   return !(store.unlockedLocations && store.unlockedLocations.includes(req));
 });
 
@@ -459,23 +458,23 @@ const confirmJoin = () => {
   margin: 5px;
   cursor: help;
 }
-.house-status .tag.critical {
+.house-status .tag.CRITICAL {
   border-color: var(--neon-red);
   color: var(--neon-red);
 }
-.house-status .tag.high {
+.house-status .tag.HIGH {
   border-color: var(--neon-orange);
   color: var(--neon-orange);
 }
-.house-status .tag.medium {
+.house-status .tag.MEDIUM {
   border-color: var(--neon-yellow);
   color: var(--neon-yellow);
 }
-.house-status .tag.low {
+.house-status .tag.LOW {
   border-color: var(--neon-green);
   color: var(--neon-green);
 }
-.house-status .tag.none {
+.house-status .tag.NONE {
   border-color: var(--neon-grey);
   color: var(--neon-grey);
 }

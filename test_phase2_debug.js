@@ -20,7 +20,7 @@ async function testPhase2() {
       state: 'PREFLOP',
       currentRoundBet: 5,
       currentStreetRaises: 1,
-      preflopAggressor: 'p4',
+      aggressor: 'p4',
       potManager: { currentRoundBet: 5 },
       board: []
     };
@@ -40,7 +40,7 @@ async function testPhase2() {
       state: 'RIVER',
       currentRoundBet: 0,
       currentStreetRaises: 0,
-      preflopAggressor: 'p1',
+      aggressor: 'p1',
       board: ['Ah', '9d', '2c', '5h', 'Qs'],
       pot: 100,
       potManager: { currentRoundBet: 0 }

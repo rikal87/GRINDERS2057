@@ -3,8 +3,7 @@ import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_LABEL_TY
 import { store, saveStore, getLanguage, gainMissedPayments, getMissedPayments, MISSED_PAYMENT_TYPE, isUnlockedLocation, getBustEnemyCount, getTotalIncomeTaxCalculated } from "./store.js";
 import { EVENT_FLORENCE, EventData as FlorenceEventData } from "./eventSystemFlorence.js";
 import { EVENT_MAX, EventData as MaxEventData } from "./eventSystemMax.js";
-import { ENEMY_ID } from "./persona.js";
-import { LOCATION_ID } from "./zone.js";
+import { ENEMY_ID, LOCATION_ID } from "./constants.js";
 
 const pay_rent_bill = 5000;
 

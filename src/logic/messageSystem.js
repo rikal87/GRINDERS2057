@@ -1,9 +1,10 @@
 
-import { gainBankroll, store, TYPE_CHANGE_BANKROLL } from './store';
+import { gainBankroll, store } from './store';
 import { zones } from './zone';
 import { getRndLoreSpamMessage } from './lore_spam_message';
 import { audioManager } from './audioManager';
 // import { EVENT_ID, scheduleEvent } from './eventSystem';
+import { TYPE_CHANGE_BANKROLL } from './constants.js'
 export const MESSAGE_TYPE = {
   SYSTEM: 'SYSTEM',
   FINANCE: 'FINANCE',

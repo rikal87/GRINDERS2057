@@ -1,6 +1,6 @@
-import { store, gainBankroll, TYPE_CHANGE_BANKROLL } from './store.js';
+import { store, gainBankroll } from './store.js';
 import { ITEM_DATA, materializeItem } from './items.js';
-
+import { TYPE_CHANGE_BANKROLL } from "./constants.js";
 export const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 export const getRefreshCost = () => {

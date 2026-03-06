@@ -269,8 +269,8 @@ function getHeuristicFallback(player, engine) {
     }
     // Strategy Matrix
     // 2. Determine Context
-    const isPreflopAggressor = engine.preflopAggressor === player.id;
-    const isAggressor = isPreflopAggressor;
+    const isaggressor = engine.aggressor === player.id;
+    const isAggressor = isaggressor;
     // [BOARD TEXTURE BLUFF ADJUSTMENT]
     // Dry Board: Hard to hit, so bluffs (stabs) work better. +10% bluff.
     // Wet Board: Easy to hit, opponents call more. -15% bluff (unless we have draw).

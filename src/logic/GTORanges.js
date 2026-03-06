@@ -5,138 +5,127 @@
 export const GTO_RANGES = {
   // 1. Open Raising (RFI)
   OPEN: {
-    // UTG (EP): Strict, ~15%
-    UTG: "77+, ATs+, KJs+, AQo+, KQs, QJs, JTs",
-    // MP: ~19%
-    MP: "55+, A2s+, KTs+, QJs+, AJo+, KQo, J9s+, T9s",
-    // CO: ~28% (Wide steal)
-    CO: "22+, A2s+, K9s+, Q9s+, J9s+, T8s+, 98s, 87s, ATo+, KJo+, QJo+",
-    // BTN: ~45-50% (Max wide steal)
-    BTN: "22+, A2s+, K2s+, Q5s+, J7s+, T7s+, 97s+, 86s+, 76s, 65s, 54s, A2o+, K9o+, Q9o+, J9o+, T9o+",
-    // SB: ~35-45% (If folded to) - often wider but chopping occurs, let's say 40%
-    SB: "22+, A2s+, K5s+, Q8s+, J8s+, T8s+, 98s, 87s, 76s, A8o+, KTo+, QTo+, JTo+"
+    // UTG (EP): Strict, ~15-17% (Wider)
+    UTG: "66+, A2s+, KJs+, QJs, AJo+, KQo, JTs, T9s",
+    // MP: ~20-22% (Wider)
+    MP: "44+, A2s+, KTs+, QJs+, ATo+, KQo, J9s+, T9s, 98s, 87s",
+    // CO: ~30% (Wider)
+    CO: "22+, A2s+, K8s+, Q9s+, J9s+, T8s+, 98s, 87s, 76s, ATo+, KJo+, QJo+",
+    // BTN: ~50-55% (Aggressive steal)
+    BTN: "22+, A2s+, K2s+, Q2s+, J5s+, T6s+, 96s+, 85s+, 75s+, 64s+, 54s, 43s, A2o+, K8o+, Q9o+, J9o+, T8o+, 98o",
+    // SB: ~50% (Pure aggression)
+    SB: "22+, A2s+, K2s+, Q5s+, J7s+, T7s+, 97s+, 87s, 76s, 65s, A5o+, K9o+, Q9o+, J9o+, T9o+, 87o"
   },
 
   // 2. Defense Matrices (Hero Position vs Villain Position)
   // Format: VS_{VILLAIN_POS}.{HERO_POS}
 
-  // VS UTG Open (Tightest Range)
+  // VS UTG Open
   VS_UTG: {
     MP: {
-      VALUE_3BET: "QQ+, AKs, AKo",
-      BLUFF_3BET: "A5s",
-      CALL: "88-JJ, AQs, KQs, QJs, JTs"
+      VALUE_3BET: "TT+, AKs, AKo, AQs, AJs",
+      BLUFF_3BET: "A2s-A5s, KTs+, QJs, JTs, T9s, 87s, 76s, A5o",
+      CALL: "22-99, ATs, KQs, QJs, JTs, 98s, AJo, KQo"
     },
     CO: {
-      VALUE_3BET: "QQ+, AKs, AKo",
-      BLUFF_3BET: "A4s-A5s",
-      CALL: "88-JJ, AQs, KQs, QJs, JTs, T9s"
+      VALUE_3BET: "99+, AKs, AKo, AQs, AJs",
+      BLUFF_3BET: "A2s-A5s, KTs+, QJs, T9s, 87s, 76s, 65s, AJo",
+      CALL: "22-88, ATs, KQs, JTs, 98s, 87s, ATo, KQo"
     },
     BTN: {
-      VALUE_3BET: "JJ+, AKs, AKo",
-      BLUFF_3BET: "A2s-A5s",
-      CALL: "66-TT, AQs, KQs, QJs, JTs, T9s, 98s"
+      VALUE_3BET: "88+, AJs+, KJs+, AQo+, AKo",
+      BLUFF_3BET: "A2s-A5s, K8s+, Q9s+, J9s+, T8s+, 98s, 87s, 76s, 65s, 54s, AJo, KQo",
+      CALL: "22-77, ATs, KQs, QJs, JTs, 98s, 76s, ATo"
     },
     SB: {
-      // SB usually 3-bet or fold vs UTG (No cold call to avoid squeeze)
-      VALUE_3BET: "QQ+, AKs, AKo",
-      BLUFF_3BET: "A5s, KJs, QJs", // Polarized or Linear?
-      CALL: "Locked" // Mostly Fold/3-Bet
+      VALUE_3BET: "99+, AJs+, KJs+, AQo+, AKo",
+      BLUFF_3BET: "A2s-A9s, KTs+, QJs, JTs, T9s, 87s, 76s, 65s, 54s, AJo, KQo",
+      CALL: "Locked"
     },
     BB: {
-      // BB defends wide (price is good)
-      VALUE_3BET: "QQ+, AKs, AKo",
-      BLUFF_3BET: "A5s, K5s, 76s", // Random bluffs
-      CALL: "22-JJ, Any Suited Broad, Suited Connectors, ATo+"
+      VALUE_3BET: "TT+, AJs+, AKo, AQo",
+      BLUFF_3BET: "A2s-A5s, K5s-K8s, Q6s+, J7s+, 76s, 65s, 54s, ATo, KJo",
+      CALL: "22-99, Any Suited Broad, Suited Connectors, ATo+, KJo+"
     }
   },
 
   // VS MP Open
   VS_MP: {
     CO: {
-      VALUE_3BET: "QQ+, AKs, AKo",
-      BLUFF_3BET: "A4s-A5s, K9s",
-      CALL: "77-JJ, AQs, KQs, QJs, JTs, T9s"
+      VALUE_3BET: "99+, AJs+, KJs+, AQo+, AKo",
+      BLUFF_3BET: "A2s-A5s, K9s+, Q9s+, T9s, 87s, 76s, 65s, 54s, AJo, KQo",
+      CALL: "22-88, ATs, KQs, JTs, 98s, ATo"
     },
     BTN: {
-      VALUE_3BET: "JJ+, AKs, AKo",
-      BLUFF_3BET: "A2s-A5s, K8s",
-      CALL: "55-TT, AQs, KQs, QJs, JTs, T9s, 98s, 87s"
+      VALUE_3BET: "77+, ATs+, KJs+, QJs, AJo+, KQo",
+      BLUFF_3BET: "A2s-A5s, K9s+, Q9s+, JTs, T9s, 98s, 87s, 76s, 65s, 54s, 43s, ATo, KJo",
+      CALL: "22-66, ATs, KQs, QJs, JTs, ATo, KQo"
     },
     SB: {
-      VALUE_3BET: "JJ+, AKs, AKo, AQs",
-      BLUFF_3BET: "A2s-A5s, KTs",
+      VALUE_3BET: "88+, ATs+, KJs+, QJs, AJo+, KQo",
+      BLUFF_3BET: "A2s-A5s, KTs+, QTs+, JTs, T9s, 87s, 76s, 65s, 54s, ATo, KJo, QJo",
       CALL: "Locked"
     },
     BB: {
-      VALUE_3BET: "JJ+, AKs, AKo",
-      BLUFF_3BET: "A2s-A5s, T8s, 97s",
-      CALL: "22-TT, KJo+, QJo+, Suited Broadways, Suited Connectors"
+      VALUE_3BET: "99+, AJs+, AKo, AQo",
+      BLUFF_3BET: "A2s-A5s, K5s+, Q7s+, J7s+, T8s, 97s, 86s, 75s, 64s, 54s, ATo, KJo",
+      CALL: "22-88, KTo+, QTo+, Suited Broadways, Suited Connectors"
     }
   },
 
   // VS CO Open
   VS_CO: {
     BTN: {
-      VALUE_3BET: "TT+, AQs+, AKo",
-      BLUFF_3BET: "A2s-A5s, K8s, Q8s, J8s", // Polarized
-      CALL: "22-99, KJs+, QJs, JTs, T9s, 98s, 87s, ATo+, KQo"
+      VALUE_3BET: "66+, ATs+, KJs+, QJs+, AJo+, KQo",
+      BLUFF_3BET: "A2s-A5s, K5s-K9s, Q8s+, J8s+, T8s+, 98s, 87s, 76s, 65s, 54s, 43s, ATo, KJo, QJo",
+      CALL: "22-55, A9s, KTs, QTs, JTs, ATo, KQo"
     },
     SB: {
-      VALUE_3BET: "TT+, AQs+, AKo",
-      BLUFF_3BET: "A2s-A9s, K9s",
-      CALL: "Locked" // Mostly 3-bet or fold
+      VALUE_3BET: "77+, ATs+, KJs+, QJs+, AJo+, KQo",
+      BLUFF_3BET: "A2s-A9s, K8s-KTs, Q9s+, J9s+, T8s+, 98s, 87s, 76s, 65s, 54s, 53s, 43s, ATo, KJo, QJo",
+      CALL: "Locked"
     },
     BB: {
-      VALUE_3BET: "TT+, AQs+, AKo",
-      BLUFF_3BET: "K5s, Q6s, 54s",
-      CALL: "22-99, Any Broad, Suited Connectors, One Gappers"
+      VALUE_3BET: "88+, ATs+, KJs+, AQo+",
+      BLUFF_3BET: "A2s-A5s, K2s-K9s, Q5s+, J7s+, T6s+, 86s, 75s, 64s, 54s, 43s, A9o, KTo, QTo",
+      CALL: "22-77, Any Broad, Suited Connectors, One Gappers, ATo+, KJo+"
     }
   },
 
   // VS BTN Open (Blind Defense)
   VS_BTN: {
     SB: {
-      // SB vs BTN is aggressive 3-bet war (Linear)
-      VALUE_3BET: "88+, ATs+, KJs+, QJs, AJo+",
-      BLUFF_3BET: "A2s-A9s, K8s+, Q8s+, J8s+, T8s+, 54s-76s", // Wide 3-bet
-      CALL: "Locked" // Or some traps? Modern GTO is mostly 3-bet/Fold but flatting exists.
+      VALUE_3BET: "44+, A2s+, K5s+, Q5s+, J7s+, ATo+, KTo+, QTo+",
+      BLUFF_3BET: "T7s+, 97s+, 86s+, 75s+, 65s, 54s, 53s, 43s, 32s, T8o, 98o, 87o",
+      CALL: "Locked"
     },
     BB: {
-      VALUE_3BET: "99+, AJs+, AQo+",
-      BLUFF_3BET: "K5s, Q5s, J5s, T6s, 64s, 53s",
-      CALL: "Any Pair, Any Suited, Any Broad, T7o+, 98o, 87o" // Defend ~60-70%
+      VALUE_3BET: "66+, A9s+, KTs+, QTs+, ATo+, KQo",
+      BLUFF_3BET: "A2s-A8s, K2s-K9s, Q2s-Q9s, J5s+, T6s+, 96s+, 85s+, 75s+, 64s+, 53s+, 43s, K8o, Q9o, J9o",
+      CALL: "Any Pair, Any Suited, Any Broad, T7o+, 96o+, 85o+, 75o+, 64o+, 53o+, 42o+"
     }
   },
 
   // VS SB Open (BB Defense)
   VS_SB: {
     BB: {
-      // SB opens wide, BB defends very wide using "Position + Price"
-      VALUE_3BET: "88+, ATs+, KJs+, QJs",
-      BLUFF_3BET: "T8s, 97s, 64s",
-      CALL: "Any Two Suited, Any Broad, Any Pair, T7o+, 96o+, 54o+"
+      VALUE_3BET: "44+, A2s+, K5s+, Q5s+, J5s+, ATo+, KTo+, QTo+",
+      BLUFF_3BET: "T2s+, 92s+, 82s+, 72s+, 62s+, 52s+, 42s+, 32s, K2o-K9o, Q2o-Q9o, J5o+",
+      CALL: "Any Two Suited, Any Broad, Any Pair, T7o+, 95o+, 84o+, 74o+, 63o+, 53o+, 43o"
     }
   },
 
-  // --- NEW: VS 3-Bet (Hero Open, Villain 3-Bet) => Hero 4-Bet/Call/Fold ---
-  // If we are OOP (e.g. UTG vs BTN 3-bet), we play tight.
-  // If we are IP (e.g. BTN vs Blinds 3-bet), we defend wider.
-
+  // --- VS 3-Bet (Hero Open, Villain 3-Bet) ---
   VS_3BET: {
     OOP: {
-      // Out of Position (UTG/MP/CO vs BTN)
-      // Tight Value 4-Bet, Depolarized (adding QQ, AQs to cover value)
-      VALUE_4BET: "QQ+, AKs, AKo, AQs",
-      BLUFF_4BET: "A5s, A4s, KJs", // Blockers
-      CALL: "TT-JJ, KQs, QJs, JTs" // Trap/Navigate (Removed QQ/AQs from call as they are now value 4-bet)
+      VALUE_4BET: "TT+, AKs, AKo, AQs",
+      BLUFF_4BET: "A2s-A5s, KJs, QJs, JTs, T9s, AJo, KQo",
+      CALL: "77-99, ATs, KQs, QJs, JTs, T9s, 98s, AJo, KQo"
     },
     IP: {
-      // In Position (BTN vs Blinds)
-      // Wider Defense
-      VALUE_4BET: "QQ+, AKs, AKo",
-      BLUFF_4BET: "A2s-A5s", // Removed AJo/KQo from forced 4-bet bluff
-      CALL: "77-JJ, AQs, KQs, QJs, JTs, T9s, 98s, AJo, KQo" // Added AJo, KQo to Call
+      VALUE_4BET: "99+, AKs, AKo, AQs, KQs",
+      BLUFF_4BET: "A2s-A8s, K9s, Q9s, J9s, T8s, 98s, ATo, KJo",
+      CALL: "22-88, ATs, KTs+, QTs+, JTs, T9s, 98s, 87s, ATo+, KQo, QJo"
     }
   },
 

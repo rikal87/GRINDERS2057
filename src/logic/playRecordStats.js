@@ -9,7 +9,8 @@ export const createPlayRecordStats = () => ({
   },
   // Economy
   paid_rake: 0,
-  netWinnings: 0,
+  net_winning: 0,
+  net_share: 0,
   // Behavior (VPIP/PFR)
   hands_played: 0,
   fold: 0,
@@ -20,7 +21,6 @@ export const createPlayRecordStats = () => ({
   wtsd: 0, // Went To Showdown
   w$sd: 0, // Won $ at Showdown
   pfr: 0, // Pre-Flop Raise
-
   c_bet_count: 0,
   fold_to_3bet: 0,
   fold_to_4bet_or_more: 0,
@@ -78,6 +78,8 @@ export const PLAY_RECORD_STATS_TYPE = {
   MAX_LOSE_EQUITY: 'max_lose_equity',
   MAX_WIN_EQUITY: 'max_win_equity',
   BUST_ENEMY: 'bust_enemy',
+  NET_SHARE: 'net_share',
+  NET_WINNING: 'net_winning',
 }
 export const GAME_RESULT_CODE = {
   WIN_BIG: 'WIN_BIG',
@@ -296,6 +298,18 @@ export const recordPlayStatsSession = (player, action, payload = {}) => {
     case PLAY_RECORD_STATS_TYPE.BUST_ENEMY:
       sessionStats.bust_enemy[payload.enemyClass || 'Unknown']++;
       totalStats.bust_enemy[payload.enemyClass || 'Unknown']++;
+      break;
+    // case PLAY_RECORD_STATS_TYPE.PAID_RAKE:
+    //   sessionStats.paid_rake += amount;
+    //   totalStats.paid_rake += amount;
+    //   break;
+    case PLAY_RECORD_STATS_TYPE.NET_SHARE:
+      sessionStats.net_share += payload.amount;
+      totalStats.net_share += payload.amount;
+      break;
+    case PLAY_RECORD_STATS_TYPE.NET_WINNING:
+      sessionStats.net_winning += payload.amount;
+      totalStats.net_winning += payload.amount;
       break;
   }
 }

@@ -14,7 +14,7 @@ async function run() {
     state: 'PREFLOP',
     currentRoundBet: 50,
     currentStreetRaises: 1,
-    preflopAggressor: 'p1',
+    aggressor: 'p1',
     potManager: { currentRoundBet: 50 },
     board: []
   };

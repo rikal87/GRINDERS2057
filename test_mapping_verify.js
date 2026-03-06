@@ -33,7 +33,7 @@ function createEngine(heroPosIndex, villanPosIndex) {
     state: 'PREFLOP',
     currentRoundBet: 50,
     currentStreetRaises: 1,
-    preflopAggressor: `p${villanPosIndex}`,
+    aggressor: `p${villanPosIndex}`,
     potManager: { currentRoundBet: 50 },
     board: []
   };

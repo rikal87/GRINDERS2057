@@ -47,7 +47,7 @@ function createEngine(scenario) {
     state: 'PREFLOP',
     currentRoundBet: scenario.aggressorIndex !== undefined ? (scenario.betSize || 50) : 20, // 20 is BB
     currentStreetRaises: scenario.raises || 0,
-    preflopAggressor: scenario.aggressorIndex !== undefined ? `p${scenario.aggressorIndex}` : null,
+    aggressor: scenario.aggressorIndex !== undefined ? `p${scenario.aggressorIndex}` : null,
     potManager: { currentRoundBet: scenario.aggressorIndex !== undefined ? (scenario.betSize || 50) : 20 },
     board: []
   };

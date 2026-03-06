@@ -212,10 +212,8 @@ const handleJoinTable = async (payload) => {
     engine.value.cleanup();
     engine.value = null;
   }
-
   // Initialize session stats
   store.play_stats_session = createPlayRecordStats();
-
   // Use passed rake or default
   const finalRake = rake !== undefined ? rake : 0.05;
   const finalRakeCap = rakeCap !== undefined ? rakeCap : (bb * 10);
@@ -228,20 +226,7 @@ const handleJoinTable = async (payload) => {
     engine.value.players[0].equippedProtectorIcon = equipped.icon;
     engine.value.players[0].equippedProtectorInstance = equipped;
   }
-
-
   currentView.value = 'table';
-
-  // // Check suspicion block
-  // const zoneData = store.status_zone[locationId] || { suspicion: 0 };
-  // if (zoneData.suspicion >= 60) {
-  //   alert("ACCESS DENIED: You are currently banned from this location due to high suspicion.");
-  //   currentView.value = 'lobby';
-  //   engine.value.cleanup();
-  //   engine.value = null;
-  //   return;
-  // }
-
   await engine.value.startNewHand();
 };
 
@@ -279,7 +264,7 @@ const handleAction = async (payload) => {
       showInvestigationResultOverlay.value = false;
       showGameOverOverlay.value = false;
       if (engine.value) {
-        applySessionExit(engine.value.players[0], engine.value);
+        applySessionExit(engine.value);
         currentView.value = 'lobby';
         showStatsModal.value = true;
         engine.value.exitGame();
@@ -296,7 +281,7 @@ const handleAction = async (payload) => {
       audioManager.playSFX('paybill');
       audioManager.playSFX('clear-table')
       if (engine.value) {
-        applySessionExit(engine.value.players[0], engine.value);
+        applySessionExit(engine.value);
         currentView.value = 'lobby';
         showStatsModal.value = true;
         engine.value.exitGame();
@@ -314,40 +299,35 @@ const consoleBox = ref(null);
 const handleSleepClick = () => {
   // bankroll_history
   const report = calculateSessionReport();
-  audioManager.playSFX('bootup');
-  fullReportLines.value = [
-    `INITIALIZING_REST_PROTOCOL...`,
-    `ACCESSING_GAMBLING_LOGS...`,
-    `--------------------------------`,
-    `SESSION_TOTAL_PROFIT: ${report.totalProfit.toLocaleString()} CR`,
-    `SESSION_ROI: ${report.roi}%`,
-    `NEW_HANDS_RECORDED: ${report.playTime}`,
-    `BIGGEST_WIN_POT: ${report.biggestWin.toLocaleString()} CR`,
-    `--------------------------------`,
-    `SESSION_PROFIT_DETAILES...`,
-    `--------------------------------`,
-  ];
-  // report.detailes = report.detailes.filter(item => item.amount !== 0);
-  Object.keys(report.detailes).forEach(key => {
-    if (report.detailes[key] !== 0) {
-      fullReportLines.value.push(`${key}: ${report.detailes[key].toLocaleString()} CR`);
+  const details = [];
+  Object.keys(report).forEach(key => {
+    if (report[key] !== 0) {
+      details.push(`${key}: ${report[key].toLocaleString()} CR`);
     }
   });
-  fullReportLines.value = fullReportLines.value.concat([
+  if (details.length === 0) {
+    details.push(`DATA_NOT_FOUND`)
+  }
+  audioManager.playSFX('bootup');
+  fullReportLines.value = [
+    `--------------------------------`,
+    `ACCESS_PROFIT_DETAILES...`,
+    `--------------------------------`,
+  ];
+  fullReportLines.value = fullReportLines.value.concat([...details,
     `--------------------------------`,
     `STAMINA_LEVEL: 100% RECOVERED`,
-    `TIME_SKIP_CALCULATED... DONE`,
-    `READY_FOR_WAKEUP.`
   ])
   visibleReportLines.value = [];
   reportFinished.value = false;
   showSleepModal.value = true;
-  visibleReportLines.value.push(fullReportLines.value[0]);
-  visibleReportLines.value.push(fullReportLines.value[1]);
+  // visibleReportLines.value.push(fullReportLines.value[0]);
+  // visibleReportLines.value.push(fullReportLines.value[1]);
+  // visibleReportLines.value.push(fullReportLines.value[2]);
   setTimeout(() => {
     let i = 2;
     loopShowReport(i);
-  }, 1000);
+  }, 800);
   saveStore(); // Save after sleeping
 };
 function loopShowReport(i) {

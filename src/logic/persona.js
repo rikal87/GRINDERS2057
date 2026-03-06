@@ -1,41 +1,7 @@
 let getSettingLanguage = () => 'ko';
 export const setLanguageGetter = (getter) => { getSettingLanguage = getter; };
 // import {  } from "./partnerSystem.js";
-import { CONTRACT_TYPE } from "./partnerContractSystem.js";
-
-
-export const CHAT_TRIGGERS = {
-  GAME_START: 'GAME_START',
-  WIN_HUGE: 'WIN_HUGE', // Pot > 40BB
-  WIN_SMALL: 'WIN_SMALL',
-  LOSE_HUGE: 'LOSE_HUGE',
-  LOSE_SMALL: 'LOSE_SMALL',
-  CHOP: 'CHOP',
-  BLUFF_CAUGHT: 'BLUFF_CAUGHT',
-  ALL_IN: 'ALL_IN',
-  FOLD: 'FOLD',
-  WAITING: 'WAITING',
-  BET: 'BET',
-  RAISE: 'RAISE',
-  CALL: 'CALL',
-  CHECK: 'CHECK',
-  ELIMINATED_SELF: 'ELIMINATED_SELF',
-  ELIMINATED_ENEMY: 'ELIMINATED_ENEMY',
-  // CHAT_TRIGGERS
-  WIN_HUGE_FOR_PLAYER: 'WIN_HUGE_FOR_PLAYER',
-  LOSE_HUGE_FOR_PLAYER: 'LOSE_HUGE_FOR_PLAYER',
-  WIN_SMALL_FOR_PLAYER: 'WIN_SMALL_FOR_PLAYER',
-  LOSE_SMALL_FOR_PLAYER: 'LOSE_SMALL_FOR_PLAYER',
-  ALL_IN_FOR_PLAYER: 'ALL_IN_FOR_PLAYER',
-  FOLD_FOR_PLAYER: 'FOLD_FOR_PLAYER',
-  WAITING_FOR_PLAYER: 'WAITING_FOR_PLAYER',
-  RAISE_SMALL_FOR_PLAYER: 'RAISE_SMALL_FOR_PLAYER',
-  RAISE_MEDIUM_FOR_PLAYER: 'RAISE_MEDIUM_FOR_PLAYER',
-  RAISE_BIG_FOR_PLAYER: 'RAISE_BIG_FOR_PLAYER',
-  CALL_FOR_PLAYER: 'CALL_FOR_PLAYER',
-  CHECK_FOR_PLAYER: 'CHECK_FOR_PLAYER',
-  BLUFF_CAUGHT_FOR_PLAYER: 'BLUFF_CAUGHT_FOR_PLAYER',
-};
+import { CONTRACT_TYPE, CHAT_TRIGGERS, ENEMY_ID } from './constants.js';
 export const CLASSES = {
   VANGUARD: { name: 'Vanguard', philosophy: 'TAG', AF: 3, maxRam: 100, skills: [{ id: 'hud', name: 'HUD', cost: 20, reserved: true }] },
   SENTINEL: { name: 'Sentinel', philosophy: 'Passive', AF: 2, maxRam: 120, skills: [{ id: 'marriage', name: 'Wait', cost: 0 }] },
@@ -45,7 +11,7 @@ export const CLASSES = {
 // export 
 export const CLASSES_PARTNER = [
   {
-    id: 'Max', name: 'Max', fullName: 'Max Houston', philosophy: 'LAG', vPIP: .36, AF: 3.5, WTSD: .31, W$SD: 0.53, chipMultiply: 1.2,
+    id: 'Max', name: 'Max', fullName: 'Max Houston', philosophy: 'LAG', vPIP: .3, AF: 4, WTSD: .29, W$SD: 0.53, chipMultiply: 1.5,
     canContracts: [CONTRACT_TYPE.SHARE_BENEFIT, CONTRACT_TYPE.BANKRUPT_RESCUE],
     schedule: [
       { days: '월-토', hours: '13:00-23:00', status: 'GAMBLING' },
@@ -64,7 +30,7 @@ export const CLASSES_PARTNER = [
     }
   },
   {
-    id: 'Florence', name: 'Florence', fullName: 'Florence Quinn', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, W$SD: 0.57, chipMultiply: 1.1,
+    id: 'Florence', name: 'Florence', fullName: 'Florence Quinn', philosophy: 'TAG', vPIP: .25, AF: 3.5, WTSD: .27, W$SD: 0.57, chipMultiply: 1.5,
     age: 32,
     isAdvanced: false,
     isPartner: true,
@@ -84,27 +50,10 @@ export const CLASSES_PARTNER = [
   },
 
 ];
-export const ENEMY_ID = {
-  MAX: 'Max',
-  FLORENCE: 'Florence',
-  AN_UNKNOWN_WOMAN: 'An_Unknown_Woman',
-  MR_CALL: 'MR_CALL',
-  FISH: 'Fish',
-  BROKE: 'Broke',
-  GAMBLER: 'Gambler',
-  MANIAC: 'Maniac',
-  OLD_LION: 'Old_Lion',
-  RICH_GUY: 'Rich_Guy',
-  GANGSTER: 'Gangster',
-  NIT: 'Nit',
-  QUANT_PRO: 'Quant_Pro',
-  THE_DON: 'The_Don',
-  SHARK: 'Shark',
-  WHALE: 'Whale',
-}
+
 export const CLASSES_ENEMY = [
   {
-    id: 'Max', name: 'Max(Mentor)', philosophy: 'LAG', vPIP: .36, AF: 3.5, WTSD: .31, W$SD: 0.53, chipMultiply: 1.2,
+    id: 'Max', name: 'Max(Mentor)', philosophy: 'LAG', vPIP: .3, AF: 3.5, WTSD: .29, W$SD: 0.53, chipMultiply: 1.5,
     canContracts: [],
     schedule: [],
     isAdvanced: false,
@@ -117,7 +66,7 @@ export const CLASSES_ENEMY = [
     }
   },
   {
-    id: 'an_unknown_woman', name: 'An_Unknown_Woman', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, W$SD: 0.53, chipMultiply: 4.32,
+    id: 'an_unknown_woman', name: 'An_Unknown_Woman', philosophy: 'TAG', vPIP: .24, AF: 3.5, WTSD: .27, W$SD: 0.53, chipMultiply: 4.32,
     schedule: [CONTRACT_TYPE.A_DATE_WITH_YOU],
     isAdvanced: true,
     isPartner: false,
@@ -174,7 +123,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'rich_guy',
-    name: 'Rich_Guy', philosophy: 'TAP', vPIP: .38, AF: 1.5, WTSD: .35, chipMultiply: 3, isAdvanced: false,
+    name: 'Rich_Guy', philosophy: 'TAP', vPIP: .29, AF: 1.5, WTSD: .23, chipMultiply: 3, isAdvanced: false,
     note_ko: '기업의 꽤 높은 분이거나 운 좋게 코인 대박이 터진 부자입니다. 테이블에 앉아있는 스릴을 즐기지만, 상황이 심각해지면 쉽게 접는 경향이 있습니다.',
     note_en: 'He is a high-ranking executive of a company or a rich man who got lucky with a crypto boom. He plays for the thrill of being at the table, but tends to fold when things get too intense.',
     get note() {
@@ -183,7 +132,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'gangster',
-    name: 'Gangster', philosophy: 'TAG', vPIP: .38, AF: 4, WTSD: .44, chipMultiply: 1, isAdvanced: false,
+    name: 'Gangster', philosophy: 'TAG', vPIP: .36, AF: 4, WTSD: .44, chipMultiply: 1, isAdvanced: false,
     note_ko: '확실한 판에서만 무섭게 몰아붙이는 무법자입니다. 그의 베팅은 테이블 전체를 압박하는 폭력에 가깝습니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.',
     note_en: 'He\'s an outlaw who strikes ruthlessly only when the odds are in his favor. His betting is akin to violence, suffocating the entire table. Be careful—when the cards don\'t go his way, you can see him itching to flip the table.',
     get note() {

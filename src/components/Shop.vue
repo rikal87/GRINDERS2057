@@ -100,11 +100,12 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue';
-import { store, gainShopRefreshCount, gainBankroll, TYPE_CHANGE_BANKROLL } from '../logic/store';
+import { store, gainShopRefreshCount, gainBankroll } from '../logic/store';
 import { audioManager } from '../logic/audioManager';
 import { refreshShop, getRefreshCost, canManualRefresh, checkAutoRefresh, REFRESH_INTERVAL_MS } from '../logic/shopLogic';
 import { getinstanceId } from '../logic/items';
 import { gainPartnersRelationshipOliveBranch } from '../logic/partnerSystem';
+import { TYPE_CHANGE_BANKROLL } from '../logic/constants.js'
 
 defineEmits(['back']);
 

@@ -45,7 +45,7 @@ try {
     state: 'PREFLOP',
     currentRoundBet: 50,
     currentStreetRaises: 1,
-    preflopAggressor: 'p3',
+    aggressor: 'p3',
     potManager: { currentRoundBet: 50 },
     board: [],
     pot: 70

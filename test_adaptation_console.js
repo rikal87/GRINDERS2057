@@ -10,7 +10,7 @@ async function run() {
       { id: 'p0', currentBet: 0, hand: ['9s', '8s'], chips: 1000, stats: {} },
       { id: 'p1', currentBet: 50, chips: 1000, stats: { handsPlayed: 100, vPIP: 0.2 } },
     ],
-    dealerIndex: 1, bb: 20, state: 'PREFLOP', currentRoundBet: 50, currentStreetRaises: 1, preflopAggressor: 'p1', board: [],
+    dealerIndex: 1, bb: 20, state: 'PREFLOP', currentRoundBet: 50, currentStreetRaises: 1, aggressor: 'p1', board: [],
     potManager: { currentRoundBet: 50 }
   };
 
@@ -20,7 +20,7 @@ async function run() {
       { id: 'p0', currentBet: 0, hand: ['9s', '8s'], chips: 1000, stats: {} },
       { id: 'p1', currentBet: 50, chips: 1000, stats: { handsPlayed: 100, vPIP: 0.8 } },
     ],
-    dealerIndex: 1, bb: 20, state: 'PREFLOP', currentRoundBet: 50, currentStreetRaises: 1, preflopAggressor: 'p1', board: [],
+    dealerIndex: 1, bb: 20, state: 'PREFLOP', currentRoundBet: 50, currentStreetRaises: 1, aggressor: 'p1', board: [],
     potManager: { currentRoundBet: 50 }
   };
 

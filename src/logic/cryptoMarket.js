@@ -1,6 +1,6 @@
 import { reactive } from 'vue';
-import { store, gainBankroll, TYPE_CHANGE_BANKROLL } from './store';
-
+import { store, gainBankroll } from './store';
+import { TYPE_CHANGE_BANKROLL } from './constants.js'
 // Coin Definitions
 const COIN_TYPES = {
   VITE: { name: 'ViteCoin', symbol: 'VITE', volatility: 0.05, risk: 0.0 },

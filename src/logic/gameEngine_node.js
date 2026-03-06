@@ -53,7 +53,7 @@ export class GameEngine {
     this.turnTimer = null;
     this.currentStreetRaises = 0;
     this.pot = 0;
-    this.preflopAggressor = null;
+    this.aggressor = null;
     this.locationId = locationId;
   }
 

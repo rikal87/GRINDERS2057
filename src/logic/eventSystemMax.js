@@ -1,13 +1,12 @@
 // for first player
 import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE } from "./messageSystem.js";
 import { store, registerCompletedEvent, getLanguage, getCurrentBankroll } from "./store.js";
-import { PARTNER_ID, gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
+import { gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
 import { scheduleEvent } from "./eventSystem.js";
 import { recoverStamina } from "./staminaSystem.js";
 import { getBustEnemyCount, getClearedZoneCount } from "./store.js";
-import { ENEMY_ID } from "./persona.js";
-import { LOCATION_ID } from "./zone.js";
 import { isEventCompleted } from "./eventSystem.js";
+import { PARTNER_ID, LOCATION_ID, ENEMY_ID } from './constants.js'
 /**
  * @typedef {Object} MaxEvents
  * @property {string} YOU_GET_SOME_SLEEP
@@ -42,7 +41,7 @@ import { isEventCompleted } from "./eventSystem.js";
  * @property {string} SIGN_CONTRACT_COLLUSION
  * @property {string} SIGN_CONTRACT_BANKRUPT_RESCUE
  * @property {string} JOIN_PARTNER // 맥스가 정식 파트너가 되기로 결심합니다.
- * @property {string} REGISTERED_PARTNER // 맥스를 정식 파트너로 등록했습니다.
+ * @property {string} JOINED_PARTNER // 맥스를 정식 파트너로 등록했습니다.
  * @property {string} MAIN_STORY_1_MEET_AT_CLUB // 맥스가 클럽에서 플레이어를 만납니다.
  * @property {string} MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS // 맥스와 플레이어가 클럽에서 게임을 합니다. (승리)
  * @property {string} MAIN_STORY_1_2_MEET_AT_CLUB_FAILED // 맥스와 플레이어가 클럽에서 게임을 합니다. (패배)
@@ -233,7 +232,7 @@ export const EventData = [
   },
   {
     id: EVENT_MAX.JOIN_PARTNER,
-    scenario: '맥스가 정식 파트너가 되기로 결심합니다. (플레이어의 자산이 3만 CR 이상 또는 관계도 600 이상일 때)',
+    scenario: '[맥스]가 정식 파트너가 되기로 결심합니다. (플레이어의 자산이 3만 CR 이상 또는 관계도 600 이상일 때)',
     title_ko: '텍사스 듀오 결성 제안',
     title_en: 'Texas Duo Proposal',
     body_ko: '하하! 실력이 아주 물이 올랐구만 친구! 뒷골목 피쉬들 돈이나 뜯어먹기엔 이제 아까운 실력이야. 이 정도면 나랑 본격적으로 등 맞대고 뛰어도 되겠어. 제대로 텍사스 마초 듀오를 결성해 볼까?',
@@ -242,20 +241,22 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     timer: 30,
     condition: () => {
-      return getCurrentBankroll() > 30000 || getRelationship(PARTNER_ID.MAX) >= 600;
+      // return getCurrentBankroll() > 30000 || getRelationship(PARTNER_ID.MAX) >= 650;
+      return getCurrentBankroll() > 3000 || getRelationship(PARTNER_ID.MAX) >= 150;
     },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_MAX.REGISTERED_PARTNER, 1);
+      scheduleEvent(EVENT_MAX.JOINED_PARTNER, 1);
     },
+    repeatable: false,
   },
   {
-    id: EVENT_MAX.REGISTERED_PARTNER,
+    id: EVENT_MAX.JOINED_PARTNER,
     scenario: '맥스가 파트너로 등록되었습니다.(시스템 안내용)',
-    title_ko: '맥스가 파트너로 등록되었습니다.',
-    title_en: 'Max Registered as Partner',
-    body_ko: '맥스가 파트너로 등록되었습니다. 이제 [안전가옥]의 [파트너] 탭에서 맥스와 계약을 맺을 수 있습니다.',
-    body_en: 'Max has been registered as a partner. Now you can sign contracts with Max in the [Partner] tab of the [Safe House].',
+    title_ko: '[맥스]가 파트너로 등록되었습니다.',
+    title_en: '[Max] Registered as Partner',
+    body_ko: '신규 파트너 [맥스]가 추가되었습니다. [안전가옥] > [파트너] 탭에서 확인 가능합니다.',
+    body_en: 'New partner [Max] has been added. You can check it in the [Partner] tab of the [Safe House].',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {

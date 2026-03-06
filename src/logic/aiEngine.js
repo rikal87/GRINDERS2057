@@ -1,7 +1,7 @@
 import { evaluateHand, getDrawCategory, getStartingHandRank, analyzeBoardTexture, getSimpleHandCategory, getStartingHandRankHeadsup, getStartingHandRank96Max } from './poker.js';
 // import { LLMService } from './llmService.js';
 import { getAIChatDialogue, } from './AIChatSystem.js';
-import { CHAT_TRIGGERS } from './persona.js'
+import { CHAT_TRIGGERS } from './constants.js'
 
 /**
  * AI Decision Engine (LLM Integrated)
@@ -123,12 +123,19 @@ function getHeuristicFallback(player, engine) {
     estimatedEquity = percentile; // Simplified: Top 10% hand = 90% equity
 
     // vPIP Fold Check (Before any pot odds, unless we are in Big Blind and it's free)
-    const vPIPThreshold = 1 - vPIP;
-    if (percentile < vPIPThreshold && callAmt > 0 && raises > 0) {
-      // Very weak hand compared to VPIP (only when facing a raise or we aren't bb)
-      return { action: 'fold', amount: 0, insight: `vPIP Fold (Eq: ${(estimatedEquity * 100).toFixed(0)}%)` };
+    let vPIPThreshold = 1 - vPIP;
+    if (callAmt > 0) {
+      // if (raises > 0) {
+      //   // Play tighter against raises (require higher percentile)
+      //   vPIPThreshold = vPIPThreshold + (1 - vPIPThreshold) * Math.min(0.8, raises * 0.4);
+      // }
+      if (percentile < vPIPThreshold) {
+        // Very weak hand compared to VPIP
+        return { action: 'fold', amount: 0, insight: `vPIP Fold (Eq: ${(estimatedEquity * 100).toFixed(0)}%)` };
+      }
     }
-    if (handRank <= 4) estimatedEquity = 0.9; // AA, KK, QQ, AKs Premium Hand
+    if (handRank <= 2) estimatedEquity = 0.9; // AA, KK Super Premium Hand
+    else if (handRank <= 4) estimatedEquity = 0.8; // QQ, AKs Premium Hand
     else if (handRank <= 7) estimatedEquity = 0.7; // Semi premium hand
     else if (handRank <= 11) estimatedEquity = 0.6; // Strong hand
     else if (handRank <= 13) estimatedEquity = 0.55; // Good hand
@@ -150,10 +157,10 @@ function getHeuristicFallback(player, engine) {
     if (handCategory === 'NUTS') estimatedEquity = 0.95;
     else if (handCategory === 'MONSTER') estimatedEquity = 0.85;
     else if (handCategory === 'STRONG') estimatedEquity = 0.70;
-    else if (handCategory === 'GOOD') estimatedEquity = 0.60;
-    else if (handCategory === 'MARGINAL') estimatedEquity = 0.50;
-    else if (handCategory === 'WEAK') estimatedEquity = 0.30;
-    else if (handCategory === 'ACE_HIGH') estimatedEquity = 0.15;
+    else if (handCategory === 'GOOD') estimatedEquity = 0.55;
+    else if (handCategory === 'MARGINAL') estimatedEquity = 0.40;
+    else if (handCategory === 'WEAK') estimatedEquity = 0.20;
+    else if (handCategory === 'ACE_HIGH') estimatedEquity = 0.10;
     else estimatedEquity = 0.05; // AIR
 
     // Add Draw Equity
@@ -201,7 +208,7 @@ function getHeuristicFallback(player, engine) {
 
   // --- 3. Opponent Profiling (Adjust requiredEquity & Bluff Freq) ---
   const boardAnalysis = analyzeBoardTexture(engine.board);
-  const isAggressor = engine.preflopAggressor === player.id;
+  const isAggressor = engine.aggressor === player.id;
 
   if (isAdvanced) {
     const human = engine.players.find(p => p.isHuman && !p.isFolded);
@@ -211,13 +218,12 @@ function getHeuristicFallback(player, engine) {
         humanStats.foldToFlop = human.stats.foldToFlop;
       }
       humanStats.vPIP = human.stats.vPIP;
-
       // Exploit Tight: They fold a lot, bluff more. If they bet, they have it (require more equity to call).
-      if (humanStats.foldToFlop > 0.6) {
-        bluffFreq += 0.15;
-        if (callAmt > 0) requiredEquity += 0.05; // Respect their bets more
-        insight += " [Exp:Tight]";
-      }
+      // if (humanStats.foldToFlop > 0.6) {
+      bluffFreq += (humanStats.foldToFlop - 0.45);
+      if (callAmt > 0) requiredEquity += 0.05; // Respect their bets more
+      insight += " [Exp:Tight]";
+      // }
       // Exploit Station: They don't fold. Don't bluff, value bet thinner.
       if (humanStats.vPIP > 0.6 && humanStats.foldToFlop < 0.4) {
         bluffFreq *= humanStats.foldToFlop;
@@ -225,19 +231,18 @@ function getHeuristicFallback(player, engine) {
         insight += " [Exp:Station]";
       }
     }
-
     // Board Texture / Range Advantage
     const highCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r >= 9).length : 0;
+    const lowCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r < 9).length : 0;
     if (isAggressor) {
-      if (highCardCount >= 1) {
-        bluffFreq += 0.1; // Range Advantage
-      } else {
-        bluffFreq -= 0.1; // Range Disadvantage
+      if (street === 'FLOP') {
+        const bluffMod = (highCardCount * 2) - lowCardCount * .05;
+        bluffFreq += bluffMod;
       }
-      if (street === 'FLOP') bluffFreq += 0.15; // C-Bet
     } else {
-      if (highCardCount <= 2 && boardAnalysis.type === 'WET') {
-        bluffFreq += 0.1; // Good board to bluff back at aggressor
+      raiseEquityThreshold *= 1.25;
+      if (street === 'FLOP' || boardAnalysis.type === 'WET') {
+        bluffFreq += 0.05 * lowCardCount;
       }
     }
     // Street adjustments
@@ -271,7 +276,7 @@ function getHeuristicFallback(player, engine) {
   // --- 3.5 NPC Playstyle Adjustments ---
   // lower AF > 3 = Overestimating your own hand, lower AF < 3 = Underestimating your own hand
   raiseEquityThreshold += (3 - AF) * 0.1; // lower AF > 3 = raise more, lower AF < 3 = raise less
-  requiredEquity += (0.5 - (street === 'PREFLOP' ? vPIP : wtsd));
+  requiredEquity += ((0.3 - (street === 'PREFLOP' ? vPIP : wtsd)) / 2);
   if (player.class === 'GAMBLER') { // gambler is draw equity lover
     const addBonus = drawBonus > 0.0 ? .1 : 0; // bonus for draw equity
     estimatedEquity = Math.min(0.98, estimatedEquity + addBonus);

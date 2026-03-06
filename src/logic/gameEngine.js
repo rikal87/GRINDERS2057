@@ -1,62 +1,18 @@
 import { calculateEquity, createDeck } from './poker.js';
 import { getAIAction, chatAI, } from './aiEngine.js';
 import { getAdvancedAIAction } from './aiEngineAdvanced.js';
-import { CHAT_TRIGGERS, CLASSES_PARTNER } from './persona.js'
-import { CONTRACT_TYPE } from './partnerContractSystem.js'
+import { CLASSES_PARTNER } from './persona.js'
 import { audioManager } from './audioManager.js';
 import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
 import { getPartner, getJoinedPartners } from './partnerSystem.js';
-import { gainXPEstimate, store, saveStore, gainBankroll, TYPE_CHANGE_BANKROLL, gainSuspicion, getCurrentSuspicion, getCurrentInfamy } from './store.js';
+import { gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion, getCurrentSuspicion, getCurrentInfamy } from './store.js';
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
-import { zones, LOCATION_ID } from './zone.js';
+import { zones } from './zone.js';
+import { LOCATION_ID, CONTRACT_TYPE, CHAT_TRIGGERS, TYPE_CHANGE_BANKROLL } from './constants.js'
 
 const eventAdaptor = new EventAdaptor();
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-export const getPlayStatsTemplate = () => {
-  return {
-    bust_enemy: {
-      'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
-      'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'The_Don': 0,
-      'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
-      'Max': 0, 'Florence': 0
-    },
-    // Economy
-    paid_rake: 0,
-    netWinnings: 0,
-    total_earn_money: 0n,
-    total_lost_money: 0n,
-    // Behavior (VPIP/PFR)
-    played_hands: 0,
-    fold: 0,
-    check: 0,
-    call: 0,
-    raise: 0,
-    all_in: 0,
-    wtsd: 0, // Went To Showdown
-    w$sd: 0, // Won $ at Showdown
-    pfr: 0, // Pre-Flop Raise
-    c_bet_count: 0,
-    fold_to_3bet: 0,
-    fold_to_4bet_or_more: 0,
-    donk_bet_count: 0,
-    raise3bet: 0,
-    raise4bet_or_more: 0,
-    vpip_count: 0,
-    // Luck & Probability
-    showdown_win: 0,
-    all_in_win: 0,
-    win_without_showdown: 0,
-    // Records
-    max_win_pot: 0,
-    max_lose_pot: 0,
-    max_win_streak: 0,
-    max_lose_streak: 0,
-    max_lose_equity: 0.0,
-    min_win_equity: 0.0,
-    max_pot: 0,
-  };
-}
 export class GameEngine {
   constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isAdvanced = false, locationId = 'micro_street_shop', locationLV = 1, buyInLimit = 999999, inviteId = null) {
     this.locationId = locationId;
@@ -93,7 +49,7 @@ export class GameEngine {
     this.turnTimer = null;
     this.currentStreetRaises = 0;
     this.pot = 0; // [FIX] Reactive property for instant updates
-    this.preflopAggressor = null; // Track who raised preflop for C-Bet logic
+    this.aggressor = null; // Track who raised preflop for C-Bet logic
     this.buyInLimit = buyInLimit; // only for human?
     this.inviteId = inviteId;
     this.suspicion = 0;
@@ -329,14 +285,15 @@ export class GameEngine {
         const baseAF = villan.af || 1.0;
         villan.af_modifier = ((3 - baseAF) * 0.5) + baseAF;
       }
-
+      const chips = this.buyIn * villan.chipMultiply
       const aiPlayer = {
         id: villan.isPartner ? villan.id : `cpu_${i + 1}`,
         name: `${villan.name}`,
         tempXPBonus: 0,
         class: villan,
         hand: [],
-        chips: this.buyIn * villan.chipMultiply,
+        chips: chips,
+        initialChips: chips,
         currentBet: 0,
         totalWagered: 0,
         isFolded: false,
@@ -377,7 +334,7 @@ export class GameEngine {
     this.potManager.resetHand();
     this.playersActedCount = 0;
     this.currentStreetRaises = 0; // [FIX] Reset raises for new hand
-    this.preflopAggressor = null;
+    this.aggressor = null;
 
     if (this.exitReservationRounds > 0) {
       this.exitReservationRounds--;
@@ -589,10 +546,9 @@ export class GameEngine {
 
       if (raised) {
         this.currentStreetRaises++;
-        // Track Preflop Aggressor
-        if (this.state === 'PREFLOP') {
-          this.preflopAggressor = player.id;
-        }
+        this.aggressor = player.id;
+      } else {
+        this.aggressor = null;
       }
     }
     player.lastDialogue = action.dialogue || action.type.toLocaleUpperCase() + '.';
@@ -902,7 +858,7 @@ export class GameEngine {
     if (this.suspicion >= 80) {
       this.triggerCasinoInvestigation(this.players);
       return true;
-    } else if (Math.random() <= (this.suspicion - 40) / 50) {
+    } else if (Math.random() <= this.suspicion * .001) {
       this.triggerCasinoInvestigation(this.players);
       return true;
     }

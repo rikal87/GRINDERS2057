@@ -21,7 +21,7 @@ async function testPostflop() {
       state: 'FLOP',
       currentRoundBet: 0,
       currentStreetRaises: 0,
-      preflopAggressor: 'p1', // Hero is aggressor
+      aggressor: 'p1', // Hero is aggressor
       board: ['Ah', '9d', '2c'], // Top Pair
       pot: 10,
       potManager: { currentRoundBet: 0 }
@@ -40,7 +40,7 @@ async function testPostflop() {
       state: 'FLOP',
       currentRoundBet: 5, // Facing Bet
       currentStreetRaises: 1,
-      preflopAggressor: 'p2', // Villain is aggressor
+      aggressor: 'p2', // Villain is aggressor
       board: ['As', '5s', '2d'], // Flush Draw
       pot: 10,
       potManager: { currentRoundBet: 5 }
