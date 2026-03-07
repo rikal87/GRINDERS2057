@@ -1,232 +1,104 @@
 {
-  "Florence": {
-    "Hands Played(avg)": 7116,
-    "Profit": 32393,
-    "VPIP": 23,
-    "PFR": 18.8,
-    "3B": 6.4,
-    "4B+": 1.6,
-    "chips": 31644,
-    "Folds": {
-      "PF": 11118,
-      "F": 241,
-      "T": 42,
-      "R": 22
-    },
-    "bankrupt_count": 4,
-    "_meta": {
-      "totalHandsRaw": 14232,
-      "vpipCountRaw": 3270,
-      "pfrCountRaw": 2676,
-      "threeBetCountRaw": 915,
-      "fourBetCountRaw": 229
-    }
-  },
-  "Old_Lion": {
-    "Hands Played(avg)": 6281,
-    "Profit": 5733,
-    "VPIP": 21,
-    "PFR": 15.7,
-    "3B": 4.7,
-    "4B+": 1.3,
-    "chips": 18628,
-    "Folds": {
-      "PF": 10021,
-      "F": 286,
-      "T": 51,
-      "R": 20
-    },
-    "bankrupt_count": 7,
-    "_meta": {
-      "totalHandsRaw": 12562,
-      "vpipCountRaw": 2642,
-      "pfrCountRaw": 1966,
-      "threeBetCountRaw": 586,
-      "fourBetCountRaw": 163
-    }
-  },
-  "Shark": {
-    "Hands Played(avg)": 8720,
-    "Profit": -81103,
-    "VPIP": 26.1,
-    "PFR": 20.1,
-    "3B": 1.8,
-    "4B+": 1.7,
-    "chips": 7584,
-    "Folds": {
-      "PF": 11918,
-      "F": 480,
-      "T": 133,
-      "R": 77
-    },
-    "bankrupt_count": 15,
-    "_meta": {
-      "totalHandsRaw": 17440,
-      "vpipCountRaw": 4544,
-      "pfrCountRaw": 3510,
-      "threeBetCountRaw": 321,
-      "fourBetCountRaw": 303
-    }
-  },
   "mr_call": {
-    "Hands Played(avg)": 1946,
-    "Profit": -80390,
-    "VPIP": 79.2,
-    "PFR": 5.1,
-    "3B": 3.1,
-    "4B+": 0.5,
-    "chips": 20428,
+    "Hands Played(avg)": 15,
+    "Profit": -20000,
+    "VPIP": 80,
+    "PFR": 16.7,
+    "3B": 20,
+    "4B+": 6.7,
+    "chips": 0,
+    "WTSD": 47.8,
+    "W$SD": 27.3,
     "Folds": {
-      "PF": 541,
-      "F": 1010,
-      "T": 178,
-      "R": 147
+      "PF": 20,
+      "F": 21.7,
+      "T": 6.7,
+      "R": 8.3
     },
-    "bankrupt_count": 10,
+    "bankrupt_count": 2,
     "_meta": {
-      "totalHandsRaw": 3892,
-      "vpipCountRaw": 3081,
-      "pfrCountRaw": 199,
-      "threeBetCountRaw": 121,
-      "fourBetCountRaw": 18
+      "totalHandsRaw": 30,
+      "vpipCountRaw": 24,
+      "pfrCountRaw": 5,
+      "threeBetCountRaw": 6,
+      "fourBetCountRaw": 2,
+      "showdownCountRaw": 11,
+      "showdownWinCountRaw": 3,
+      "sawFlopCountRaw": 23,
+      "sawTurnCountRaw": 15,
+      "sawRiverCountRaw": 12,
+      "foldPFCountRaw": 6,
+      "foldFCountRaw": 5,
+      "foldTCountRaw": 1,
+      "foldRCountRaw": 1
     }
   },
   "fish": {
-    "Hands Played(avg)": 5530,
-    "Profit": 82868,
-    "VPIP": 52.2,
-    "PFR": 17.3,
-    "3B": 5.9,
-    "4B+": 0.2,
-    "chips": 25392,
+    "Hands Played(avg)": 2000,
+    "Profit": 12169,
+    "VPIP": 49.8,
+    "PFR": 8.1,
+    "3B": 3.1,
+    "4B+": 0.1,
+    "chips": 32169,
+    "WTSD": 47,
+    "W$SD": 50.1,
     "Folds": {
-      "PF": 4047,
-      "F": 2032,
-      "T": 340,
-      "R": 303
+      "PF": 33.2,
+      "F": 23,
+      "T": 12,
+      "R": 5.8
     },
-    "bankrupt_count": 1,
+    "bankrupt_count": 0,
     "_meta": {
-      "totalHandsRaw": 11060,
-      "vpipCountRaw": 5778,
-      "pfrCountRaw": 1909,
-      "threeBetCountRaw": 648,
-      "fourBetCountRaw": 17
-    }
-  },
-  "gangster": {
-    "Hands Played(avg)": 620.5,
-    "Profit": -17960,
-    "VPIP": 38.1,
-    "PFR": 29.1,
-    "3B": 3.9,
-    "4B+": 1.8,
-    "chips": 0,
-    "Folds": {
-      "PF": 800,
-      "F": 84,
-      "T": 3,
-      "R": 2
-    },
-    "bankrupt_count": 3,
-    "_meta": {
-      "totalHandsRaw": 1241,
-      "vpipCountRaw": 473,
-      "pfrCountRaw": 361,
-      "threeBetCountRaw": 48,
-      "fourBetCountRaw": 22
-    }
-  },
-  "maniac": {
-    "Hands Played(avg)": 837,
-    "Profit": -5047,
-    "VPIP": 59.1,
-    "PFR": 47.3,
-    "3B": 25.7,
-    "4B+": 4.4,
-    "chips": 0,
-    "Folds": {
-      "PF": 739,
-      "F": 43,
-      "T": 14,
-      "R": 3
-    },
-    "bankrupt_count": 3,
-    "_meta": {
-      "totalHandsRaw": 1674,
-      "vpipCountRaw": 989,
-      "pfrCountRaw": 791,
-      "threeBetCountRaw": 430,
-      "fourBetCountRaw": 73
-    }
-  },
-  "shark": {
-    "Hands Played(avg)": 3383.5,
-    "Profit": -23534,
-    "VPIP": 24.8,
-    "PFR": 20.4,
-    "3B": 2.5,
-    "4B+": 2.4,
-    "chips": 23160,
-    "Folds": {
-      "PF": 4515,
-      "F": 102,
-      "T": 28,
-      "R": 13
-    },
-    "bankrupt_count": 7,
-    "_meta": {
-      "totalHandsRaw": 6767,
-      "vpipCountRaw": 1678,
-      "pfrCountRaw": 1381,
-      "threeBetCountRaw": 170,
-      "fourBetCountRaw": 161
+      "totalHandsRaw": 4000,
+      "vpipCountRaw": 1992,
+      "pfrCountRaw": 323,
+      "threeBetCountRaw": 124,
+      "fourBetCountRaw": 4,
+      "showdownCountRaw": 1018,
+      "showdownWinCountRaw": 510,
+      "sawFlopCountRaw": 2164,
+      "sawTurnCountRaw": 1422,
+      "sawRiverCountRaw": 1159,
+      "foldPFCountRaw": 1329,
+      "foldFCountRaw": 498,
+      "foldTCountRaw": 170,
+      "foldRCountRaw": 67
     }
   },
   "old_lion": {
-    "Hands Played(avg)": 3969.5,
-    "Profit": 81629,
-    "VPIP": 26.3,
-    "PFR": 21.7,
-    "3B": 5.3,
-    "4B+": 0.9,
-    "chips": 35465,
+    "Hands Played(avg)": 1082,
+    "Profit": 3573,
+    "VPIP": 33.1,
+    "PFR": 24.7,
+    "3B": 1.1,
+    "4B+": 0.5,
+    "chips": 23573,
+    "WTSD": 30.2,
+    "W$SD": 45.6,
     "Folds": {
-      "PF": 5969,
-      "F": 177,
-      "T": 24,
-      "R": 15
+      "PF": 61.7,
+      "F": 18.8,
+      "T": 10.2,
+      "R": 14.5
     },
     "bankrupt_count": 1,
     "_meta": {
-      "totalHandsRaw": 7939,
-      "vpipCountRaw": 2085,
-      "pfrCountRaw": 1725,
-      "threeBetCountRaw": 419,
-      "fourBetCountRaw": 69
-    }
-  },
-  "Max": {
-    "Hands Played(avg)": 2094.5,
-    "Profit": -47343,
-    "VPIP": 26.4,
-    "PFR": 18.9,
-    "3B": 6,
-    "4B+": 2.2,
-    "chips": 0,
-    "Folds": {
-      "PF": 3133,
-      "F": 114,
-      "T": 19,
-      "R": 12
-    },
-    "bankrupt_count": 5,
-    "_meta": {
-      "totalHandsRaw": 4189,
-      "vpipCountRaw": 1105,
-      "pfrCountRaw": 793,
-      "threeBetCountRaw": 251,
-      "fourBetCountRaw": 91
+      "totalHandsRaw": 2164,
+      "vpipCountRaw": 716,
+      "pfrCountRaw": 535,
+      "threeBetCountRaw": 24,
+      "fourBetCountRaw": 10,
+      "showdownCountRaw": 204,
+      "showdownWinCountRaw": 93,
+      "sawFlopCountRaw": 675,
+      "sawTurnCountRaw": 354,
+      "sawRiverCountRaw": 255,
+      "foldPFCountRaw": 1336,
+      "foldFCountRaw": 127,
+      "foldTCountRaw": 36,
+      "foldRCountRaw": 37
     }
   }
 }

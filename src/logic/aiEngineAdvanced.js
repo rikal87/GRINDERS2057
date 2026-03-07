@@ -310,6 +310,21 @@ function getUniversalPreflopAction(player, engine, myPos, hand, matrix, getPosNa
     if (myPosGTO === 'MP' && handRank <= 33) return { action: 'raise', amount, insight: `RFI Override MP (Rank:${handRank})`, exploitTrigger: null, rangeEstimate: 'MP Fallback' };
     if (myPosGTO === 'UTG' && handRank <= 20) return { action: 'raise', amount, insight: `RFI Override UTG (Rank:${handRank})`, exploitTrigger: null, rangeEstimate: 'UTG Fallback' };
 
+    // [v5] Blind Stealing Exploit: BTN/CO vs Tight Blinds
+    if (['BTN', 'CO'].includes(myPosGTO)) {
+      const blinds = engine.players.filter(p => {
+        const pPos = getPosNameFn(engine.players.indexOf(p));
+        return (myPosGTO === 'BTN' && ['SB', 'BB'].includes(pPos)) || (myPosGTO === 'CO' && ['BTN', 'SB', 'BB'].includes(pPos));
+      });
+      const areBlindsTight = blinds.every(b => (b.stats.vpipCount / (b.stats.handsPlayed || 1)) < 0.25);
+      if (areBlindsTight) {
+        let stealThreshold = (myPosGTO === 'BTN') ? 100 : 65; // Expand significantly
+        if (handRank <= stealThreshold) {
+          return { action: 'raise', amount, insight: `Steal Exploit (${myPosGTO} vs Tight Blinds)`, exploitTrigger: 'Tight', rangeEstimate: 'Steal Range' };
+        }
+      }
+    }
+
     if (myPosGTO === 'BB') {
       const pot = engine.potManager ? engine.potManager.pot : engine.pot;
       const blindMoney = (engine.bb || engine.bigBlind) * 1.5;
@@ -371,10 +386,10 @@ function getUniversalPreflopAction(player, engine, myPos, hand, matrix, getPosNa
 
         // B. BLUFF 4-BET (Capped to prevent infinite bluff war)
         if (contextStrategies.BLUFF_4BET.has(hand) && engine.currentStreetRaises <= 2) {
-          let bluffFreqadj = 0.4;
-          if (opp3BetFreq > 0.14) bluffFreqadj = 0.6;
+          let bluffFreqadj = 0.25; // [v7] Reduced from 0.4 - 0.6 to balance 3B:4B ratio
+          if (opp3BetFreq > 0.15) bluffFreqadj = 0.35;
           if (Math.random() < bluffFreqadj) {
-            return { action: 'raise', amount: currentBet * 2.2, insight: `GTO 4-Bet Bluff (${posKey}, Adj:${bluffFreqadj})`, exploitTrigger: null, rangeEstimate: '4B Bluff' };
+            return { action: 'raise', amount: currentBet * 2.22, insight: `GTO 4-Bet Bluff (${posKey}, Adj:${bluffFreqadj})`, exploitTrigger: null, rangeEstimate: '4B Bluff' };
           }
         }
 
@@ -386,10 +401,11 @@ function getUniversalPreflopAction(player, engine, myPos, hand, matrix, getPosNa
 
       // D. FALLBACK EXPLOITATIVE DEFENSE
       if (handRank <= 10) return { action: 'raise', amount: player.chips, insight: `Stack Off (Rank:${handRank})`, exploitTrigger: null, rangeEstimate: 'Premium StackOff' };
-      let callThreshold = 22;
-      if (opp3BetFreq > 0.15) callThreshold = 30;
+      let callThreshold = 18; // Tightened from 22
+      if (opp3BetFreq > 0.15) callThreshold = 25; // Tightened from 30
       const callBB = callAmount / engine.bb;
-      if (handRank <= callThreshold && (callBB <= 40 || handRank <= 15)) {
+      // Tightened: Only call up to 30bb with marginal hands, or if rank is very strong (<=12)
+      if (handRank <= callThreshold && (callBB <= 30 || handRank <= 12)) {
         return { action: 'call', insight: `Fallback Defense (Rank:${handRank})`, exploitTrigger: null, rangeEstimate: 'Strong Defense' };
       }
       return { action: 'fold', insight: `Fold to ${engine.currentStreetRaises}-Bet (No Range)`, exploitTrigger: null, rangeEstimate: '' };
@@ -422,7 +438,8 @@ function getUniversalPreflopAction(player, engine, myPos, hand, matrix, getPosNa
           return { action: 'raise', amount: currentBet * squeezeSize, insight: `GTO Squeeze Value (${myPos} vs ${aggPos}+${callers})`, exploitTrigger: null, rangeEstimate: 'Squeeze Value' };
         }
         if (strategies.BLUFF_3BET && strategies.BLUFF_3BET.has(hand)) {
-          if (Math.random() < 0.5) {
+          // [v5] Increased Squeeze Bluff frequency
+          if (Math.random() < 0.8) {
             const isOOP = ['SB', 'BB'].includes(myPos);
             let baseSize = isOOP ? 4.5 : 3.5;
             let squeezeSize = baseSize + (callers * 1.0);
@@ -430,14 +447,21 @@ function getUniversalPreflopAction(player, engine, myPos, hand, matrix, getPosNa
           }
         }
         if (strategies.CALL && strategies.CALL !== 'Locked' && strategies.CALL.has(hand)) {
+          // [v6] Squeeze Overdrive: Convert 40% of squeeze-calls to squeeze-raises
+          if (Math.random() < 0.4) {
+            const isOOP = ['SB', 'BB'].includes(myPos);
+            let baseSize = isOOP ? 4.5 : 3.5;
+            let squeezeSize = baseSize + (callers * 1.2); // Slightly bigger sizing for weight
+            return { action: 'raise', amount: currentBet * squeezeSize, insight: `GTO Squeeze Overdrive (${myPos} vs ${aggPos}+${callers})`, exploitTrigger: null, rangeEstimate: 'Squeeze Overdrive' };
+          }
           return { action: 'call', insight: `GTO Overcall (${myPos})`, exploitTrigger: null, rangeEstimate: 'Overcall Range' };
         }
       }
 
-      if (handRank <= 25 && engine.currentStreetRaises <= 2) {
+      if (handRank <= 20 && engine.currentStreetRaises <= 2) { // Tightened from 25
         return { action: 'raise', amount: currentBet * 5.0, insight: `Fallback Squeeze (Rank:${handRank})`, exploitTrigger: 'Aggression', rangeEstimate: 'Strong Squeeze' };
       }
-      if (handRank <= 45 && callAmount / engine.bb < 20) {
+      if (handRank <= 35 && callAmount / engine.bb < 15) { // Tightened from 45 and 20bb
         return { action: 'call', insight: `Fallback Overcall (Rank:${handRank})`, exploitTrigger: null, rangeEstimate: 'Marginal Overcall' };
       }
       return { action: 'fold', insight: 'Fold to Raise+Callers', exploitTrigger: null, rangeEstimate: '' };
@@ -449,8 +473,12 @@ function getUniversalPreflopAction(player, engine, myPos, hand, matrix, getPosNa
 
     if (strategies) {
       const rng = Math.random();
-      let bluffBound = 0.7;
-      if (oppVPIP > 0.22 || oppPFR > 0.18) bluffBound = 0.85;
+      let bluffBound = 0.8;
+      if (oppPFR < 0.15) bluffBound = 1.0; // [v5] Max aggression vs Nits
+      else if (oppPFR < 0.22 || oppVPIP > 0.22 || oppPFR > 0.18) bluffBound = 0.95;
+
+      // [v4] Aggressive Blind Defense vs BTN/CO
+      if (['SB', 'BB'].includes(myPos) && ['BTN', 'CO'].includes(aggPosGTO)) bluffBound = Math.max(bluffBound, 0.95); // [v5] 0.9 -> 0.95
 
       if (["AA", "KK", "QQ", "AKs", "AKo"].includes(hand)) {
         return { action: 'raise', amount: currentBet * 3.5, insight: `Premium Value 3-Bet (${aggPos})`, exploitTrigger: null, rangeEstimate: 'Premium Range' };
@@ -466,14 +494,27 @@ function getUniversalPreflopAction(player, engine, myPos, hand, matrix, getPosNa
         }
       }
       if (strategies.CALL && strategies.CALL !== 'Locked' && strategies.CALL.has(hand)) {
+        // [v6.2] Aggressive conversion: 0.25 -> 0.45 to hit 7-9% target
+        let convertTo3BetFreq = 0.20;
+        if (['BTN', 'CO'].includes(shiftedAggPosGTO)) convertTo3BetFreq = 0.45;
+        if (oppPFR < 0.22) convertTo3BetFreq += 0.20;
+
+        if (Math.random() < convertTo3BetFreq) {
+          let sizing = (['SB', 'BB'].includes(myPos)) ? 4.0 : 3.0;
+          return { action: 'raise', amount: currentBet * sizing, insight: `GTO Call -> 3-Bet Overdrive (vs ${aggPos})`, exploitTrigger: null, rangeEstimate: '3B Overdrive' };
+        }
+
         if (handRank <= 18) return { action: 'raise', amount: currentBet * 3.5, insight: `Premium Call -> 3-Bet (vs ${aggPos})`, exploitTrigger: null, rangeEstimate: 'Premium 3B' };
         return { action: 'call', insight: `GTO Call vs ${aggPos}`, exploitTrigger: null, rangeEstimate: 'GTO Call Range' };
       }
     }
 
     // Fallback Defense
-    if (handRank <= 25) return { action: 'raise', amount: currentBet * 3.0, insight: `Fallback Strong 3-Bet (Rank:${handRank})`, exploitTrigger: null, rangeEstimate: 'Strong 3B' };
-    if (handRank <= 45 && (callAmount / engine.bb <= 15)) return { action: 'call', insight: `Fallback Marginal Call (Rank:${handRank})`, exploitTrigger: null, rangeEstimate: 'Marginal Call' };
+    let fallback3BRank = 22;
+    if (oppPFR < 0.22) fallback3BRank = 33; // [v7] Linear 3-Bet against TAG/Nit openers (Top 20%)
+
+    if (handRank <= fallback3BRank) return { action: 'raise', amount: currentBet * 3.3, insight: `Exploit 3-Bet (vs ${aggPos}, Rank:${handRank})`, exploitTrigger: 'Tight', rangeEstimate: 'Exploit 3B' };
+    if (handRank <= 35 && (callAmount / engine.bb <= 12)) return { action: 'call', insight: `Fallback Marginal Call (Rank:${handRank})`, exploitTrigger: null, rangeEstimate: 'Marginal Call' };
 
     return { action: 'fold', insight: `GTO Fold vs ${aggPos}`, exploitTrigger: null, rangeEstimate: '' };
   }
@@ -504,8 +545,8 @@ function getPostflopAction(player, engine, myPos) {
   if (category === 'NUTS') estimatedEquity = 0.95;
   else if (category === 'MONSTER') estimatedEquity = 0.85;
   else if (category === 'STRONG') estimatedEquity = 0.70;
-  else if (category === 'GOOD') estimatedEquity = 0.55;
-  else if (category === 'MARGINAL') estimatedEquity = 0.40;
+  else if (category === 'GOOD') estimatedEquity = 0.5; // [v3] 0.55 -> 0.50
+  else if (category === 'MARGINAL') estimatedEquity = 0.35; // [v3] 0.40 -> 0.35
   else if (category === 'WEAK') estimatedEquity = 0.20;
   else if (category === 'ACE_HIGH') estimatedEquity = 0.10;
   else estimatedEquity = 0.05;
@@ -543,7 +584,7 @@ function getPostflopAction(player, engine, myPos) {
   const oppAF = (rawStats.betsCount || 0) / Math.max(1, rawStats.callsCount || 0);
 
   const AF = player.class?.AF || 1.5;
-  const wtsd = player.class.WTSD || 0.5;
+  // const wtsd = player.class.WTSD || 0.5;
   let bluffFreq = (AF - 2.5) * 0.1 + 0.05;
   let insight = "";
   let exploitTrigger = null;
@@ -552,12 +593,14 @@ function getPostflopAction(player, engine, myPos) {
   const isManiac = oppVPIP > 0.42 && (oppAF > 3.0 || oppAF === Infinity);
   const isStation = (oppVPIP > 0.45 && oppAF < 0.8) || (oppVPIP > 0.60 && oppF2F < 0.3);
 
-  let raiseEquityThreshold = requiredEquity + 0.20;
+  let raiseEquityThreshold = requiredEquity + 0.3;
 
   // --- 3.5 NPC Playstyle Adjustments ---
   // lower AF > 3 = Overestimating your own hand, lower AF < 3 = Underestimating your own hand
   raiseEquityThreshold += (3 - AF) * 0.1; // lower AF > 3 = raise more, lower AF < 3 = raise less
-  requiredEquity += ((0.3 - (street === 'PREFLOP' ? vPIP : wtsd)) / 2);
+  // const vPIP = player.class.vPIP || 0.3;
+  // const wtsdThreshold = (street === 'PREFLOP' ? vPIP : wtsd) / 2
+  // requiredEquity = Math.max(0, requiredEquity - wtsdThreshold); // higher vPIP|wtsd = loose play, lower vPIP|wtsd = tight play
   if (isManiac) {
     bluffFreq *= 0.2;
     requiredEquity -= 0.12;
@@ -572,49 +615,61 @@ function getPostflopAction(player, engine, myPos) {
     exploitTrigger = "Station";
   } else if (oppF2F > 0.6) {
     bluffFreq += 0.25;
-    if (!isCheckable) requiredEquity += 0.08;
+    if (!isCheckable) requiredEquity += 0.12;
     insight += " [Exp:Tight]";
     exploitTrigger = "Tight";
   }
 
+  // (Move safety floor to the end of all adjustments)
+
   // Board Texture / Range Advantage
+  const existAggressor = !!engine.aggressor
   const boardAnalysis = analyzeBoardTexture(engine.board);
   const highCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r >= 9).length : 0;
   const lowCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r < 9).length : 0;
   if (isAggressor) {
     if (street === 'FLOP') {
-      const bluffMod = (highCardCount * 2) - lowCardCount * .05;
+      const bluffMod = (highCardCount * 0.10) - (lowCardCount * 0.05);
       bluffFreq += bluffMod;
     }
   } else {
-    raiseEquityThreshold *= 1.25;
+    if (existAggressor) raiseEquityThreshold = 120; // don't donk-bet
     // caller advantage (BB, BTN)
     let bluffMod = 0;
-    if (street === 'FLOP' && ["BB", "BTN"].includes(myPos)) bluffMod = (highCardCount * 2) - lowCardCount * .05;
+    if (street === 'FLOP' && ["BB", "BTN"].includes(myPos)) {
+      bluffMod = (highCardCount * 0.10) - (lowCardCount * 0.05);
+    }
 
-    if (boardAnalysis.type === 'WET') bluffMod *= 1.5
-    bluffFreq += bluffMod
+    if (boardAnalysis.type === 'WET') bluffMod *= 1.5;
+    bluffFreq += bluffMod;
   }
+  // [v3] Cap bluff frequency to prevent overdrive
+  bluffFreq = Math.max(0, Math.min(0.45, bluffFreq));
+
   // Street adjustments
   if (street === 'TURN') bluffFreq *= 0.66;
 
   // [EXPLOIT] AF-based bluff catching adjustment
   if (!isCheckable && callAmount > 0) {
     if (oppAF > 4.0) {
-      requiredEquity -= (oppAF - 1) * 0.12;
-    } // Over-bluffer: Catch more
-    else if (oppAF > 2.5) requiredEquity -= 0.05;
+      // Toned down: Max 15% reduction vs extreme bluffers
+      requiredEquity -= Math.min(0.15, (oppAF - 2.5) * 0.05);
+    }
+    else if (oppAF > 2.5) requiredEquity -= Math.min(0.10, (oppAF - 2.5) * 0.04);
     else if (oppAF < 0.8) {
-      requiredEquity += 0.10; // Under-bluffer: respect the bet
+      requiredEquity += 0.15; // [v5] 0.10 -> 0.15 (Respect the Nits)
       bluffFreq = 0; // bluff is not good idea
+      insight += " (Respect-Nit)";
     }
   }
 
-  if (spr < 1.5) requiredEquity *= 0.8;
+  if (spr < 1.5 && ['GOOD', 'STRONG', 'MONSTER', 'NUTS'].includes(category)) requiredEquity *= 0.8; // [v4] Only discount if we have something
   else if (spr > 10) requiredEquity *= 1.1;
 
   if (commitmentRatio > 0.35) {
-    requiredEquity *= Math.max(0, 1 - (estimatedEquity + commitmentRatio * 0.5));
+    // [FIX v4] Drastically reduced commitment bias to prevent "Whale" calls.
+    // Cap the discount at 15% (0.85x) instead of 30%.
+    requiredEquity *= Math.max(0.85, 1 - (commitmentRatio * 0.15));
     insight += ` [Commt ${(commitmentRatio * 100).toFixed(0)}%]`;
   }
 
@@ -624,11 +679,26 @@ function getPostflopAction(player, engine, myPos) {
     raiseEquityThreshold += raises * 0.15;
     const betToPotRatio = potSize > 0 ? (callAmount / potSize) : 0;
     if (betToPotRatio >= 0.8) requiredEquity += 0.1;
+
+    // [v4] Turn Pressure for marginal hands vs big bets
+    if (street === 'TURN' && betToPotRatio >= 0.7 && ['MARGINAL', 'GOOD'].includes(category)) {
+      requiredEquity += (boardAnalysis.type === 'WET' ? 0.20 : 0.12); // [v6.2] Final Fold Pressure Boost
+      insight += " (Turn-Fold-Pressure)";
+    }
   }
 
   if (callAmount >= player.chips) bluffFreq = 0;
   const isVirtuallyCommitted = callAmount > 0 && (player.chips <= (engine.bb * 2) || (player.chips / (potSize + player.chips) < 0.1));
   if (isVirtuallyCommitted) { requiredEquity = 0; insight += " [Virtually Committed]"; }
+
+  // [RIVER] Additional caution on the river for marginal hands
+  if (street === 'RIVER' && !isCheckable && ['GOOD', 'MARGINAL'].includes(category)) {
+    requiredEquity += (category === 'MARGINAL' ? 0.12 : 0.07); // [v4] 0.07 -> 0.12 for MARGINAL
+  }
+
+  // Cap exploitative requiredEquity reductions to prevent "never folding"
+  // Moved to the end to ensure it floor-caps ALL adjustments including AF/SPR/Commitment
+  requiredEquity = Math.max(requiredEquity, 0.10);
 
   insight += ` [Eq:${(estimatedEquity * 100).toFixed(0)}% / Req:${(requiredEquity * 100).toFixed(0)}%]`;
 
@@ -647,40 +717,73 @@ function getPostflopAction(player, engine, myPos) {
       action = 'call'; insight += " (Call Odds)";
     } else {
       const isRiverBluffSpot = street === 'RIVER' && !isStation && potSize > engine.bb * 15;
-      if (isRiverBluffSpot && Math.random() < (bluffFreq * 0.33)) {
+      if (isRiverBluffSpot && Math.random() < (bluffFreq * 1.5)) {
         action = 'raise'; amount = player.chips + 10000; insight += " (Polarized River All-In Bluff)";
-      } else if (Math.random() < bluffFreq && street !== 'RIVER') { action = 'raise'; insight += " (Pure Bluff)"; }
-      else { action = 'fold'; insight += " (Fold)"; }
+      } else if (Math.random() < bluffFreq && street !== 'RIVER') {
+        action = 'raise'; insight += " (Pure Bluff)";
+      } else {
+        action = 'fold'; insight += " (Fold)";
+      }
     }
   }
 
   if (category === 'BOARD_CHOP') { action = 'call'; insight = "Board Chop"; }
 
+  // --- 5. Sizing ---
   if (action === 'raise') {
     let currentTotalBet = engine.currentRoundBet || 0;
-    if (!isCheckable) {
-      let mult = Math.max(2.2, 4.5 - raises);
-      amount = Math.floor(currentTotalBet * mult);
-      amount = Math.max(amount, currentTotalBet * 2);
+    const bb = engine.bb || engine.bigBlind || 2;
+
+    if (street === 'PREFLOP') {
+      if (raises > 0) {
+        // [1] Facing Raise (3-Bet / 4-Bet / Squeeze)
+        const mult = Math.max(2.2, 4.0 - raises * 0.5); // Slightly smaller multipliers for higher bets
+        let baseAmount = currentBet * mult;
+
+        // [v7 Squeeze logic]
+        const callers = activePlayers.filter(p => p.currentBet === currentBet && p.id !== player.id).length;
+        if (callers > 0) baseAmount += (callers * currentBet);
+
+        amount = Math.floor(baseAmount);
+      } else {
+        // [2] Open Raise / Isolate
+        const openSize = bb * 2.5;
+        const pot = engine.potManager ? engine.potManager.pot : engine.pot;
+        const limperMoney = Math.max(0, pot - (bb * 1.5));
+        const limpers = Math.floor(limperMoney / bb);
+
+        if (limpers > 0) {
+          amount = Math.floor(openSize + (limpers * bb) + bb);
+        } else {
+          amount = Math.floor(openSize);
+        }
+      }
     } else {
-      // if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.25;
-      // else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.15;
-      let potPct = 0.5;
-      if (boardAnalysis.type === 'DRY') potPct -= 0.15;
-      else if (boardAnalysis.type === 'WET') potPct += 0.25;
+      // Postflop
+      if (!isCheckable) {
+        const mult = Math.max(2.2, 3.5 - raises * 0.5);
+        amount = Math.floor(currentTotalBet * mult);
+        amount = Math.max(amount, currentTotalBet * 2);
+      } else {
+        let potPct = 0.5;
+        if (boardAnalysis.type === 'DRY') potPct -= 0.15;
+        else if (boardAnalysis.type === 'WET') potPct += 0.25;
 
-      if (['DRAW_MONSTER', 'DRAW_STRONG'].includes(drawCategory)) potPct += 0.25; // 쎼미블러프
+        const baseOnEquity = Math.max(estimatedEquity, requiredEquity);
+        // const baseOnEquity = estimatedEquity;
+        if (baseOnEquity >= 0.9) potPct *= 1.8;
+        else if (baseOnEquity >= 0.85) potPct *= 1.5;
+        else if (baseOnEquity >= 0.70) potPct *= 1.2;
 
-      if (estimatedEquity >= 0.9) potPct *= 2;
-      else if (estimatedEquity >= 0.85) potPct *= 1.5;
-      else if (estimatedEquity >= 0.70) potPct *= 1.2;
+        if (street === 'FLOP' && boardAnalysis.type === 'DRY') potPct = 0.33;
+        else if (street === 'TURN') potPct = Math.max(potPct * 0.5, 0.6);
 
-      if (street === 'TURN') potPct *= 0.66;
-      // if (street === 'RIVER' && (estimatedEquity >= 0.90 || estimatedEquity < requiredEquity)) potPct = Math.max(potPct, 1.2);
-      amount = Math.floor(potSize * potPct);
-      amount = Math.max(amount, engine.bb || 2);
+        amount = Math.floor(potSize * potPct);
+        amount = Math.max(amount, bb);
+      }
     }
   }
+
   amount = Math.floor(amount);
   return { action, amount, insight, exploitTrigger, rangeEstimate };
 }

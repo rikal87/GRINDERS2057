@@ -809,8 +809,8 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
       }
 
       const pairedIndex = boardRanks.indexOf(pairedRank);
-      if (pairedIndex === 1) return 'GOOD'; // Middle Pair
-      return 'MARGINAL'; // Mid/Low pair
+      if (pairedIndex === 1) return 'MARGINAL'; // [v3] GOOD -> MARGINAL (Middle Pair is often overvalued)
+      return 'MARGINAL'; // Low pair
     }
   }
 

@@ -21,9 +21,9 @@ const CLASSES_ENEMY = [
     note_en: 'Your long-time friend from Texas. At the table, he breaks opponents\' composure with rough and unpredictable plays.',
   },
   {
-    id: 'Florence', name: 'Florence', fullName: 'Florence Quinn', philosophy: 'TAG', vPIP: .25, AF: 3.5, WTSD: .27, W$SD: 0.57, chipMultiply: 1.5,
+    id: 'Florence', name: 'Florence', fullName: 'Florence Quinn', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, W$SD: 0.57, chipMultiply: 1.5,
     age: 32,
-    isAdvanced: true,
+    isAdvanced: false,
     isPartner: true,
     schedule: [
       { days: '수,목,금,토,일', hours: '17:00-24:00', status: 'GAMBLING' },
@@ -52,7 +52,7 @@ const CLASSES_ENEMY = [
   },
   {
     id: 'fish',
-    name: 'Fish', philosophy: 'LAP', vPIP: .7, AF: 1, WTSD: .25, chipMultiply: 1, isAdvanced: false,
+    name: 'Fish', philosophy: 'LAP', vPIP: .7, AF: 1, WTSD: .22, chipMultiply: 1, isAdvanced: false,
     note_ko: '판돈을 불리는 데는 일등 공신이지만, 막상 끝까지 가는 배짱은 없어서 정교한 블러핑 한 방이면 칩을 고스란히 헌납할 겁니다.',
     note_en: 'He is a great contributor to increasing the pot, but he lacks the courage to go all the way, so a single sophisticated bluff will cost him all his chips.',
 
@@ -146,16 +146,17 @@ const CLASSES_ENEMY = [
   { name: 'YH0_V1RAL', philosophy: 'LAG', vPIP: .33, AF: 3.7, WTSD: .29, chipMultiply: 2, isBoss: true, note: '프랑스 출신 유명 포커 플레이어입니다.' },
 ]
 export async function runSimulation() {
-  const opp1 = 'old_lion'
-  const opp2 = 'Max'
-  const opp3 = 'shark'
+  const opp1 = 'shark'
+  const opp2 = 'gangster'
+  const opp3 = 'old_lion'
   console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
 
   const oop1Template = CLASSES_ENEMY.find(c => c.id === opp1 || c.name === opp1);
   const oop2Template = CLASSES_ENEMY.find(c => c.id === opp2 || c.name === opp2);
   const oop3Template = CLASSES_ENEMY.find(c => c.id === opp3 || c.name === opp3);
-
+  // ** don't edit this function **
   function getUnifiedAction(player, engine) {
+
     if (player.class?.isBoss) {
       return getAdvancedAIAction(player, engine);
     }
@@ -185,6 +186,9 @@ export async function runSimulation() {
       foldsPerStreet: { PREFLOP: 0, FLOP: 0, TURN: 0, RIVER: 0 },
       showdownCount: 0,
       showdownWinCount: 0,
+      sawFlopCount: 0,
+      sawTurnCount: 0,
+      sawRiverCount: 0,
       totalProfit: 0,
       betsCount: 0,
       callsCount: 0
@@ -203,7 +207,7 @@ export async function runSimulation() {
     players.push(createPlayer(`${opp3}_${i}`, `${opp3}_${i}`, oop3Template, 10000));
   }
 
-  let handsToPlay = 1000;
+  let handsToPlay = 2000;
   console.log(`Initialized 6 players. Running ${handsToPlay} hands...`);
 
   const engine = {
@@ -239,6 +243,7 @@ export async function runSimulation() {
       p.currentBet = 0;
       p.totalWagered = 0;
       p.handState = { didVpip: false, didPfr: false, didThreeBet: false, didFourBetPlus: false };
+      p.isBust = false
       if (p.chips > 0) p.stats.handsPlayed++;
     });
 
@@ -357,8 +362,15 @@ export async function runSimulation() {
     const streets = ['FLOP', 'TURN', 'RIVER'];
     for (const street of streets) {
       if (players.filter(p => !p.isFolded).length <= 1) break;
-      if (street === 'FLOP') engine.board.push(deck.pop(), deck.pop(), deck.pop());
-      else engine.board.push(deck.pop());
+      if (street === 'FLOP') {
+        engine.board.push(deck.pop(), deck.pop(), deck.pop());
+        players.filter(p => !p.isFolded).forEach(p => p.stats.sawFlopCount++);
+      }
+      else {
+        engine.board.push(deck.pop());
+        if (street === 'TURN') players.filter(p => !p.isFolded).forEach(p => p.stats.sawTurnCount++);
+        if (street === 'RIVER') players.filter(p => !p.isFolded).forEach(p => p.stats.sawRiverCount++);
+      }
       actingIdx = (dealerIdx + 1) % players.length;
       runBettingRound(street);
     }
@@ -419,6 +431,7 @@ export async function runSimulation() {
       `--- [${name}] Group Report ---
 Hands Played (avg): ${Math.floor(totalHands)} | Profit: ${totalProfit} | VPIP: ${avgVpip}% | PFR: ${avgPfr}% | 3B: ${avg3B}% | 4B+: ${avg4B}%
 Folds: PF(${folds.PF}) F(${folds.F}) T(${folds.T}) R(${folds.R})
+WTSD: ${(pList.reduce((s, p) => s + p.stats.showdownCount, 0) / (pList.reduce((s, p) => s + p.stats.sawFlopCount, 0) || 1) * 100).toFixed(1)}% | W$SD: ${(pList.reduce((s, p) => s + p.stats.showdownWinCount, 0) / (pList.reduce((s, p) => s + p.stats.showdownCount, 0) || 1) * 100).toFixed(1)}%
 Showdown Wins: ${pList.reduce((s, p) => s + p.stats.showdownWinCount, 0)}/${pList.reduce((s, p) => s + p.stats.showdownCount, 0)}\n`;
 
     console.log(`\n` + report);
@@ -446,9 +459,15 @@ Showdown Wins: ${pList.reduce((s, p) => s + p.stats.showdownWinCount, 0)}/${pLis
         "3B": 0,
         "4B+": 0,
         "chips": 0,
+        "WTSD": 0,
+        "W$SD": 0,
         "Folds": { "PF": 0, "F": 0, "T": 0, "R": 0 },
         "bankrupt_count": 0,
-        "_meta": { "totalHandsRaw": 0, "vpipCountRaw": 0, "pfrCountRaw": 0, "threeBetCountRaw": 0, "fourBetCountRaw": 0 }
+        "_meta": {
+          "totalHandsRaw": 0, "vpipCountRaw": 0, "pfrCountRaw": 0, "threeBetCountRaw": 0, "fourBetCountRaw": 0,
+          "showdownCountRaw": 0, "showdownWinCountRaw": 0, "sawFlopCountRaw": 0, "sawTurnCountRaw": 0, "sawRiverCountRaw": 0,
+          "foldPFCountRaw": 0, "foldFCountRaw": 0, "foldTCountRaw": 0, "foldRCountRaw": 0
+        }
       };
     }
 
@@ -459,7 +478,16 @@ Showdown Wins: ${pList.reduce((s, p) => s + p.stats.showdownWinCount, 0)}/${pLis
         vpipCountRaw: Math.round(((s["VPIP"] || 0) / 100) * (s["Hands Played(avg)"] || 0)),
         pfrCountRaw: Math.round(((s["PFR"] || 0) / 100) * (s["Hands Played(avg)"] || 0)),
         threeBetCountRaw: Math.round(((s["3B"] || 0) / 100) * (s["Hands Played(avg)"] || 0)),
-        fourBetCountRaw: Math.round(((s["4B+"] || 0) / 100) * (s["Hands Played(avg)"] || 0))
+        fourBetCountRaw: Math.round(((s["4B+"] || 0) / 100) * (s["Hands Played(avg)"] || 0)),
+        sawFlopCountRaw: Math.round(((s["VPIP"] || 0) / 100) * (s["Hands Played(avg)"] || 0) * 0.7),
+        sawTurnCountRaw: Math.round(((s["VPIP"] || 0) / 100) * (s["Hands Played(avg)"] || 0) * 0.5),
+        sawRiverCountRaw: Math.round(((s["VPIP"] || 0) / 100) * (s["Hands Played(avg)"] || 0) * 0.3),
+        foldPFCountRaw: typeof s.Folds.PF === 'number' ? s.Folds.PF : 0,
+        foldFCountRaw: typeof s.Folds.F === 'number' ? s.Folds.F : 0,
+        foldTCountRaw: typeof s.Folds.T === 'number' ? s.Folds.T : 0,
+        foldRCountRaw: typeof s.Folds.R === 'number' ? s.Folds.R : 0,
+        showdownCountRaw: Math.round(((s["WTSD"] || 0) / 100) * (Math.round(((s["VPIP"] || 0) / 100) * (s["Hands Played(avg)"] || 0) * 0.7))),
+        showdownWinCountRaw: Math.round(((s["W$SD"] || 0) / 100) * (Math.round(((s["WTSD"] || 0) / 100) * (Math.round(((s["VPIP"] || 0) / 100) * (s["Hands Played(avg)"] || 0) * 0.7)))))
       };
     }
     const m = s._meta;
@@ -469,12 +497,30 @@ Showdown Wins: ${pList.reduce((s, p) => s + p.stats.showdownWinCount, 0)}/${pLis
     const currentPfrCount = pList.reduce((acc, p) => acc + p.stats.pfrCount, 0);
     const current3bCount = pList.reduce((acc, p) => acc + p.stats.threeBetCount, 0);
     const current4bCount = pList.reduce((acc, p) => acc + p.stats.fourBetPlusCount, 0);
+    const currentShowdownCount = pList.reduce((acc, p) => acc + p.stats.showdownCount, 0);
+    const currentShowdownWinCount = pList.reduce((acc, p) => acc + p.stats.showdownWinCount, 0);
+    const currentSawFlopCount = pList.reduce((acc, p) => acc + p.stats.sawFlopCount, 0);
+    const currentSawTurnCount = pList.reduce((acc, p) => acc + p.stats.sawTurnCount, 0);
+    const currentSawRiverCount = pList.reduce((acc, p) => acc + p.stats.sawRiverCount, 0);
+    const currentFoldPF = pList.reduce((acc, p) => acc + p.stats.foldsPerStreet.PREFLOP, 0);
+    const currentFoldF = pList.reduce((acc, p) => acc + p.stats.foldsPerStreet.FLOP, 0);
+    const currentFoldT = pList.reduce((acc, p) => acc + p.stats.foldsPerStreet.TURN, 0);
+    const currentFoldR = pList.reduce((acc, p) => acc + p.stats.foldsPerStreet.RIVER, 0);
 
     m.totalHandsRaw += currentTotalHands;
     m.vpipCountRaw += currentVpipCount;
     m.pfrCountRaw += currentPfrCount;
     m.threeBetCountRaw += current3bCount;
     m.fourBetCountRaw += current4bCount;
+    m.showdownCountRaw += currentShowdownCount;
+    m.showdownWinCountRaw += currentShowdownWinCount;
+    m.sawFlopCountRaw += currentSawFlopCount;
+    m.sawTurnCountRaw += currentSawTurnCount;
+    m.sawRiverCountRaw += currentSawRiverCount;
+    m.foldPFCountRaw += currentFoldPF;
+    m.foldFCountRaw += currentFoldF;
+    m.foldTCountRaw += currentFoldT;
+    m.foldRCountRaw += currentFoldR;
 
     s["Hands Played(avg)"] += currentTotalHands / pList.length;
     s["Profit"] += pList.reduce((acc, p) => acc + p.stats.totalProfit, 0);
@@ -482,13 +528,16 @@ Showdown Wins: ${pList.reduce((s, p) => s + p.stats.showdownWinCount, 0)}/${pLis
     s["PFR"] = Number((m.pfrCountRaw / m.totalHandsRaw * 100).toFixed(1));
     s["3B"] = Number((m.threeBetCountRaw / m.totalHandsRaw * 100).toFixed(1));
     s["4B+"] = Number((m.fourBetCountRaw / m.totalHandsRaw * 100).toFixed(1));
+    s["WTSD"] = Number((m.showdownCountRaw / (m.sawFlopCountRaw || 1) * 100).toFixed(1));
+    s["W$SD"] = Number((m.showdownWinCountRaw / (m.showdownCountRaw || 1) * 100).toFixed(1));
     s["chips"] = pList.reduce((acc, p) => acc + p.chips, 0);
 
+    s.Folds.PF = Number((m.foldPFCountRaw / m.totalHandsRaw * 100).toFixed(1));
+    s.Folds.F = Number((m.foldFCountRaw / (m.sawFlopCountRaw || 1) * 100).toFixed(1));
+    s.Folds.T = Number((m.foldTCountRaw / (m.sawTurnCountRaw || 1) * 100).toFixed(1));
+    s.Folds.R = Number((m.foldRCountRaw / (m.sawRiverCountRaw || 1) * 100).toFixed(1));
+
     pList.forEach(p => {
-      s.Folds.PF += p.stats.foldsPerStreet.PREFLOP;
-      s.Folds.F += p.stats.foldsPerStreet.FLOP;
-      s.Folds.T += p.stats.foldsPerStreet.TURN;
-      s.Folds.R += p.stats.foldsPerStreet.RIVER;
       if (p.stats.bankrupt) s.bankrupt_count++;
     });
   };

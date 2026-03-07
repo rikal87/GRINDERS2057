@@ -1,0 +1,71 @@
+{
+  "old_lion": {
+    "Hands Played(avg)": 17137.5,
+    "Profit": -24512,
+    "VPIP": 23.3,
+    "PFR": 18.9,
+    "3B": 5.7,
+    "4B+": 1.2,
+    "chips": 26339,
+    "Folds": {
+      "PF": 26887,
+      "F": 729,
+      "T": 94,
+      "R": 52
+    },
+    "bankrupt_count": 10,
+    "_meta": {
+      "totalHandsRaw": 34275,
+      "vpipCountRaw": 7981,
+      "pfrCountRaw": 6462,
+      "threeBetCountRaw": 1960,
+      "fourBetCountRaw": 428
+    }
+  },
+  "Max": {
+    "Hands Played(avg)": 14911,
+    "Profit": 29933,
+    "VPIP": 27.7,
+    "PFR": 21.3,
+    "3B": 6.6,
+    "4B+": 2.4,
+    "chips": 31436,
+    "Folds": {
+      "PF": 22060,
+      "F": 659,
+      "T": 151,
+      "R": 62
+    },
+    "bankrupt_count": 15,
+    "_meta": {
+      "totalHandsRaw": 29822,
+      "vpipCountRaw": 8260,
+      "pfrCountRaw": 6351,
+      "threeBetCountRaw": 1960,
+      "fourBetCountRaw": 701
+    }
+  },
+  "shark": {
+    "Hands Played(avg)": 11752,
+    "Profit": -49893,
+    "VPIP": 25.8,
+    "PFR": 20,
+    "3B": 3.3,
+    "4B+": 1.3,
+    "chips": 0,
+    "Folds": {
+      "PF": 15879,
+      "F": 183,
+      "T": 110,
+      "R": 50
+    },
+    "bankrupt_count": 27,
+    "_meta": {
+      "totalHandsRaw": 23504,
+      "vpipCountRaw": 6056,
+      "pfrCountRaw": 4708,
+      "threeBetCountRaw": 766,
+      "fourBetCountRaw": 305
+    }
+  }
+}

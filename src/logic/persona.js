@@ -53,7 +53,7 @@ export const CLASSES_PARTNER = [
 
 export const CLASSES_ENEMY = [
   {
-    id: 'Max', name: 'Max(Mentor)', philosophy: 'LAG', vPIP: .3, AF: 3.5, WTSD: .29, W$SD: 0.53, chipMultiply: 1.5,
+    id: 'Max', name: 'Max(Mentor)', philosophy: 'LAG', vPIP: .32, AF: 3.5, WTSD: .29, W$SD: 0.53, chipMultiply: 1.5,
     canContracts: [],
     schedule: [],
     isAdvanced: false,
@@ -87,7 +87,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'fish',
-    name: 'Fish', philosophy: 'LAP', vPIP: .7, AF: 1, WTSD: .25, chipMultiply: 1, isAdvanced: false,
+    name: 'Fish', philosophy: 'LAP', vPIP: .7, AF: 1, WTSD: .22, chipMultiply: 1, isAdvanced: false,
     note_ko: '판돈을 불리는 데는 일등 공신이지만, 막상 끝까지 가는 배짱은 없어서 정교한 블러핑 한 방이면 칩을 고스란히 헌납할 겁니다.',
     note_en: 'He is a great contributor to increasing the pot, but he lacks the courage to go all the way, so a single sophisticated bluff will cost him all his chips.',
     get note() {
@@ -159,7 +159,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'the_don',
-    name: 'The_Don', philosophy: 'LAG', vPIP: .35, AF: 5, WTSD: .35, chipMultiply: 2, isAdvanced: false,
+    name: 'The_Don', philosophy: 'LAG', vPIP: .35, AF: 5, WTSD: .35, chipMultiply: 2, isAdvanced: true,
     note_ko: '포커를 "전쟁"으로 생각합니다. 상대가 기권할 때까지 돈과 위압감으로 밀어붙이며, 테이블 전체의 분위기를 공포로 몰아넣는 것을 즐깁니다.',
     note_en: 'He thinks of poker as a "war". He enjoys pushing his opponents with money and intimidation until they give up, filling the entire table with fear.',
     get note() {
@@ -177,7 +177,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'the_whale',
-    name: 'The_Whale', philosophy: 'LAP', vPIP: .70, AF: 2, WTSD: .75, chipMultiply: 8, isAdvanced: false,
+    name: 'The_Whale', philosophy: 'LAP', vPIP: .70, AF: 2, WTSD: .75, chipMultiply: 8, isAdvanced: true,
     note_ko: '숫자 놀음에는 관심 없는 도시의 거물입니다. 판돈이 수십 배로 불어나도 눈 하나 깜짝하지 않으며, 오히려 상대를 파산시키는 과정 자체를 유흥으로 즐기는 진정한 포식자입니다.',
     note_en: 'A high-stakes mogul who treats millions like pocket change. He doesn\'t play the cards; he plays the adrenaline. To him, losing a fortune is just the entry fee for a good laugh.',
     get note() {
@@ -186,7 +186,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'old_lion',
-    name: 'Old_Lion', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .25, chipMultiply: 1.5, isAdvanced: false,
+    name: 'Old_Lion', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, chipMultiply: 1.5, isAdvanced: true,
     note_ko: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.',
     note_en: 'His prime has passed, but he is still a sharp veteran. If he has entered the game, it means he has already laid all the traps, so don\'t mess with him carelessly.',
     get note() {

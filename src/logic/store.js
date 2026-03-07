@@ -12,11 +12,13 @@ import { LOCATION_ID, PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js'
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const getDefaultState = () => ({
-  bankroll: 20000,
+  bankroll: 12220000,
+  // bankroll:20000
   chips: 0, // Chips on table
   // currentBB: 0,
   xp: 0,
-  level: 1,
+  // level:1,
+  level: 41,
   selectedClass: 'GRINDER',
   ownedProtectors: [], // Array of materialized item objects
   equippedProtector: null, // item object or null

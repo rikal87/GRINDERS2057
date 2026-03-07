@@ -809,7 +809,7 @@ export class GameEngine {
     const sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000
     await sleep(sleepTime)
     saveStore();
-    if (this.checkTriggerCasinoInvestigation()) return;
+    if (this.suspicion >= 40 && this.checkTriggerCasinoInvestigation()) return;
     this.startNewHand();
   }
 
@@ -858,7 +858,7 @@ export class GameEngine {
     if (this.suspicion >= 80) {
       this.triggerCasinoInvestigation(this.players);
       return true;
-    } else if (Math.random() <= this.suspicion * .001) {
+    } else if (Math.random() < this.suspicion * .001) {
       this.triggerCasinoInvestigation(this.players);
       return true;
     }

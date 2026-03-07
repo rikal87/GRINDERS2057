@@ -107,11 +107,11 @@ function getHeuristicFallback(player, engine) {
 
   const alivePlayers = engine.players.filter(p => !p.isFolded).length;
 
-  // --- 1. Evaluate Estimated Equity ---
+  // --- 0. Evaluate Estimated Equity ---
   let estimatedEquity = 0;
   let handRank = 169;
   let drawInfo = { draws: [] };
-
+  let drawBonus = 0;
   if (street === 'PREFLOP') {
     if (isAdvanced && (player.chips <= 30 * engine.bigBlind || alivePlayers <= 2)) {
       handRank = getStartingHandRankHeadsup(player.hand);
@@ -164,7 +164,7 @@ function getHeuristicFallback(player, engine) {
     else estimatedEquity = 0.05; // AIR
 
     // Add Draw Equity
-    let drawBonus = 0;
+
     if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.25;
     else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.15;
     else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.05;
@@ -180,16 +180,36 @@ function getHeuristicFallback(player, engine) {
   // Adjust equity based on short stack aggressiveness
   estimatedEquity = Math.min(0.99, estimatedEquity * (multiplier > 1 ? (1 + (multiplier - 1) * 0.2) : 1));
 
-  // --- 2. Pot Odds & MDF (Minimum Defense Frequency) ---
+  if (isAdvanced && isAggressor && street === 'FLOP') {
+    raiseEquityThreshold -= 0.1; // C-Bet lighter
+  }
+
+
   const totalPotAfterCall = pot + callAmt;
   let potOdds = callAmt > 0 ? (callAmt / totalPotAfterCall) : 0;
-
-  // Required Equity to Call (Base)
   let requiredEquity = potOdds;
+  // raiseEquityThreshold (Need a clear edge over just calling to value raise)
+  let raiseEquityThreshold = requiredEquity + 0.3;
 
   // Multi-way penalty: If many players, our hand needs to be stronger to win.
   if (alivePlayers > 2) {
     requiredEquity += (alivePlayers - 2) * 0.05;
+  }
+
+  // --- 3. NPC Playstyle Adjustments ---
+  // lower AF > 3 = Overestimating your own hand, lower AF < 3 = Underestimating your own hand
+  raiseEquityThreshold += (3 - AF) * 0.1; // lower AF > 3 = raise more, lower AF < 3 = raise less
+  let wtsdBoost = 0.3 - (street === 'PREFLOP' ? vPIP : wtsd)
+  requiredEquity += wtsdBoost;
+
+  if (player.class.id.toUpperCase() === 'GAMBLER') { // gambler is draw equity lover
+    const addBonus = drawBonus > 0.0 ? .1 : 0; // add bonus for draw equity
+    estimatedEquity = Math.min(0.98, estimatedEquity + addBonus);
+  }
+  // Penalty for facing multiple raises
+  if (callAmt > 0) {
+    requiredEquity += raises * 0.08;
+    raiseEquityThreshold += raises * 0.15;
   }
 
   // Commitment Ratio = Total Wagered / (Current Chips + Total Wagered)
@@ -199,38 +219,41 @@ function getHeuristicFallback(player, engine) {
   // Adjust required equity based on SPR & Depth
   if (isAdvanced) {
     if (spr < 1.5) {
-      requiredEquity *= 0.8; // Great odds, committed
+      requiredEquity *= 0.8; // Great odds.
     } else if (spr > 10) {
       requiredEquity *= 1.1; // Deep stack, reverse implied odds
       if (street !== 'RIVER') bluffFreq += 0.05;
     }
   }
 
-  // --- 3. Opponent Profiling (Adjust requiredEquity & Bluff Freq) ---
+  // --- 4. Opponent Profiling (Adjust requiredEquity & Bluff Freq) ---
   const boardAnalysis = analyzeBoardTexture(engine.board);
+
+  // 만약 프리플랍에는 레이즈를 했으나 포스트 플랍에서 체크로 넘어가면 어그레서는 없는것으로 판단
+  const existAggressor = !!engine.aggressor
   const isAggressor = engine.aggressor === player.id;
 
   if (isAdvanced) {
-    const human = engine.players.find(p => p.isHuman && !p.isFolded);
-    let humanStats = { vPIP: 0, foldToFlop: 0 };
-    if (human && human.stats && human.stats.handsPlayed >= 25) {
-      if (human.stats.facedFlopBet >= 3) {
-        humanStats.foldToFlop = human.stats.foldToFlop;
-      }
-      humanStats.vPIP = human.stats.vPIP;
-      // Exploit Tight: They fold a lot, bluff more. If they bet, they have it (require more equity to call).
-      // if (humanStats.foldToFlop > 0.6) {
-      bluffFreq += (humanStats.foldToFlop - 0.45);
-      if (callAmt > 0) requiredEquity += 0.05; // Respect their bets more
-      insight += " [Exp:Tight]";
-      // }
-      // Exploit Station: They don't fold. Don't bluff, value bet thinner.
-      if (humanStats.vPIP > 0.6 && humanStats.foldToFlop < 0.4) {
-        bluffFreq *= humanStats.foldToFlop;
-        requiredEquity -= 0.05; // We can call lighter because they bluff/bet wide
-        insight += " [Exp:Station]";
-      }
-    }
+    // const human = engine.players.find(p => p.isHuman && !p.isFolded);
+    // let humanStats = { vPIP: 0, foldToFlop: 0 };
+    // if (human && human.stats && human.stats.handsPlayed >= 25) {
+    //   if (human.stats.facedFlopBet >= 3) {
+    //     humanStats.foldToFlop = human.stats.foldToFlop;
+    //   }
+    //   humanStats.vPIP = human.stats.vPIP;
+    //   // Exploit Tight: They fold a lot, bluff more. If they bet, they have it (require more equity to call).
+    //   // if (humanStats.foldToFlop > 0.6) {
+    //   bluffFreq += (humanStats.foldToFlop - 0.45);
+    //   if (callAmt > 0) requiredEquity += 0.05; // Respect their bets more
+    //   insight += " [Exp:Tight]";
+    //   // }
+    //   // Exploit Station: They don't fold. Don't bluff, value bet thinner.
+    //   if (humanStats.vPIP > 0.6 && humanStats.foldToFlop < 0.4) {
+    //     bluffFreq *= humanStats.foldToFlop;
+    //     requiredEquity -= 0.05; // We can call lighter because they bluff/bet wide
+    //     insight += " [Exp:Station]";
+    //   }
+    // }
     // Board Texture / Range Advantage
     const highCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r >= 9).length : 0;
     const lowCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r < 9).length : 0;
@@ -240,10 +263,8 @@ function getHeuristicFallback(player, engine) {
         bluffFreq += bluffMod;
       }
     } else {
-      raiseEquityThreshold *= 1.25;
-      if (street === 'FLOP' || boardAnalysis.type === 'WET') {
-        bluffFreq += 0.05 * lowCardCount;
-      }
+      if (existAggressor) raiseEquityThreshold = 120; // don't donk-bet
+      if (boardAnalysis.type === 'WET') bluffFreq += 0.05;
     }
     // Street adjustments
     if (street === 'TURN') bluffFreq *= 0.66;
@@ -265,26 +286,6 @@ function getHeuristicFallback(player, engine) {
       requiredEquity *= Math.max(0, 1 - (commitmentRatio * 0.5));
       insight += ` [Commt ${(commitmentRatio * 100).toFixed(0)}%]`;
     }
-  }
-
-  // raiseEquityThreshold (Need a clear edge over just calling to value raise)
-  let raiseEquityThreshold = requiredEquity + 0.20;
-  if (isAdvanced && isAggressor && street === 'FLOP') {
-    raiseEquityThreshold -= 0.1; // C-Bet lighter
-  }
-
-  // --- 3.5 NPC Playstyle Adjustments ---
-  // lower AF > 3 = Overestimating your own hand, lower AF < 3 = Underestimating your own hand
-  raiseEquityThreshold += (3 - AF) * 0.1; // lower AF > 3 = raise more, lower AF < 3 = raise less
-  requiredEquity += ((0.3 - (street === 'PREFLOP' ? vPIP : wtsd)) / 2);
-  if (player.class === 'GAMBLER') { // gambler is draw equity lover
-    const addBonus = drawBonus > 0.0 ? .1 : 0; // bonus for draw equity
-    estimatedEquity = Math.min(0.98, estimatedEquity + addBonus);
-  }
-  // Penalty for facing multiple raises
-  if (callAmt > 0) {
-    requiredEquity += raises * 0.08;
-    raiseEquityThreshold += raises * 0.15;
   }
 
   if (callAmt >= player.chips) bluffFreq = 0; // Can't bluff an all-in
@@ -334,22 +335,38 @@ function getHeuristicFallback(player, engine) {
     let currentBet = engine.currentRoundBet || 0;
 
     if (street === 'PREFLOP') {
-      // [1] 프리플랍: 아직 앞사람의 "레이즈"가 없는 경우 기본 오픈 레이즈 사이즈
-      let openSizeBase = player.isAdvanced ? engine.bb * 2.2 : engine.bb * 2.5;
-      if (isAdvanced && distFromButton > 3) openSizeBase += 0.5;
+      const bb = engine.bb || engine.bigBlind;
 
-      let mult = player.chips < 20 * engine.bigBlind || spr < 1.8 ? 99999 : 1;
-
-      // 누군가 레이즈를 했다면 (오픈레이즈가 아닌 3-bet+ 상황)
       if (raises > 0) {
-        mult = Math.max(2.2, 5 - raises);
-        amount = Math.floor(currentBet * mult); // 앞선 베팅액 * 배수
+        // [1] 누군가 레이즈를 한 상황 (3-Bet / 스퀴즈)
+        const mult = Math.max(2.2, 4.5 - raises);
+        let baseAmount = currentBet * mult;
+
+        // 콜러(Flat Callers) 계산
+        const blindMoney = bb * 1.5;
+        const deadMoney = blindMoney + currentBet;
+        const callers = Math.max(0, Math.round((pot - deadMoney) / currentBet));
+
+        // 스퀴즈 가중치: 콜러 한 명당 현재 베팅액만큼 추가
+        if (callers > 0) {
+          baseAmount += (callers * currentBet);
+        }
+        amount = Math.floor(baseAmount);
       } else {
-        // 본인이 최초의 레이즈 (오픈, 림퍼 상대로 한 스퀴즈 추가)
-        // 팟에 있는 1.5bb(SB+BB)를 제외한 나머지 순수 림퍼들의 참여 금액만 기본 오픈 사이즈에 더함
-        let blindMoney = (engine.bb || engine.bigBlind) * 1.5;
-        let limperMoney = Math.max(0, pot - blindMoney);
-        amount = Math.floor((openSizeBase + limperMoney) * mult);
+        // [2] 아무도 레이즈 안 한 상황 (오픈 레이즈 / 림퍼 대응)
+        const openSize = bb * 2.2;
+        const blindMoney = bb * 1.5;
+        const limperMoney = Math.max(0, pot - blindMoney);
+        const limpers = Math.floor(limperMoney / bb);
+
+        if (limpers > 0) {
+          // 림퍼가 있다면: 기본 오픈(2.2) + 림퍼당 1bb + (OOP 패널티로 1bb 추가)
+          // 포지션 구분이 없으므로 평균적으로 1bb를 더해주는 게 안전합니다.
+          amount = Math.floor(openSize + (limpers * bb) + bb);
+        } else {
+          // 순수 오픈 레이즈
+          amount = Math.floor(openSize);
+        }
       }
     } else {
       // [2] 포스트 플랍
@@ -357,7 +374,6 @@ function getHeuristicFallback(player, engine) {
         // 2-1. 상대가 벳을 친 상태 -> 보통 상대 벳의 3~4배를 레이즈
         let mult = Math.max(2.2, 4.5 - raises);
         // if (estimatedEquity > raiseEquityThreshold + 0.20) mult += .5;
-
         amount = Math.floor(currentBet * mult);
         // [보정] 무조건 상대방 베팅의 2배 이상은 레이즈하게 하한선 보장
         amount = Math.max(amount, currentBet * 2);
@@ -367,11 +383,13 @@ function getHeuristicFallback(player, engine) {
         if (boardAnalysis.type === 'DRY') potPct -= 0.15;
         else if (boardAnalysis.type === 'WET') potPct += 0.25;
         else if (estimatedEquity < requiredEquity && drawInfo.draws.length > 0) potPct += 0.20; // 쎼미블러프
-        if (street === 'RIVER' && (estimatedEquity >= 0.70)) {
+        if (street === 'RIVER') {
           if (estimatedEquity >= 0.70) {
             potPct = AF * 0.1 + 0.7 + (estimatedEquity - 0.7); // 강한 핸드의 양극화 오버벳
-          } else {
+          } else if (isAdvanced && Math.random() < 0.2) {
             potPct = AF * 0.1 + 0.7 + (requiredEquity - 0.7); // 블러프 양극화 오버벳
+          } else {
+            potPct = AF * 0.1 + 0.7;
           }
         }
         amount = Math.floor(pot * potPct);
