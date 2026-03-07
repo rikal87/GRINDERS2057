@@ -1,6 +1,7 @@
 import { evaluateHand, calculateOuts, analyzeBoardTexture, getDrawCategory, getHandCategory, getStartingHandRank, getStartingHandRank96Max, getStartingHandRankHeadsup } from './poker.js';
 import { getAIChatDialogue } from './AIChatSystem.js';
 import { GTO_RANGES } from './GTORanges.js';
+import { getUnifiedAction } from './aiEngine/aiBrainHub.js';
 
 function expandRange(rangeStr) {
   if (!rangeStr) return [];
@@ -166,6 +167,17 @@ function getParsedMatrix() {
   return PARSED_MATRIX;
 }
 
+function getMaxHandBudget(equity, potSize) {
+  // [v9] Strategic Budgeting based on aiAdvanceEngine.md
+  if (equity >= 0.95) return potSize * 3.0;
+  if (equity >= 0.85) return potSize * 2.0;
+  if (equity >= 0.75) return potSize * 1.4;
+  if (equity >= 0.65) return potSize * 1.2;
+  if (equity >= 0.55) return potSize * 0.8;
+  if (equity >= 0.35) return potSize * 0.35;
+  return potSize * 0.15;
+}
+
 function getCanonicalHand(hand) {
   const ranks = '23456789TJQKA';
   if (!hand || hand.length < 2) return "";
@@ -183,29 +195,11 @@ function getCanonicalHand(hand) {
 }
 
 export const getAdvancedAIAction = (player, engine) => {
-  const matrix = getParsedMatrix();
-  const hand = getCanonicalHand(player.hand);
-  const playerIdx = engine.players.findIndex(p => p.id === player.id);
-  const dealerIdx = engine.dealerIndex;
-  const playerCount = engine.players.length;
-
-  const getPosName = (idx) => {
-    const dist = (idx - dealerIdx + playerCount) % playerCount;
-    if (playerCount === 2) return (idx === dealerIdx) ? 'SB' : 'BB';
-    const posMap6 = ['BTN', 'SB', 'BB', 'UTG', 'MP', 'CO'];
-    return posMap6[dist] || 'MP';
-  };
-
-  const myPos = getPosName(playerIdx);
-  let decision = { action: 'fold', insight: `GTO Default (${myPos})`, amount: 0 };
-
-  if (engine.state === 'PREFLOP') {
-    decision = getUniversalPreflopAction(player, engine, myPos, hand, matrix, getPosName, playerCount);
-  } else {
-    decision = getPostflopAction(player, engine, myPos);
-  }
+  // [v10] Delegate to the new modular Brain Hub
+  const decision = getUnifiedAction(player, engine);
 
   const action = {
+    ...decision,
     type: decision.action || 'fold',
     amount: decision.amount || 0,
     insight: decision.insight || "Processing...",
@@ -216,6 +210,8 @@ export const getAdvancedAIAction = (player, engine) => {
 
   const pName = player.name.toUpperCase();
   let currentBet = engine.potManager ? engine.potManager.currentRoundBet : engine.currentRoundBet;
+  
+  // Normalization & Validation (Same as before)
   if (action.type === 'raise') {
     action.amount = Math.floor(action.amount);
     if (action.amount > player.chips + player.currentBet) {
@@ -224,7 +220,7 @@ export const getAdvancedAIAction = (player, engine) => {
     if (action.amount <= currentBet && currentBet > 0) {
       action.type = 'call';
       action.amount = currentBet;
-      action.insight += " (Downgraded to Call)";
+      action.insight += " (Norm)";
     }
   } else if (action.type === 'call') {
     action.amount = engine.potManager ? engine.potManager.currentRoundBet : engine.currentRoundBet;
@@ -238,9 +234,11 @@ export const getAdvancedAIAction = (player, engine) => {
   }
 
   if (Math.random() < 0.25) action.dialogue = getAIChatDialogue(action.type, player.name, action.insight);
+  
   let delay = 1000 + Math.random() * 3000;
   if (action.type === 'fold') delay = 1500 + Math.random() * 3500;
   if (engine.state === 'PREFLOP') delay /= 2;
+
   return { ...action, delay };
 };
 
@@ -540,35 +538,9 @@ function getPostflopAction(player, engine, myPos) {
   const isAggressor = engine.aggressor === player.id;
   const alivePlayers = engine.players.filter(p => !p.isFolded).length;
   const street = engine.state;
+  const boardAnalysis = analyzeBoardTexture(board);
 
-  let estimatedEquity = 0;
-  if (category === 'NUTS') estimatedEquity = 0.95;
-  else if (category === 'MONSTER') estimatedEquity = 0.85;
-  else if (category === 'STRONG') estimatedEquity = 0.70;
-  else if (category === 'GOOD') estimatedEquity = 0.5; // [v3] 0.55 -> 0.50
-  else if (category === 'MARGINAL') estimatedEquity = 0.35; // [v3] 0.40 -> 0.35
-  else if (category === 'WEAK') estimatedEquity = 0.20;
-  else if (category === 'ACE_HIGH') estimatedEquity = 0.10;
-  else estimatedEquity = 0.05;
-
-  let drawBonus = 0;
-  if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.25;
-  else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.15;
-  else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.05;
-
-  const streetsLeft = street === 'FLOP' ? 2 : (street === 'TURN' ? 1 : 0);
-  drawBonus *= (streetsLeft / 2);
-  estimatedEquity = Math.min(0.98, estimatedEquity + drawBonus);
-
-  const totalPotAfterCall = potSize + callAmount;
-  let potOdds = callAmount > 0 ? (callAmount / totalPotAfterCall) : 0;
-  let requiredEquity = potOdds;
-  if (alivePlayers > 2) requiredEquity += (alivePlayers - 2) * 0.05;
-
-  const startingStack = player.chips + player.totalWagered;
-  const commitmentRatio = startingStack > 0 ? (player.totalWagered / startingStack) : 0;
-  const spr = potSize > 0 ? (player.chips / potSize) : 20;
-
+  // 1. Opponent Profiling
   const opponent = engine.players.find(p => p.isHuman && !p.isFolded) || engine.players.find(p => p.id !== player.id && !p.isFolded);
   const rawStats = (opponent && opponent.stats) ? opponent.stats : {};
   const handsPlayed = rawStats.handsPlayed || 0;
@@ -583,12 +555,58 @@ function getPostflopAction(player, engine, myPos) {
   const oppF2F = (calcF2F * profilingConfidence) + (defStats.foldToFlop * (1 - profilingConfidence));
   const oppAF = (rawStats.betsCount || 0) / Math.max(1, rawStats.callsCount || 0);
 
+  // 2. My Stats & Setup
   const AF = player.class?.AF || 1.5;
-  // const wtsd = player.class.WTSD || 0.5;
   let bluffFreq = (AF - 2.5) * 0.1 + 0.05;
   let insight = "";
   let exploitTrigger = null;
   let rangeEstimate = `Top ${Math.round(oppVPIP * 100)}%`;
+
+  // 3. Equity Calculation & Adjustments
+  let estimatedEquity = 0;
+  if (category === 'NUTS') estimatedEquity = 0.95;
+  else if (category === 'MONSTER') estimatedEquity = 0.85;
+  else if (category === 'STRONG') estimatedEquity = 0.70;
+  else if (category === 'GOOD') estimatedEquity = 0.5;
+  else if (category === 'MARGINAL') estimatedEquity = 0.35;
+  else if (category === 'WEAK') estimatedEquity = 0.20;
+  else if (category === 'ACE_HIGH') estimatedEquity = 0.10;
+  else estimatedEquity = 0.05;
+
+  let drawBonus = 0;
+  if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.25;
+  else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.15;
+  else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.05;
+
+  const streetsLeft = street === 'FLOP' ? 2 : (street === 'TURN' ? 1 : 0);
+  drawBonus *= (streetsLeft / 2);
+  estimatedEquity = Math.min(0.98, estimatedEquity + drawBonus);
+
+  // [v9] Board Risk Inferencing (Hand Memory of Danger)
+  let dangerPenalty = 0;
+  if (boardAnalysis.maxSuit >= 3 && drawCategory !== 'DRAW_MONSTER' && !['NUTS', 'MONSTER', 'STRONG'].includes(category)) {
+    dangerPenalty += 0.12; 
+    insight += " [Flush-Danger]";
+  }
+  if (boardAnalysis.maxRankCount >= 2 && ['GOOD', 'MARGINAL', 'WEAK'].includes(category)) {
+    dangerPenalty += 0.08;
+    insight += " [Paired-Danger]";
+  }
+  estimatedEquity = Math.max(0.05, estimatedEquity - dangerPenalty);
+
+  // [v9] Strategic Equity Budgeting
+  const handBudget = getMaxHandBudget(estimatedEquity, potSize);
+  const totalWageredSoFar = player.totalWagered || 0;
+  const isOverBudgetForCall = (totalWageredSoFar + callAmount) > handBudget;
+
+  const totalPotAfterCall = potSize + callAmount;
+  let potOdds = callAmount > 0 ? (callAmount / totalPotAfterCall) : 0;
+  let requiredEquity = potOdds;
+  if (alivePlayers > 2) requiredEquity += (alivePlayers - 2) * 0.05;
+
+  const startingStack = player.chips + player.totalWagered;
+  const commitmentRatio = startingStack > 0 ? (player.totalWagered / startingStack) : 0;
+  const spr = potSize > 0 ? (player.chips / potSize) : 20;
 
   const isManiac = oppVPIP > 0.42 && (oppAF > 3.0 || oppAF === Infinity);
   const isStation = (oppVPIP > 0.45 && oppAF < 0.8) || (oppVPIP > 0.60 && oppF2F < 0.3);
@@ -624,7 +642,6 @@ function getPostflopAction(player, engine, myPos) {
 
   // Board Texture / Range Advantage
   const existAggressor = !!engine.aggressor
-  const boardAnalysis = analyzeBoardTexture(engine.board);
   const highCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r >= 9).length : 0;
   const lowCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r < 9).length : 0;
   if (isAggressor) {
@@ -714,12 +731,16 @@ function getPostflopAction(player, engine, myPos) {
       if (isManiac && estimatedEquity > 0.65 && street !== 'RIVER') { action = 'call'; insight += " (Call Trap)"; }
       else { action = 'raise'; insight += " (Value Raise)"; }
     } else if (estimatedEquity >= requiredEquity) {
-      action = 'call'; insight += " (Call Odds)";
+      if (isOverBudgetForCall && !['NUTS', 'MONSTER', 'STRONG'].includes(category)) {
+        action = 'fold'; insight += " (Budget Fold)";
+      } else {
+        action = 'call'; insight += " (Call Odds)";
+      }
     } else {
       const isRiverBluffSpot = street === 'RIVER' && !isStation && potSize > engine.bb * 15;
       if (isRiverBluffSpot && Math.random() < (bluffFreq * 1.5)) {
         action = 'raise'; amount = player.chips + 10000; insight += " (Polarized River All-In Bluff)";
-      } else if (Math.random() < bluffFreq && street !== 'RIVER') {
+      } else if (Math.random() < bluffFreq && street !== 'RIVER' && !isOverBudgetForCall) {
         action = 'raise'; insight += " (Pure Bluff)";
       } else {
         action = 'fold'; insight += " (Fold)";

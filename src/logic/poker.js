@@ -266,15 +266,29 @@ export const getHandCategory = (hand, board, evalResult) => {
 
   // 3: Two Pair
   if (rank === 3) {
+    const boardHigh1 = boardRanks[0];
+    const boardHigh2 = boardRanks[1];
+    const hasTopPair = handRanks.includes(boardHigh1);
+    const hasSecondPair = handRanks.includes(boardHigh2);
+
     if (isBoardPaired) {
-      if (nutInfo.rank <= 10) return 'STRONG'; // Top Two or better
-      if (nutInfo.rank <= 25) return 'GOOD'; // Mid Two
-      return 'MARGINAL'; // Counterfeited or bottom two
+      const isPocketPair = hand[0][0] === hand[1][0];
+      // Overpair to the board pair (e.g. AA on KK86)
+      if (isPocketPair && handRanks[0] > boardHigh1) return 'STRONG';
+      
+      // Counterfeited check
+      if (!hasTopPair && handRanks.some(v => v < boardHigh1)) return 'MARGINAL';
+      if (nutInfo.rank <= 15) return 'STRONG';
+      return 'GOOD';
     }
-    // Normal Two Pair
-    if (nutInfo.rank <= 10) return 'STRONG'; // Top Two
-    if (nutInfo.rank <= 25) return 'GOOD'; // Mid Two
-    return 'MARGINAL'; // Bottom Two
+
+    // Normal Two Pair (No board pair)
+    if (hasTopPair && hasSecondPair) return 'MONSTER'; // Top Two
+    if (hasTopPair) return 'STRONG'; // Top Pair + Bottom Pair
+    
+    // We have two pair but neither matches the top card (e.g., K-Q on A-K-Q)
+    if (hasSecondPair) return 'GOOD'; // 2nd + 3rd pair
+    return 'MARGINAL'; // Bottom two pairs
   }
 
   // 2: One Pair
