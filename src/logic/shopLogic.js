@@ -1,7 +1,7 @@
 import { store, gainBankroll } from './store.js';
 import { ITEM_DATA, materializeItem } from './items.js';
 import { TYPE_CHANGE_BANKROLL } from "./constants.js";
-export const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+export const REFRESH_INTERVAL_MS = 12 * 60 * 60 * 1000; // 12 hours in game time
 
 export const getRefreshCost = () => {
   return 500 * (store.shop.manualRefreshCount + 1);
@@ -104,12 +104,12 @@ export const refreshShop = (isManual = false) => {
   }
 
   store.shop.items = generateShopItems(store.level);
-  store.shop.lastRefreshTime = Date.now();
+  store.shop.lastRefreshTime = store.gameTime;
   return true;
 };
 
 export const checkAutoRefresh = () => {
-  const now = Date.now();
+  const now = store.gameTime;
   if (now - store.shop.lastRefreshTime >= REFRESH_INTERVAL_MS) {
     refreshShop(false);
   }

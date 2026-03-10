@@ -121,7 +121,7 @@
   border-radius: 4px;
   position: relative;
   /* Ensure gauge is positioned relative to this */
-  overflow: hidden;
+  /* overflow: hidden; */
   /* Clip the gauge */
 }
 
@@ -158,6 +158,66 @@
   to {
     box-shadow: 0 0 20px var(--neon-red);
   }
+}
+/* FOR HUD */
+.hud-badge {
+  position: absolute;
+  bottom: -10px;
+  left: -10px;
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid var(--neon-cyan);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: #fff;
+  /* z-index: 100; */
+  cursor: help;
+  transition: all 0.2s;
+  z-index: 100;
+}
+.hud-badge:hover {
+  transform: scale(1.2);
+  border-color: #fff;
+  box-shadow: 0 0 10px var(--neon-cyan);
+}
+.hud-badge:hover .hud-tooltip {
+  display: block;
+}
+.hud-tooltip {
+  display: none;
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid var(--neon-cyan);
+  padding: 8px;
+  border-radius: 4px;
+  width: 100px;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+  pointer-events: none;
+  z-index: 200;
+}
+.hud-tooltip .tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+  font-size: 0.6rem;
+}
+.hud-tooltip .tooltip-row:last-child {
+  margin-bottom: 0;
+}
+.hud-tooltip .label {
+  color: #888;
+  font-weight: bold;
+}
+.hud-tooltip .val {
+  font-weight: bold;
 }
 
 .cards {

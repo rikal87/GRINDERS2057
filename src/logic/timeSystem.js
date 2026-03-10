@@ -2,7 +2,7 @@
 import { store, gainInfamy, gainSuspicion } from './store';
 import { consumeStamina } from './staminaSystem';
 import { processAiTasks } from './aiAgentTaskSystem';
-import { sendLoreAndSpamMessage } from './messageSystem';
+import { sendLoreAndSpamMessage, checkMessageExpiration } from './messageSystem';
 import { processEvents } from './eventSystem';
 import { simulatePartnersBehavior } from './partnerSystem';
 
@@ -36,6 +36,9 @@ export const startTimeSystem = () => {
 
     // Process global storyline / repeating events
     processEvents();
+
+    // Check for message expiration
+    checkMessageExpiration();
 
     // Process hourly events
     const currentHour = new Date(store.gameTime).getHours();
@@ -84,6 +87,12 @@ export const formatGameDate = (timestamp) => {
   return date.toISOString().split('T')[0];
 }
 
+export const formatGameDayOfWeek = (timestamp) => {
+  const date = new Date(timestamp);
+  const options = { weekday: 'short' };
+  return date.toLocaleDateString(store.settings.language === 'en' ? 'en-US' : 'ko-KR', options);
+}
+
 export const getGameDay = (timestamp) => {
   const date = new Date(timestamp);
   return date.getDate(); // 1-31
@@ -95,6 +104,7 @@ export const advanceTime = (hours) => {
     store.gameTime += 60 * 1000;
     processAiTasks();
     processEvents();
+    checkMessageExpiration();
 
     const currentHour = new Date(store.gameTime).getHours();
     if (lastProcessedHour === null) {

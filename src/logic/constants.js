@@ -104,6 +104,7 @@ export const LOCATION_ID = {
   SPECIAL_ORBIT_LOUNGE: "special_orbit_lounge",
   MICRO_WAREHOUSE_WITH_MAX: "micro_warehouse_with_max",
   LOW_UNDERGROUND_CLUB_MEET_MAX: "low_underground_club_meet_max",
+  MIDDLE_UNDERGROUND_CASINO_WITH_FLORENCE: "middle_underground_casino_with_florence",
   FREE_SAFE_HOUSE: 'free_safe_house',
   MIDDLE_KBT_BASE: "middle_kbt_base",
 }

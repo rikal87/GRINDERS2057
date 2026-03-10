@@ -23,7 +23,7 @@ import { performSleep } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
 import { hydrateStoreItems } from './logic/items';
 import { getPartners } from './logic/partnerSystem';
-import { startTimeSystem, formatGameTime, formatGameDate, stopTimeSystem, advanceTime } from './logic/timeSystem';
+import { startTimeSystem, formatGameTime, formatGameDate, formatGameDayOfWeek, stopTimeSystem, advanceTime } from './logic/timeSystem';
 // Automated Hand Transition Logic
 import { watch, computed, nextTick } from 'vue';
 const showInvestigationOverlay = ref(false);
@@ -440,7 +440,7 @@ watch(currentView, (newView) => {
             </div>
             <div class="row">
               <div class="status-group">
-                <span class="status-value">{{ formatGameDate(store.gameTime) }}</span>
+                <span class="status-value">{{ formatGameDate(store.gameTime) }} ({{ formatGameDayOfWeek(store.gameTime) }})</span>
                 <span class="status-divider"></span>
                 <span class="status-value">{{ formatGameTime(store.gameTime) }}</span>
               </div>

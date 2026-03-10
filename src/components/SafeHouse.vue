@@ -316,7 +316,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-          }} UNREAD]</small>
+              }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
@@ -430,7 +430,7 @@ const taskSlots = computed(() => {
     const isLocked = i >= allowedSlots.length;
 
     slots.push({
-      tier: allowedSlots[i] || 'LOCKED',
+      tier: allowedSlots[i] || '',
       isLocked,
       task: taskDef,
       state: taskState,

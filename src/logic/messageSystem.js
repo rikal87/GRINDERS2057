@@ -38,7 +38,7 @@ export const MESSAGE_ACTION_RESOLVE_TYPE = {
   PAY: 'PAY',
   JOIN: 'JOIN',
 }
-export const sendMessage = (type, title, body, actions = [], sender = 'System') => {
+export const sendMessage = (type, title, body, actions = [], sender = 'System', expireAt = null) => {
   const id = Date.now().toString(36) + Math.random().toString(36).substr(2);
   const msg = {
     id,
@@ -49,7 +49,7 @@ export const sendMessage = (type, title, body, actions = [], sender = 'System') 
     timestamp: store.gameTime,
     isRead: false,
     actions, // [{ label, actionType, payload }]
-    expireAt: null // Optional
+    expireAt: expireAt // Optional absolute timestamp
   };
   audioManager.playSFX('inmessage');
   store.messages.unshift(msg);
@@ -212,4 +212,14 @@ export const sendLoreAndSpamMessage = () => {
 
   sendMessage('SPAM', loreSpamMessage.title, loreSpamMessage.body, [], loreSpamMessage.sender);
 }
+
+export const checkMessageExpiration = () => {
+  const now = store.gameTime;
+  store.messages = store.messages.filter(msg => {
+    if (msg.expireAt && now >= msg.expireAt) {
+      return false;
+    }
+    return true;
+  });
+};
 

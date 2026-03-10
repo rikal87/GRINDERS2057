@@ -1,4 +1,4 @@
-import { getPartners, partnerScheduleEvent, gainPartnerBankroll, gainRelationship } from "./partnerSystem.js";
+import { getPartners, gainPartnerBankroll, gainRelationship } from "./partnerSystem.js";
 import { store, gainBankroll, getCurrentBankroll, getGameTime } from "./store.js";
 import { audioManager } from "./audioManager";
 import { scheduleEvent, EVENT_ID } from "./eventSystem";
@@ -98,7 +98,7 @@ export const signContract = (partnerId, type, ratio = 0.5) => {
   if (contract.cooldown > 0) return false;
   if (!contract.active) {
     const eventId = EVENT_ID[partner.id.toUpperCase()]['SIGN_CONTRACT_' + type.toUpperCase()];
-    if (eventId) partnerScheduleEvent(eventId, 1 + (2 * Math.random()), partner, true);
+    if (eventId) scheduleEvent(eventId, 1 + (2 * Math.random()));
   }
 
   contract.active = true;
@@ -169,7 +169,7 @@ export const requestRescueDebt = (partner = null) => {
   if (!partner) return false;
   const getEvent = EVENT_ID[partner.id.toUpperCase()].BANKRUPT
   if (getEvent && !partner.sendedEventIds.includes(getEvent.id)) {
-    partnerScheduleEvent(getEvent, 2, partner);
+    scheduleEvent(getEvent, 2);
     return true;
   }
   return false;
@@ -191,13 +191,13 @@ export const triggerRescueDebt = (partner = null, ratio = 0.3, contract = null, 
   if (!toPlayer) {
     const getEvent = EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_ACCEPT_RESCUE' + (partner.relationship < 200 ? '_LOW_RELATIONSHIPSHIP' : '')]
     if (getEvent) {
-      partnerScheduleEvent(getEvent, 15, partner, true);
+      scheduleEvent(getEvent, 15, partner);
     }
     scheduleEvent(EVENT_ID.SYSTEM_PLAYER_BANKRUPT_RESCUE_FOR_PARTNER, 2, { partnerName: partner.fullName, amount })
   } else {
     // EVENT_ID.MAX.BANKRUPT_RESCUE_FOR_PLAYER is only for Max
     if (partner.id === PARTNER_ID.MAX) {
-      partnerScheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_FOR_PLAYER, 15, partner, true);
+      scheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_FOR_PLAYER, 15, partner);
     }
     scheduleEvent(EVENT_ID.SYSTEM_PARTNER_BANKRUPT_RESCUE_FOR_PLAYER, 2, { partnerName: partner.fullName, amount })
   }

@@ -23,7 +23,6 @@ export class EventAdaptor {
   roundStart(players, { sb, bb }) {
     console.info('roundStart');
     players.forEach(p => {
-      recordPlayStatsSession(p, PLAY_RECORD_STATS_TYPE.HANDS_PLAYED);
       p.item?.effects?.forEach(e => {
         if (e.trigger.includes('round_start')) {
           this.executeItemEffect(p, e, { sb, bb });
@@ -180,13 +179,9 @@ export class EventAdaptor {
   }
 
   fold({ player, amount, pot, board, street, players }) {
-    if (street === 'FLOP' && player.totalWagered > 0) {
-      recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.FOLDED_TO_FLOP_BET);
-    }
     if (player.totalWagered > 0) {
       recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.LOSE, { pot: player.totalWagered, amount: 0 });
     }
-    recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.FOLD);
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('fold')) {
         this.executeItemEffect(player, e, { amount, pot, board, street, players });
@@ -230,9 +225,14 @@ export class EventAdaptor {
 
     // store.xp = 0;
   }
-  action({ player, type, street, amount }) {
-
+  action({ player, type, street, amount, preflopRaises }) {
     switch (type) {
+      case 'FOLD':
+        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.FOLD);
+        if (street === 'FLOP' && player.totalWagered > 0) {
+          recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.FOLDED_TO_FLOP_BET);
+        }
+        break;
       case 'CHECK':
         recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.CHECK);
         break;
@@ -247,11 +247,16 @@ export class EventAdaptor {
       case 'RAISE':
       case 'BET':
         recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.RAISE);
-        if (street === 'PREFLOP' && !player.isJoinPot) {
-          recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.VPIP);
-          player.isJoinPot = true;
+        if (street === 'PREFLOP') {
+          if (!player.isJoinPot) {
+            recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.VPIP);
+            player.isJoinPot = true;
+          }
+          recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.PFR);
+          if (preflopRaises === 1) {
+            recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE._3BET);
+          }
         }
-        if (street === 'PREFLOP') recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.PFR);
         break;
     }
   }

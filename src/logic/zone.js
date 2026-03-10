@@ -334,7 +334,7 @@ export const zones = [
           "borderColor": "#708090",
           "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.JourneyToTitan]
+        'bgMusic': [TRACK_ENUM.Grainders2057]
       },
       {
         "id": "middle_underground_casino",
@@ -351,6 +351,29 @@ export const zones = [
           "Gangster",
         ],
         "tables": { amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6, 9], baseRake: 0.08, rakeCap: 5000 },
+        "theme": {
+          "background": "radial-gradient(circle, #1c1c1c 0%, #000000 100%)",
+          "borderColor": "#708090",
+          "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
+        },
+        'bgMusic': [TRACK_ENUM.JourneyToTitan]
+      },
+      {
+        "id": "middle_underground_casino_with_florence",
+        "name_ko": "더 벙커 (플로렌스와 함께)",
+        "name_en": "The Bunker (Florence with you)",
+        "imgSrc": imgMiddleUndergroundCasino,
+        "description_ko": "버려진 지하 벙커를 개조한 불법 도박장. KBT가 관리하고 있다.",
+        "description_en": "An illegal gambling den converted from an abandoned underground bunker. Managed by KBT.",
+        "atmosphere": "기괴함, 공포, 사이버펑크 호러",
+        "requirements": "the_bunker_key",
+        "isHidden": true,
+        "level": 5,
+        "guests": ['florence'],
+        "npcs": [
+          "Gangster",
+        ],
+        "tables": { buyInLimit: 1, amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6, 9], baseRake: 0.08, rakeCap: 5000 },
         "theme": {
           "background": "radial-gradient(circle, #1c1c1c 0%, #000000 100%)",
           "borderColor": "#708090",

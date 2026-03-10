@@ -1,14 +1,29 @@
 
 import { store } from './store.js';
 import { PLAY_RECORD_STATS_TYPE } from './playRecordStats.js'
+import { TASK_STATS_TYPE } from './aiAgentTaskSystem.js'
 // Task Definitions
 export const TASK_EFFECT_TYPE = {
   XP_BOOST: 'xp_boost',
   ADD_BANKROLL: 'add_bankroll',
   HUD_ACTIVE: 'hud_active',
-  penalty_amount: 'penalty_amount'
-
+  PENALTY_AMOUNT: 'penalty_amount',
+  SPAWN_RATE_MUL: 'spawn_rate_mul',
+  RAKE_DISCOUNT_RND_MUL: 'rake_discount_rnd_mul',
+  MAX_STAMINA_BOOST: 'max_stamina_boost',
+  SPAWN: 'spawn',
+  PAID_REFUND: 'paid_refund',
+  UNLOCK_ZONE: 'unlock_zone',
 };
+export const TASK_ACTION_TYPE = {
+  ACCEPT_INVITE: 'ACCEPT_INVITE',
+};
+// export const UNLOCK_TYPE = {
+//   HANDS_PLAYED: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED,
+//   BUST_ENEMY: PLAY_RECORD_STATS_TYPE.BUST_ENEMY,
+//   COST_LT: TASK_STATS_TYPE.COST_LT_TOTAL,
+//   PAID_RAKE: PLAY_RECORD_STATS_TYPE.PAID_RAKE,
+// }
 
 export const AI_TASK_DATA = [
   {
@@ -56,20 +71,21 @@ export const AI_TASK_DATA = [
     id: 'status_hud',
     tier: 1,
     type: 'AGENT_WORK',
-    name_ko: "HUD 프로토콜 활성화",
-    name_en: "Activate HUD Protocol",
+    name_ko: "HUD 프로토콜",
+    name_en: "HUD Protocol",
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    desc_ko: '활성화 시 상대의 vPIP, PFR, 3BET, AF 수치를 실시간으로 분석합니다. (매 라운드마다 3%의 확률로 구역 의심 수치가 2 증가합니다.)',
-    desc_en: 'Analyze opponents\' vPIP, PFR, 3BET, and AF in real-time. (3% chance to increase Area Suspicion by 2 per round.)',
+    desc_ko: '활성화 시 상대의 vPIP, PFR, 3BET, AF 수치를 실시간으로 분석합니다.',
+    desc_en: 'Analyze opponents\' vPIP, PFR, 3BET, and AF in real-time.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    desc_detail_ko: '필드에서 외부 연산 장치를 사용하는 건 엄격히 금지되어 있습니다. 하지만 들키지만 않는다면 무슨 상관일까요?',
-    desc_detail_en: 'Using external calculation devices is strictly prohibited on the floor. But then again, is it really a crime if you don’t get caught?',
+    desc_detail_ko: '테이블에서 외부 연산 장치를 사용하는 건 엄격히 금지되어 있습니다. 하지만 들키지만 않는다면 무슨 상관일까요?',
+    desc_detail_en: 'Using external calculation devices is strictly prohibited on the table. But then again, is it really a crime if you don\'t get caught?',
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 3,
     probability: 1,
     duration: 60,
     cooldown: 0,
     effect: [{ type: TASK_EFFECT_TYPE.HUD_ACTIVE, amount: 1 }], //amount may be to use hud level?
+    unlock: { type: TASK_STATS_TYPE.COST_LT_TOTAL_TOTAL, amount: 5 }
   },
   {
     id: 'shadow_work',
@@ -128,7 +144,7 @@ export const AI_TASK_DATA = [
     duration: 0,
     cooldown: 3 * 24 * 60,
     effect: [{ type: 'add_bankroll', amount: 10000 }, { type: 'penalty_amount', id: 'SECURITY_DETECTION', probability: 0.01, amount: 25000 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.COST_LT, amount: 10000 }
+    unlock: { type: TASK_STATS_TYPE.COST_LT_TOTAL, amount: 1000 }
   },
   {
     id: 'shadow_work_4',
@@ -147,8 +163,8 @@ export const AI_TASK_DATA = [
     probability: 0.1,
     duration: 0,
     cooldown: 5 * 24 * 60,
-    effect: [{ type: 'add_bankroll', amount: 25000 }, { type: 'penalty_amount', id: 'SECURITY_DETECTION', probability: 0.03, amount: 25000 }],
-    unlock: { type: 'cost_lt', amount: 100000 }
+    effect: [{ type: TASK_EFFECT_TYPE.ADD_BANKROLL, amount: 25000 }, { type: TASK_EFFECT_TYPE.PENALTY_AMOUNT, id: 'SECURITY_DETECTION', probability: 0.03, amount: 25000 }],
+    unlock: { type: TASK_STATS_TYPE.COST_LT_TOTAL, amount: 10000 }
   },
   {
     id: 'rake_discount_micro',
@@ -187,8 +203,8 @@ export const AI_TASK_DATA = [
     probability: 0.1,
     duration: 4 * 60,
     cooldown: 0,
-    effect: [{ type: 'spawn_rate_mul', id: 'fish', amount: 2 }],
-    unlock: { type: 'Bust_enemy', id: 'fish', count: 25 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'fish', amount: 2 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'fish', count: 25 }
   },
   {
     id: 'rake_discount_low',
@@ -207,8 +223,8 @@ export const AI_TASK_DATA = [
     probability: 0.1,
     duration: 3 * 24 * 60, // 3 days
     cooldown: 0,
-    effect: [{ id: 'low', type: 'rake_discount_rnd_mul', amount: 0.5 }],
-    unlock: { type: 'paid_rake', amount: 50000 }
+    effect: [{ id: 'low', type: TASK_EFFECT_TYPE.RAKE_DISCOUNT_RND_MUL, amount: 0.5 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.PAID_RAKE, amount: 50000 }
   },
   {
     id: 'mr_call_attractor',
@@ -227,8 +243,8 @@ export const AI_TASK_DATA = [
     probability: 0.1,
     duration: 24 * 60,
     cooldown: 0,
-    effect: [{ type: 'spawn_rate_mul', id: 'mr_call', amount: 2 }],
-    unlock: { type: 'Bust_enemy', id: 'mr_call', count: 25 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'mr_call', amount: 2 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'mr_call', count: 25 }
   },
   {
     id: 'broke_attractor',
@@ -247,8 +263,8 @@ export const AI_TASK_DATA = [
     probability: 0.05,
     duration: 24 * 60,
     cooldown: 0,
-    effect: [{ type: 'spawn_rate_mul', id: 'broke', amount: 2 }],
-    unlock: { type: 'Bust_enemy', id: 'broke', count: 25 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'broke', amount: 2 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'broke', count: 25 }
   },
   {
     id: 'gambler_attractor',
@@ -287,8 +303,8 @@ export const AI_TASK_DATA = [
     probability: 0.07,
     duration: 1 * 24 * 60,
     cooldown: 0,
-    effect: [{ type: 'xp_boost', amount: 0.20 }],
-    unlock: { type: 'played_hand', count: 1000 }
+    effect: [{ type: TASK_EFFECT_TYPE.XP_BOOST, amount: 0.20 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 1000 }
   },
   {
     id: 'rake_discount_mid',
@@ -307,8 +323,8 @@ export const AI_TASK_DATA = [
     probability: 0.1,
     duration: 3 * 24 * 60, // 3 days
     cooldown: 0,
-    effect: [{ id: 'mid', type: 'rake_discount_rnd_mul', amount: 0.5 }],
-    unlock: { type: 'paid_rake', amount: 500000 }
+    effect: [{ id: 'mid', type: TASK_EFFECT_TYPE.RAKE_DISCOUNT_RND_MUL, amount: 0.5 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.PAID_RAKE, amount: 500000 }
   },
   {
     id: 'rich_guy_hunter',
@@ -327,8 +343,8 @@ export const AI_TASK_DATA = [
     probability: 0.05,
     duration: 4 * 60,
     cooldown: 0,
-    effect: [{ type: 'spawn_rate_mul', id: 'rich_guy', amount: 2 }],
-    unlock: { type: 'Bust_enemy', id: 'rich_guy', count: 25 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'rich_guy', amount: 2 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 25 }
   },
   {
     id: 'maniac_attractor',
@@ -367,8 +383,8 @@ export const AI_TASK_DATA = [
     probability: 0.05,
     duration: 3 * 24 * 60,
     cooldown: 0,
-    effect: [{ type: 'xp_boost', amount: 0.3 }],
-    unlock: { type: 'played_hand', count: 100000 }
+    effect: [{ type: TASK_EFFECT_TYPE.XP_BOOST, amount: 0.3 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 100000 }
   },
   {
     id: 'kbt_leader_challenge',
@@ -390,7 +406,7 @@ export const AI_TASK_DATA = [
     action: {
       type: 'ACCEPT_INVITE', zone: 'middle', location_id: 'middle_kbt_base', available: 2 // only 2max
     },
-    unlock: { type: 'Bust_enemy', id: 'gangster', count: 50 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gangster', count: 0 }
   },
   {
     id: 'maniac_attractor_2',
@@ -409,8 +425,8 @@ export const AI_TASK_DATA = [
     probability: 0.05,
     duration: 24 * 60,
     cooldown: 0,
-    effect: [{ type: 'spawn_rate_mul', id: 'maniac', amount: 6 }],
-    unlock: { type: 'Bust_enemy', id: 'maniac', count: 250 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'maniac', amount: 6 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 75 }
   },
   {
     id: 'fish_finder_2',
@@ -429,14 +445,14 @@ export const AI_TASK_DATA = [
     probability: 0.05,
     duration: 4 * 60,
     cooldown: 0,
-    effect: [{ type: 'spawn_rate_mul', id: 'fish', amount: 4 }, { type: 'spawn', id: 'Quant_Pro', amount: 1 }],
-    unlock: { type: 'Bust_enemy', id: 'fish', count: 25 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'fish', amount: 4 }, { type: TASK_EFFECT_TYPE.SPAWN, id: 'Quant_Pro', amount: 1 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'fish', count: 125 }
   },
   {
     id: 'enhance_security',
     tier: 4,
     type: 'BOOST',
-    name_ko: 'Enhance Security',
+    name_ko: '보안 강화',
     name_en: 'Enhance Security',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     desc_ko: `입장한 테이블에 [Gangster] 성향 플레이어의 등장 확률이 50% 감소합니다.`,
@@ -449,8 +465,8 @@ export const AI_TASK_DATA = [
     probability: 0.05,
     duration: 24 * 60,
     cooldown: 0,
-    effect: [{ type: 'spawn_rate_mul', id: 'gangster', amount: 0.5 }],
-    unlock: { type: 'Bust_enemy', id: 'gangster', count: 125 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'gangster', amount: 0.5 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gangster', count: 125 }
   },
   {
     id: 'gambler_attractor_2',
@@ -469,8 +485,8 @@ export const AI_TASK_DATA = [
     probability: 0.05,
     duration: 24 * 60,
     cooldown: 0,
-    effect: [{ type: 'spawn_rate_mul', id: 'gambler', amount: 4 }],
-    unlock: { type: 'Bust_enemy', id: 'gambler', count: 25 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'gambler', amount: 4 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gambler', count: 125 }
   },
   {
     id: 'rich_guy_hunter_2',
@@ -489,8 +505,8 @@ export const AI_TASK_DATA = [
     probability: 0.05,
     duration: 24 * 60,
     cooldown: 3 * 24 * 60,
-    effect: [{ type: 'spawn_rate_mul', id: 'rich_guy', amount: 3 }],
-    unlock: { type: 'Bust_enemy', id: 'rich_guy', count: 250 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'rich_guy', amount: 3 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 75 }
   },
   {
     id: 'grinders_mindset',
@@ -509,8 +525,8 @@ export const AI_TASK_DATA = [
     probability: 0.15,
     duration: 1 * 24 * 60,
     cooldown: 0,
-    effect: [{ type: 'max_stamina_boost', amount: 25 }],
-    unlock: { type: 'played_hand', count: 250000 }
+    effect: [{ type: TASK_EFFECT_TYPE.MAX_STAMINA_BOOST, amount: 25 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 250000 }
   },
   {
     id: 'maniac_attractor_3',
@@ -529,8 +545,8 @@ export const AI_TASK_DATA = [
     probability: 0.05,
     duration: 24 * 60,
     cooldown: 3 * 24 * 60,
-    effect: [{ type: 'spawn', id: 'maniac', amount: 3 }],
-    unlock: { type: 'Bust_enemy', id: 'maniac', count: 2500 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'maniac', amount: 3 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 250 }
   },
 
   {
@@ -550,10 +566,11 @@ export const AI_TASK_DATA = [
     probability: 0.07,
     duration: 3 * 24 * 60, // 3 days
     cooldown: 0,
-    effect: [{ id: 'high', type: 'rake_discount_rnd_mul', amount: 0.5 }],
-    unlock: { type: 'paid_rake', amount: 5000000 }
+    effect: [{ id: 'high', type: TASK_EFFECT_TYPE.RAKE_DISCOUNT_RND_MUL, amount: 0.5 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.PAID_RAKE, amount: 5000000 }
   },
   {
+    id: 'broke_hunter',
     tier: 5,
     name_ko: 'A bunch of Vagabonds',
     name_en: 'A bunch of Vagabonds',
@@ -569,22 +586,26 @@ export const AI_TASK_DATA = [
     probability: 0.1,
     cooldown: 3 * 24 * 60,
     duration: 24 * 60,
-    effect: [{ type: 'spawn', id: 'broke', amount: 3 }],
-    unlock: { type: 'Bust_enemy', id: 'broke', count: 250 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'broke', amount: 3 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'broke', count: 250 }
   },
   {
     id: 'heavy_security',
     tier: 5,
     name: 'Heavy Security',
     type: 'BOOST',
-    desc: `입장한 테이블에 [Gangster] 및 [The_Don] 성향 플레이어가 절대 등장하지 않습니다.`,
-    desc_detail: '뒷골목 마피아 보스들도 이 살벌한 최첨단 방벽 앞에서는 점잖게 발길을 돌릴 것입니다.',
+    desc_ko: `입장한 테이블에 [Gangster] 및 [The_Don] 성향 플레이어가 절대 등장하지 않습니다.`,
+    desc_en: `Prevents [Gangster] and [The Don] type players from appearing at any table you join.`,
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    desc_detail_ko: '뒷골목 마피아 보스들도 이 살벌한 최첨단 보안 앞에서는 점잖게 발길을 돌릴 것입니다.',
+    desc_detail_en: 'Even the most ruthless underworld bosses will find themselves politely turned away by these cutting-edge security.',
+    get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 30,
     probability: 0.05,
     duration: 24 * 60,
     cooldown: 3 * 24 * 60,
-    effect: [{ type: 'spawn_rate_mul', id: 'gangster', amount: 0 }, { type: 'spawn_rate_mul', id: 'the_don', amount: 0 }],
-    unlock: { type: 'Bust_enemy', id: 'the_don', count: 125 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'gangster', amount: 0 }, { type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'the_don', amount: 0 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'the_don', count: 250 }
   },
   {
     id: 'rich_guy_hunter_3',
@@ -603,8 +624,8 @@ export const AI_TASK_DATA = [
     probability: 0.05,
     duration: 24 * 60,
     cooldown: 3 * 24 * 60,
-    effect: [{ type: 'spawn', id: 'rich_guy', amount: 2 }, { type: 'spawn', id: 'shark', amount: 1 }],
-    unlock: { type: 'Bust_enemy', id: 'rich_guy', count: 1000 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'rich_guy', amount: 2 }, { type: TASK_EFFECT_TYPE.SPAWN, id: 'shark', amount: 1 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 250 }
   },
   {
     tier: 5,
@@ -622,8 +643,8 @@ export const AI_TASK_DATA = [
     probability: 0.1,
     duration: 3 * 24 * 60,
     cooldown: 0,
-    effect: [{ type: 'spawn', id: 'shark', amount: 1 }],
-    unlock: { type: 'Bust_enemy', id: 'shark', count: 25 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'shark', amount: 1 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'shark', count: 25 }
   },
   {
     id: 'shark_cage',
@@ -646,7 +667,7 @@ export const AI_TASK_DATA = [
     action: {
       type: 'ACCEPT_INVITE', zone: 'high', location_id: 'high_safe_house', available: 6 // only 6max
     },
-    unlock: { type: 'Bust_enemy', id: 'shark', count: 125 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'shark', count: 125 }
   },
   {
     id: 'whale_hunter',
@@ -665,8 +686,8 @@ export const AI_TASK_DATA = [
     probability: 0.03,
     duration: 24 * 60,
     cooldown: 3 * 24 * 60,
-    effect: [{ type: 'spawn_rate_mul', id: 'whale', amount: 2 }],
-    unlock: { type: 'Bust_enemy', id: 'whale', count: 50 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'whale', amount: 2 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'whale', count: 50 }
   },
   {
     id: 'house_always_wins',
@@ -685,10 +706,11 @@ export const AI_TASK_DATA = [
     probability: 0.03,
     duration: 24 * 60,
     cooldown: 7 * 24 * 60,
-    unlock: { type: 'paid_rake', amount: 50000000 },
-    effect: [{ type: 'unlock_zone', id: 'special_orbit_lounge' }, { type: 'penalty_amount', id: 'SECURITY_DETECTION', probability: 0.01, amount: 100000 }]
+    unlock: { type: PLAY_RECORD_STATS_TYPE.PAID_RAKE, amount: 50000000 },
+    effect: [{ type: TASK_EFFECT_TYPE.PAID_REFUND, amount: 1.0 }, { type: TASK_EFFECT_TYPE.PENALTY_AMOUNT, id: 'SECURITY_DETECTION', probability: 0.01, amount: 100000 }]
   },
   {
+    id: 'war_of_the_gods',
     tier: 6,
     name_ko: 'War of the Gods',
     name_en: 'War of the Gods',
@@ -704,37 +726,53 @@ export const AI_TASK_DATA = [
     probability: 0.03,
     cooldown: 14 * 24 * 60,
     duration: 4 * 24 * 60,
-    unlock: { type: 'Bust_enemy', id: 'Named_Pro', count: 50 },
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'name_pro', count: 50 },
     action: {
-      type: 'ACCEPT_INVITE', zone: 'high', location_id: 'war_of_the_gods', available: 6 // only 6max
+      type: TASK_ACTION_TYPE.ACCEPT_INVITE, zone: 'high', location_id: 'war_of_the_gods', available: 6 // only 6max
     },
   },
   {
+    id: 'becoming_a_legend',
     tier: 6,
-    name: 'Becoming a Legend',
+    name_ko: 'Legend: 전설의 시작',
+    name_en: 'Becoming a Legend',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     type: 'BOOST',
-    desc: '자신이 입장하는 테이블에 무조건 [Named_Pro] 성향 플레이어가 1명 난입합니다.',
-    desc_detail: '당신은 이미 전설이 되었습니다. 이제 전설적인 포커 프로들이 지옥 끝까지 당신의 테이블 냄새를 맡고 쫓아올 것입니다.',
+    desc_ko: '자신이 입장하는 테이블에 무조건 [Named_Pro] 성향 플레이어가 1명 난입합니다.',
+    desc_en: 'Unconditionally forces one [Named Pro] player to join the table you enter.',
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    desc_detail_ko: '당신은 이미 전설이 되었습니다. 이제 전설적인 포커 프로들이 지옥 끝까지 당신의 테이블 냄새를 맡고 쫓아올 것입니다.',
+    desc_detail_en: 'You have already become a legend. Now, legendary poker pros will sniff out your table and chase you down to the ends of the earth.',
+    get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 30,
     probability: 0.1,
     cooldown: 3 * 24 * 60,
     duration: 1 * 24 * 60,
-    unlock: { type: 'Bust_enemy', id: 'Named_Pro', count: 250 },
-    effect: [{ type: 'spawn', id: 'Named_Pro', amount: 1 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'name_pro', count: 250 },
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'name_pro', amount: 1 }],
   },
   // For end game (Maybe useful..?)
   {
     id: 'orbit_network_hack',
     tier: 6,
-    name: 'Orbit Network Hack',
-    type: 'HACKING',
-    desc: '초호화 위성 카지노 [The Orbit] 궤도망에 딱 한 번 진입합니다.',
-    desc_detail: '가장 강력한 보호 방벽(ICE)을 지닌 전용 위성 회선, "오르빗 네트워크" 해킹을 시도합니다. (발각 시 극악의 대가를 치러야 합니다)',
+    name_ko: 'Orbit Network: 위성 궤도 해킹',
+    name_en: 'Orbit Network Hack',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    type: 'NETWORKING',
+    desc_ko: '초호화 위성 카지노 [The Orbit] 궤도망에 진입합니다.',
+    desc_en: 'Gain access to the orbital network of the ultra-luxurious satellite casino, [The Orbit].',
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    desc_detail_ko: '가장 강력한 보호 방벽(ICE)을 지닌 전용 위성 회선, "오르빗 네트워크" 해킹을 시도합니다. (발각 시 극악의 대가를 치러야 합니다)',
+    desc_detail_en: 'Attempt to hack the "Orbit Network," a dedicated satellite line protected by the most powerful ICE. Failure will come at an extreme price.',
+    get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 50,
     probability: 0.02,
     duration: 24 * 60,
     cooldown: 7 * 24 * 60,
-    unlock: { type: 'reach_credit', credit: 100000000000 },
-    effect: [{ type: 'unlock_zone', id: 'special_orbit_lounge' }, { type: 'penalty_amount', id: 'SECURITY_DETECTION', probability: 0.01, amount: 1000000 }],
+    // unlock: { type: PLAY_RECORD_STATS_TYPE.MAX_WIN_POT, amount: 100000000 },
+    action: {
+      type: TASK_ACTION_TYPE.ACCEPT_INVITE, zone: 'high', location_id: 'special_orbit_lounge', available: 6 // only 6max
+    },
+    effect: [{ type: TASK_EFFECT_TYPE.PENALTY_AMOUNT, id: 'SECURITY_DETECTION', probability: 0.01, amount: 1000000 }],
   },
 ];

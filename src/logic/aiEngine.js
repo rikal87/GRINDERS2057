@@ -301,7 +301,7 @@ function getHeuristicFallback(player, engine) {
   if (street === 'PREFLOP') {
     raiseEquityThreshold += (2.5 - AF) * 0.3;
   } else {
-    raiseEquityThreshold += (2.5 - AF) * (0.3 - (pfIntensity * .1));
+    raiseEquityThreshold += (2.5 - AF) * (0.2 - (pfIntensity * .05));
   }
   let raisePenalty = 0;
   if (raises > 0) {
@@ -378,7 +378,12 @@ function getHeuristicFallback(player, engine) {
     } else if (rnd < bluffFreq) {
       action = 'raise'; insight += " (Pure Bluff)";
     } else {
-      action = 'fold'; insight += " (Fold)";
+      // [FIX] If we can check (callAmt == 0), don't fold.
+      if (callAmt === 0) {
+        action = 'call'; insight += " (Check)";
+      } else {
+        action = 'fold'; insight += " (Fold)";
+      }
     }
   }
 
@@ -451,7 +456,7 @@ function getHeuristicFallback(player, engine) {
   const equityDiff = Math.abs(estimatedEquity - requiredEquity);
 
   if (estimatedEquity >= raiseEquityThreshold + 0.15) {
-    if (Math.random() < 0.3) delay = 500; else delay = 2000 + Math.random() * 1500;
+    if (Math.random() < 0.3) delay = 600; else delay = 2000 + Math.random() * 1500;
   } else if (equityDiff < 0.10) {
     delay = 2000 + Math.random() * 3000;
   } else if (action === 'fold' && estimatedEquity < requiredEquity - 0.20) {

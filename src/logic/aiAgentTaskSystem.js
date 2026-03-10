@@ -1,10 +1,11 @@
 
-import { store, getEffectiveMaxLT, gainBankroll } from './store';
+import { store, getEffectiveMaxLT, getEnemyBustCount, getPlayStatsCount, gainBankroll, getAgentTaskStat, gainAgentTaskStat, getCurrentLT, gainLT, getCurrentBankroll, getAgent } from './store';
 import { sendMessage } from './messageSystem';
-import { AI_TASK_DATA } from './aiAgentTaskData';
+import { AI_TASK_DATA, TASK_EFFECT_TYPE } from './aiAgentTaskData';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 import { zones } from './zone';
 import { TYPE_CHANGE_BANKROLL } from './constants.js'
+import { PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
 // Task Definitions
 // Logic to process tasks every game tick (e.g. hourly)
 // Actually we can process minutely, but probability is per hour.
@@ -16,7 +17,7 @@ import { TYPE_CHANGE_BANKROLL } from './constants.js'
  * checkSubscription: Handle AI Agent subscription expiration and auto-renewal.
  */
 export const checkSubscription = () => {
-  const agent = store.aiAgent;
+  const agent = getAgent();
   if (store.gameTime < agent.subscriptionExpireAt) return; // Not expired yet
 
   // If expired or not set (0), try to renew
@@ -26,7 +27,7 @@ export const checkSubscription = () => {
   const plan = modelData?.price_plan[planIdx];
 
   if (plan && plan.cost > 0) {
-    if (store.bankroll >= plan.cost) {
+    if (getCurrentBankroll() >= plan.cost) {
       // Auto-renew for 30 days
       gainBankroll(-plan.cost, TYPE_CHANGE_BANKROLL.AI_AGENT_SUBSCRIPTION);
       // 30 days in ms = 30 * 24 * 60 * 60 * 1000
@@ -54,7 +55,7 @@ export const checkSubscription = () => {
  * validateTaskSlots: Ensure active tasks fit in the current agent's slots.
  */
 export const validateTaskSlots = () => {
-  const agent = store.aiAgent;
+  const agent = getAgent();
   const planData = agent.model?.price_plan[agent.price_plan_idx] || { slot: ['T1'] };
   const availableSlotsCount = planData.slot.length;
 
@@ -72,6 +73,9 @@ export const processAiTasks = () => {
   // 1. Subscription Lifecycle Check
   checkSubscription();
 
+  // Update HUD Active status
+  store.isActiveHud = !!store.activeBoosts.find(b => b.effect.type === TASK_EFFECT_TYPE.HUD_ACTIVE);
+
   // Use model/plan data from store
   const agent = store.aiAgent;
   const planIdx = agent.price_plan_idx;
@@ -84,7 +88,8 @@ export const processAiTasks = () => {
 
   // 1. LT Regeneration (1% of max per hour -> 1/60 % per minute)
   const regenAmount = (maxLt * 0.01 * regenMultiplier) / 60;
-  store.ludusTokens = Math.min(getEffectiveMaxLT(), store.ludusTokens + regenAmount);
+  // store.ludusTokens = Math.min(getEffectiveMaxLT(), store.ludusTokens + regenAmount);
+  gainLT(regenAmount)
 
   // 1.5. Process Risk/Penalty (e.g., SECURITY_DETECTION)
   const penaltyTasks = store.onWorkTasks.filter(t => t.status === 'ACTIVE');
@@ -118,9 +123,10 @@ export const processAiTasks = () => {
         // Normal Tasks Cost Deduction (per hour -> per minute)
         const costPerMin = taskDef.cost / 60;
 
-        if (store.ludusTokens >= costPerMin) {
-          store.ludusTokens -= costPerMin;
-
+        if (getCurrentLT() >= costPerMin) {
+          // store.ludusTokens -= costPerMin;
+          gainLT(-costPerMin);
+          // play
           // Success Probability scaling (hourly to minutely)
           const adjustedHourlyProb = Math.min(1.0, (taskDef.probability || 0) + probBonus);
           let baseProb = 1 - Math.pow(1 - adjustedHourlyProb, 1 / 60);
@@ -131,6 +137,7 @@ export const processAiTasks = () => {
 
           if (Math.random() < currentProb) {
             triggerTaskSuccess(taskState, taskDef);
+            store.onWorkTasks.splice(i, 1);
           } else {
             taskState.failureCount = (taskState.failureCount || 0) + 1;
 
@@ -154,9 +161,9 @@ export const processAiTasks = () => {
         const costPerMin = taskDef.cost / 60;
 
         // AGENT_WORK continuously consumes LT while active
-        if (store.ludusTokens >= costPerMin) {
-          store.ludusTokens -= costPerMin;
-
+        if (getCurrentLT() >= costPerMin) {
+          // store.ludusTokens -= costPerMin;
+          gainLT(-costPerMin)
           const baseProb = taskDef.probability || 0.1;
           // Check probability per minute based on hourly stated probability
           const probPerMin = 1 - Math.pow(1 - baseProb, 1 / 60);
@@ -258,7 +265,7 @@ const triggerTaskSuccess = (taskState, taskDef) => {
 
 const triggerRiskDetection = (index, effDef, taskName) => {
   const penalty = effDef.amount || 10000;
-  gainBankroll(-penalty, TYPE_CHANGE_BANKROLL.PAY_FINE)
+  // gainBankroll(-penalty, TYPE_CHANGE_BANKROLL.PAY_FINE)
   sendMessage('SYSTEM', 'HACKING DETECTED!', `${taskName} has been terminated by security forces. Penalty: ${penalty.toLocaleString()} CR.`);
 
   if (index >= 0) {
@@ -278,28 +285,29 @@ const canTaskFitInSlot = (taskTier, slotType) => {
 /**
  * isTaskUnlocked: Check if a task's unlock requirements have been met.
  */
+export const TASK_STATS_TYPE = {
+  COST_LT_TOTAL: 'cost_lt_total',
+  COMPLETED_TASK_COUNT: 'completed_task_count'
+}
 export const isTaskUnlocked = (taskDef) => {
   if (!taskDef.unlock) return true; // No requirement, implicitly unlocked
 
   const { type, count, id, amount, credit } = taskDef.unlock;
-  const stats = store.play_stats;
-
   switch (type) {
-    case 'Bust_enemy':
-      // Map task ID to stats persona name if necessary
-      const personaKey = id.charAt(0).toUpperCase() + id.slice(1);
-      return (stats.bust_enemy[personaKey] || 0) >= count;
-    case 'played_hand':
-      return stats.played_hands >= count;
-    case 'paid_rake':
-      return stats.paid_rake >= amount;
-    case 'reach_credit':
-      // Check current bankroll or total earned? credit usually refers to bankroll
-      return store.bankroll >= credit;
-    case 'cost_lt':
-      return store.agentStats.cost_lt_total >= amount;
-    case 'completed_task_count':
-      return store.agentStats.completed_task_count >= count;
+    case PLAY_RECORD_STATS_TYPE.BUST_ENEMY:
+      return getEnemyBustCount(id.toLowerCase()) >= count;
+    case PLAY_RECORD_STATS_TYPE.HANDS_PLAYED:
+      return getPlayStatsCount(PLAY_RECORD_STATS_TYPE.PLAYED_HANDS) >= count;
+    case PLAY_RECORD_STATS_TYPE.PAID_RAKE:
+      return getPlayStatsCount(PLAY_RECORD_STATS_TYPE.PAID_RAKE) >= amount;
+    case TASK_STATS_TYPE.COST_LT_TOTAL:
+      return getAgentTaskStat(TASK_STATS_TYPE.COST_LT_TOTAL) >= amount;
+    case TASK_STATS_TYPE.COMPLETED_TASK_COUNT:
+      return getAgentTaskStat(TASK_STATS_TYPE.COMPLETED_TASK_COUNT) >= count;
+    case PLAY_RECORD_STATS_TYPE.MAX_WIN_POT:
+    case PLAY_RECORD_STATS_TYPE.MAX_WIN_EQUITY:
+    case PLAY_RECORD_STATS_TYPE.NET_WINNING:
+      return getPlayStatsCount(type) >= amount;
     default:
       console.warn(`Unknown unlock type: ${type}`);
       return true;

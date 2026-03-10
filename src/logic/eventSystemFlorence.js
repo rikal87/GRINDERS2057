@@ -32,6 +32,8 @@ import { PARTNER_ID, LOCATION_ID } from './constants.js'
  * @property {string} MAIN_STORY_2_5_KBT_UNDERGROUND
  * @property {string} MAIN_STORY_2_6_KBT_UNDERGROUND
  * @property {string} MAIN_STORY_2_7_KBT_UNDERGROUND // 주인공과 접선
+ * @property {string} MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL // 미션 실패
+ * @property {string} MAIN_STORY_2_8_KBT_UNDERGROUND_SUCCESS // 미션 성공
  * @property {string} JOIN_PARTNER // 플로렌스가 정식 파트너가 되기로 결심합니다.
  * @property {string} JOINED_PARTNER // 프로렌스를 정식 파트너로 등록했습니다.
  * @property {string} RESOLVED_DEBT
@@ -195,6 +197,35 @@ export const EventData = [
     },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
+  {
+    id: EVENT_FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL,
+    scenario: 'MAIN_STORY_2_7_KBT_UNDERGROUND 연계 이벤트, 주인공이 미션을 실패했을 때, (주인공에게 가진 플로렌스는 크게 실망하였습니다.)',
+    title_ko: '[미션 실패: 신뢰의 균열]',
+    title_en: '[Mission Failed: Breach of Trust]',
+    body_ko: '아... 실망스럽네요. 제 계산이 빗나간 건가요, 아니면 당신의 집중력이 흐트러진 건가요? 이런 식의 리스크는 비즈니스에 치명적이에요. 당분간은 서로 거리를 두는 게 현명할 것 같네요.',
+    body_en: "Ah... how disappointing. Did my calculations fail, or did your focus waver? Risks like this are fatal to business. It seems wise for us to keep our distance for the time being.",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      gainRelationship(PARTNER_ID.FLORENCE, -100);
+      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
+  {
+    id: EVENT_FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_SUCCESS,
+    scenario: 'MAIN_STORY_2_7_KBT_UNDERGROUND 연계 이벤트, 주인공이 미션을 성공했을 때, (플로렌스는 크게 기뻐합니다.)',
+    title_ko: '[미션 성공: 완벽한 실행]',
+    title_en: '[Mission Success: Perfect Execution]',
+    body_ko: '역시 제 안목은 틀리지 않았군요. 그 지옥 같은 벙커에서 살아남아 수익까지 챙기다니... 기대 이상의 성과예요. 당신이라는 \'변수\'가 제 포트폴리오에 아주 긍정적인 영향을 주고 있네요. 조만간 더 재미있는 제안을 하러 가죠.',
+    body_en: "As expected, my intuition was correct. To survive that hellish bunker and even come away with a profit... it's a performance beyond expectations. The 'variable' that is you is having a very positive impact on my portfolio. I'll come to you with a more interesting proposal soon.",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      gainRelationship(PARTNER_ID.FLORENCE, 200);
+      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.JOIN_PARTNER, 2 * 24 * 60); // Join after 2 days
     },
   },
   {

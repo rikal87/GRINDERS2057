@@ -12,8 +12,8 @@ import { LOCATION_ID, PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js'
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const getDefaultState = () => ({
-  bankroll: 12220000,
-  // bankroll:20000
+  // bankroll: 12220000,
+  bankroll: 20000,
   chips: 0, // Chips on table
   // currentBB: 0,
   xp: 0,
@@ -24,24 +24,16 @@ const getDefaultState = () => ({
   equippedProtector: null, // item object or null
   equippedSkills: [null, null, null], // 3 Slots
   activeBoosts: [], // [{ taskId, effect: {} }]
-  ownedPortraits: ['p1', 'p2', 'p3'],
   selectedPortrait: 'p1',
   boostRegenLT: 0,
   completedEvents: [],
   pendingEvents: [],
   latest_pay_income_base_amount: 0,
+  isActiveHud: false,
   status_zone: {
     'micro_warehouse_with_max': { suspicion: 0.0, infamy: 0.0, isBlacklisted: false },
     'micro_underground_bar': { suspicion: 0.0, infamy: 0.0, isBlacklisted: false },
     'micro_warehouse': { suspicion: 0.0, infamy: 0.0, isBlacklisted: false },
-  },
-  collusion: {
-    is_colluding: false,
-    partner_id: null,
-    partner_name: null,
-    // partner_relationship: null,
-    partner_share_rate: 0,
-    zone_id: null,
   },
   missedPayments: {
     rent_bill: 0,
@@ -124,6 +116,12 @@ export const MISSED_PAYMENT_TYPE = {
   INCOME_TAX: 'income_tax',
   FINE: 'fine',
 }
+export const getEnemyBustCount = (enemyId) => {
+  return store.play_stats.bust_enemy[enemyId] || 0;
+}
+export const getPlayStatsCount = (type) => {
+  return store.play_stats[type] ? store.play_stats[type] : 0;
+}
 export const MAX_MISS = {
   [MISSED_PAYMENT_TYPE.RENT_BILL]: RENT_BILL_MAX_MISS,
   [MISSED_PAYMENT_TYPE.INCOME_TAX]: INCOME_TAX_MAX_MISS,
@@ -154,7 +152,6 @@ export const getLanguage = () => {
 };
 
 export const getLocalizedText = (obj, field) => {
-  console.info('obj', obj)
   if (!obj) return '';
   const lang = getLanguage();
   if (field) {
@@ -178,7 +175,6 @@ const bigIntReviver = (key, value) => {
   }
   return value;
 };
-
 export const getCurrentBankroll = () => {
   return store.bankroll;
 }
@@ -193,8 +189,14 @@ export const getEffectiveMaxLT = () => {
   const bonus = store.equippedProtector?.effects?.reduce((sum, e) => (e.id === 'lt_max_plus') ? sum + e.value : sum, 0) || 0;
   return baseMax + bonus;
 }
+export const getAgent = () => {
+  return store.aiAgent;
+}
 export const gainLT = (amount) => {
-  store.ludusTokens = Math.min(getEffectiveMaxLT(), store.ludusTokens + amount);
+  store.ludusTokens = Math.max(0, Math.min(getEffectiveMaxLT(), store.ludusTokens + amount));
+}
+export const getCurrentLT = () => {
+  return store.ludusTokens;
 }
 export const gainShopRefreshCount = (amount = 1) => {
   store.shop.manualRefreshCount = Math.max(0, store.shop.manualRefreshCount + amount);
@@ -322,7 +324,7 @@ export const registerCompletedEvent = (eventId) => {
 export const isCompletedEvent = (eventId) => {
   return store.completedEvents.includes(eventId);
 }
-export const deleteCompletedEvent = (eventId) => {
+export const unregisterCompletedEvent = (eventId) => {
   store.completedEvents = store.completedEvents.filter(id => id !== eventId);
 }
 
@@ -335,7 +337,12 @@ export const gainClearedZoneCount = (locationId) => {
   if (!store.cleared_zones[locationId]) store.cleared_zones[locationId] = 1
   store.cleared_zones[locationId]++
 }
-
+export const gainAgentTaskStat = (type, amount) => {
+  store.agentStats[type] += amount
+}
+export const getAgentTaskStat = (type) => {
+  return store.agentStats[type];
+}
 // CAN USE NAGATIVE AMOUNT
 export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
   console.log(`[BANKROLL] Gained ${amount} bankroll.`);
@@ -507,9 +514,11 @@ const processMissionResult = (player, result, engine) => {
       scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_FAILED, 30);
     }
   }
-  if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB) {
-    if (result === GAME_RESULT_CODE.WIN_BIG) {
-      scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 30);
+  if (locationId === LOCATION_ID.MIDDLE_UNDERGROUND_CASINO_WITH_FLORENCE) {
+    if (result.indexOf('WIN') !== -1) {
+      scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_SUCCESS, 30);
+    } else {
+      scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL, 30);
     }
   }
 }

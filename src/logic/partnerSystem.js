@@ -31,7 +31,7 @@ export const leavePartner = (partnerId = null) => {
   if (!partnerId) return;
   const partner = getPartners().find((p) => p.id === partnerId);
   if (partner) {
-    partnerScheduleEvent(EVENT_ID[partnerId.toUpperCase()]['GONE'], 2, partner, true);
+    scheduleEvent(EVENT_ID[partnerId.toUpperCase()]['GONE'], 2);
     partner.find(p => p.id === partnerId).isJoined = false;
   }
 }
@@ -256,10 +256,10 @@ const triggerRelationshipChange = (partner) => {
   if (partner.bankroll <= 0) {
     const isTriggered = triggerBankruptRescueForPartner(partner);
     if (!isTriggered && partner.debt < 0) {
-      partnerScheduleEvent(EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_HAS_DEBT' + (partner.relationship <= 200 ? '_LOW_RELATIONSHIP' : '')], 2, partner);
+      scheduleEvent(EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_HAS_DEBT' + (partner.relationship <= 200 ? '_LOW_RELATIONSHIP' : '')], 2);
     } else {
       const firstRequest = requestRescueDebt(partner);
-      if (!firstRequest) gainRelationship(partner.id, -20); // no have contract. (but, Players do not support their partners.)
+      if (!firstRequest) gainRelationship(partner.id, -50); // no have contract. (but, Players do not support their partners.)
     }
   }
   // steady or break about contracts
@@ -268,7 +268,7 @@ const triggerRelationshipChange = (partner) => {
     if (partner.relationship < contract.relationshipToBreak) { // MUST USE relationshipToBreak
       const result = breakContract(partner.id, contract.type);
       const eId = EVENT_ID[partner.id.toUpperCase()]['BREAK_CONTRACT_' + contract.type.toUpperCase()];
-      if (result && eId) partnerScheduleEvent(eId, 2 * Math.random() + 1, partner, true);
+      if (result && eId) scheduleEvent(eId, 2 * Math.random() + 1);
     }
     if (contract.type === CONTRACT_TYPE.BANKRUPT_RESCUE) {
       if (partner.id === 'max') gainRelationship(partner.id, 1); // only max
@@ -348,14 +348,6 @@ export const generatePartner = (partnerId = 'max') => {
   });
   return Partner({ ...p, contracts });
 };
-export const partnerScheduleEvent = (eventId, delay = 2, partner, acceptResend = false) => {
-  if (acceptResend) {
-    scheduleEvent(eventId, delay);
-  } else if (!partner.sendedEventIds.includes(eventId)) {
-    addSendedEventId(partner.id, eventId);
-    scheduleEvent(eventId, delay);
-  }
-}
 
 export const initializePartners = () => {
   const partners = [];

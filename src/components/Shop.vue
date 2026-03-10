@@ -28,7 +28,7 @@
             </div>
             <button class="btn-refresh glitch-btn" :disabled="!canManualRefresh()" @click="handleManualRefresh">
               <div class="btn-content">BRIBE_DEALER</div>
-              <div class="btn-decoration">{{ getRefreshCost() }} CR</div>
+              <div class="btn-decoration">{{ getRefreshCost().toLocaleString() }} CR</div>
             </button>
             <div class="bribe-level" v-if="store.shop.manualRefreshCount > 0">
               BRIBE_LEVEL: <span class="level-val">{{ store.shop.manualRefreshCount }}</span>
@@ -167,7 +167,7 @@ const setRandomQuote = (type) => {
 };
 
 const updateTimer = () => {
-  const now = Date.now();
+  const now = store.gameTime;
   const elapsed = now - store.shop.lastRefreshTime;
   nextRefreshIn.value = Math.max(0, REFRESH_INTERVAL_MS - elapsed);
   checkAutoRefresh();
@@ -187,9 +187,9 @@ onUnmounted(() => {
 });
 
 const formatTime = (ms) => {
-  const seconds = Math.floor((ms / 1000) % 60);
   const minutes = Math.floor((ms / (1000 * 60)) % 60);
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  const hours = Math.floor(ms / (1000 * 60 * 60));
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 };
 
 const isHighTier = (item) => {

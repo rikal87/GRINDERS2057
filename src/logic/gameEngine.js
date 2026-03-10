@@ -7,9 +7,10 @@ import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
 import { getPartner, getJoinedPartners } from './partnerSystem.js';
 import { gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion, getCurrentSuspicion, getCurrentInfamy } from './store.js';
+import { LOCATION_ID, CONTRACT_TYPE, CHAT_TRIGGERS, TYPE_CHANGE_BANKROLL } from './constants.js'
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
 import { zones } from './zone.js';
-import { LOCATION_ID, CONTRACT_TYPE, CHAT_TRIGGERS, TYPE_CHANGE_BANKROLL } from './constants.js'
+import { recordPlayStatsSession, PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
 
 const eventAdaptor = new EventAdaptor();
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -73,7 +74,6 @@ export class GameEngine {
       chips: Math.floor(this.buyIn * this.buyInMultiply), // Will be validated against bankroll in constructor or UI
       currentBet: 0,
       totalWagered: 0,
-      ram: { used: 0, reserved: 0 },
       isFolded: false,
       isHuman: true,
       isMe: true,
@@ -87,12 +87,16 @@ export class GameEngine {
       stats: {
         handsPlayed: 0,
         vPIPCount: 0,
+        pfrCount: 0,
+        threeBetCount: 0,
         facedFlopBet: 0,
         foldedToFlopBet: 0,
         aggressiveActions: 0, // Bet + Raise
         calls: 0,
-        get vPIP() { return this.handsPlayed > 0 ? this.vPIPCount / this.handsPlayed : 0; },
-        get foldToFlop() { return this.facedFlopBet > 0 ? this.foldedToFlopBet / this.facedFlopBet : 0; },
+        get vPIP() { return this.handsPlayed > 0 ? (this.vPIPCount / this.handsPlayed) * 100 : 0; },
+        get pfr() { return this.handsPlayed > 0 ? (this.pfrCount / this.handsPlayed) * 100 : 0; },
+        get threeBet() { return this.handsPlayed > 0 ? (this.threeBetCount / this.handsPlayed) * 100 : 0; },
+        get foldToFlop() { return this.facedFlopBet > 0 ? (this.foldedToFlopBet / this.facedFlopBet) * 100 : 0; },
         get aggressionFactor() { return this.calls > 0 ? this.aggressiveActions / this.calls : (this.aggressiveActions > 0 ? 10 : 0); } // Infinite if no calls but has raises
       },
       get canReadSynapses() {
@@ -303,17 +307,21 @@ export class GameEngine {
         isBoss: villan.isBoss || false,
         item: null,
         // Helper methods for skills
-        maxTimeBank: 30, // Default 30s for AI
-        timeBankRemaining: 30,
+        maxTimeBank: 15, // Default 30s for AI
+        timeBankRemaining: 15,
         stats: {
           handsPlayed: 0,
           vPIPCount: 0,
+          pfrCount: 0,
+          threeBetCount: 0,
           facedFlopBet: 0,
           foldedToFlopBet: 0,
           aggressiveActions: 0, // Bet + Raise
           calls: 0,
-          get vPIP() { return this.handsPlayed > 0 ? this.vPIPCount / this.handsPlayed : 0; },
-          get foldToFlop() { return this.facedFlopBet > 0 ? this.foldedToFlopBet / this.facedFlopBet : 0; },
+          get vPIP() { return this.handsPlayed > 0 ? (this.vPIPCount / this.handsPlayed) * 100 : 0; },
+          get pfr() { return this.handsPlayed > 0 ? (this.pfrCount / this.handsPlayed) * 100 : 0; },
+          get threeBet() { return this.handsPlayed > 0 ? (this.threeBetCount / this.handsPlayed) * 100 : 0; },
+          get foldToFlop() { return this.facedFlopBet > 0 ? (this.foldedToFlopBet / this.facedFlopBet) * 100 : 0; },
           get aggressionFactor() { return this.calls > 0 ? this.aggressiveActions / this.calls : (this.aggressiveActions > 0 ? 10 : 0); } // Infinite if no calls but has raises
         },
       };
@@ -353,7 +361,7 @@ export class GameEngine {
       p.totalWagered = 0;
       p.isBlind = false; // Reset blind status
       p.isJoinPot = false; // Reset VPIP tracker
-      if (p.stats) p.stats.handsPlayed++;
+      recordPlayStatsSession(p, PLAY_RECORD_STATS_TYPE.HANDS_PLAYED);
     });
     this.calculationInProgress = false;
     // Check Trigger: PREFLOP start (or Round Start)
@@ -462,18 +470,11 @@ export class GameEngine {
     if (this.state === 'IDLE') return;
     // console.info('handlePlayerAction', player.name, action)
     // [PROFILING] Faced Flop Bet
-    // If Human acts on FLOP and there is a bet to call (>0), they faced a bet.
-    // Ensure we count only once per street?
-    // Let's use a flag on current hand or just increment.
-    // If they Call/Raise/Fold, they faced it.
-    // Limitation: If they check-raise, they technically faced a bet if they called a bet before? No.
-    // If currentRoundBet > 0.
-    if (player.isHuman && this.state === 'FLOP' && this.potManager.currentRoundBet > 0) {
-      // Check if we already counted this street?
-      // For simplicity, let's just count every action facing a bet as an "instance".
-      // Or better: flags.
+    if (this.state === 'FLOP' && this.potManager.currentRoundBet > 0) {
       if (!player.hasFacedFlopBet) {
-        player.stats.facedFlopBet++;
+        // We can record this directly or via eventAdaptor if we add a new event.
+        // For now, let's stick to the behavior recording pattern.
+        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.FACED_FLOP_BET);
         player.hasFacedFlopBet = true;
       }
     }
@@ -486,22 +487,14 @@ export class GameEngine {
       if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.FOLD_FOR_PLAYER)
       player.isFolded = true;
 
-      // [PROFILING] Fold to Flop Bet
-      if (player.isHuman && this.state === 'FLOP' && this.potManager.currentRoundBet > 0) {
-        player.stats.foldedToFlopBet++;
-      }
       eventAdaptor.fold({ player, amount: player.totalWagered, pot: this.pot, board: this.board, street: this.state, players: this.players });
       audioManager.playSFX('card-dealt&fold');
       // this.checkItemTriggers('fold', { phase: this.state }); // Trigger Fold Effects
     } else if (action.type === 'call' || action.type === 'check') {
       const diff = this.potManager.currentRoundBet - player.currentBet;
       this.placeBet(player, diff);
-      if (!player.stats) player.stats = { calls: 0, aggressiveActions: 0, handsPlayed: 0, vPIPCount: 0, facedFlopBet: 0, foldedToFlopBet: 0 };
-      if (player.stats.calls === undefined) player.stats.calls = 0;
-
       if (diff > 0) {
         action.type = 'call';
-        player.stats.calls++; // [STATS] Track Call only if chips added
         audioManager.playSFX('puti-n-chip');
         if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CALL_FOR_PLAYER);
       } else {
@@ -510,7 +503,6 @@ export class GameEngine {
         if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CHECK_FOR_PLAYER);
       }
 
-      // if (player.isMe) eventAdaptor.action({ player, type: action.type.toUpperCase(), amount: diff, street: this.state });
     } else if (action.type === 'raise' || action.type === 'bet' || action.type === 'all_in') {
       const diff = action.amount - player.currentBet;
       const raised = this.placeBet(player, diff);
@@ -530,10 +522,6 @@ export class GameEngine {
           }
         }
       }
-      if (!player.stats) player.stats = { calls: 0, aggressiveActions: 0, handsPlayed: 0, vPIPCount: 0, facedFlopBet: 0, foldedToFlopBet: 0 };
-      if (player.stats.aggressiveActions === undefined) player.stats.aggressiveActions = 0;
-
-      player.stats.aggressiveActions++; // [STATS] Track Raise/Bet
       if (action.amount > 0 && player.chips === 0) {
         action.type = 'all_in';
         audioManager.playSFX('all_in');
@@ -549,7 +537,9 @@ export class GameEngine {
       if (raised) {
         this.currentStreetRaises++;
         this.aggressor = player.id;
-        if (this.street === 'PREFLOP') this.preflopRaises++;
+        if (this.state === 'PREFLOP') {
+          this.preflopRaises++;
+        }
       } else {
         this.aggressor = null;
       }
@@ -584,7 +574,13 @@ export class GameEngine {
 
     // Check All-In Condition before moving (in case this action sealed it)
     // await this.checkAllInCondition();
-    if (player.isMe) eventAdaptor.action({ player, type: action.type.toUpperCase(), street: this.state });
+    eventAdaptor.action({
+      player,
+      type: action.type.toUpperCase(),
+      street: this.state,
+      amount: action.amount,
+      preflopRaises: this.preflopRaises
+    });
     if (!this.runoutInProgress) {
       await this.moveToNextPlayer();
       // processTurns is called inside moveToNextPlayer
@@ -801,16 +797,9 @@ export class GameEngine {
     this.potManager.pot = 0;
     this.pot = 0; // [FIX] Sync reactive pot immediately
 
-    // [PROFILING] Update vPIP
-    // If player put more money than their forced blind, they voluntarily played.
-    // However, simply checking totalWagered > blind amount is decently accurate.
-    // [STAT TRACKING] vPIP for All Players
+    // Reset interaction flags for next hand
     this.players.forEach(p => {
-      if (p.voluntarilyInteracted && p.stats) {
-        p.stats.vPIPCount++;
-      }
-      // p.tempXPBonus = 0; // Reset temp XP Bonus
-      p.voluntarilyInteracted = false; // Reset
+      p.voluntarilyInteracted = false;
     });
 
     eventAdaptor.roundEnd(this.players, 'ROUND_END');

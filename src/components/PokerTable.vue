@@ -29,7 +29,15 @@
       :style="isTimeCritical(p, idx) ? { borderColor: 'var(--neon-red)', boxShadow: '0 0 15px var(--neon-red)' } : {}">
       <!-- Time Gauge Background -->
       <div class="time-gauge" :style="getTimeGaugeStyle(p, idx)"></div>
-
+      <div v-if="store.isActiveHud && !p.isHuman" class="hud-badge">
+        <span class="vpip-val">{{ p.stats.vPIP.toFixed(0) }}</span>
+        <div class="hud-tooltip">
+          <div class="tooltip-row"><span class="label">VPIP</span><span class="val cyan">{{ p.stats.vPIP.toFixed(1) }}%</span></div>
+          <div class="tooltip-row"><span class="label">PFR</span><span class="val yellow">{{ p.stats.pfr.toFixed(1) }}%</span></div>
+          <div class="tooltip-row"><span class="label">3-BET</span><span class="val magenta">{{ p.stats.threeBet.toFixed(1) }}%</span></div>
+          <div class="tooltip-row"><span class="label">AF</span><span class="val white">{{ p.stats.aggressionFactor.toFixed(1) }}</span></div>
+        </div>
+      </div>
       <!-- Character Dialogue Bubble -->
 
       <div class="meta">
