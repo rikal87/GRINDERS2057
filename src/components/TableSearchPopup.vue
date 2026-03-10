@@ -162,7 +162,7 @@ const getSuspicionNote = (locationId) => {
 const selectedSize = ref(6);
 const getNote = (npc) => {
   const enemy = CLASSES_ENEMY.find(e => e.name === npc);
-  return enemy ? enemy.note : '';
+  return enemy ? getLocalizedText(enemy, 'note') : '';
 }
 
 // Flatten locations efficiently

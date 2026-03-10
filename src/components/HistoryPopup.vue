@@ -3,7 +3,7 @@
     <div class="terminal-msg history-popup">
       <header class="popup-header">
         <h2 class="glitch-text" data-text="PLAY_HISTORY">PLAY_HISTORY</h2>
-        <button class="btn-close" @click="$emit('close')">X</button>
+        <button class="btn-accept" @click="$emit('close')">CLOSE</button>
       </header>
 
       <div class="history-content">
@@ -11,7 +11,6 @@
         <div v-if="!selectedHand" class="hand-list">
           <div v-for="hand in history" :key="hand.id" class="hand-item" @click="selectedHand = hand">
             <div class="hand-meta">
-              <span class="time">{{ hand.timestamp }}</span>
               <span class="pot">POT:
                 <ChipDisplay :value="hand.pot" :bb="hand.blinds.bb" />
               </span>
@@ -31,10 +30,8 @@
 
         <!-- Detailed Hand View -->
         <div v-else class="hand-detail">
-          <button class="btn-back" @click="selectedHand = null">&lt; BACK_TO_LIST</button>
-
+          <button class="btn-back" @click="selectedHand = null">BACK</button>
           <div class="hand-summary">
-            <div class="summary-line">TIME: {{ selectedHand.timestamp }}</div>
             <div class="summary-line">TOTAL_POT:
               <ChipDisplay :value="selectedHand.pot" :bb="selectedHand.blinds.bb" />
             </div>

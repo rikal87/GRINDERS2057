@@ -61,7 +61,8 @@ export const zones = [
         "level": 1,
         "npcs": [
           "Fish",
-          "Broke"
+          "Broke",
+          "MR_CALL"
         ],
         "tables": {
           amount: 1000, amount_fmt: '1K', amount_min_fmt: '500', sb: 5, bb: 10, available: [
@@ -89,7 +90,8 @@ export const zones = [
         "level": 1,
         guests: ['Max(Mentor)'],
         "npcs": [
-          "Fish"
+          "Fish",
+          "Broke"
         ],
         "tables": {
           buyInLimit: 1,
@@ -153,6 +155,7 @@ export const zones = [
         "npcs": [
           "Fish",
           "Broke",
+          "Gangster"
         ],
         "tables": {
           amount: 2500, amount_fmt: '2.5K', amount_min_fmt: '1.25K', sb: 10, bb: 25, available: [6, 9], baseRake: 0.08, rakeCap: 125

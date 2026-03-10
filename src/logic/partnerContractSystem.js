@@ -8,24 +8,28 @@ import { CONTRACT_TYPE, TYPE_CHANGE_BANKROLL } from "./constants.js";
 //   [CONTRACT_TYPE.BANKRUPT_RESCUE]: 800,
 //   [CONTRACT_TYPE.A_DATE_WITH_YOU]: 1000,
 //   [CONTRACT_TYPE.COLLUSION]: 900
+//  [CONTRACT_TYPE.STAKING]:700,
 // }
 export const CONTRACT_REQUIRED_RELATIONSHIP = {
   [CONTRACT_TYPE.SHARE_BENEFIT]: 0,
   [CONTRACT_TYPE.BANKRUPT_RESCUE]: 0,
   [CONTRACT_TYPE.A_DATE_WITH_YOU]: 0,
-  [CONTRACT_TYPE.COLLUSION]: 0
+  [CONTRACT_TYPE.COLLUSION]: 0,
+  [CONTRACT_TYPE.STAKING]: 0,
 }
 export const CONTRACT_BREAK_RELATIONSHIP = {
   [CONTRACT_TYPE.SHARE_BENEFIT]: 0,
   [CONTRACT_TYPE.BANKRUPT_RESCUE]: 0,
   [CONTRACT_TYPE.A_DATE_WITH_YOU]: 0,
-  [CONTRACT_TYPE.COLLUSION]: 0
+  [CONTRACT_TYPE.COLLUSION]: 0,
+  [CONTRACT_TYPE.STAKING]: 0,
 }
 // export const CONTRACT_BREAK_RELATIONSHIP = {
 //   [CONTRACT_TYPE.SHARE_BENEFIT]: 300,
 //   [CONTRACT_TYPE.BANKRUPT_RESCUE]: 500,
 //   [CONTRACT_TYPE.A_DATE_WITH_YOU]: 700,
 //   [CONTRACT_TYPE.COLLUSION]: 700
+//   [CONTRACT_TYPE.STAKING]:300,
 // }
 export const CONTRACT_TYPE_DESC_FIELD = {
   DESC: 'desc',
@@ -55,6 +59,12 @@ export const CONTRACT_TYPE_DESC = {
     desc_en: 'You and your partner will start seeing each other in private.',
     note_ko: '데이트 관계시 관계가 상승할 수 있으나, 반대로 하락할 수도 있습니다.',
     note_en: 'The relationship may increase when dating, but it may also decrease.',
+  },
+  [CONTRACT_TYPE.STAKING]: {
+    desc_ko: '파트너가 당신에게 주기적으로 하이스테이크 게임을 주선합니다, 파트너가 판돈 전액을 지원하는 대신, 세션 종료 후 발생한 모든 수익은 사전에 약정된 비율에 따라 엄격하게 분배됩니다',
+    desc_en: 'The partner leverages their capital to grant you access to exclusive high-stakes tables, providing 100% of the buy-in. Upon the conclusion of the session, all realized profits are divided according to the pre-negotiated equity split.',
+    note_ko: '지속적인 손실이나 기대치 하락은 파트너의 신뢰를 잃게 만들며, 관계도에 치명적인 악영향을 미칩니다. 자산가의 인내심에는 한계가 있음을 명심하십시오.',
+    note_en: "Negative returns or sub-par performance will severely damage your rapport with the partner. Remember: in this city, a backer's patience is only as deep as their last profit.",
   },
 };
 export const Contract = (type = CONTRACT_TYPE.NOTHING) => {
@@ -181,10 +191,9 @@ export const triggerRescueDebt = (partner = null, ratio = 0.3, contract = null, 
   if (!toPlayer) {
     const getEvent = EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_ACCEPT_RESCUE' + (partner.relationship < 200 ? '_LOW_RELATIONSHIPSHIP' : '')]
     if (getEvent) {
-
-      scheduleEvent(EVENT_ID.SYSTEM_PLAYER_BANKRUPT_RESCUE_FOR_PARTNER, 2, { partnerName: partner.fullName, amount })
       partnerScheduleEvent(getEvent, 15, partner, true);
     }
+    scheduleEvent(EVENT_ID.SYSTEM_PLAYER_BANKRUPT_RESCUE_FOR_PARTNER, 2, { partnerName: partner.fullName, amount })
   } else {
     // EVENT_ID.MAX.BANKRUPT_RESCUE_FOR_PLAYER is only for Max
     if (partner.id === PARTNER_ID.MAX) {

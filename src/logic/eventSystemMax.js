@@ -1,5 +1,5 @@
 // for first player
-import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE } from "./messageSystem.js";
+import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_RESOLVE_TYPE } from "./messageSystem.js";
 import { store, registerCompletedEvent, getLanguage, getCurrentBankroll } from "./store.js";
 import { gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
 import { scheduleEvent } from "./eventSystem.js";
@@ -7,6 +7,7 @@ import { recoverStamina } from "./staminaSystem.js";
 import { getBustEnemyCount, getClearedZoneCount } from "./store.js";
 import { isEventCompleted } from "./eventSystem.js";
 import { PARTNER_ID, LOCATION_ID, ENEMY_ID } from './constants.js'
+import { get } from "idb-keyval";
 /**
  * @typedef {Object} MaxEvents
  * @property {string} YOU_GET_SOME_SLEEP
@@ -33,8 +34,8 @@ import { PARTNER_ID, LOCATION_ID, ENEMY_ID } from './constants.js'
  * @property {string} BANKRUPT_REFUSE_RESCUE
  * @property {string} BANKRUPT_ACCEPT_RESCUE_LOW_RELATIONSHIPSHIP
  * @property {string} BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP
- * @property {string} BANKRUPT_HAS_DEBT
- * @property {string} BANKRUPT_HAS_DEBT_LOW_RELATIONSHIP
+ * @property {string} BANKRUPT_HAS_DEBT // 맥스파산, 플레이어 빚 존재
+ * @property {string} BANKRUPT_HAS_DEBT_LOW_RELATIONSHIP // 맥스파산, 플레이어 빚 존재 (관계도 낮음)
  * @property {string} BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE
  * @property {string} BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE_FAIL
  * @property {string} SIGN_CONTRACT_SHARE_BENEFIT
@@ -51,7 +52,7 @@ import { PARTNER_ID, LOCATION_ID, ENEMY_ID } from './constants.js'
  * @property {string} DEBT_REPAYMENT_DONE
  * @property {string} DEBT_REPAYMENT_DONE_PLAYER
  * @property {string} DEBT_REPAYMENT_DONE_LOW_RELATIONSHIP
- * @property {string} DEBT_REPAYMENT_DONE_LOW_RELATIONSHIP_PLAYER
+ * @property {string} DEBT_REPAYMENT_DONE_PLAYER_LOW_RELATIONSHIP
  * @property {string} MAIN_STORY_1_4_MEET_AT_CLUB_DONE
  * @property {string} MAIN_STORY_1_5_MEET_AT_CLUB_DONE
  * @property {string} MAIN_STORY_1_6_MEET_AT_CLUB_DONE
@@ -146,71 +147,6 @@ export const EventData = [
     title_en: 'That\'s My Friend!',
     body_ko: '이런, 꼴딱 다 까먹었다니! 하지만 걱정 마, 친구! 내가 가진 거 전부 털어서 어떻게든 다시 일으켜 세워줄게. 텍사스 사나이의 의리는 이런 때 빛나는 법이지!',
     body_en: 'Damn, you lost it all! But don\'t sweat it, friend! I\'ll put everything I\'ve got into getting you back on your feet. That\'s what Texas loyalty is all about!',
-    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-    },
-  },
-  {
-    id: EVENT_MAX.BANKRUPT_RESCUE_REPAYMENT_DONE,
-    scenario: '맥스가 플레이어에게 빚진 돈을 모두 갚았습니다.',
-    title_ko: '구조 자금 상환 완료',
-    title_en: 'Rescue Funds Repaid',
-    body_ko: '어휴, 드디어 한 시름 놨네! 네가 보태준 돈 깔끔하게 다 갚았다. 역시 텍사스 사나이들끼리 믿고 돕는 맛이 있지! 정말 고맙다 친구야!',
-    body_en: 'Whew, finally off the hook! I\'ve cleared up all the funds you spotted me. That\'s why us Texans stick together! Really appreciate it, buddy!',
-    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-    },
-  },
-  {
-    id: EVENT_MAX.BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER,
-    scenario: '플레이어가 맥스에게 빚진 돈을 모두 갚았습니다.',
-    title_ko: '구조 자금 회수 완료',
-    title_en: 'Rescue Funds Recovered',
-    body_ko: '하하! 역시 자네라면 금방 일어설 줄 알았어! 땡전 한 푼 안 남기고 확실히 다 들어왔다구. 앞으로도 등 맞대고 제대로 털어보자고!',
-    body_en: 'Haha! I knew you\'d bounce back in no time! Received every last cent I lent you. Let\'s keep watching each other\'s backs out there!',
-    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-    },
-  },
-  {
-    id: EVENT_MAX.DEBT_REPAYMENT_DONE,
-    scenario: '맥스가 플레이어에게 빚진 돈을 모두 갚았습니다.',
-    title_ko: '채무 변제 완료',
-    title_en: 'Debt Repaid',
-    body_ko: '야, 나한테 빌려갔던 돈 방금 다 보냈어! 덕분에 위기는 넘겼네. 다음엔 내가 한 턱 거하게 쏠 테니까 기대하라고!',
-    body_en: 'Hey, I just sent over the last of what I owed you! Thanks for helping me out of a tight spot. Next round is on me, partner!',
-    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-    },
-  },
-  {
-    id: EVENT_MAX.DEBT_REPAYMENT_DONE_PLAYER,
-    scenario: '플레이어가 맥스에게 빚진 돈을 모두 갚았습니다.',
-    title_ko: '채무 상환 확인',
-    title_en: 'Debt Repayment Confirmed',
-    body_ko: '오, 방금 입금 확인했어! 역시 내 친구야, 빚 하나는 칼같이 갚는다니까. 이제 홀가분하게 다시 쓸어 담으러 가볼까?',
-    body_en: 'Oh, just checked the transfer! That\'s my friend, always settling up sharp. Feel lighter now? Let\'s go sweep some tables!',
-    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-    },
-  },
-  {
-    id: EVENT_MAX.DEBT_REPAYMENT_DONE_LOW_RELATIONSHIP,
-    scenario: '맥스가 플레이어에게 빚진 돈을 모두 갚았습니다.(하지만 플레이어랑 사이가 별로 좋진 않은 상태입니다...)',
-    title_ko: '채무 변제 완료',
-    title_en: 'Debt Repaid',
-    body_ko: '빌린 돈은 여기 다 보냈으니까 확인해 봐. 빚지고는 못 사는 성격이라 말이야... 뭐, 더 할 말 없으면 이만.',
-    body_en: 'I sent over the money I borrowed, so check your balance. I don\'t like staying in anyone\'s debt... Well, if that\'s all, I\'m out.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
@@ -473,9 +409,11 @@ export const EventData = [
         label: 'PAY DEBT',
         actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
         payload: {
+          id: PARTNER_ID.MAX,
           amount: partner.debt,
           currency: 'CR',
-          to: partner.name,
+          to: partner.fullName,
+          nextEvent: EVENT_MAX.RESOLVED_DEBT
         }
       }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
@@ -496,9 +434,11 @@ export const EventData = [
         label: `PAY DEBT`,
         actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
         payload: {
+          id: PARTNER_ID.MAX,
           amount: partner.debt,
           currency: 'CR',
-          to: partner.name,
+          to: partner.fullName,
+          nextEvent: EVENT_MAX.RESOLVED_DEBT_LOW_RELATIONSHIP
         }
       }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
@@ -547,30 +487,27 @@ export const EventData = [
     get label_accept() { return store.settings.language === 'en' ? this.label_accept_en : this.label_accept_ko; },
     get label_refuse() { return store.settings.language === 'en' ? this.label_refuse_en : this.label_refuse_ko; },
     func() {
-      const partner = getPartner(PARTNER_ID.MAX);
+      const partner = getPartner(PARTNER_ID.MAX)
       if (!partner) return;
-      // if (partner.debt <= 0) return;
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [
+      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
         {
           label: this.label_accept,
           actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
           payload: {
             amount: partner.initialBankroll,
             currency: 'CR',
-            resolveType: 'ACCEPT',
-            to: partner.name,
-            nextEvent: getRelationship(PARTNER_ID.MAX) < 200 ? EVENT_MAX.BANKRUPT_ACCEPT_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_MAX.BANKRUPT_ACCEPT_RESCUE,
+            resolveType: MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT,
+            id: partner.id,
+            to: partner.fullName,
+            nextEvent: getRelationship(partner.id) < 200 ? EVENT_MAX.BANKRUPT_ACCEPT_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_MAX.BANKRUPT_ACCEPT_RESCUE,
           }
         },
         {
           label: this.label_refuse,
           actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
           payload: {
-            amount: 0,
-            currency: 'CR',
-            resolveType: 'REFUSE',
-            to: partner.name,
-            nextEvent: getRelationship(PARTNER_ID.MAX) < 200 ? EVENT_MAX.BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_MAX.BANKRUPT_REFUSE_RESCUE
+            resolveType: MESSAGE_ACTION_RESOLVE_TYPE.REFUSE,
+            nextEvent: getRelationship(partner.id) < 200 ? EVENT_MAX.BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_MAX.BANKRUPT_REFUSE_RESCUE
           }
         }
       ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
@@ -587,7 +524,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       gainRelationship(PARTNER_ID.MAX, 400);
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -614,8 +551,10 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      gainRelationship(PARTNER_ID.MAX, -50);
-      gainPartnerBankroll(PARTNER_ID.MAX, 5000); // 초기 자금 지원
+      gainRelationship(PARTNER_ID.MAX, -200);
+      const partner = getPartner(PARTNER_ID.MAX);
+      if (!partner) return;
+      gainPartnerBankroll(partner, partner.initialBankroll / 2); // 초기 자금 지원
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },

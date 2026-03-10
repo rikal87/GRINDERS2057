@@ -37,7 +37,7 @@ export class GameEngine {
     this.winnerId = null;
     this.playersActedCount = 0;
     this.runoutInProgress = false;
-    this.pressureActive = false;
+    this.calculationInProgress = false;
     this.victoryPrize = 0;
     this.lastTriggeredItem = null; // Visual feedback
     // NEW: Delegate money logic
@@ -52,6 +52,7 @@ export class GameEngine {
     this.aggressor = null; // Track who raised preflop for C-Bet logic
     this.buyInLimit = buyInLimit; // only for human?
     this.inviteId = inviteId;
+    this.preflopRaises = 0;
     this.suspicion = 0;
     this.infamy = 0;
     this.players = this.initializePlayers(playerClass, tableSize); // [FIX] Initialize players after all properties are set
@@ -333,6 +334,7 @@ export class GameEngine {
     this.board = [];
     this.potManager.resetHand();
     this.playersActedCount = 0;
+    this.preflopRaises = 0;
     this.currentStreetRaises = 0; // [FIX] Reset raises for new hand
     this.aggressor = null;
 
@@ -353,7 +355,7 @@ export class GameEngine {
       p.isJoinPot = false; // Reset VPIP tracker
       if (p.stats) p.stats.handsPlayed++;
     });
-
+    this.calculationInProgress = false;
     // Check Trigger: PREFLOP start (or Round Start)
     // this.checkSkillTriggers('round_start');
     // this.checkSkillTriggers('preflop_start');
@@ -547,6 +549,7 @@ export class GameEngine {
       if (raised) {
         this.currentStreetRaises++;
         this.aggressor = player.id;
+        if (this.street === 'PREFLOP') this.preflopRaises++;
       } else {
         this.aggressor = null;
       }
@@ -599,6 +602,7 @@ export class GameEngine {
     const everyoneActed = this.playersActedCount >= playersWithChips.length;
 
     if (everyoneActed && allMatched) {
+      this.currentPlayerIndex = -1; // Ensure no one is "current" during transition
       await this.nextStreet();
       return;
     }
@@ -614,6 +618,7 @@ export class GameEngine {
     // Safety: If everyone is all_in or folded (no one left to act), force next state
     if (attempts >= this.players.length || !playersWithChips.find(p => p.chips >= 1)) {
       console.log('[GAME] Everyone is All-In or Folded. Forcing next street.');
+      this.currentPlayerIndex = -1;
       await this.nextStreet();
       return;
     }
@@ -624,12 +629,13 @@ export class GameEngine {
 
   async nextStreet() {
     if (this.state === 'IDLE') return;
+    this.currentPlayerIndex = -1; // Block actions during sleep
     await sleep(1000);
     this.players.forEach(p => p.currentBet = 0);
     this.potManager.currentRoundBet = 0; // Reset for new street
     this.currentStreetRaises = 0;
     this.playersActedCount = 0;
-    this.pressureActive = false; // Reset pressure skill effect each street
+    // this.pressureActive = false; // Reset pressure skill effect each street
     this.players.forEach(p => p.hasFacedFlopBet = false);
 
     const activePlayers = this.players.filter(p => !p.isFolded && !p.isEliminated);
@@ -693,7 +699,8 @@ export class GameEngine {
     const currentPot = this.pot; // [FIX] Capture pot before clearing
     const result = this.potManager.resolveShowdown(this.players, this.board, this.board.length === 0);
     this.showdownResults = result;
-
+    this.calculationInProgress = true
+    // this.state = 'ROUND_END';
     // Finalize History
     if (this.currentHandHistory) {
       const winnerResult = result.results.find(res => res.id === result.winnerId);
@@ -716,6 +723,7 @@ export class GameEngine {
     }
     // else eventAdaptor.win({ player: this.players[0], pot: this.pot });
     this.runoutInProgress = false; // Reset runout flag
+
     // if (isPlayerWinner) {
     //   eventAdaptor.showdownWin({ winnerResult, pot: this.pot });
     //   if (isAllIn) eventAdaptor.allinWin({ winnerResult, pot: currentPot });
@@ -810,6 +818,7 @@ export class GameEngine {
     await sleep(sleepTime)
     saveStore();
     if (this.suspicion >= 40 && this.checkTriggerCasinoInvestigation()) return;
+    this.calculationInProgress = false;
     this.startNewHand();
   }
 
@@ -967,39 +976,6 @@ export class GameEngine {
     this.state = 'RIVER';
     audioManager.playSFX('card-dealt&fold');
     // eventAdaptor.startStreet(this.state); // Moved to nextStreet
-  }
-
-  useSkill(player, skillId) {
-    const skill = player.class.skills.find(s => s.id === skillId);
-    if (!skill) return false;
-
-    const totalCost = (player.ram.used || 0) + (player.ram.reserved || 0) + skill.cost;
-    const maxRam = player.maxRam || player.class.maxRam;
-    if (totalCost > maxRam) return false;
-
-    if (skill.reserved) {
-      player.ram.reserved += skill.cost;
-    } else {
-      player.ram.used += skill.cost;
-    }
-
-    // Effect implementation
-    switch (skillId) {
-      case 'hud':
-        player.hudActive = !player.hudActive; // Toggle
-        break;
-      case 'swap':
-        // Replace cards
-        player.hand = [this.deck.pop(), this.deck.pop()];
-        audioManager.playSFX('card-dealt&fold');
-        break;
-      case 'pressure':
-        // No-fold logic for current street
-        this.pressureActive = true;
-        break;
-    }
-
-    return true;
   }
 
   // --- All-In Showdown Logic ---

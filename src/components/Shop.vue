@@ -76,11 +76,11 @@
 
             <div class="item-price">
               <div v-if="item.discount" class="discount-box">
-                <span class="original">{{ item.originalPrice }}</span>
+                <span class="original">{{ item.originalPrice.toLocaleString() }} CR</span>
                 <span class="percent">-{{ item.discount }}%</span>
               </div>
               <div class="final-price" :class="{ 'can-afford': store.bankroll >= item.price }">
-                {{ item.price }} CR
+                {{ item.price.toLocaleString() }} CR
               </div>
             </div>
 

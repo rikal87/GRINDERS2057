@@ -476,8 +476,6 @@ watch(currentView, (newView) => {
               <PokerTable :engine="engine" @openHistory="showHistory = true" />
             </main>
             <ControlPanel :engine="engine" @action="handleAction" @skill="handleSkill" />
-            <!-- History Popup -->
-            <HistoryPopup v-if="showHistory" :history="engine.handHistory" @close="showHistory = false" />
 
             <!-- Victory Overlay -->
             <Transition name="slide-up">
@@ -557,6 +555,9 @@ watch(currentView, (newView) => {
         </div>
       </div>
     </Transition>
+    <!-- History Popup -->
+    <HistoryPopup v-if="showHistory && engine" :history="engine.handHistory" @close="showHistory = false" />
+
     <!-- Agent Task Popup -->
     <AgentTaskPopup v-if="showAgentTaskPopup" :slotIdx="selectedTaskSlotIdx" @close="showAgentTaskPopup = false" />
 

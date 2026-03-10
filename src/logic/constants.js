@@ -3,6 +3,7 @@ export const CONTRACT_TYPE = {
   BANKRUPT_RESCUE: 'BANKRUPT_RESCUE', // rescue bankrupt each other
   A_DATE_WITH_YOU: 'A_DATE_WITH_YOU', // a date with you
   COLLUSION: 'COLLUSION', // with you gambling then session end share net worth
+  STAKING: 'STAKING' // 그가 스테이커(Staker)가 되어 플레이어에게 자금을 대주고, 게임결과에 대해 수익을 나눕니다.
 };
 export const TYPE_CHANGE_BANKROLL = {
   GAMBLING: 'GAMBLING',
@@ -12,6 +13,7 @@ export const TYPE_CHANGE_BANKROLL = {
   PAY_INCOME_TAX: 'PAY_INCOME_TAX',
   PAY_FINE: 'PAY_FINE',
   DEBT_REPAYMENT: 'DEBT_REPAYMENT',
+  TRANSFER: 'TRANSFER',
   BUY_ITEM: 'BUY_ITEM',
   SELL_ITEM: 'SELL_ITEM',
   AI_AGENT_SUBSCRIPTION: 'AI_AGENT_SUBSCRIPTION',

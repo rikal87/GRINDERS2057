@@ -1,44 +1,43 @@
 import fs from 'fs';
-import { createDeck } from './poker.js';
-import { getUnifiedAction } from './aiEngine/aiBrainHub.js';
-import { PotManager } from './PotManager.js';
+import { calculateEquity, createDeck } from './poker.js';
+import { CLASSES_ENEMY as D1, CLASSES_PARTNER as D2 } from './persona.js'
 import { getAIAction } from './aiEngine.js';
-import { CLASSES_PARTNER } from './persona.js';
+import { getAdvancedAIAction } from './aiEngineAdvanced.js';
+import { PotManager } from './PotManager.js';
 
-/**
- * AI vs AI Match Simulation Script
- */
-async function runSimulation() {
-  const opp1 = process.argv[2] || 'old_lion';
-  const opp2 = process.argv[3] || 'gangster';
-  const opp3 = process.argv[4] || 'Max';
+const CLASSES_ENEMY = [...D1, ...D2]
+export async function runSimulation() {
+  const opp1 = 'gangster'
+  const opp2 = 'maniac'
+  const opp3 = 'the_don'
+  console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
+  const logHeader = `Simulation Log - ${new Date().toLocaleString()}\n\n`;
+  fs.writeFileSync('hand_history.log', logHeader, 'utf8');
 
-  const players = [];
-  const getPersona = (id) => CLASSES_PARTNER.find(p => p.id === id) || { id };
-  const oop1Template = { id: opp1, class: getPersona(opp1), chips: 1000 };
-  const oop2Template = { id: opp2, class: getPersona(opp2), chips: 1000 };
-  const oop3Template = { id: opp3, class: getPersona(opp3), chips: 1000 };
-  const getAction = (p, engine) => {
-    if (p.class.id === 'shark') {
-      return getUnifiedAction(p, engine);
-    };
-    // !!!!!!!!!!!!!!!do not edit this line!!!!!!!!!!!!!!!
-    return getAIAction(p, engine);
-    // !!!!!!!!!!!!!!!do not edit this line!!!!!!!!!!!!!!!
-    // !!!!!!!!!!!!!!!do not edit this line!!!!!!!!!!!!!!!
-    // !!!!!!!!!!!!!!!do not edit this line!!!!!!!!!!!!!!!
-    // !!!!!!!!!!!!!!!do not edit this line!!!!!!!!!!!!!!!
+  const oop1Template = CLASSES_ENEMY.find(c => c.id === opp1 || c.name === opp1);
+  const oop2Template = CLASSES_ENEMY.find(c => c.id === opp2 || c.name === opp2);
+  const oop3Template = CLASSES_ENEMY.find(c => c.id === opp3 || c.name === opp3);
+  // ** don't edit this function **
+  function getUnifiedAction(player, engine) {
+
+    if (player.class?.isBoss) {
+      return getAdvancedAIAction(player, engine);
+    }
+    return getAIAction(player, engine);
   }
-  const createPlayer = (id, name, template, chips) => ({
-    ...template,
+
+  let players = [];
+  const createPlayer = (id, name, template, initialChips) => ({
     id,
     name,
-    chips,
-    startChips: chips,
-    hand: [],
+    class: template,
+    chips: initialChips,
+    startChips: initialChips,
     currentBet: 0,
     totalWagered: 0,
     isFolded: false,
+    isHuman: false,
+    hand: [],
     stats: {
       handsPlayed: 0,
       vpipCount: 0,
@@ -46,42 +45,37 @@ async function runSimulation() {
       threeBetCount: 0,
       fourBetPlusCount: 0,
       wins: 0,
+      bankrupt: false,
+      foldsPerStreet: { PREFLOP: 0, FLOP: 0, TURN: 0, RIVER: 0 },
       showdownCount: 0,
       showdownWinCount: 0,
-      bluffCatchCount: 0,
-      bluffCatchWinCount: 0,
       sawFlopCount: 0,
       sawTurnCount: 0,
       sawRiverCount: 0,
-      foldsPerStreet: { PREFLOP: 0, FLOP: 0, TURN: 0, RIVER: 0 },
       totalProfit: 0,
-      bankrupt: false
+      betsCount: 0,
+      callsCount: 0
     },
+    // Reset per hand
     handState: {
       didVpip: false,
       didPfr: false,
-      didThreeBet: false,
-      didFourBetPlus: false,
-      attemptedBluffCatch: false,
-      facedRaise: false
+      didThreeBet: false
     }
   });
 
   for (let i = 0; i < 2; i++) {
-    players.push(createPlayer(`${opp1}_${i}`, `${opp1}_${i}`, oop1Template, 10000));
-    players.push(createPlayer(`${opp2}_${i}`, `${opp2}_${i}`, oop2Template, 10000));
-    players.push(createPlayer(`${opp3}_${i}`, `${opp3}_${i}`, oop3Template, 10000));
+    players.push(createPlayer(`${opp1}_${i}`, `${opp1}_${i}`, oop1Template, 2000));
+    players.push(createPlayer(`${opp2}_${i}`, `${opp2}_${i}`, oop2Template, 2000));
+    players.push(createPlayer(`${opp3}_${i}`, `${opp3}_${i}`, oop3Template, 2000));
   }
 
-  let handsToPlay = 2000;
-  const handHistoryFile = 'hand_history.log';
-  fs.writeFileSync(handHistoryFile, `Simulation Log - ${new Date().toLocaleString()}\n`, 'utf8');
-
+  let handsToPlay = 1000;
   console.log(`Initialized 6 players. Running ${handsToPlay} hands...`);
 
   const engine = {
-    bb: 10,
-    sb: 5,
+    bb: 2,
+    sb: 1,
     board: [],
     aggressor: null,
     players: players,
@@ -90,7 +84,6 @@ async function runSimulation() {
     currentRoundBet: 0,
     state: 'PREFLOP',
     currentStreetRaises: 0,
-    aggressor: null, // Track who raised preflop for C-Bet logic
     preflopRaises: 0,
     pot: 0,
   };
@@ -101,23 +94,20 @@ async function runSimulation() {
     const deck = createDeck();
     engine.board = [];
     potManager.resetHand();
+    engine.aggressor = null;
     engine.currentStreetRaises = 0;
     engine.preflopRaises = 0;
     engine.handHistory = []; // [DEBUG OVERHAUL] Track storyline
-    engine.actionHistory = []; // [v23] Track structured actions for Brain analysis
-    engine.aggressor = null;
-    const alivePlayer = players.filter(p => p.chips > 0);
-    // const bustHero = players.filter(p => p.class.id === 'shark' && p.chips === 0);
-    // const alivePlayerisShark = alivePlayer.filter(p => p.class.id === 'shark')
-    if (alivePlayer.length <= 2) break;
+
+    const aliveCount = players.filter(p => p.chips > 0).length;
+    if (aliveCount < 2) break;
 
     players.forEach(p => {
       p.hand = [deck.pop(), deck.pop()];
       p.isFolded = p.chips <= 0;
       p.currentBet = 0;
       p.totalWagered = 0;
-      p.handState = { didVpip: false, didPfr: false, didThreeBet: false, didFourBetPlus: false, attemptedBluffCatch: false, facedRaise: false };
-      p.actionHistory = [];
+      p.handState = { didVpip: false, didPfr: false, didThreeBet: false, didFourBetPlus: false };
       p.isBust = false
       if (p.chips > 0) p.stats.handsPlayed++;
     });
@@ -134,69 +124,77 @@ async function runSimulation() {
 
       engine.state = street;
       engine.currentStreetRaises = 0;
-      let consecutiveChecksOrCalls = 0;
-      let activeInRound = players.filter(p => !p.isFolded && p.chips > 0);
-      let attempts = 0;
 
-      while (consecutiveChecksOrCalls < activeInRound.length && attempts < 50) {
+      // Initialize acted status for the street
+      players.forEach(p => p.actedThisStreet = false);
+
+      let attempts = 0;
+      const maxAttempts = 200; // Safety break
+
+      while (attempts < maxAttempts) {
         attempts++;
+
+        // CHECK TERMINATION CONDITION
+        // Round ends if:
+        // 1. Every non-folded player has acted at least once this street AND
+        // 2. Every non-folded player has matched the currentRoundBet (or is All-In)
+        const activePlayers = players.filter(p => !p.isFolded);
+        const missingAction = activePlayers.find(p => p.chips > 0 && !p.actedThisStreet);
+        const missingMatch = activePlayers.find(p => p.chips > 0 && p.currentBet !== potManager.currentRoundBet);
+
+        if (!missingAction && !missingMatch) break;
+        if (activePlayers.length <= 1) break;
+
         const p = players[actingIdx];
+
         if (!p.isFolded && p.chips > 0) {
           const callAmt = potManager.currentRoundBet - p.currentBet;
           engine.currentRoundBet = potManager.currentRoundBet;
           engine.pot = potManager.pot;
-          let action = getAction(p, engine);
+
+          let action = getUnifiedAction(p, engine);
           let amount = 0;
-          let actionType = action.type || action.action;
 
           let rangeEst = action.rangeEstimate ? ` [Range: ${action.rangeEstimate}]` : '';
           let expTrigger = action.exploitTrigger ? ` [Exploit: ${action.exploitTrigger}]` : '';
 
-          if (actionType === 'fold') {
+          if (action.type === 'fold') {
             engine.handHistory.push(`[${street}] ${p.name}: Folds${rangeEst}${expTrigger}`);
             p.isFolded = true;
+            if (engine.aggressor === p.id) engine.aggressor = null;
             p.stats.foldsPerStreet[street]++;
-            activeInRound = activeInRound.filter(x => x.id !== p.id);
-            if (activeInRound.length <= 1) break;
-            consecutiveChecksOrCalls++;
-            if (engine.aggressor === p.id) {
-              engine.aggressor = null; // reset aggressor if we check or call
-            }
+
+            // Check if hand should end immediately
+            if (players.filter(px => !px.isFolded).length <= 1) break;
           } else {
-            if (actionType === 'check' || actionType === 'call') {
-              if (engine.aggressor === p.id) {
-                engine.aggressor = null; // reset aggressor if we check or call
-              }
+            if (action.type === 'check' || action.type === 'call') {
               amount = callAmt;
-              consecutiveChecksOrCalls++;
-              engine.handHistory.push(`[${street}] ${p.name}: ${actionType === 'check' ? 'Checks' : 'Calls ' + amount}${rangeEst}${expTrigger} - <${action.insight}>`);
+              if (engine.aggressor === p.id) engine.aggressor = null;
+
+              engine.handHistory.push(`[${street}] ${p.name}: ${action.type === 'check' ? 'Checks' : 'Calls ' + amount}${rangeEst}${expTrigger} - <${action.insight}>`);
+
               if (amount > 0 && !p.handState.didVpip) {
                 p.stats.vpipCount++;
                 p.handState.didVpip = true;
               }
-              if (street !== 'PREFLOP' && actionType === 'call') {
+              if (street !== 'PREFLOP' && action.type === 'call') {
                 p.stats.callsCount++;
               }
-              if (action.isBluffCatch) {
-                p.stats.bluffCatchCount++;
-                p.handState.attemptedBluffCatch = true;
-              }
+              p.actedThisStreet = true;
             } else {
+              // Raise or Bet
+              const targetAmount = action.amount || (callAmt + engine.bb);
+              amount = targetAmount - p.currentBet;
+              if (amount > p.chips) amount = p.chips;
 
-              amount = action.amount || (callAmt + engine.bb);
-              if (amount > p.chips + p.currentBet) amount = p.chips + p.currentBet;
-
-              const isActualRaise = amount > potManager.currentRoundBet;
-
-              engine.handHistory.push(`[${street}] ${p.name}: Raises to ${amount}${rangeEst}${expTrigger} - <${action.insight}>`);
+              const totalBetOnStreet = p.currentBet + amount;
+              const isActualRaise = totalBetOnStreet > potManager.currentRoundBet;
+              engine.handHistory.push(`[${street}] ${p.name}: Raises to ${totalBetOnStreet}${rangeEst}${expTrigger} - <${action.insight}>`);
 
               if (isActualRaise) {
-                engine.aggressor = p.id;
                 engine.currentStreetRaises++;
-                players.filter(other => !other.isFolded && other.id !== p.id).forEach(other => {
-                  other.handState.facedRaise = true;
-                });
                 if (street === 'PREFLOP') {
+                  engine.preflopRaises++;
                   if (engine.currentStreetRaises === 1) {
                     if (!p.handState.didPfr) { p.stats.pfrCount++; p.handState.didPfr = true; }
                   } else if (engine.currentStreetRaises === 2) {
@@ -204,13 +202,14 @@ async function runSimulation() {
                   } else if (engine.currentStreetRaises >= 3) {
                     if (!p.handState.didFourBetPlus) { p.stats.fourBetPlusCount++; p.handState.didFourBetPlus = true; }
                   }
-
-                  engine.preflopRaises = engine.currentStreetRaises;
                 }
-                consecutiveChecksOrCalls = 1;
-              } else {
-                consecutiveChecksOrCalls++;
+                engine.aggressor = p.id;
+
+                // CRITICAL: A raise resets acted state for EVERYONE ELSE
+                players.forEach(px => px.actedThisStreet = false);
               }
+
+              p.actedThisStreet = true;
 
               if (!p.handState.didVpip) {
                 p.stats.vpipCount++;
@@ -221,25 +220,33 @@ async function runSimulation() {
               }
             }
 
-            if (amount > 0) potManager.placeBet(p, amount);
-
-            const historyEntry = { playerId: p.id, street, action: actionType, amount };
-            players.filter(p => p.class.id === opp1).forEach(shark => {
-              if (!shark.actionHistory) shark.actionHistory = [];
-              shark.actionHistory.push(historyEntry);
-            });
+            if (amount > 0) {
+              potManager.placeBet(p, amount);
+            }
           }
+        } else if (!p.isFolded && p.chips <= 0) {
+          // Player is All-In, just ensure they are marked acted
+          p.actedThisStreet = true;
         }
+
         actingIdx = (actingIdx + 1) % players.length;
       }
       players.forEach(p => p.currentBet = 0);
       potManager.currentRoundBet = 0;
     };
 
+    // Preflop
     potManager.placeBet(players[(dealerIdx + 1) % players.length], engine.sb);
     potManager.placeBet(players[(dealerIdx + 2) % players.length], engine.bb);
     runBettingRound('PREFLOP');
 
+    // const getPosName = (idx) => {
+    //   const dist = (idx - dealerIdx + players.length) % players.length;
+    //   const posMap6 = ['BTN', 'SB', 'BB', 'UTG', 'MP', 'CO'];
+    //   return posMap6[dist] || 'MP';
+    // };
+
+    // Streets
     const streets = ['FLOP', 'TURN', 'RIVER'];
     for (const street of streets) {
       if (players.filter(p => !p.isFolded).length <= 1) break;
@@ -256,6 +263,7 @@ async function runSimulation() {
       runBettingRound(street);
     }
 
+    // Showdown
     const activeAtEnd = players.filter(p => !p.isFolded);
     if (activeAtEnd.length > 1) activeAtEnd.forEach(p => p.stats.showdownCount++);
 
@@ -264,70 +272,187 @@ async function runSimulation() {
       const winner = players.find(p => p.id === result.winnerId);
       if (winner) {
         winner.stats.wins++;
-        if (activeAtEnd.length > 1) {
-          winner.stats.showdownWinCount++;
-          if (winner.handState.attemptedBluffCatch) {
-            winner.stats.bluffCatchWinCount++;
-          }
-        }
+        if (activeAtEnd.length > 1) winner.stats.showdownWinCount++;
       }
     }
 
-    const totalPotBB = potManager.pot / engine.bb;
-    if (totalPotBB >= 30 || activeAtEnd.length > 1) {
-      const involved = players.filter(p => p.totalWagered > engine.bb);
-      if (involved.some(p => p.name.startsWith(opp1))) {
-        let dump = `\n======================================\n`;
-        dump += `[HAND HISTORY DUMP] Hand #${hand} | Pot: ${potManager.pot} (${totalPotBB.toFixed(1)} BB) | Board: [${engine.board.join(', ')}]\n`;
-        dump += `Players: ${involved.map(p => `${p.name} (${p.hand.join(',')})`).join(' | ')}\n`;
-        dump += `--------------------------------------\n`;
-        engine.handHistory.forEach(log => dump += log + '\n');
-        if (result.winnerId) dump += `Winner: ${result.winnerId}\n`;
-        dump += `======================================\n`;
-        fs.appendFileSync(handHistoryFile, dump, 'utf8');
-      }
+    // [HAND HISTORY DUMP] Always dump to hand_history.log
+    let hhText = `\n======================================\n`;
+    hhText += `[HAND HISTORY DUMP] Hand #${hand} | Pot: ${potManager.pot} | Board: [${engine.board.join(', ')}]\n`;
+    hhText += `Players: ${players.filter(p => !p.isFolded || p.totalWagered > 0).map(p => `${p.name} (${p.hand.join(',')})`).join(' | ')}\n`;
+    hhText += `--------------------------------------\n`;
+    engine.handHistory.forEach(log => hhText += log + '\n');
+    if (result.results) {
+      hhText += `Showdown Results:\n`;
+      result.results.forEach(r => {
+        hhText += `  - ${r.id}: ${r.hand.name} (${r.player.hand.join(',')})\n`;
+      });
+    }
+    if (result.winnerId) hhText += `Winner: ${result.winnerId}\n`;
+    hhText += `======================================\n`;
+
+    fs.appendFileSync('hand_history.log', hhText, 'utf8');
+
+    // [HAND HISTORY DUMP] For Significant Pots (> 500) ALSO dump to big_pots_hh.txt
+    if (potManager.pot > 500) {
+      console.log(hhText);
+      fs.appendFileSync('big_pots_hh.txt', hhText, 'utf8');
     }
   }
 
+  // Final Reports
   players.forEach(p => {
     p.stats.totalProfit = p.chips - p.startChips;
     if (p.chips <= 0) p.stats.bankrupt = true;
   });
 
-  const report = {};
-  const groups = [opp1, opp2, opp3];
-  groups.forEach(g => {
-    const list = players.filter(p => p.class.id === g);
-    const hands = list.reduce((s, p) => s + p.stats.handsPlayed, 0) / list.length;
-    const profit = list.reduce((s, p) => s + (p.chips - p.startChips), 0) / list.length;
-    const vpip = (list.reduce((s, p) => s + p.stats.vpipCount, 0) / Math.max(1, list.reduce((s, p) => s + p.stats.handsPlayed, 0)) * 100).toFixed(1);
-    const pfr = (list.reduce((s, p) => s + p.stats.pfrCount, 0) / Math.max(1, list.reduce((s, p) => s + p.stats.handsPlayed, 0)) * 100).toFixed(1);
-    const threeB = (list.reduce((s, p) => s + p.stats.threeBetCount, 0) / Math.max(1, list.reduce((s, p) => s + p.stats.handsPlayed, 0)) * 100).toFixed(1);
-    const fourB = (list.reduce((s, p) => s + p.stats.fourBetPlusCount, 0) / Math.max(1, list.reduce((s, p) => s + p.stats.handsPlayed, 0)) * 100).toFixed(1);
+  let logContent = `\n[${new Date().toLocaleString()}] Simulation Result (${opp1} vs ${opp2} vs ${opp3})\n`;
 
-    report[g] = {
-      "Hands Played(avg)": hands,
-      "Profit": profit,
-      "VPIP": parseFloat(vpip),
-      "PFR": parseFloat(pfr),
-      "3B": parseFloat(threeB),
-      "4B+": parseFloat(fourB),
-      "chips": list[0].chips,
-      "bankrupt_count": list.filter(p => p.chips <= 0).length,
-      "WTSD": `${(list.reduce((s, p) => s + p.stats.showdownCount, 0) / (list.reduce((s, p) => s + p.stats.sawFlopCount, 0) || 1) * 100).toFixed(1)}%`,
-      "W$SD": `${(list.reduce((s, p) => s + p.stats.showdownWinCount, 0) / (list.reduce((s, p) => s + p.stats.showdownCount, 0) || 1) * 100).toFixed(1)}%`,
-      "_meta": {
-        "totalHandsRaw": list.reduce((s, p) => s + p.stats.handsPlayed, 0),
-        "vpipCountRaw": list.reduce((s, p) => s + p.stats.vpipCount, 0),
-        "pfrCountRaw": list.reduce((s, p) => s + p.stats.pfrCount, 0),
-        "threeBetCountRaw": list.reduce((s, p) => s + p.stats.threeBetCount, 0),
-        "fourBetCountRaw": list.reduce((s, p) => s + p.stats.fourBetPlusCount, 0),
-        "showdownCountRaw": list.reduce((s, p) => s + p.stats.showdownCount, 0),
-        "showdownWinCountRaw": list.reduce((s, p) => s + p.stats.showdownWinCount, 0)
-      }
-    };
-  });
-  fs.writeFileSync('simulation_result.json', JSON.stringify(report, null, 2));
+  const printGroupReport = (name, pList) => {
+    const totalHands = pList.reduce((s, p) => s + p.stats.handsPlayed, 0) / pList.length;
+    const avgVpip = (pList.reduce((s, p) => s + p.stats.vpipCount, 0) / Math.max(1, pList.reduce((s, p) => s + p.stats.handsPlayed, 0)) * 100).toFixed(1);
+    const avgPfr = (pList.reduce((s, p) => s + p.stats.pfrCount, 0) / Math.max(1, pList.reduce((s, p) => s + p.stats.handsPlayed, 0)) * 100).toFixed(1);
+    const avg3B = (pList.reduce((s, p) => s + p.stats.threeBetCount, 0) / Math.max(1, pList.reduce((s, p) => s + p.stats.handsPlayed, 0)) * 100).toFixed(1);
+    const avg4B = (pList.reduce((s, p) => s + p.stats.fourBetPlusCount, 0) / Math.max(1, pList.reduce((s, p) => s + p.stats.handsPlayed, 0)) * 100).toFixed(1);
+    const totalProfit = pList.reduce((s, p) => s + p.stats.totalProfit, 0);
+    const folds = { PF: 0, F: 0, T: 0, R: 0 };
+    pList.forEach(p => {
+      folds.PF += p.stats.foldsPerStreet.PREFLOP;
+      folds.F += p.stats.foldsPerStreet.FLOP;
+      folds.T += p.stats.foldsPerStreet.TURN;
+      folds.R += p.stats.foldsPerStreet.RIVER;
+    });
+
+    const report =
+      `--- [${name}] Group Report ---
+Hands Played (avg): ${Math.floor(totalHands)} | Profit: ${totalProfit} | VPIP: ${avgVpip}% | PFR: ${avgPfr}% | 3B: ${avg3B}% | 4B+: ${avg4B}%
+Folds: PF(${folds.PF}) F(${folds.F}) T(${folds.T}) R(${folds.R})
+WTSD: ${(pList.reduce((s, p) => s + p.stats.showdownCount, 0) / (pList.reduce((s, p) => s + p.stats.sawFlopCount, 0) || 1) * 100).toFixed(1)}% | W$SD: ${(pList.reduce((s, p) => s + p.stats.showdownWinCount, 0) / (pList.reduce((s, p) => s + p.stats.showdownCount, 0) || 1) * 100).toFixed(1)}%
+Showdown Wins: ${pList.reduce((s, p) => s + p.stats.showdownWinCount, 0)}/${pList.reduce((s, p) => s + p.stats.showdownCount, 0)}\n`;
+
+    console.log(`\n` + report);
+    logContent += report;
+  };
+
+  const jsonLogFile = 'simulation_result.json';
+  let statsJson = {};
+  if (fs.existsSync(jsonLogFile)) {
+    try {
+      const existingData = fs.readFileSync(jsonLogFile, 'utf8');
+      statsJson = JSON.parse(existingData);
+    } catch (e) {
+      console.error("Error reading JSON stats file:", e);
+    }
+  }
+
+  const updateJsonStats = (name, pList) => {
+    if (!statsJson[name]) {
+      statsJson[name] = {
+        "Hands Played(avg)": 0, "Profit": 0, "VPIP": 0, "PFR": 0, "3B": 0, "4B+": 0, "chips": 0, "WTSD": 0, "W$SD": 0,
+        "Folds": { "PF": 0, "F": 0, "T": 0, "R": 0 }, "bankrupt_count": 0,
+        "_meta": {
+          "totalHandsRaw": 0, "vpipCountRaw": 0, "pfrCountRaw": 0, "threeBetCountRaw": 0, "fourBetCountRaw": 0,
+          "showdownCountRaw": 0, "showdownWinCountRaw": 0, "sawFlopCountRaw": 0, "sawTurnCountRaw": 0, "sawRiverCountRaw": 0,
+          "foldPFCountRaw": 0, "foldFCountRaw": 0, "foldTCountRaw": 0, "foldRCountRaw": 0
+        }
+      };
+    }
+
+    const s = statsJson[name];
+    const parse = (v) => (typeof v === 'string') ? parseFloat(v.replace('%', '')) : (v || 0);
+
+    if (!s.Folds) s.Folds = { PF: 0, F: 0, T: 0, R: 0 };
+    if (!s._meta) {
+      const hands = parse(s["Hands Played(avg)"]);
+      const vpip = parse(s["VPIP"]);
+      const pfr = parse(s["PFR"]);
+      const wtsd = parse(s["WTSD"]);
+      const wsd = parse(s["W$SD"]);
+
+      s._meta = {
+        totalHandsRaw: hands * (pList.length || 1),
+        vpipCountRaw: Math.round((vpip / 100) * hands),
+        pfrCountRaw: Math.round((pfr / 100) * hands),
+        threeBetCountRaw: Math.round((parse(s["3B"]) / 100) * hands),
+        fourBetCountRaw: Math.round((parse(s["4B+"]) / 100) * hands),
+        sawFlopCountRaw: Math.round((vpip / 100) * hands * 0.7),
+        sawTurnCountRaw: Math.round((vpip / 100) * hands * 0.5),
+        sawRiverCountRaw: Math.round((vpip / 100) * hands * 0.3),
+        foldPFCountRaw: parse(s.Folds.PF),
+        foldFCountRaw: parse(s.Folds.F),
+        foldTCountRaw: parse(s.Folds.T),
+        foldRCountRaw: parse(s.Folds.R),
+        showdownCountRaw: Math.round((wtsd / 100) * (Math.round((vpip / 100) * hands * 0.7))),
+        showdownWinCountRaw: Math.round((wsd / 100) * Math.round((wtsd / 100) * (Math.round((vpip / 100) * hands * 0.7))))
+      };
+    }
+
+    const m = s._meta;
+    if (m.sawFlopCountRaw === undefined || m.sawFlopCountRaw === null) m.sawFlopCountRaw = Math.round(parse(s["VPIP"]) / 100 * parse(s["Hands Played(avg)"]) * 0.7);
+    if (m.sawTurnCountRaw === undefined || m.sawTurnCountRaw === null) m.sawTurnCountRaw = Math.round(parse(s["VPIP"]) / 100 * parse(s["Hands Played(avg)"]) * 0.5);
+    if (m.sawRiverCountRaw === undefined || m.sawRiverCountRaw === null) m.sawRiverCountRaw = Math.round(parse(s["VPIP"]) / 100 * parse(s["Hands Played(avg)"]) * 0.3);
+    if (m.foldPFCountRaw === undefined || m.foldPFCountRaw === null) m.foldPFCountRaw = 0;
+    if (m.foldFCountRaw === undefined || m.foldFCountRaw === null) m.foldFCountRaw = 0;
+    if (m.foldTCountRaw === undefined || m.foldTCountRaw === null) m.foldTCountRaw = 0;
+    if (m.foldRCountRaw === undefined || m.foldRCountRaw === null) m.foldRCountRaw = 0;
+
+    const currentTotalHands = pList.reduce((acc, p) => acc + p.stats.handsPlayed, 0);
+    const currentVpipCount = pList.reduce((acc, p) => acc + p.stats.vpipCount, 0);
+    const currentPfrCount = pList.reduce((acc, p) => acc + p.stats.pfrCount, 0);
+    const current3bCount = pList.reduce((acc, p) => acc + p.stats.threeBetCount, 0);
+    const current4bCount = pList.reduce((acc, p) => acc + p.stats.fourBetPlusCount, 0);
+    const currentShowdownCount = pList.reduce((acc, p) => acc + p.stats.showdownCount, 0);
+    const currentShowdownWinCount = pList.reduce((acc, p) => acc + p.stats.showdownWinCount, 0);
+    const currentSawFlopCount = pList.reduce((acc, p) => acc + p.stats.sawFlopCount, 0);
+    const currentSawTurnCount = pList.reduce((acc, p) => acc + p.stats.sawTurnCount, 0);
+    const currentSawRiverCount = pList.reduce((acc, p) => acc + p.stats.sawRiverCount, 0);
+    const currentFoldPF = pList.reduce((acc, p) => acc + p.stats.foldsPerStreet.PREFLOP, 0);
+    const currentFoldF = pList.reduce((acc, p) => acc + p.stats.foldsPerStreet.FLOP, 0);
+    const currentFoldT = pList.reduce((acc, p) => acc + p.stats.foldsPerStreet.TURN, 0);
+    const currentFoldR = pList.reduce((acc, p) => acc + p.stats.foldsPerStreet.RIVER, 0);
+
+    m.totalHandsRaw += currentTotalHands;
+    m.vpipCountRaw += currentVpipCount;
+    m.pfrCountRaw += currentPfrCount;
+    m.threeBetCountRaw += current3bCount;
+    m.fourBetCountRaw += current4bCount;
+    m.showdownCountRaw += currentShowdownCount;
+    m.showdownWinCountRaw += currentShowdownWinCount;
+    m.sawFlopCountRaw += currentSawFlopCount;
+    m.sawTurnCountRaw += currentSawTurnCount;
+    m.sawRiverCountRaw += currentSawRiverCount;
+    m.foldPFCountRaw += currentFoldPF;
+    m.foldFCountRaw += currentFoldF;
+    m.foldTCountRaw += currentFoldT;
+    m.foldRCountRaw += currentFoldR;
+
+    s["Hands Played(avg)"] += currentTotalHands / pList.length;
+    s["Profit"] += pList.reduce((acc, p) => acc + p.stats.totalProfit, 0);
+    s["VPIP"] = Number((m.vpipCountRaw / m.totalHandsRaw * 100).toFixed(1));
+    s["PFR"] = Number((m.pfrCountRaw / m.totalHandsRaw * 100).toFixed(1));
+    s["3B"] = Number((m.threeBetCountRaw / m.totalHandsRaw * 100).toFixed(1));
+    s["4B+"] = Number((m.fourBetCountRaw / m.totalHandsRaw * 100).toFixed(1));
+    s["WTSD"] = Number((m.showdownCountRaw / (m.sawFlopCountRaw || 1) * 100).toFixed(1));
+    s["W$SD"] = Number((m.showdownWinCountRaw / (m.showdownCountRaw || 1) * 100).toFixed(1));
+    s["chips"] = pList.reduce((acc, p) => acc + p.chips, 0);
+
+    s.Folds.PF = Number((m.foldPFCountRaw / m.totalHandsRaw * 100).toFixed(1));
+    s.Folds.F = Number((m.foldFCountRaw / (m.sawFlopCountRaw || 1) * 100).toFixed(1));
+    s.Folds.T = Number((m.foldTCountRaw / (m.sawTurnCountRaw || 1) * 100).toFixed(1));
+    s.Folds.R = Number((m.foldRCountRaw / (m.sawRiverCountRaw || 1) * 100).toFixed(1));
+
+    pList.forEach(p => {
+      if (p.stats.bankrupt) s.bankrupt_count++;
+    });
+  };
+
+  updateJsonStats(opp1, players.filter(p => p.id.startsWith(opp1)));
+  updateJsonStats(opp2, players.filter(p => p.id.startsWith(opp2)));
+  updateJsonStats(opp3, players.filter(p => p.id.startsWith(opp3)));
+
+  fs.writeFileSync(jsonLogFile, JSON.stringify(statsJson, null, 2), 'utf8');
+  console.log(`Cumulative stats saved to ${jsonLogFile}`);
 }
 
 runSimulation();
+

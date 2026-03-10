@@ -411,7 +411,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding-right: 15px;
+  padding: 15px 15px 0 0;
 }
 .v5-msg-list::-webkit-scrollbar,
 .v5-item-container::-webkit-scrollbar {
@@ -627,22 +627,54 @@
 }
 .v5-reader-actions {
   display: flex;
+  flex-direction: column;
+  align-items: end;
   gap: 12px;
 }
 
-
-
-/* AI Agent Setup Button */
-.stats-btn,
-.set-up-agent-btn {
-  background: rgba(0, 240, 255, 0.1);
-  border: 1px solid var(--neon-cyan);
-  color: var(--neon-cyan);
+.btn-0,
+.btn-1 {
   font-size: 0.6rem;
   padding: 2px 8px;
   cursor: pointer;
   margin-left: auto;
   transition: all 0.2s;
+}
+.btn-0 {
+  background: rgba(0, 240, 255, 0.1);
+  color: var(--neon-cyan);
+  border: 1px solid var(--neon-cyan);
+}
+.btn-1 {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--neon-red);
+  color: #fff;
+}
+
+/* AI Agent Setup Button */
+
+.stats-btn,
+.btn-accept.small,
+.btn-refuse.small,
+.set-up-agent-btn {
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  cursor: pointer;
+  margin-left: auto;
+  transition: all 0.2s;
+}
+.stats-btn,
+.btn-accept.small,
+.btn-refuse.small,
+.set-up-agent-btn {
+  background: rgba(0, 240, 255, 0.1);
+  color: var(--neon-cyan);
+  border: 1px solid var(--neon-cyan);
+}
+.btn-refuse.small {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--neon-red);
+  color: #fff;
 }
 .stats-btn:hover,
 .set-up-agent-btn:hover {

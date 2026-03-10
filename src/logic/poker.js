@@ -177,7 +177,8 @@ export const getHandCategory = (hand, board, evalResult) => {
   // Absolute Nuts Check (or near nuts)
   if (nutInfo.isNuts) {
     if (usedHoleCards === 0) return 'BOARD_CHOP'; // Board is nuts (guaranteed split)
-    if (usedHoleCards === 1) return 'STRONG'; // One card nuts is strong but vulnerable
+    // On the river, one card nuts is the absolute nuts. On earlier streets, it is vulnerable.
+    if (usedHoleCards === 1 && board.length < 5) return 'STRONG';
     return 'NUTS';
   }
   if (nutInfo.isSecondNuts) {
@@ -205,17 +206,17 @@ export const getHandCategory = (hand, board, evalResult) => {
   if (rank === 10) return 'NUTS';
 
   // 9: Straight Flush
-  if (rank === 9) return nutInfo.rank <= 3 ? (usedHoleCards === 2 ? 'MONSTER' : 'STRONG') : 'STRONG';
+  if (rank === 9) return nutInfo.rank <= 3 ? (usedHoleCards === 2 ? 'NUTS' : 'STRONG') : 'STRONG';
 
   // 8: Quads
   if (rank === 8) {
     if (usedHoleCards === 0) return 'WEAK';
     if (boardRanks.length >= 4 && boardRanks[0] === boardRanks[3]) {
       // Board is Quads. Kicker battle.
-      if (nutInfo.rank <= 3) return usedHoleCards === 2 ? 'MONSTER' : 'STRONG'; // Ace/King kicker
+      if (nutInfo.rank <= 3) return usedHoleCards === 2 ? 'NUTS' : 'STRONG'; // Ace/King kicker
       return 'WEAK'; // Playing board mostly
     }
-    return usedHoleCards === 2 ? 'MONSTER' : 'STRONG';
+    return usedHoleCards === 2 ? 'NUTS' : 'STRONG';
   }
 
   // 7: Full House
@@ -229,11 +230,11 @@ export const getHandCategory = (hand, board, evalResult) => {
   // 6: Flush
   if (rank === 6) {
     if (usedHoleCards === 0) return 'WEAK';
-    if (isBoardPaired) return 'MARGINAL'; // Vulnerable to Full House
-    if (nutInfo.rank <= 5) return usedHoleCards === 2 ? 'MONSTER' : 'STRONG'; // High Flush
+    if (isBoardPaired) return 'GOOD'; // Vulnerable to Full House
+    if (nutInfo.rank <= 5) return usedHoleCards === 2 ? 'NUTS' : 'MONSTER'; // High Flush
     if (nutInfo.rank <= 15) return 'STRONG'; // Mid Flush
     if (nutInfo.rank <= 25) return 'GOOD'; // Mid-Low Flush
-    return 'MARGINAL'; // Low Flush
+    return 'STRONG'; // Low Flush
   }
 
   // 5: Straight
@@ -275,7 +276,7 @@ export const getHandCategory = (hand, board, evalResult) => {
       const isPocketPair = hand[0][0] === hand[1][0];
       // Overpair to the board pair (e.g. AA on KK86)
       if (isPocketPair && handRanks[0] > boardHigh1) return 'STRONG';
-      
+
       // Counterfeited check
       if (!hasTopPair && handRanks.some(v => v < boardHigh1)) return 'MARGINAL';
       if (nutInfo.rank <= 15) return 'STRONG';
@@ -283,9 +284,15 @@ export const getHandCategory = (hand, board, evalResult) => {
     }
 
     // Normal Two Pair (No board pair)
-    if (hasTopPair && hasSecondPair) return 'MONSTER'; // Top Two
-    if (hasTopPair) return 'STRONG'; // Top Pair + Bottom Pair
-    
+    if (hasTopPair && hasSecondPair) {
+      if (isBoardFlushPossible || isBoardStraightPossible) return 'GOOD';
+      return 'MONSTER'; // Top Two
+    }
+    if (hasTopPair) {
+      if (isBoardFlushPossible || isBoardStraightPossible) return 'MARGINAL';
+      return 'STRONG'; // Top Pair + Bottom Pair
+    }
+
     // We have two pair but neither matches the top card (e.g., K-Q on A-K-Q)
     if (hasSecondPair) return 'GOOD'; // 2nd + 3rd pair
     return 'MARGINAL'; // Bottom two pairs
@@ -368,6 +375,8 @@ const scoreFiveCards = (cards) => {
     return name;
   };
 
+  let score = 0;
+
   if (isFlush && isStraight) {
     if (!isWheel && ranks[0] === 12) { // Royal Flush
       rank = 10;
@@ -395,12 +404,30 @@ const scoreFiveCards = (cards) => {
       Number(sortedCounts[1][0]) * Math.pow(15, 3);
   } else if (isFlush) {
     rank = 6;
-    name = `Flush (${getRankName(ranks[0])} High)`;
     // Flush: All 5 cards matter, ordered by rank
     total = rank * Math.pow(15, 5);
+    let flushVal = 0;
     for (let i = 0; i < ranks.length; i++) {
-      total += ranks[i] * Math.pow(15, 4 - i);
+      const cardVal = ranks[i];
+      total += cardVal * Math.pow(15, 4 - i);
+      flushVal += cardVal * Math.pow(15, 4 - i);
     }
+    // Calculate 0-100 score specifically for flushes.
+    // Max flush value (Ace-high, next cards also high) is roughly:
+    // 12*15^4 + 11*15^3 + 10*15^2 + 9*15^1 + 8*15^0 (Ace-King-Queen-Jack-9 is NOT a flush, it's A-K-Q-J-9)
+    // Actually, A-K-Q-J-9 is a flush if they are same suit.
+    // The max possible "pure" flush value is A,K,Q,J,9 (A,K,Q,J,T is Straight Flush)
+    // Wait, Ace, King, Queen, Jack, 9 is the highest Non-Straight Flush.
+    // Min is 7,5,4,3,2 (lowest non-straight flush)
+    const maxFlushVal = 12 * Math.pow(15, 4) + 11 * Math.pow(15, 3) + 10 * Math.pow(15, 2) + 9 * Math.pow(15, 1) + 7 * Math.pow(15, 0); // AKQJ7 (AKQJ8 is straight flush if suited? No, T is needed)
+    // Actually, AKQJ9 is a flush. AKQJT is SF.
+    // High flush: 12, 11, 10, 9, 7 (if T is included it's a straight flush)
+    // Lowest flush: 5, 3, 2, 1, 0 (7, 5, 4, 3, 2 is the lowest non-straight flush)
+    // Let's use a simpler normalization 
+    const minFlushVal = 5 * Math.pow(15, 4) + 3 * Math.pow(15, 3) + 2 * Math.pow(15, 2) + 1 * Math.pow(15, 1) + 0 * Math.pow(15, 0);
+    score = Math.floor(((flushVal - minFlushVal) / (maxFlushVal - minFlushVal)) * 100);
+    score = Math.max(0, Math.min(100, score));
+    name = `Flush (${getRankName(ranks[0])} High, Score: ${score})`;
   } else if (isStraight) {
     rank = 5;
     const highCard = isWheel ? 3 : ranks[0];
@@ -436,7 +463,7 @@ const scoreFiveCards = (cards) => {
     }
   }
 
-  return { rank, name, total, cards };
+  return { rank, name, total, score, cards };
 };
 
 export const calculateOuts = (hole, board) => {
@@ -654,22 +681,46 @@ export const analyzeBoardTexture = (board) => {
   let score = 0; // 0 = Dry/Static, 10 = Wet/Dynamic
 
   // 1. Connectivity (Straights)
-  let gaps = 0;
-  for (let i = 0; i < ranks.length - 1; i++) {
-    gaps += (ranks[i + 1] - ranks[i] - 1);
+  let maxConnectivity = 0;
+  // Check for 4-card clusters
+  if (ranks.length >= 4) {
+    for (let i = 0; i <= ranks.length - 4; i++) {
+      const spread = ranks[i + 3] - ranks[i];
+      if (spread <= 4) maxConnectivity = Math.max(maxConnectivity, 4);
+    }
   }
-  // Fewer gaps = more connected.
-  // 3 cards: gap 0 means connected (5,6,7). gap 1 means (5,6,8).
-  if (gaps === 0) score += 4;
-  else if (gaps <= 2) score += 2;
+  // Check for 3-card clusters
+  for (let i = 0; i <= ranks.length - 3; i++) {
+    const spread = ranks[i + 2] - ranks[i];
+    if (spread <= 4) maxConnectivity = Math.max(maxConnectivity, 3);
+  }
+
+  // Check Wheel Straight (A, 2, 3, 4, 5)
+  const hasAce = ranks.includes(12);
+  if (hasAce) {
+    const lowRanks = ranks.filter(r => r <= 3); // 2, 3, 4, 5
+    if (lowRanks.length >= 3) maxConnectivity = Math.max(maxConnectivity, 4);
+    else if (lowRanks.length >= 2) maxConnectivity = Math.max(maxConnectivity, 3);
+  }
+
+  if (maxConnectivity >= 4) score += 8;
+  else if (maxConnectivity >= 3) score += 5;
+  else {
+    // Check for 2-card connectivity (guts/backdoor)
+    for (let i = 0; i < ranks.length - 1; i++) {
+      const gap = (ranks[i + 1] - ranks[i] - 1);
+      if (gap <= 2) score += 1;
+    }
+  }
 
   // 2. Suits (Flush potential)
   const suitCounts = {};
   suits.forEach(s => suitCounts[s] = (suitCounts[s] || 0) + 1);
   const maxSuit = Math.max(...Object.values(suitCounts));
 
-  if (maxSuit >= 3) score += 4; // Flush possible/draw heavy
-  else if (maxSuit === 2) score += 1; // Backdoor flush
+  if (maxSuit >= 4) score += 8;
+  else if (maxSuit === 3) score += 5;
+  else if (maxSuit === 2) score += 1;
 
   // 3. Pairs (Static)
   const rankCounts = {};
@@ -680,15 +731,11 @@ export const analyzeBoardTexture = (board) => {
     score -= 2; // Paired board is static (Polarized) -> Dryish
   }
 
-  // 4. High Card (High boards hit ranges better usually, but regarding texture...)
-  // Ace high vs Low board.
-  // Generally low connected boards are wetter for ranges.
-
   let type = 'NEUTRAL';
-  if (score >= 5) type = 'WET';
+  if (score >= 7) type = 'WET';
   else if (score <= 2) type = 'DRY';
 
-  return { type, score, maxSuit, maxRankCount, ranks };
+  return { type, score, maxConnectivity, maxSuit, maxRankCount, ranks };
 };
 export const getDrawCategory = (hand, board) => {
   const outsData = calculateOuts(hand, board);
@@ -709,11 +756,16 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
   const isBoardPaired = boardRanks.some((r, i) => r === boardRanks[i + 1]);
   const isBoardTrips = boardRanks.some((r, i) => r === boardRanks[i + 1] && r === boardRanks[i + 2]);
 
-  const boardSuits = board.map(c => c[1]);
-  const boardSuitCounts = {};
-  boardSuits.forEach(s => boardSuitCounts[s] = (boardSuitCounts[s] || 0) + 1);
-  const isBoardFlushPossible = Object.values(boardSuitCounts).some(c => c >= 3);
-  const isBoardStraightPossible = analyzeBoardTexture(board).score >= 5;
+  const texture = analyzeBoardTexture(board);
+  const isBoardFlushPossible = texture.maxSuit >= 3;
+  const isBoardStraightPossible = texture.maxConnectivity >= 3;
+  const isBoardOnehandFlushPossible = texture.maxSuit >= 4;
+  const isBoardOnehandStraightPossible = texture.maxConnectivity >= 4;
+  const isPocketPair = hand[0][0] === hand[1][0];
+  const isBoardFullHouse = (boardRanks.length >= 5) && (
+    (boardRanks[0] === boardRanks[2] && boardRanks[3] === boardRanks[4]) ||
+    (boardRanks[0] === boardRanks[1] && boardRanks[2] === boardRanks[4])
+  );
   const holeVal = hand.map(c => '23456789TJQKA'.indexOf(c[0])).sort((a, b) => b - a);
   const usedHoleCards = evalResult.cards ? evalResult.cards.filter(c => hand.includes(c)).length : 0;
 
@@ -726,23 +778,34 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
 
   // 8: Quads
   if (rank === 8) {
-    if (usedHoleCards === 0) {
-      return getNutStatus(hand, board).isNuts ? 'BOARD_CHOP' : 'WEAK';
+    // Board is Quads?
+    const boardIsQuads = boardRanks.length >= 4 && boardRanks[0] === boardRanks[3];
+    if (boardIsQuads) {
+      if (getNutStatus(hand, board).isNuts) return 'NUTS'; // Ace Kicker
+      return 'BOARD_CHOP'; // High Kicker (K, Q) or Marginal
     }
     return 'NUTS';
   }
 
   // 7: Full House
   if (rank === 7) {
-    if (usedHoleCards === 0) {
-      return getNutStatus(hand, board).isNuts ? 'BOARD_CHOP' : 'WEAK';
+    if (isBoardFullHouse === 0) return 'BOARD_CHOP';
+
+    // Extract triplet rank from evalResult.total
+    const tripRank = Math.floor((evalResult.total % Math.pow(15, 5)) / Math.pow(15, 4));
+
+    if (isBoardFullHouse) {
+      if (isPocketPair) {
+        // High pocket pair improves the Board Trips to a massive Full House
+        return handRanks[0] >= 8 ? 'MONSTER' : 'STRONG'; // Tens (8) or higher
+      }
+      return 'MARGINAL'; // Using 1 card to fill a boat on a trips board is vulnerable
     }
-    if (isBoardTrips) {
-      // Board AAA. If we have Pocket Pair -> Monster. Else -> Weak/Marginal
-      const isPocketPair = hand[0][0] === hand[1][0];
-      return isPocketPair ? 'NUTS' : 'MARGINAL';
-    }
-    // Normal FH
+
+    const boardPairs = boardRanks.filter((r, i) => r === boardRanks[i + 1]);
+    const higherBoardPair = boardPairs.some(r => r > tripRank);
+
+    if (higherBoardPair) return 'STRONG';
     return 'MONSTER';
   }
 
@@ -752,7 +815,18 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
       return getNutStatus(hand, board).isNuts ? 'BOARD_CHOP' : 'WEAK';
     }
     if (isBoardPaired) return 'GOOD';
-    return usedHoleCards === 2 ? 'MONSTER' : 'STRONG';
+
+    const flushScore = evalResult.score || 0;
+    if (usedHoleCards === 2) {
+      if (flushScore >= 80) return 'MONSTER';
+      if (flushScore >= 40) return 'STRONG';
+      return 'GOOD';
+    } else {
+      // 1-card flush
+      if (flushScore >= 90) return 'STRONG';
+      if (flushScore >= 60) return 'GOOD';
+      return 'MARGINAL';
+    }
   }
 
   // 5: Straight
@@ -762,70 +836,107 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
       const isNuts = getNutStatus(hand, board).isNuts;
       return isNuts ? 'BOARD_CHOP' : 'WEAK';
     }
-    if (isBoardFlushPossible || isBoardPaired) return 'GOOD';
-    return usedHoleCards === 2 ? 'MONSTER' : 'STRONG'; // One card straight is just Strong
+    let caseSum = 0;
+    if (isBoardPaired) caseSum++;
+    if (isBoardFlushPossible) caseSum++;
+    if (isBoardOnehandFlushPossible) caseSum++;
+    if (usedHoleCards === 1) caseSum++;
+    if (usedHoleCards === 2) caseSum--;
+
+    if (caseSum >= 2) return 'GOOD';
+    else if (caseSum >= 0) return 'STRONG';
+    // else if (caseSum === -1) return 'MONSTER';
+    return 'MONSTER';
   }
 
   // 4: Three of a Kind
   if (rank === 4) {
     if (isBoardTrips) return 'WEAK';
     // Set vs Trips
-    const isPocketPair = hand[0][0] === hand[1][0];
-    if (isPocketPair) return 'MONSTER'; // SET 
-    return 'STRONG'; // TRIPS
+    let caseSum = 0;
+    if (isBoardFlushPossible) caseSum++;
+    if (isBoardStraightPossible) caseSum++;
+    if (isBoardOnehandFlushPossible) caseSum++;
+    if (isBoardOnehandStraightPossible) caseSum++;
+    if (isPocketPair) caseSum -= 2;
+
+    if (caseSum >= 3) return 'MARGINAL';
+    else if (caseSum >= 2) return 'GOOD';
+    else if (caseSum >= 0) return 'STRONG'; // TRIPS
+    return 'MONSTER'; // SET 
   }
 
   // 3: Two Pair
   if (rank === 3) {
-    if (isBoardPaired) {
-      // Board AA J K 2. We have 2 5. We have "Two Pair" but it's just the Board Pair + Hole Card.
-      // This is weak (Counterfeited) if our hole-pair is lower than other board cards.
-      const boardHigh = boardRanks[0];
-      const myPair = holeVal.find(v => boardRanks.includes(v)) || 0;
+    const boardHigh1 = boardRanks[0];
+    const boardHigh2 = boardRanks[1] || -1;
+    const hole1 = holeVal.includes(boardHigh1);
+    const hole2 = holeVal.includes(boardHigh2);
+    const myPair = holeVal.find(v => boardRanks.includes(v)) || 0;
 
-      if (myPair < boardHigh) return 'MARGINAL'; // Counterfeited
-      return 'GOOD';
-    }
+    let caseSum = 0;
+    if (isBoardFlushPossible) caseSum++;
+    if (isBoardStraightPossible) caseSum++;
+    if (isBoardOnehandFlushPossible) caseSum++;
+    if (isBoardOnehandStraightPossible) caseSum++;
 
     // Normal Two Pair (No board pair)
-    // If we have Top Two (K J on K J 2) -> Monster
-    const boardHigh1 = boardRanks[0];
-    const boardHigh2 = boardRanks[1];
-    if (holeVal.includes(boardHigh1) && holeVal.includes(boardHigh2)) return 'MONSTER';
+    if (hole1 && hole2) caseSum--; // Top Two
+    if (hole1 || hole2) caseSum--; // Top Pair + Middle Pair
 
-    return 'STRONG';
+    // [FIX] If the two-pair is entirely on the board and player matched nothing
+    if (!isPocketPair && !hole1 && !hole2) {
+      if (holeVal.includes(12)) return 'ACE_HIGH';
+      return 'AIR';
+    }
+
+    if (myPair < boardHigh1 || myPair < boardHigh2) caseSum += 2; // Counterfeited
+    // if ()
+    if (caseSum <= -2) return 'MONSTER';
+    else if (caseSum === -1) return 'STRONG';
+    else if (caseSum === 0) return 'GOOD';
+    else if (caseSum <= 2) return 'MARGINAL';
+    else return 'WEAK';
   }
-
   // 2: One Pair
   if (rank === 2) {
-    const isPocketPair = hand[0][0] === hand[1][0];
+
     const maxBoard = boardRanks[0];
+    const pairedRank = holeVal.find(v => boardRanks.includes(v));
+    const kicker = holeVal.find(v => v !== pairedRank);
 
-    if (isPocketPair) {
-      if (handRanks[0] > maxBoard) return 'STRONG'; // Overpair
-      if (handRanks[0] > (boardRanks[1] || -1)) return 'GOOD'; // Second pair
-      if (handRanks[0] < boardRanks[boardRanks.length - 1]) return 'WEAK'; // Underpair
-      return 'MARGINAL'; // Midpair
-    } else {
-      // Hit a pair with the board
-      const pairedRank = holeVal.find(v => boardRanks.includes(v));
-      const kicker = holeVal.find(v => v !== pairedRank);
-
-      if (pairedRank === maxBoard) {
-        if (isBoardFlushPossible || isBoardStraightPossible) return 'GOOD'; // Wet board Top Pair
-        if (kicker >= 10) return 'STRONG'; // Top Pair with Good Kicker (Q, K, A)
-        return 'GOOD'; // Top Pair Weak Kicker
-      }
-
-      if (isBoardPaired) {
-        // Board AA. We have K. We have "One Pair".
-        return holeVal.includes(12) ? 'ACE_HIGH' : 'AIR';
-      }
-
-      const pairedIndex = boardRanks.indexOf(pairedRank);
-      if (pairedIndex === 1) return 'MARGINAL'; // [v3] GOOD -> MARGINAL (Middle Pair is often overvalued)
-      return 'MARGINAL'; // Low pair
+    // [FIX] If the pair is entirely on the board and player matched nothing
+    if (!isPocketPair && pairedRank === undefined) {
+      if (holeVal.includes(12)) return 'ACE_HIGH';
+      return 'AIR';
     }
+
+    let caseSum = 0;
+    if (isBoardFlushPossible) caseSum++;
+    if (isBoardStraightPossible) caseSum++;
+    if (isBoardOnehandFlushPossible) caseSum++;
+    if (isBoardOnehandStraightPossible) caseSum++;
+    if (isBoardPaired) caseSum++;
+
+    // Pair strength base weights
+    if (isPocketPair) {
+      if (handRanks[0] > maxBoard) caseSum -= 2; // High Overpair
+      else if (handRanks[0] > (boardRanks[1] || -1)) caseSum++; // Middle pocket pair
+      else caseSum += 2; // Underpair
+    } else {
+      if (pairedRank === maxBoard) caseSum += 0; // Top Pair (Normalized)
+      else if (pairedRank === boardRanks[1]) caseSum += 1; // Middle Pair
+      else caseSum += 2; // Bottom pair
+      // Kicker sensitivity
+      if (kicker < 7) caseSum += 2; // Weak Kicker Penalty
+      else if (kicker >= 12) caseSum -= 1; // Ace/King Kicker Bonus
+    }
+
+    // Final Mapping (User adjusted)
+    if (caseSum <= -2) return 'STRONG';
+    else if (caseSum <= 0) return 'GOOD';
+    else if (caseSum >= 1) return 'MARGINAL';
+    return 'WEAK';
   }
 
   // 1: High Card
@@ -833,4 +944,4 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
     if (holeVal.includes(12)) return 'ACE_HIGH';
   }
   return 'AIR';
-};
+}

@@ -154,6 +154,7 @@ export const getLanguage = () => {
 };
 
 export const getLocalizedText = (obj, field) => {
+  console.info('obj', obj)
   if (!obj) return '';
   const lang = getLanguage();
   if (field) {
@@ -504,6 +505,11 @@ const processMissionResult = (player, result, engine) => {
       scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 30);
     } else {
       scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_FAILED, 30);
+    }
+  }
+  if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB) {
+    if (result === GAME_RESULT_CODE.WIN_BIG) {
+      scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 30);
     }
   }
 }

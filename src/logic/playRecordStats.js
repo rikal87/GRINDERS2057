@@ -8,6 +8,7 @@ export const createPlayRecordStats = () => ({
     'Max': 0, 'Florence': 0
   },
   // Economy
+  cost_lt: 0,
   paid_rake: 0,
   net_winning: 0,
   net_share: 0,
@@ -80,6 +81,7 @@ export const PLAY_RECORD_STATS_TYPE = {
   BUST_ENEMY: 'bust_enemy',
   NET_SHARE: 'net_share',
   NET_WINNING: 'net_winning',
+  COST_LT: 'cost_lt'
 }
 export const GAME_RESULT_CODE = {
   WIN_BIG: 'WIN_BIG',

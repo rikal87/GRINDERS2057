@@ -150,7 +150,11 @@ const reserveExitTooltip = computed(() => {
     : 'Cash out and leave the table after the specified rounds. (No penalty)';
 });
 const player = computed(() => props.engine.players[0]);
-const isMyTurn = computed(() => props.engine.currentPlayerIndex === 0 && props.engine.state !== 'IDLE' && props.engine.state !== 'SHOWDOWN');
+const isMyTurn = computed(() => {
+  return props.engine.currentPlayerIndex === 0 &&
+    !props.engine.calculationInProgress &&
+    !props.engine.runoutInProgress;
+});
 const playerChips = computed(() => player.value.chips);
 const playerTotalAvailable = computed(() => player.value.chips + player.value.currentBet);
 const isAllInSelection = computed(() => {

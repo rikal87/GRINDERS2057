@@ -1,5 +1,4 @@
 <template>
-  <HistoryPopup v-if="showHistory" :history="engine.handHistory" @close="showHistory = false" />
   <div v-for="(p, idx) in engine.players" :key="p.id" class="player-seat" :class="[`max${engine.tableSize}`, getSeatClass(idx), {
     // 'folded': p.isFolded,
     'winner-glow': showShowdown && isWinner(p.id)
@@ -113,8 +112,6 @@
 import { computed, ref, watch, onMounted } from 'vue';
 import Card from './Card.vue';
 import ChipDisplay from './ChipDisplay.vue';
-import HistoryPopup from './HistoryPopup.vue';
-import { evaluateHand } from '../logic/poker.js';
 import { zones } from '../logic/zone.js';
 const props = defineProps({
   engine: Object
@@ -138,8 +135,6 @@ watch(() => props.engine?.locationId, (newLoc) => {
   }
 });
 
-// 히스토리 팝업
-const showHistory = ref(false);
 
 const showShowdown = ref(false);
 let showdownTimer = null;

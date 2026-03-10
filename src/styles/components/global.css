@@ -1154,3 +1154,13 @@ footer {
 /* .buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
 .btn-primary { background: #00f3ff; color: #000; border: none; padding: 5px 15px; cursor: pointer; }
 .btn-secondary { background: transparent; color: #eee; border: 1px solid #eee; padding: 5px 15px; cursor: pointer; } */
+
+.v5-reader-actions small {
+  margin-right: 10px;
+}
+.v5-reader-actions small.CR {
+  color: var(--neon-yellow);
+}
+.v5-reader-actions small.LT {
+  color: var(--neon-cyan);
+}

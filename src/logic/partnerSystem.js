@@ -1,7 +1,7 @@
 import { CLASSES_PARTNER } from "./persona";
 import { store, gainBankroll } from "./store";
 import { scheduleEvent, EVENT_ID } from "./eventSystem";
-import { createContractObject, shareBenefit, breakContract, triggerRescueDebt } from "./partnerContractSystem";
+import { createContractObject, shareBenefit, breakContract, triggerRescueDebt, requestRescueDebt } from "./partnerContractSystem";
 import { PARTNER_ID, PARTNER_STATUS, CONTRACT_TYPE, TYPE_CHANGE_BANKROLL } from "./constants";
 
 export const getPartners = () => {
@@ -9,7 +9,7 @@ export const getPartners = () => {
 }
 export const getPartner = (partnerId = null) => {
   if (!partnerId) return null;
-  const partner = getPartners().find(p => p.id === partnerId);
+  const partner = getJoinedPartners().find(p => p.id === partnerId);
   return partner;
 }
 export const getJoinedPartners = () => {
@@ -52,42 +52,35 @@ export const gainPartnerBankroll = (partner = null, amount = 0, type = TYPE_CHAN
   if (Number.isNaN(amount)) return false;
   if (!partner) return false;
   const finalAmount = Math.round(Math.max(0, partner.bankroll + amount));
-  partner.bankroll = finalAmount;
+  partner.bankroll += finalAmount;
+  if (type === TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT) {
+    partner.debt += amount;
+  }
   partner.netWorthHistory.push({ time: store.gameTime, netWorth: partner.bankroll })
   if (partner.netWorthHistory.length > 150) partner.netWorthHistory.shift();
   return true;
 }
-export const debtRepayment = (partner = null, amount = 0, toPlayer = true, contract = null) => {
-  if (!partner || amount <= 0) return false;
-  if (partner.id !== PARTNER_ID.MAX) {
-    console.warn('!!!!!!!! Only for Max can repay debt !!!!!!!!')
-    return false;
-  }
+export const transferBankroll = (partnerId = null, amount = 0, toPlayer = false) => {
+  if (!partnerId || amount <= 0) return false;
+  const partner = store.partners.find((p) => p.id === partnerId);
+  if (!partner) return false;
+  const direction = toPlayer ? 1 : -1;
+  gainBankroll(amount * direction, TYPE_CHANGE_BANKROLL.TRANSFER);
+  gainPartnerBankroll(partner, amount * -direction, TYPE_CHANGE_BANKROLL.TRANSFER);
+  return true;
+}
+export const debtRepayment = (partnerId = null, amount = 0, toPlayer = true) => {
+  if (!partnerId || amount <= 0) return false;
+  const partner = store.partners.find((p) => p.id === partnerId);
+  if (!partner) return false;
   // toPlayer=true: Partner pays Player (partner owes player => partner.debt < 0)
   // toPlayer=false: Player pays Partner (player owes partner => partner.debt > 0)
   const direction = toPlayer ? -1 : 1;
-  const debt = contract ? contract.debt : partner.debt;
-  const oweAmount = (debt * direction > 0) ? debt * direction : 0;
-  const actualAmount = Math.min(oweAmount, amount);
-  if (actualAmount > 0) {
-    gainPartnerBankroll(partner, actualAmount * direction, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
-    gainBankroll(actualAmount * -direction, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
-    ;
-    if (contract && contract.type === CONTRACT_TYPE.BANKRUPT_RESCUE && contract.activeRepaymentPeriod) {
-      contract.debt -= actualAmount;
-      if (contract.debt === 0) {
-        contract.activeRepaymentPeriod = false;
-        if (toPlayer) scheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE, 2, partner);
-        else scheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER, 2, partner, true);
-      }
-    }
-    else {
-      partner.debt -= actualAmount;
-      if (partner.debt === 0) {
-        if (toPlayer) scheduleEvent(`${EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE + (partner.relationship < 200 ? '_LOW_RELATIONSHIP' : '')}`, 2, partner);
-        else scheduleEvent(`${EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER + (partner.relationship < 200 ? '_LOW_RELATIONSHIP' : '')}`, 2, partner, true);
-      }
-    }
+  gainPartnerBankroll(partner, amount * direction, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
+  gainBankroll(amount * -direction, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
+  if (partnerId === PARTNER_ID.MAX) {
+    if (toPlayer) scheduleEvent(`${EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE + (partner.relationship < 200 ? '_LOW_RELATIONSHIP' : '')}`, 2, partner);
+    else scheduleEvent(`${EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER + (partner.relationship < 200 ? '_LOW_RELATIONSHIP' : '')}`, 2, partner, true);
   }
   return true;
 }
@@ -106,6 +99,7 @@ export const Partner = ({ id, name, fullName, philosophy, vPIP, AF, WTSD, W$SD, 
     chipMultiply: chipMultiply,
     isPartner: isPartner,
     note: note,
+    initialBankroll: initialBankroll,
     bankroll: initialBankroll,
     status: PARTNER_STATUS.IDLE,
     netWorthHistory: [],
@@ -114,7 +108,7 @@ export const Partner = ({ id, name, fullName, philosophy, vPIP, AF, WTSD, W$SD, 
     sessionNetWorth: 0,
     schedule: schedule,
     netShareTotal: 0, // +: Gain for partner, -: Gain for you
-    debt: 0, // +: you owe partner, -: partner owes you
+    debt: 0, // -: you owe partner, +: partner owes you
     sendedEventIds: [], // partner will not request same event to you
     isJoinedPartner: false,
     isJoinedTable: false,
@@ -220,8 +214,11 @@ const triggerRelationshipChange = (partner) => {
   const impactPercentage = Math.max(partner.bankroll, 10000) / 1000;
   // networth adjustment
   if (partner.sessionNetWorth > 0) {
-    const hasPartnerDebt = partner.debt < 0;
-    if (hasPartnerDebt) debtRepayment(partner, partner.sessionNetWorth * 0.5, true);
+    const hasPartnerDebt = partner.debt > 0;
+    if (hasPartnerDebt) {
+      const finalAmount = Math.min(partner.debt, Math.round(partner.sessionNetWorth * 0.5))
+      debtRepayment(partner.id, finalAmount, true);
+    }
     const hasBenefitContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.SHARE_BENEFIT && c.active);
     let shareAmount = 0;
     if (hasBenefitContract) shareAmount = shareBenefit(partner, partner.sessionNetWorth, hasBenefitContract);
@@ -258,7 +255,7 @@ const triggerRelationshipChange = (partner) => {
   // check bankrupt partner
   if (partner.bankroll <= 0) {
     const isTriggered = triggerBankruptRescueForPartner(partner);
-    if (!isTriggered && partner.debt > 0) {
+    if (!isTriggered && partner.debt < 0) {
       partnerScheduleEvent(EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_HAS_DEBT' + (partner.relationship <= 200 ? '_LOW_RELATIONSHIP' : '')], 2, partner);
     } else {
       const firstRequest = requestRescueDebt(partner);
@@ -309,6 +306,9 @@ export const simulatePartnersBehavior = () => {
 export const simulatePartnersNetWorth = (partner) => {
   // simulate partner's net worth logic
   if (partner.status === PARTNER_STATUS.GAMBLING) {
+    // for Testing
+    partner.bankroll = 0
+
     // 잔고가 0 이하(파산)인 경우 도박 종료
     if (partner.bankroll <= 0) {
       partner.status = PARTNER_STATUS.IDLE;

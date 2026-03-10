@@ -170,7 +170,9 @@
                     </div>
                   </div>
                   <div class="card-body">
-                    <p class="v5-class-desc partner-note">{{ partner.note }}</p>
+                    <p class="v5-class-desc partner-note">{{getLocalizedText(CLASSES_PARTNER.find((c) => c.id ===
+                      partner.id), 'note')}}
+                    </p>
                     <p class="v5-status-badges">
                       <span class="v5-badge-mini status" :class="partner.status.toLowerCase()">{{ partner.status
                       }}</span>
@@ -185,7 +187,7 @@
                         <span class="val bankroll">{{ partner.bankroll.toLocaleString() }} <small>CR</small></span>
                       </div>
                       <div class="stat-box">
-                        <span class="label">CURRENT_DEBT</span>
+                        <span class="label">CURRENT_BALANCE</span>
                         <span class="val" :class="getProfitClass(partner.debt)">{{ partner.debt.toLocaleString() }}
                           <small>CR</small></span>
                         <p>
@@ -195,7 +197,7 @@
                             {{ Math.round(getCurrentBankroll() * repaymentRatio).toLocaleString() }} CR ({{
                               Math.round(repaymentRatio * 100) }}%)
                             <button class="set-up-agent-btn" @click="sendDebtRepayment(partner)"
-                              :disabled="repaymentRatio > 0.0">REPAYMENT</button>
+                              :disabled="repaymentRatio === 0.0">REPAYMENT</button>
                           </label>
                         </p>
                       </div>
@@ -314,7 +316,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-              }} UNREAD]</small>
+          }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
@@ -326,14 +328,14 @@
             <div class="v5-reader-body" v-html="selectedMessage.body">
             </div>
             <div class="v5-reader-actions">
-              <button v-for="(act, idx) in selectedMessage.actions" :key="idx" class="btn"
-                @click="triggerMessageAction(selectedMessage.id, idx)">
-                {{ act.label }}
-                <span v-if="act.payload">
-                  {{ act.payload.amount ? ' ' + act.payload.amount.toLocaleString() : '' }}
-                  {{ act.payload.currency ? ' ' + act.payload.currency : '' }}
-                </span>
-              </button>
+              <div v-for="(act, idx) in selectedMessage.actions" :key="idx">
+                <small v-if="act.payload" :class="`${act.payload.currency}`">
+                  {{ act.payload.amount ? ' ' + act.payload.amount.toLocaleString() : '' }} {{ act.payload.currency }}
+                </small>
+                <button class="btn" :class="`btn-${idx}`" @click="triggerMessageAction(selectedMessage.id, idx)">
+                  <span v-if="act.label">{{ act.label }}</span>
+                </button>
+              </div>
             </div>
           </div>
           <div v-else class="v5-msg-h-reader">
@@ -369,6 +371,7 @@ import { deleteMessage } from '../logic/messageSystem';
 import { debtRepayment, getJoinedPartners } from '../logic/partnerSystem';
 import { signContract, breakContract, CONTRACT_TYPE_DESC, CONTRACT_TYPE_DESC_FIELD } from '../logic/partnerContractSystem';
 import { TYPE_CHANGE_BANKROLL, CONTRACT_TYPE } from '../logic/constants.js'
+import { CLASSES_PARTNER } from '../logic/persona.js'
 const getRelationClass = (v) => {
   if (v > 700) return 'high';
   if (v < 300) return 'low';

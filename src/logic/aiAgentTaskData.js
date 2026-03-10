@@ -1,7 +1,15 @@
 
 import { store } from './store.js';
-
+import { PLAY_RECORD_STATS_TYPE } from './playRecordStats.js'
 // Task Definitions
+export const TASK_EFFECT_TYPE = {
+  XP_BOOST: 'xp_boost',
+  ADD_BANKROLL: 'add_bankroll',
+  HUD_ACTIVE: 'hud_active',
+  penalty_amount: 'penalty_amount'
+
+};
+
 export const AI_TASK_DATA = [
   {
     id: 'neighborhood_game',
@@ -41,8 +49,27 @@ export const AI_TASK_DATA = [
     probability: 0.15,
     duration: 1 * 24 * 60,
     cooldown: 0,
-    effect: [{ type: 'xp_boost', amount: 0.10 }],
-    unlock: { type: 'played_hand', count: 100 }
+    effect: [{ type: TASK_EFFECT_TYPE.XP_BOOST, amount: 0.10 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 100 }
+  },
+  {
+    id: 'status_hud',
+    tier: 1,
+    type: 'AGENT_WORK',
+    name_ko: "HUD 프로토콜 활성화",
+    name_en: "Activate HUD Protocol",
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    desc_ko: '활성화 시 상대의 vPIP, PFR, 3BET, AF 수치를 실시간으로 분석합니다. (매 라운드마다 3%의 확률로 구역 의심 수치가 2 증가합니다.)',
+    desc_en: 'Analyze opponents\' vPIP, PFR, 3BET, and AF in real-time. (3% chance to increase Area Suspicion by 2 per round.)',
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    desc_detail_ko: '필드에서 외부 연산 장치를 사용하는 건 엄격히 금지되어 있습니다. 하지만 들키지만 않는다면 무슨 상관일까요?',
+    desc_detail_en: 'Using external calculation devices is strictly prohibited on the floor. But then again, is it really a crime if you don’t get caught?',
+    get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
+    cost: 3,
+    probability: 1,
+    duration: 60,
+    cooldown: 0,
+    effect: [{ type: TASK_EFFECT_TYPE.HUD_ACTIVE, amount: 1 }], //amount may be to use hud level?
   },
   {
     id: 'shadow_work',
@@ -61,7 +88,7 @@ export const AI_TASK_DATA = [
     probability: 0.08,
     duration: 60,
     cooldown: 0,
-    effect: [{ type: 'add_bankroll', amount: 1000 }],
+    effect: [{ type: TASK_EFFECT_TYPE.ADD_BANKROLL, amount: 1000 }],
   },
   {
     id: 'shadow_work_2',
@@ -80,8 +107,8 @@ export const AI_TASK_DATA = [
     probability: 0.08,
     duration: 60,
     cooldown: 0,
-    effect: [{ type: 'add_bankroll', amount: 2500 }],
-    unlock: { type: 'cost_lt', amount: 1000 }
+    effect: [{ type: TASK_EFFECT_TYPE.ADD_BANKROLL, amount: 2500 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 100 }
   },
   {
     id: 'shadow_work_3',
@@ -101,7 +128,7 @@ export const AI_TASK_DATA = [
     duration: 0,
     cooldown: 3 * 24 * 60,
     effect: [{ type: 'add_bankroll', amount: 10000 }, { type: 'penalty_amount', id: 'SECURITY_DETECTION', probability: 0.01, amount: 25000 }],
-    unlock: { type: 'cost_lt', amount: 10000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.COST_LT, amount: 10000 }
   },
   {
     id: 'shadow_work_4',

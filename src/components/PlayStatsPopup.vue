@@ -205,14 +205,12 @@ const wsdTarget = computed(() => {
 });
 
 const handleClose = () => {
-  if (isSession.value) {
-    store.play_stats_session = null;
-  }
   audioManager.playSFX('ui-click');
   if (audioManager.currentZoneId.value) {
-    audioManager.playTrackByZoneId(audioManager.currentZoneId.value);
-  } else {
-    audioManager.play(); // Fallback if no zone ID is cached
+    if (isSession.value) {
+      store.play_stats_session = null;
+      audioManager.playTrackByZoneId(audioManager.currentZoneId.value);
+    }
   }
   emit('close');
 };

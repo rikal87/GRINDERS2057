@@ -1,0 +1,2285 @@
+
+======================================
+[HAND HISTORY DUMP] Hand #16 | Pot: 3993 | Board: [3c, 2d, 8c, Tc, 7h]
+Players: gangster_0 (5c,2h) | maniac_0 (7d,6d) | the_don_0 (Kc,Ks) | maniac_1 (Qs,Kh) | the_don_1 (Qc,8d)
+--------------------------------------
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:28% / B-Req:-30%] (AIR) (Value Raise) (d:2048ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:46% / B-Req:28%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:60% / C-Req:58% / B-Req:57%] (AIR) (Value Raise) (d:2787ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 112 - < [Strategy: RESPONSE] [Eq:95% / C-Req:74% / B-Req:79%] (AIR) (Value Raise) (d:2462ms)>
+[PREFLOP] maniac_1: Raises to 1993 - < [Strategy: RESPONSE] [Eq:60% / C-Req:80% / B-Req:93%] (AIR) (Pure Bluff) (d:1300ms)>
+[PREFLOP] the_don_0: Calls 1881 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1868ms) (Downgraded to Call)>
+Showdown Results:
+  - the_don_0: One Pair (Kings) (Kc,Ks)
+  - maniac_1: High Card (King) (Qs,Kh)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #99 | Pot: 5910 | Board: [8d, Ks, 9h, Kd, 9c]
+Players: maniac_0 (Qc,Qh) | the_don_0 (Ah,Ad) | the_don_1 (7d,3s)
+--------------------------------------
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:90% / C-Req:34% / B-Req:-40%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:46% / B-Req:32%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:90% / C-Req:46% / B-Req:51%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:95% / C-Req:76% / B-Req:81%] (AIR) (Value Raise) (d:1619ms)>
+[PREFLOP] maniac_0: Raises to 2061 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:87%] (AIR) (Value Raise) (d:3745ms)>
+[PREFLOP] the_don_0: Raises to 3847 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1133ms)>
+Showdown Results:
+  - maniac_0: Two Pair (Kings and Queens) (Qc,Qh)
+  - the_don_0: Two Pair (Aces and Kings) (Ah,Ad)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #109 | Pot: 3752 | Board: [7d, Td, Kd, 8d, 3h]
+Players: the_don_0 (9c,9d) | gangster_1 (Js,Ad) | the_don_1 (Qd,Jc)
+--------------------------------------
+[PREFLOP] the_don_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:39% / B-Req:-15%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:70% / C-Req:34% / B-Req:22%] (AIR) (Value Raise) (d:2659ms)>
+[PREFLOP] gangster_1: Calls 12 - < [Strategy: RESPONSE] [Eq:70% / C-Req:66% / B-Req:85%] (AIR) (Call Odds) (d:3724ms)>
+[PREFLOP] the_don_1: Folds
+[FLOP] the_don_0: Raises to 19 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-5% / B-Req:15%] (MARGINAL) (Value Raise) (d:2617ms)>
+[FLOP] gangster_1: Calls 19 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:25% / C-Req:20% / B-Req:79%] (ACE_HIGH) (Call Odds) (d:3621ms)>
+[TURN] the_don_0: Raises to 84 - < [Strategy: C_BETTER] [Eq:77% / C-Req:0% / B-Req:25%] (STRONG) (Value Raise) (d:3334ms)>
+[TURN] gangster_1: Raises to 310 - < [Strategy: RESPONSE] [Eq:77% / C-Req:42% / B-Req:72%] (STRONG) (Value Raise) (d:1541ms)>
+[TURN] the_don_0: Calls 226 - < [Strategy: RESPONSE] [Eq:77% / C-Req:65% / B-Req:90%] (STRONG) (Call Odds) (d:1246ms)>
+[RIVER] the_don_0: Raises to 482 - < [Strategy: DONK_AVOIDER] [Eq:70% / C-Req:0% / B-Req:50%] (STRONG) (Value Raise) (d:2666ms)>
+[RIVER] gangster_1: Raises to 1531 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:66%] (STRONG) (Value Raise) (d:2652ms)>
+[RIVER] the_don_0: Calls 1049 - < [Strategy: RESPONSE] [Eq:70% / C-Req:60% / B-Req:85%] (STRONG) (Call Odds) (d:2871ms)>
+Showdown Results:
+  - the_don_0: Flush (King High) (9c,9d)
+  - gangster_1: Flush (Ace High) (Js,Ad)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #198 | Pot: 2198 | Board: []
+Players: gangster_0 (Th,Kd) | the_don_0 (6s,7d) | the_don_1 (Ks,Kh)
+--------------------------------------
+[PREFLOP] gangster_1: Folds
+[PREFLOP] the_don_1: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:47% / B-Req:-25%] (AIR) (Value Raise) (d:3388ms)>
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:43% / B-Req:47%] (AIR) (Value Raise) (d:3638ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] the_don_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:61% / B-Req:66%] (AIR) (Value Raise) (d:3268ms)>
+[PREFLOP] gangster_0: Raises to 77 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:30% / C-Req:75% / B-Req:95%] (AIR) (Pure Bluff) (d:2116ms)>
+[PREFLOP] the_don_1: Raises to 2119 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2509ms)>
+[PREFLOP] gangster_0: Folds
+Showdown Results:
+  - the_don_1: One Pair (Kings) (Ks,Kh)
+Winner: the_don_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #273 | Pot: 522 | Board: [Jd, 7h, 9c, Kc, Kd]
+Players: gangster_0 (Qd,Qc) | the_don_1 (Ts,Tc)
+--------------------------------------
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:90% / C-Req:48% / B-Req:-10%] (AIR) (Value Raise) (d:2938ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] the_don_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:27% / B-Req:17%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:90% / C-Req:62% / B-Req:83%] (AIR) (Value Raise) (d:1197ms)>
+[PREFLOP] the_don_1: Calls 21 - < [Strategy: RESPONSE] [Eq:80% / C-Req:77% / B-Req:82%] (AIR) (Call Odds) (d:3532ms)>
+[FLOP] the_don_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:53% / C-Req:-5% / B-Req:95%] (MARGINAL) (Call Odds) (d:1715ms)>
+[FLOP] gangster_0: Raises to 42 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-14% / B-Req:35%] (GOOD) (Value Raise) (d:3247ms)>
+[FLOP] the_don_1: Calls 42 - < [Strategy: RESPONSE] [Eq:53% / C-Req:29% / B-Req:94%] (MARGINAL) (Call Odds) (d:2240ms)>
+[TURN] the_don_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:53% / C-Req:0% / B-Req:95%] (MARGINAL) (Call Odds) (d:1690ms)>
+[TURN] gangster_0: Raises to 184 - < [Strategy: C_BETTER] [Eq:49% / C-Req:0% / B-Req:45%] (MARGINAL) (Value Raise) (d:1839ms)>
+[TURN] the_don_1: Calls 184 - < [Strategy: RESPONSE] [Eq:53% / C-Req:42% / B-Req:87%] (MARGINAL) (Call Odds) (d:1928ms)>
+[RIVER] the_don_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:0% / C-Req:0% / B-Req:70%] (WEAK) (Call Odds) (d:4289ms)>
+[RIVER] gangster_0: Calls 0 - < [Strategy: C_BETTER] [Eq:20% / C-Req:0% / B-Req:45%] (WEAK) (Call Odds) (d:1730ms)>
+Showdown Results:
+  - gangster_0: Two Pair (Kings and Queens) (Qd,Qc)
+  - the_don_1: Two Pair (Kings and 10s) (Ts,Tc)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #341 | Pot: 1907 | Board: [8h, 6h, Kh, Jc, 5d]
+Players: gangster_0 (Qh,Ah) | the_don_1 (Ac,Kc)
+--------------------------------------
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] the_don_1: Raises to 4 - < [Strategy: OPENER] [Eq:90% / C-Req:45% / B-Req:-25%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:39% / B-Req:45%] (AIR) (Value Raise) (d:2710ms)>
+[PREFLOP] the_don_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:90% / C-Req:63% / B-Req:68%] (AIR) (Value Raise) (d:2187ms)>
+[PREFLOP] gangster_0: Calls 21 - < [Strategy: RESPONSE] [Eq:85% / C-Req:76% / B-Req:95%] (AIR) (Call Odds) (d:4720ms)>
+[FLOP] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:85% / C-Req:-14% / B-Req:95%] (MONSTER) (Call Odds) (d:1043ms)>
+[FLOP] the_don_1: Raises to 42 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-5% / B-Req:35%] (GOOD) (Value Raise) (d:500ms)>
+[FLOP] gangster_0: Raises to 130 - < [Strategy: RESPONSE] [Eq:85% / C-Req:20% / B-Req:74%] (MONSTER) (Value Raise) (d:1699ms)>
+[FLOP] the_don_1: Calls 88 - < [Strategy: RESPONSE] [Eq:60% / C-Req:54% / B-Req:95%] (GOOD) (Call Odds) (d:4388ms)>
+[TURN] gangster_0: Raises to 396 - < [Strategy: C_BETTER] [Eq:89% / C-Req:0% / B-Req:45%] (MONSTER) (Value Raise) (d:500ms)>
+[TURN] the_don_1: Calls 396 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:2265ms)>
+[RIVER] gangster_0: Raises to 785 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:45%] (MONSTER) (Value Raise) (d:3220ms)>
+[RIVER] the_don_1: Folds
+Showdown Results:
+  - gangster_0: Flush (Ace High) (Qh,Ah)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #523 | Pot: 1162 | Board: [4h, 2c, 9h, 8s, Kc]
+Players: gangster_0 (Jc,Jh) | the_don_0 (Qh,Qs) | gangster_1 (Ks,6h)
+--------------------------------------
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:85% / C-Req:36% / B-Req:-10%] (AIR) (Value Raise) (d:2514ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:90% / C-Req:34% / B-Req:22%] (AIR) (Value Raise) (d:2067ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:85% / C-Req:60% / B-Req:81%] (AIR) (Value Raise) (d:1178ms)>
+[PREFLOP] the_don_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:90% / C-Req:76% / B-Req:81%] (AIR) (Value Raise) (d:2728ms)>
+[PREFLOP] gangster_0: Calls 42 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:3282ms)>
+[FLOP] the_don_0: Raises to 93 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-5% / B-Req:55%] (STRONG) (Value Raise) (d:2465ms)>
+[FLOP] gangster_0: Calls 93 - < [Strategy: RESPONSE] [Eq:70% / C-Req:20% / B-Req:95%] (STRONG) (Call Odds) (d:1516ms)>
+[TURN] the_don_0: Raises to 410 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:65%] (STRONG) (Value Raise) (d:1324ms)>
+[TURN] gangster_0: Calls 410 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:95%] (STRONG) (Call Odds) (d:1332ms)>
+[RIVER] the_don_0: Calls 0 - < [Strategy: C_BETTER] [Eq:45% / C-Req:0% / B-Req:65%] (MARGINAL) (Call Odds) (d:1841ms)>
+[RIVER] gangster_0: Calls 0 - < [Strategy: OPENER] [Eq:45% / C-Req:0% / B-Req:60%] (MARGINAL) (Call Odds) (d:2231ms)>
+Showdown Results:
+  - gangster_0: One Pair (Jacks) (Jc,Jh)
+  - the_don_0: One Pair (Queens) (Qh,Qs)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #568 | Pot: 1263 | Board: [As, Th, 2d, 8d, 8h]
+Players: gangster_0 (Ad,Kc) | gangster_1 (Ac,Kh) | the_don_1 (9d,3c)
+--------------------------------------
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:85% / C-Req:36% / B-Req:-10%] (AIR) (Value Raise) (d:2504ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:23% / B-Req:29%] (AIR) (Value Raise) (d:2490ms)>
+[PREFLOP] gangster_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:85% / C-Req:61% / B-Req:82%] (AIR) (Value Raise) (d:1697ms)>
+[PREFLOP] gangster_0: Calls 21 - < [Strategy: RESPONSE] [Eq:85% / C-Req:76% / B-Req:95%] (AIR) (Call Odds) (d:2931ms)>
+[FLOP] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:-14% / B-Req:95%] (GOOD) (Call Odds) (d:2047ms)>
+[FLOP] gangster_1: Raises to 42 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-14% / B-Req:35%] (GOOD) (Value Raise) (d:500ms)>
+[FLOP] gangster_0: Calls 42 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:2841ms)>
+[TURN] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:1871ms)>
+[TURN] gangster_1: Raises to 186 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2378ms)>
+[TURN] gangster_0: Calls 186 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:1901ms)>
+[RIVER] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:70%] (GOOD) (Call Odds) (d:1095ms)>
+[RIVER] gangster_1: Raises to 368 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2646ms)>
+[RIVER] gangster_0: Calls 368 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:81%] (GOOD) (Call Odds) (d:2829ms)>
+Showdown Results:
+  - gangster_0: Two Pair (Aces and 8s) (Ad,Kc)
+  - gangster_1: Two Pair (Aces and 8s) (Ac,Kh)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #573 | Pot: 5670 | Board: [9s, 2s, Ks, 7h, 9c]
+Players: gangster_0 (Ts,Qs) | gangster_1 (8s,7s) | the_don_1 (5h,4s)
+--------------------------------------
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:48% / B-Req:-10%] (AIR) (Value Raise) (d:2678ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:43% / B-Req:47%] (AIR) (Value Raise) (d:4327ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Calls 10 - < [Strategy: RESPONSE] [Eq:60% / C-Req:60% / B-Req:81%] (AIR) (Call Odds) (d:4936ms)>
+[FLOP] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:93% / C-Req:-14% / B-Req:95%] (MONSTER) (Call Odds) (d:1986ms)>
+[FLOP] gangster_1: Raises to 18 - < [Strategy: C_BETTER] [Eq:85% / C-Req:-14% / B-Req:20%] (MONSTER) (Value Raise) (d:3243ms)>
+[FLOP] gangster_0: Raises to 55 - < [Strategy: RESPONSE] [Eq:93% / C-Req:20% / B-Req:59%] (MONSTER) (Value Raise) (d:2359ms)>
+[FLOP] gangster_1: Raises to 154 - < [Strategy: RESPONSE] [Eq:85% / C-Req:45% / B-Req:84%] (MONSTER) (Value Raise) (d:2740ms)>
+[FLOP] gangster_0: Calls 99 - < [Strategy: RESPONSE] [Eq:93% / C-Req:67% / B-Req:95%] (MONSTER) (Call Odds) (d:1337ms)>
+[TURN] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:89% / C-Req:0% / B-Req:95%] (MONSTER) (Call Odds) (d:2131ms)>
+[TURN] gangster_1: Raises to 405 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:30%] (MONSTER) (Value Raise) (d:2143ms)>
+[TURN] gangster_0: Raises to 1498 - < [Strategy: RESPONSE] [Eq:89% / C-Req:42% / B-Req:52%] (MONSTER) (Value Raise) (d:3309ms)>
+[TURN] gangster_1: Raises to 3347 - < [Strategy: RESPONSE] [Eq:85% / C-Req:65% / B-Req:75%] (MONSTER) (Value Raise) (d:2347ms)>
+[TURN] gangster_0: Calls 1849 - < [Strategy: RESPONSE] [V-Committed] [Eq:89% / C-Req:0% / B-Req:88%] (MONSTER) (Value Raise) (d:1150ms) (Downgraded to Call)>
+Showdown Results:
+  - gangster_0: Flush (King High) (Ts,Qs)
+  - gangster_1: Flush (King High) (8s,7s)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #647 | Pot: 1991 | Board: [3s, 4h, 2c, 5d, 3d]
+Players: gangster_0 (6s,Tc) | the_don_0 (8d,8s) | gangster_1 (9h,Ad)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:49% / B-Req:-25%] (AIR) (Value Raise) (d:2734ms)>
+[PREFLOP] gangster_1: Calls 4 - < [Strategy: RESPONSE] [Eq:50% / C-Req:49% / B-Req:51%] (AIR) (Call Odds) (d:4235ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[FLOP] the_don_0: Raises to 5 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-5% / B-Req:-5%] (GOOD) (Value Raise) (d:500ms)>
+[FLOP] gangster_1: Calls 5 - < [Strategy: RESPONSE] [Eq:25% / C-Req:19% / B-Req:48%] (ACE_HIGH) (Call Odds) (d:2927ms)>
+[TURN] the_don_0: Raises to 22 - < [Strategy: C_BETTER] [Eq:68% / C-Req:0% / B-Req:5%] (GOOD) (Value Raise) (d:2036ms)>
+[TURN] gangster_1: Raises to 81 - < [Strategy: RESPONSE] [Eq:83% / C-Req:42% / B-Req:42%] (STRONG) (Value Raise) (d:2786ms)>
+[TURN] the_don_0: Raises to 275 - < [Strategy: RESPONSE] [Eq:68% / C-Req:65% / B-Req:55%] (GOOD) (Value Raise) (d:3829ms)>
+[TURN] gangster_1: Calls 194 - < [Strategy: RESPONSE] [Eq:83% / C-Req:80% / B-Req:86%] (STRONG) (Call Odds) (d:4714ms)>
+[RIVER] the_don_0: Raises to 398 - < [Strategy: C_BETTER] [Eq:20% / C-Req:0% / B-Req:5%] (WEAK) (Value Raise) (d:1950ms)>
+[RIVER] gangster_1: Raises to 1024 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:36%] (GOOD) (Value Raise) (d:2407ms)>
+[RIVER] the_don_0: Folds
+Showdown Results:
+  - gangster_1: Straight (5 High) (9h,Ad)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #685 | Pot: 5755 | Board: [Qd, 5s, 8c, 6s, Kc]
+Players: gangster_0 (As,Ah) | the_don_0 (3h,Th) | gangster_1 (4s,Td) | the_don_1 (Kd,Ks)
+--------------------------------------
+[PREFLOP] the_don_1: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:39% / B-Req:-25%] (AIR) (Value Raise) (d:2935ms)>
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:41% / B-Req:43%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] the_don_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:60% / B-Req:65%] (AIR) (Value Raise) (d:2146ms)>
+[PREFLOP] gangster_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:95% / C-Req:75% / B-Req:95%] (AIR) (Value Raise) (d:2448ms)>
+[PREFLOP] the_don_1: Raises to 1584 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2182ms)>
+[PREFLOP] gangster_0: Raises to 4168 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1107ms)>
+Showdown Results:
+  - gangster_0: One Pair (Aces) (As,Ah)
+  - the_don_1: Three of a Kind (Kings) (Kd,Ks)
+Winner: the_don_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #784 | Pot: 543 | Board: [9c, Kh, Ac, Kc, 4d]
+Players: gangster_0 (3d,Qd) | the_don_0 (Ks,Ts) | gangster_1 (Qc,Kd) | the_don_1 (9s,7h)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:39% / B-Req:-25%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:41% / B-Req:43%] (AIR) (Value Raise) (d:3466ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] the_don_0: Calls 10 - < [Strategy: RESPONSE] [Eq:60% / C-Req:60% / B-Req:65%] (AIR) (Call Odds) (d:3315ms)>
+[FLOP] the_don_0: Calls 0 - < [Intensity Adj: -10%] [Strategy: DONK_AVOIDER] [Eq:35% / C-Req:-5% / B-Req:90%] (MARGINAL) (Call Odds) (d:1871ms)>
+[FLOP] gangster_1: Raises to 18 - < [Strategy: C_BETTER] [Eq:45% / C-Req:-14% / B-Req:20%] (MARGINAL) (Value Raise) (d:500ms)>
+[FLOP] the_don_0: Calls 18 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:35% / C-Req:29% / B-Req:74%] (MARGINAL) (Call Odds) (d:4105ms)>
+[TURN] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:90%] (GOOD) (Call Odds) (d:2355ms)>
+[TURN] gangster_1: Raises to 80 - < [Strategy: C_BETTER] [Eq:68% / C-Req:0% / B-Req:30%] (GOOD) (Value Raise) (d:500ms)>
+[TURN] the_don_0: Calls 80 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:67%] (GOOD) (Call Odds) (d:1430ms)>
+[RIVER] the_don_0: Raises to 158 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:50%] (GOOD) (Value Raise) (d:1950ms)>
+[RIVER] gangster_1: Calls 158 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:66%] (GOOD) (Call Odds) (d:2533ms)>
+Showdown Results:
+  - the_don_0: Three of a Kind (Kings) (Ks,Ts)
+  - gangster_1: Three of a Kind (Kings) (Qc,Kd)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #787 | Pot: 5206 | Board: [Jd, Td, 9s, Js, Ks]
+Players: gangster_0 (As,Ad) | the_don_0 (Qh,Qs) | gangster_1 (4s,8h)
+--------------------------------------
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:36% / B-Req:-10%] (AIR) (Value Raise) (d:2714ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:90% / C-Req:34% / B-Req:22%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:60% / B-Req:81%] (AIR) (Value Raise) (d:1899ms)>
+[PREFLOP] the_don_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:90% / C-Req:76% / B-Req:81%] (AIR) (Value Raise) (d:2398ms)>
+[PREFLOP] gangster_0: Raises to 2602 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2347ms)>
+[PREFLOP] the_don_0: Calls 2525 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:4210ms)>
+[FLOP] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:75% / C-Req:-5% / B-Req:95%] (GOOD) (Call Odds) (d:2896ms)>
+[TURN] the_don_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:8% / C-Req:0% / B-Req:95%] (WEAK) (Call Odds) (d:2211ms)>
+[RIVER] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:2516ms)>
+Showdown Results:
+  - gangster_0: Two Pair (Aces and Jacks) (As,Ad)
+  - the_don_0: Straight (King High) (Qh,Qs)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #164 | Pot: 1557 | Board: [Js, Kh, 3d, 6c, 6h]
+Players: gangster_0 (5s,4s) | maniac_0 (Qs,Ks) | gangster_1 (Kc,8c) | maniac_1 (9h,8s) | the_don_1 (Ah,Kd)
+--------------------------------------
+[PREFLOP] the_don_1: Raises to 4 - < [Strategy: OPENER] [Eq:85% / C-Req:43% / B-Req:-25%] (AIR) (Value Raise) (d:2018ms)>
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:45% / B-Req:43%] (AIR) (Value Raise) (d:4935ms)>
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:80% / C-Req:60% / B-Req:57%] (AIR) (Value Raise) (d:3343ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Calls 31 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:88%] (AIR) (Call Odds) (d:3445ms)>
+[PREFLOP] gangster_0: Folds
+[FLOP] the_don_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:-5% / B-Req:95%] (GOOD) (Call Odds) (d:1611ms)>
+[FLOP] maniac_0: Raises to 52 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-20% / B-Req:35%] (GOOD) (Value Raise) (d:3212ms)>
+[FLOP] the_don_1: Calls 52 - < [Strategy: RESPONSE] [Eq:60% / C-Req:29% / B-Req:94%] (GOOD) (Call Odds) (d:1479ms)>
+[TURN] the_don_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:1326ms)>
+[TURN] maniac_0: Raises to 229 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:1649ms)>
+[TURN] the_don_1: Calls 229 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:2627ms)>
+[RIVER] the_don_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:70%] (GOOD) (Call Odds) (d:2066ms)>
+[RIVER] maniac_0: Raises to 454 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:1264ms)>
+[RIVER] the_don_1: Calls 454 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:81%] (GOOD) (Call Odds) (d:2696ms)>
+Showdown Results:
+  - maniac_0: Two Pair (Kings and 6s) (Qs,Ks)
+  - the_don_1: Two Pair (Kings and 6s) (Ah,Kd)
+Winner: the_don_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #165 | Pot: 4392 | Board: [6c, 9c, Qh, 2h, Qd]
+Players: gangster_0 (Tc,Kh) | maniac_0 (Th,Ad) | maniac_1 (Ah,5h) | the_don_1 (Qc,As)
+--------------------------------------
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:42% / B-Req:0%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:31% / B-Req:13%] (AIR) (Value Raise) (d:2748ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:60% / C-Req:54% / B-Req:55%] (AIR) (Value Raise) (d:3384ms)>
+[PREFLOP] the_don_1: Calls 33 - < [Strategy: RESPONSE] [Eq:80% / C-Req:80% / B-Req:90%] (AIR) (Call Odds) (d:4152ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 112 - < [Strategy: RESPONSE] [Eq:60% / C-Req:53% / B-Req:56%] (AIR) (Value Raise) (d:4373ms)>
+[PREFLOP] maniac_1: Raises to 2138 - < [Strategy: RESPONSE] [Eq:60% / C-Req:80% / B-Req:89%] (AIR) (Pure Bluff) (d:1300ms)>
+[PREFLOP] the_don_1: Calls 2103 - < [Strategy: RESPONSE] [Eq:80% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:3952ms)>
+[PREFLOP] maniac_0: Folds
+[FLOP] the_don_1: Calls 0 - < [Strategy: OPENER] [Eq:60% / C-Req:-5% / B-Req:85%] (GOOD) (Call Odds) (d:2344ms)>
+[TURN] the_don_1: Calls 0 - < [Strategy: OPENER] [Eq:60% / C-Req:0% / B-Req:85%] (GOOD) (Call Odds) (d:2843ms)>
+[RIVER] the_don_1: Calls 0 - < [Strategy: OPENER] [Eq:70% / C-Req:0% / B-Req:85%] (STRONG) (Call Odds) (d:2347ms)>
+Showdown Results:
+  - maniac_1: One Pair (Queens) (Ah,5h)
+  - the_don_1: Three of a Kind (Queens) (Qc,As)
+Winner: the_don_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #406 | Pot: 719 | Board: [6s, 5d, 3s, 5s, 2c]
+Players: gangster_0 (Ah,Jc) | maniac_0 (Qs,Qh) | gangster_1 (Ks,Kh) | the_don_1 (Tc,2h)
+--------------------------------------
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:90% / C-Req:26% / B-Req:-40%] (AIR) (Value Raise) (d:3067ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:41% / B-Req:43%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Calls 12 - < [Strategy: RESPONSE] [Eq:70% / C-Req:65% / B-Req:84%] (AIR) (Call Odds) (d:2064ms)>
+[PREFLOP] maniac_0: Raises to 49 - < [Strategy: RESPONSE] [Eq:90% / C-Req:38% / B-Req:41%] (AIR) (Value Raise) (d:2776ms)>
+[PREFLOP] gangster_1: Raises to 156 - < [Strategy: RESPONSE] [Eq:95% / C-Req:79% / B-Req:95%] (AIR) (Value Raise) (d:1607ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Calls 107 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:93%] (AIR) (Call Odds) (d:2307ms)>
+[FLOP] maniac_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:-20% / B-Req:95%] (GOOD) (Call Odds) (d:2339ms)>
+[FLOP] gangster_1: Raises to 196 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-14% / B-Req:50%] (GOOD) (Value Raise) (d:1673ms)>
+[FLOP] maniac_0: Calls 196 - < [Strategy: RESPONSE] [Eq:60% / C-Req:14% / B-Req:95%] (GOOD) (Call Odds) (d:1235ms)>
+[TURN] maniac_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:8% / C-Req:0% / B-Req:95%] (WEAK) (Call Odds) (d:3035ms)>
+[TURN] gangster_1: Calls 0 - < [Strategy: C_BETTER] [Eq:28% / C-Req:0% / B-Req:60%] (WEAK) (Call Odds) (d:2312ms)>
+[RIVER] maniac_0: Calls 0 - < [Strategy: OPENER] [Eq:20% / C-Req:0% / B-Req:70%] (WEAK) (Call Odds) (d:2608ms)>
+[RIVER] gangster_1: Calls 0 - < [Strategy: OPENER] [Eq:20% / C-Req:0% / B-Req:60%] (WEAK) (Call Odds) (d:1209ms)>
+Showdown Results:
+  - maniac_0: Two Pair (Queens and 5s) (Qs,Qh)
+  - gangster_1: Two Pair (Kings and 5s) (Ks,Kh)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #437 | Pot: 1173 | Board: [Js, 8s, 3s, 5c, Kh]
+Players: gangster_0 (Qc,5d) | maniac_0 (3d,4d) | the_don_0 (Qh,Qd) | gangster_1 (Ah,As)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:90% / C-Req:41% / B-Req:-25%] (AIR) (Value Raise) (d:2208ms)>
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:43% / B-Req:43%] (AIR) (Value Raise) (d:3359ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:90% / C-Req:60% / B-Req:65%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:95% / C-Req:75% / B-Req:95%] (AIR) (Value Raise) (d:2366ms)>
+[PREFLOP] the_don_0: Calls 42 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:3857ms)>
+[FLOP] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:-5% / B-Req:95%] (GOOD) (Call Odds) (d:1288ms)>
+[FLOP] gangster_1: Raises to 94 - < [Strategy: C_BETTER] [Eq:75% / C-Req:-14% / B-Req:50%] (GOOD) (Value Raise) (d:2264ms)>
+[FLOP] the_don_0: Calls 94 - < [Strategy: RESPONSE] [Eq:60% / C-Req:29% / B-Req:95%] (GOOD) (Call Odds) (d:2005ms)>
+[TURN] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:2185ms)>
+[TURN] gangster_1: Raises to 414 - < [Strategy: C_BETTER] [Eq:68% / C-Req:0% / B-Req:60%] (GOOD) (Value Raise) (d:2014ms)>
+[TURN] the_don_0: Calls 414 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:95%] (GOOD) (Call Odds) (d:2649ms)>
+[RIVER] the_don_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:25% / C-Req:0% / B-Req:90%] (MARGINAL) (Call Odds) (d:1996ms)>
+[RIVER] gangster_1: Calls 0 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:60%] (GOOD) (Call Odds) (d:1919ms)>
+Showdown Results:
+  - the_don_0: One Pair (Queens) (Qh,Qd)
+  - gangster_1: One Pair (Aces) (Ah,As)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #449 | Pot: 2891 | Board: [7s, 4h, 8h, Jh]
+Players: gangster_0 (2d,Qc) | maniac_0 (3d,Qd) | the_don_0 (Ad,9d) | gangster_1 (9h,7h)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:41% / B-Req:-25%] (AIR) (Value Raise) (d:2767ms)>
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:43% / B-Req:43%] (AIR) (Value Raise) (d:4925ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Calls 10 - < [Strategy: RESPONSE] [Eq:60% / C-Req:60% / B-Req:65%] (AIR) (Call Odds) (d:2866ms)>
+[FLOP] the_don_0: Calls 0 - < [Intensity Adj: -10%] [Strategy: DONK_AVOIDER] [Eq:8% / C-Req:-5% / B-Req:90%] (ACE_HIGH) (Call Odds) (d:2077ms)>
+[FLOP] gangster_1: Raises to 18 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-14% / B-Req:20%] (MARGINAL) (Value Raise) (d:500ms)>
+[FLOP] the_don_0: Raises to 55 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:8% / C-Req:29% / B-Req:74%] (ACE_HIGH) (Pure Bluff) (d:2052ms)>
+[FLOP] gangster_1: Calls 37 - < [Strategy: RESPONSE] [Eq:60% / C-Req:44% / B-Req:95%] (MARGINAL) (Call Odds) (d:1921ms)>
+[TURN] the_don_0: Calls 0 - < [Strategy: C_BETTER] [Eq:14% / C-Req:0% / B-Req:25%] (ACE_HIGH) (Call Odds) (d:2192ms)>
+[TURN] gangster_1: Raises to 169 - < [Strategy: OPENER] [Eq:89% / C-Req:0% / B-Req:30%] (MONSTER) (Value Raise) (d:500ms)>
+[TURN] the_don_0: Raises to 625 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:4% / C-Req:42% / B-Req:67%] (ACE_HIGH) (Pure Bluff) (d:1300ms)>
+[TURN] gangster_1: Raises to 2125 - < [Strategy: RESPONSE] [Eq:89% / C-Req:65% / B-Req:75%] (MONSTER) (Value Raise) (d:1355ms)>
+[TURN] the_don_0: Folds
+Showdown Results:
+  - gangster_1: Flush (Jack High) (9h,7h)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #502 | Pot: 3178 | Board: [Js, Tc, Kc, 9c, 8d]
+Players: gangster_0 (Jd,7h) | maniac_0 (Td,Ac) | the_don_0 (6h,Ah) | gangster_1 (Ad,Qs) | the_don_1 (8h,7s)
+--------------------------------------
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:26% / B-Req:-40%] (AIR) (Value Raise) (d:2123ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:44% / B-Req:28%] (AIR) (Value Raise) (d:2880ms)>
+[PREFLOP] gangster_1: Calls 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:72% / B-Req:87%] (AIR) (Call Odds) (d:4730ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 49 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:39%] (AIR) (Value Raise) (d:2762ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Calls 35 - < [Strategy: RESPONSE] [Eq:80% / C-Req:77% / B-Req:95%] (AIR) (Call Odds) (d:3791ms)>
+[FLOP] maniac_0: Raises to 69 - < [Strategy: C_BETTER] [Eq:53% / C-Req:-20% / B-Req:35%] (MARGINAL) (Value Raise) (d:2178ms)>
+[FLOP] gangster_1: Raises to 213 - < [Strategy: RESPONSE] [Eq:98% / C-Req:20% / B-Req:74%] (MONSTER) (Value Raise) (d:2673ms)>
+[FLOP] maniac_0: Calls 144 - < [Strategy: RESPONSE] [Eq:53% / C-Req:39% / B-Req:95%] (MARGINAL) (Call Odds) (d:1615ms)>
+[TURN] maniac_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:57% / C-Req:0% / B-Req:95%] (MARGINAL) (Call Odds) (d:1738ms)>
+[TURN] gangster_1: Raises to 649 - < [Strategy: C_BETTER] [Eq:83% / C-Req:0% / B-Req:45%] (STRONG) (Value Raise) (d:3290ms)>
+[TURN] maniac_0: Calls 649 - < [Strategy: RESPONSE] [Eq:57% / C-Req:42% / B-Req:87%] (MARGINAL) (Call Odds) (d:2154ms)>
+[RIVER] maniac_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:28% / C-Req:0% / B-Req:70%] (MARGINAL) (Call Odds) (d:2486ms)>
+[RIVER] gangster_1: Raises to 1287 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:45%] (STRONG) (Value Raise) (d:500ms)>
+[RIVER] maniac_0: Calls 1287 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [V-Committed] [Eq:28% / C-Req:0% / B-Req:81%] (MARGINAL) (Call Odds) (d:2112ms)>
+Showdown Results:
+  - maniac_0: One Pair (10s) (Td,Ac)
+  - gangster_1: Straight (Ace High) (Ad,Qs)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #917 | Pot: 1252 | Board: [6h, 3c, 2d, 5c, 9s]
+Players: gangster_0 (Jh,Js) | gangster_1 (Ah,As)
+--------------------------------------
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:46% / B-Req:-10%] (AIR) (Value Raise) (d:3328ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:39% / B-Req:45%] (AIR) (Value Raise) (d:3299ms)>
+[PREFLOP] gangster_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:62% / B-Req:83%] (AIR) (Value Raise) (d:1698ms)>
+[PREFLOP] gangster_0: Calls 21 - < [Strategy: RESPONSE] [Eq:85% / C-Req:76% / B-Req:95%] (AIR) (Call Odds) (d:2661ms)>
+[FLOP] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:-14% / B-Req:95%] (GOOD) (Call Odds) (d:2408ms)>
+[FLOP] gangster_1: Raises to 42 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-14% / B-Req:35%] (GOOD) (Value Raise) (d:2097ms)>
+[FLOP] gangster_0: Calls 42 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:1036ms)>
+[TURN] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:64% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:1854ms)>
+[TURN] gangster_1: Raises to 184 - < [Strategy: C_BETTER] [Eq:64% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2319ms)>
+[TURN] gangster_0: Calls 184 - < [Strategy: RESPONSE] [Eq:64% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:2667ms)>
+[RIVER] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:70%] (GOOD) (Call Odds) (d:2680ms)>
+[RIVER] gangster_1: Raises to 365 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:1354ms)>
+[RIVER] gangster_0: Calls 365 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:81%] (GOOD) (Call Odds) (d:2527ms)>
+Showdown Results:
+  - gangster_0: One Pair (Jacks) (Jh,Js)
+  - gangster_1: One Pair (Aces) (Ah,As)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #973 | Pot: 1565 | Board: [6s, 8c, Ad, 4d, 8s]
+Players: gangster_0 (Kd,Ks) | the_don_0 (Ah,As) | gangster_1 (6c,Jd)
+--------------------------------------
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:36% / B-Req:-10%] (AIR) (Value Raise) (d:3264ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:34% / B-Req:22%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:60% / B-Req:81%] (AIR) (Value Raise) (d:2804ms)>
+[PREFLOP] the_don_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:95% / C-Req:76% / B-Req:81%] (AIR) (Value Raise) (d:1133ms)>
+[PREFLOP] gangster_0: Raises to 657 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1115ms)>
+[PREFLOP] the_don_0: Raises to 906 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1342ms)>
+Showdown Results:
+  - gangster_0: Two Pair (Kings and 8s) (Kd,Ks)
+  - the_don_0: Full House (Aces full of 8s) (Ah,As)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #23 | Pot: 1369 | Board: [3c, 8h, 4c, Td]
+Players: gangster_0 (Ah,4h) | maniac_0 (Qd,6h) | gangster_1 (8d,8s) | maniac_1 (Tc,Kc)
+--------------------------------------
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:40% / B-Req:-10%] (AIR) (Value Raise) (d:2849ms)>
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:29% / B-Req:13%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] gangster_1: Calls 10 - < [Strategy: RESPONSE] [Eq:60% / C-Req:59% / B-Req:80%] (AIR) (Call Odds) (d:2327ms)>
+[FLOP] gangster_1: Raises to 18 - < [Strategy: DONK_AVOIDER] [Eq:95% / C-Req:-14% / B-Req:95%] (NUTS) (Value Raise) (d:1370ms)>
+[FLOP] maniac_1: Calls 18 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:20% / C-Req:14% / B-Req:69%] (AIR) (Call Odds) (d:4425ms)>
+[TURN] gangster_1: Raises to 80 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:30%] (MONSTER) (Value Raise) (d:3459ms)>
+[TURN] maniac_1: Raises to 296 - < [Strategy: RESPONSE] [Eq:77% / C-Req:42% / B-Req:62%] (STRONG) (Value Raise) (d:2115ms)>
+[TURN] gangster_1: Raises to 1006 - < [Strategy: RESPONSE] [Eq:85% / C-Req:65% / B-Req:75%] (MONSTER) (Value Raise) (d:1750ms)>
+[TURN] maniac_1: Folds
+Showdown Results:
+  - gangster_1: Three of a Kind (8s) (8d,8s)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #88 | Pot: 4040 | Board: [5d, Td, 3d, 8c, Qd]
+Players: gangster_0 (7s,Js) | maniac_0 (Tc,Ts) | gangster_1 (8s,9s) | maniac_1 (Jh,Kd) | the_don_1 (Kh,Ks)
+--------------------------------------
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:80% / C-Req:28% / B-Req:-40%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:43% / B-Req:43%] (AIR) (Value Raise) (d:2214ms)>
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:60% / C-Req:58% / B-Req:57%] (AIR) (Value Raise) (d:3995ms)>
+[PREFLOP] the_don_1: Raises to 112 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:90%] (AIR) (Value Raise) (d:1904ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Calls 108 - < [Strategy: RESPONSE] [Eq:80% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:3179ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Folds
+[FLOP] the_don_1: Raises to 165 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-5% / B-Req:55%] (STRONG) (Value Raise) (d:2714ms)>
+[FLOP] maniac_0: Calls 165 - < [Strategy: RESPONSE] [Eq:85% / C-Req:14% / B-Req:95%] (MONSTER) (Call Odds) (d:2644ms)>
+[TURN] the_don_1: Raises to 726 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:65%] (STRONG) (Value Raise) (d:1112ms)>
+[TURN] maniac_0: Calls 726 - < [Strategy: RESPONSE] [Eq:85% / C-Req:42% / B-Req:92%] (MONSTER) (Call Odds) (d:1555ms)>
+[RIVER] the_don_1: Raises to 1010 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:65%] (STRONG) (Value Raise) (d:1466ms)>
+[RIVER] maniac_0: Calls 1010 - < [Strategy: RESPONSE] [Eq:85% / C-Req:32% / B-Req:82%] (MONSTER) (Value Raise) (d:1535ms) (Downgraded to Call)>
+Showdown Results:
+  - maniac_0: Three of a Kind (10s) (Tc,Ts)
+  - the_don_1: One Pair (Kings) (Kh,Ks)
+Winner: maniac_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #97 | Pot: 1797 | Board: [6d, Qd, Ac, 8h, Kc]
+Players: the_don_0 (4h,Jc) | gangster_1 (Qs,2d) | maniac_1 (Qc,Qh) | the_don_1 (Jd,Ad)
+--------------------------------------
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:90% / C-Req:28% / B-Req:-40%] (AIR) (Value Raise) (d:2454ms)>
+[PREFLOP] the_don_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:81% / C-Req:46% / B-Req:28%] (AIR) (Value Raise) (d:3201ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:90% / C-Req:45% / B-Req:50%] (AIR) (Value Raise) (d:2952ms)>
+[PREFLOP] the_don_1: Raises to 75 - < [Strategy: RESPONSE] [Eq:85% / C-Req:76% / B-Req:81%] (AIR) (Value Raise) (d:4682ms)>
+[PREFLOP] maniac_1: Raises to 1719 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:86%] (AIR) (Value Raise) (d:2733ms)>
+Showdown Results:
+  - maniac_1: Three of a Kind (Queens) (Qc,Qh)
+  - the_don_1: One Pair (Aces) (Jd,Ad)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #157 | Pot: 4059 | Board: [Qs, Qc, 9c, 6c, 8c]
+Players: gangster_0 (Kh,Kc) | the_don_0 (Js,Jc) | gangster_1 (Th,2s)
+--------------------------------------
+[PREFLOP] maniac_1: Folds
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:38% / B-Req:-10%] (AIR) (Value Raise) (d:3045ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:34% / B-Req:22%] (AIR) (Value Raise) (d:3343ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:60% / B-Req:81%] (AIR) (Value Raise) (d:2456ms)>
+[PREFLOP] the_don_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:85% / C-Req:76% / B-Req:81%] (AIR) (Value Raise) (d:4754ms)>
+[PREFLOP] gangster_0: Raises to 2133 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1854ms)>
+[PREFLOP] the_don_0: Calls 2056 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:3652ms)>
+Showdown Results:
+  - gangster_0: Flush (King High, Score: 85) (Kh,Kc)
+  - the_don_0: Flush (Queen High, Score: 71) (Js,Jc)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #221 | Pot: 838 | Board: [6c, 4d, Tc, 6h, As]
+Players: gangster_0 (7c,Jh) | maniac_0 (5h,3h) | gangster_1 (Th,Ah)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:70% / C-Req:38% / B-Req:-10%] (AIR) (Value Raise) (d:2709ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:9% / B-Req:-1%] (AIR) (Value Raise) (d:3371ms)>
+[PREFLOP] gangster_1: Calls 10 - < [Strategy: RESPONSE] [Eq:70% / C-Req:61% / B-Req:82%] (AIR) (Call Odds) (d:4305ms)>
+[FLOP] maniac_0: Raises to 17 - < [Strategy: C_BETTER] [Eq:20% / C-Req:-20% / B-Req:10%] (AIR) (Value Raise) (d:2016ms)>
+[FLOP] gangster_1: Calls 17 - < [Strategy: RESPONSE] [Eq:70% / C-Req:20% / B-Req:79%] (STRONG) (Call Odds) (d:1498ms)>
+[TURN] maniac_0: Raises to 75 - < [Strategy: C_BETTER] [Eq:53% / C-Req:0% / B-Req:20%] (MARGINAL) (Value Raise) (d:2050ms)>
+[TURN] gangster_1: Calls 75 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:72%] (GOOD) (Call Odds) (d:2396ms)>
+[RIVER] maniac_0: Raises to 149 - < [Strategy: C_BETTER] [Eq:45% / C-Req:0% / B-Req:20%] (MARGINAL) (Value Raise) (d:2448ms)>
+[RIVER] gangster_1: Raises to 476 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:66%] (STRONG) (Value Raise) (d:2193ms)>
+[RIVER] maniac_0: Folds
+Showdown Results:
+  - gangster_1: Two Pair (Aces and 10s) (Th,Ah)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #362 | Pot: 2069 | Board: [Jc, 9h, 7s, 3h, Tc]
+Players: gangster_0 (Ah,Jd) | gangster_1 (4c,2c) | maniac_1 (8d,Td)
+--------------------------------------
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:70% / C-Req:38% / B-Req:-10%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:9% / B-Req:-1%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_0: Calls 10 - < [Strategy: RESPONSE] [Eq:70% / C-Req:61% / B-Req:82%] (AIR) (Call Odds) (d:3651ms)>
+[FLOP] maniac_1: Raises to 17 - < [Strategy: C_BETTER] [Eq:98% / C-Req:-20% / B-Req:10%] (NUTS) (Value Raise) (d:2175ms)>
+[FLOP] gangster_0: Calls 17 - < [Strategy: RESPONSE] [Eq:70% / C-Req:20% / B-Req:79%] (STRONG) (Call Odds) (d:1610ms)>
+[TURN] maniac_1: Raises to 75 - < [Strategy: C_BETTER] [Eq:98% / C-Req:0% / B-Req:20%] (NUTS) (Value Raise) (d:2032ms)>
+[TURN] gangster_0: Calls 75 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:72%] (STRONG) (Call Odds) (d:1375ms)>
+[RIVER] maniac_1: Raises to 149 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:20%] (MONSTER) (Value Raise) (d:2262ms)>
+[RIVER] gangster_0: Raises to 476 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:66%] (STRONG) (Value Raise) (d:2716ms)>
+[RIVER] maniac_1: Raises to 1380 - < [Strategy: RESPONSE] [Eq:85% / C-Req:60% / B-Req:60%] (MONSTER) (Value Raise) (d:2155ms)>
+[RIVER] gangster_0: Folds
+Showdown Results:
+  - maniac_1: Straight (Jack High) (8d,Td)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #446 | Pot: 1272 | Board: [4d, 8s, 2d, Ks, 6c]
+Players: maniac_0 (Kd,As) | gangster_1 (Kc,Ts) | maniac_1 (6d,2c)
+--------------------------------------
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:85% / C-Req:22% / B-Req:-40%] (AIR) (Value Raise) (d:3137ms)>
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:33% / B-Req:37%] (AIR) (Value Raise) (d:1869ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:85% / C-Req:46% / B-Req:51%] (AIR) (Value Raise) (d:3474ms)>
+[PREFLOP] gangster_1: Raises to 77 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:30% / C-Req:75% / B-Req:95%] (AIR) (Pure Bluff) (d:1300ms)>
+[PREFLOP] maniac_0: Calls 42 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:87%] (AIR) (Call Odds) (d:3863ms)>
+[FLOP] gangster_1: Calls 0 - < [Strategy: C_BETTER] [Eq:13% / C-Req:-14% / B-Req:50%] (AIR) (Call Odds) (d:1737ms)>
+[FLOP] maniac_0: Calls 0 - < [Strategy: OPENER] [Eq:18% / C-Req:-20% / B-Req:70%] (ACE_HIGH) (Call Odds) (d:2892ms)>
+[TURN] gangster_1: Raises to 187 - < [Strategy: OPENER] [Eq:70% / C-Req:0% / B-Req:60%] (STRONG) (Value Raise) (d:2053ms)>
+[TURN] maniac_0: Calls 187 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:95%] (STRONG) (Call Odds) (d:2544ms)>
+[RIVER] gangster_1: Raises to 371 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:60%] (STRONG) (Value Raise) (d:2971ms)>
+[RIVER] maniac_0: Calls 371 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:95%] (STRONG) (Call Odds) (d:2275ms)>
+Showdown Results:
+  - maniac_0: One Pair (Kings) (Kd,As)
+  - gangster_1: One Pair (Kings) (Kc,Ts)
+Winner: maniac_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #549 | Pot: 1933 | Board: [Th, Jc, Qh, 8h, 9h]
+Players: gangster_0 (Ah,Kc) | maniac_0 (Tc,Ts) | maniac_1 (7c,7h)
+--------------------------------------
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:85% / C-Req:48% / B-Req:-10%] (AIR) (Value Raise) (d:2014ms)>
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:35% / B-Req:21%] (AIR) (Value Raise) (d:2238ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:60% / C-Req:55% / B-Req:58%] (AIR) (Value Raise) (d:2309ms)>
+[PREFLOP] gangster_0: Calls 31 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:4670ms)>
+[PREFLOP] maniac_0: Raises to 112 - < [Strategy: RESPONSE] [Eq:80% / C-Req:54% / B-Req:57%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] gangster_0: Calls 77 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:3778ms)>
+[FLOP] gangster_0: Raises to 155 - < [Strategy: DONK_AVOIDER] [Eq:98% / C-Req:-14% / B-Req:95%] (NUTS) (Value Raise) (d:2850ms)>
+[FLOP] maniac_0: Calls 155 - < [Strategy: RESPONSE] [Eq:85% / C-Req:14% / B-Req:95%] (MONSTER) (Call Odds) (d:2884ms)>
+[TURN] gangster_0: Calls 0 - < [Strategy: C_BETTER] [Eq:57% / C-Req:0% / B-Req:60%] (MARGINAL) (Call Odds) (d:2392ms)>
+[TURN] maniac_0: Raises to 682 - < [Strategy: OPENER] [Eq:89% / C-Req:0% / B-Req:70%] (MONSTER) (Value Raise) (d:500ms)>
+[TURN] gangster_0: Calls 682 - < [Strategy: RESPONSE] [Eq:57% / C-Req:42% / B-Req:95%] (MARGINAL) (Call Odds) (d:1206ms)>
+[RIVER] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:70% / C-Req:0% / B-Req:85%] (STRONG) (Call Odds) (d:1054ms)>
+[RIVER] maniac_0: Calls 0 - < [Strategy: C_BETTER] [Eq:45% / C-Req:0% / B-Req:70%] (MARGINAL) (Call Odds) (d:1143ms)>
+Showdown Results:
+  - gangster_0: Flush (Ace High, Score: 98) (Ah,Kc)
+  - maniac_0: Straight (Queen High) (Tc,Ts)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #743 | Pot: 2026 | Board: [5c, Qd, Kd, 6c]
+Players: gangster_0 (7h,Td) | maniac_0 (7s,Qc) | gangster_1 (Qs,Kh) | maniac_1 (Kc,9d)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:38% / B-Req:-10%] (AIR) (Value Raise) (d:2172ms)>
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:27% / B-Req:13%] (AIR) (Value Raise) (d:3032ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] gangster_1: Calls 10 - < [Strategy: RESPONSE] [Eq:60% / C-Req:59% / B-Req:80%] (AIR) (Call Odds) (d:2662ms)>
+[FLOP] gangster_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:85% / C-Req:-14% / B-Req:95%] (MONSTER) (Call Odds) (d:1380ms)>
+[FLOP] maniac_1: Raises to 18 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-20% / B-Req:10%] (STRONG) (Value Raise) (d:2801ms)>
+[FLOP] gangster_1: Raises to 55 - < [Strategy: RESPONSE] [Eq:85% / C-Req:20% / B-Req:59%] (MONSTER) (Value Raise) (d:500ms)>
+[FLOP] maniac_1: Calls 37 - < [Strategy: RESPONSE] [Eq:70% / C-Req:38% / B-Req:93%] (STRONG) (Call Odds) (d:1238ms)>
+[TURN] gangster_1: Raises to 169 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:30%] (MONSTER) (Value Raise) (d:500ms)>
+[TURN] maniac_1: Raises to 625 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:62%] (STRONG) (Value Raise) (d:2813ms)>
+[TURN] gangster_1: Raises to 1260 - < [Strategy: RESPONSE] [Eq:85% / C-Req:65% / B-Req:75%] (MONSTER) (Value Raise) (d:1371ms)>
+[TURN] maniac_1: Folds
+Showdown Results:
+  - gangster_1: Two Pair (Kings and Queens) (Qs,Kh)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #877 | Pot: 911 | Board: [8c, 5d, Qd, 6h, Ad]
+Players: gangster_0 (Ac,Qh) | gangster_1 (Td,4s) | maniac_1 (Js,Qs)
+--------------------------------------
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:70% / C-Req:34% / B-Req:-40%] (AIR) (Value Raise) (d:2453ms)>
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:45% / B-Req:47%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:70% / C-Req:46% / B-Req:51%] (AIR) (Value Raise) (d:2482ms)>
+[PREFLOP] gangster_0: Calls 21 - < [Strategy: RESPONSE] [Eq:80% / C-Req:75% / B-Req:95%] (AIR) (Call Odds) (d:3824ms)>
+[FLOP] maniac_1: Raises to 43 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-20% / B-Req:35%] (STRONG) (Value Raise) (d:500ms)>
+[FLOP] gangster_0: Calls 43 - < [Strategy: RESPONSE] [Eq:70% / C-Req:20% / B-Req:94%] (STRONG) (Call Odds) (d:2816ms)>
+[TURN] maniac_1: Raises to 189 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:45%] (STRONG) (Value Raise) (d:2982ms)>
+[TURN] gangster_0: Calls 189 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:87%] (STRONG) (Call Odds) (d:1585ms)>
+[RIVER] maniac_1: Calls 0 - < [Strategy: C_BETTER] [Eq:45% / C-Req:0% / B-Req:45%] (MARGINAL) (Call Odds) (d:2517ms)>
+[RIVER] gangster_0: Raises to 375 - < [Strategy: OPENER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:1286ms)>
+[RIVER] maniac_1: Folds
+Showdown Results:
+  - gangster_0: Two Pair (Aces and Queens) (Ac,Qh)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #933 | Pot: 838 | Board: [2d, Ks, 8h, 3s, 9d]
+Players: gangster_0 (Tc,Td) | gangster_1 (Ac,Ah) | maniac_1 (6s,6d)
+--------------------------------------
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:80% / C-Req:48% / B-Req:-10%] (AIR) (Value Raise) (d:2420ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:47% / B-Req:51%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] gangster_0: Calls 10 - < [Strategy: RESPONSE] [Eq:80% / C-Req:61% / B-Req:82%] (AIR) (Call Odds) (d:1621ms)>
+[FLOP] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:-14% / B-Req:95%] (GOOD) (Call Odds) (d:2701ms)>
+[FLOP] gangster_1: Raises to 17 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-14% / B-Req:20%] (STRONG) (Value Raise) (d:500ms)>
+[FLOP] gangster_0: Calls 17 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:79%] (GOOD) (Call Odds) (d:1178ms)>
+[TURN] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:1626ms)>
+[TURN] gangster_1: Raises to 75 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:30%] (STRONG) (Value Raise) (d:3086ms)>
+[TURN] gangster_0: Calls 75 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:72%] (GOOD) (Call Odds) (d:2450ms)>
+[RIVER] gangster_0: Raises to 149 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:55%] (GOOD) (Value Raise) (d:2429ms)>
+[RIVER] gangster_1: Raises to 476 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:66%] (STRONG) (Value Raise) (d:2754ms)>
+[RIVER] gangster_0: Folds
+Showdown Results:
+  - gangster_1: One Pair (Aces) (Ac,Ah)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #992 | Pot: 1165 | Board: [Ac, 5c, 6h, 7d, 2h]
+Players: gangster_0 (Jd,Ah) | gangster_1 (5h,Qh) | maniac_1 (8s,As)
+--------------------------------------
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:70% / C-Req:38% / B-Req:-10%] (AIR) (Value Raise) (d:2859ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:9% / B-Req:-1%] (AIR) (Value Raise) (d:2031ms)>
+[PREFLOP] gangster_0: Calls 10 - < [Strategy: RESPONSE] [Eq:70% / C-Req:61% / B-Req:82%] (AIR) (Call Odds) (d:4323ms)>
+[FLOP] maniac_1: Raises to 17 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-20% / B-Req:10%] (STRONG) (Value Raise) (d:500ms)>
+[FLOP] gangster_0: Calls 17 - < [Strategy: RESPONSE] [Eq:70% / C-Req:20% / B-Req:79%] (STRONG) (Call Odds) (d:2642ms)>
+[TURN] maniac_1: Raises to 75 - < [Strategy: C_BETTER] [Eq:77% / C-Req:0% / B-Req:20%] (STRONG) (Value Raise) (d:2636ms)>
+[TURN] gangster_0: Calls 75 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:72%] (STRONG) (Call Odds) (d:2701ms)>
+[RIVER] maniac_1: Raises to 149 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:20%] (STRONG) (Value Raise) (d:500ms)>
+[RIVER] gangster_0: Raises to 476 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:66%] (STRONG) (Value Raise) (d:1188ms)>
+[RIVER] maniac_1: Calls 327 - < [Strategy: RESPONSE] [Eq:70% / C-Req:60% / B-Req:80%] (STRONG) (Call Odds) (d:2693ms)>
+Showdown Results:
+  - gangster_0: One Pair (Aces) (Jd,Ah)
+  - maniac_1: One Pair (Aces) (8s,As)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #81 | Pot: 2038 | Board: [3s, Jh, Ts, 2h, Ad]
+Players: maniac_0 (Qd,6d) | gangster_1 (Jc,Js) | maniac_1 (7h,4d) | the_don_1 (Tc,Kd)
+--------------------------------------
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:26% / B-Req:-30%] (AIR) (Value Raise) (d:2995ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:41% / B-Req:43%] (AIR) (Value Raise) (d:2197ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Raises to 35 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:40% / C-Req:66% / B-Req:69%] (AIR) (Pure Bluff) (d:3335ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] gangster_1: Calls 21 - < [Strategy: RESPONSE] [Eq:85% / C-Req:74% / B-Req:95%] (AIR) (Call Odds) (d:1539ms)>
+[FLOP] the_don_1: Raises to 45 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-5% / B-Req:35%] (GOOD) (Value Raise) (d:3391ms)>
+[FLOP] gangster_1: Raises to 139 - < [Strategy: RESPONSE] [Eq:95% / C-Req:20% / B-Req:74%] (NUTS) (Value Raise) (d:2080ms)>
+[FLOP] the_don_1: Calls 94 - < [Strategy: RESPONSE] [Eq:60% / C-Req:54% / B-Req:95%] (GOOD) (Call Odds) (d:3257ms)>
+[TURN] the_don_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:2527ms)>
+[TURN] gangster_1: Raises to 423 - < [Strategy: C_BETTER] [Eq:95% / C-Req:0% / B-Req:45%] (NUTS) (Value Raise) (d:2428ms)>
+[TURN] the_don_1: Calls 423 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:2827ms)>
+[RIVER] the_don_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:25% / C-Req:0% / B-Req:70%] (MARGINAL) (Call Odds) (d:1564ms)>
+[RIVER] gangster_1: Raises to 839 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:45%] (MONSTER) (Value Raise) (d:500ms)>
+[RIVER] the_don_1: Folds
+Showdown Results:
+  - gangster_1: Three of a Kind (Jacks) (Jc,Js)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #101 | Pot: 536 | Board: [Ks, 7c, Ac, 6h, Tc]
+Players: gangster_0 (Qh,Kh) | maniac_0 (Kd,4c) | maniac_1 (Ad,8d)
+--------------------------------------
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:24% / B-Req:-40%] (AIR) (Value Raise) (d:2190ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:33% / B-Req:37%] (AIR) (Value Raise) (d:2802ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:60% / C-Req:46% / B-Req:51%] (AIR) (Value Raise) (d:2120ms)>
+[PREFLOP] gangster_0: Calls 21 - < [Strategy: RESPONSE] [Eq:80% / C-Req:75% / B-Req:95%] (AIR) (Call Odds) (d:4271ms)>
+[FLOP] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:-14% / B-Req:95%] (GOOD) (Call Odds) (d:1794ms)>
+[FLOP] maniac_1: Raises to 43 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-20% / B-Req:35%] (STRONG) (Value Raise) (d:2048ms)>
+[FLOP] gangster_0: Calls 43 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:2103ms)>
+[TURN] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:2511ms)>
+[TURN] maniac_1: Raises to 189 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:45%] (STRONG) (Value Raise) (d:3126ms)>
+[TURN] gangster_0: Calls 189 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:1806ms)>
+[RIVER] gangster_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:25% / C-Req:0% / B-Req:70%] (MARGINAL) (Call Odds) (d:2510ms)>
+[RIVER] maniac_1: Calls 0 - < [Strategy: C_BETTER] [Eq:20% / C-Req:0% / B-Req:45%] (WEAK) (Call Odds) (d:1568ms)>
+Showdown Results:
+  - gangster_0: One Pair (Kings) (Qh,Kh)
+  - maniac_1: One Pair (Aces) (Ad,8d)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #347 | Pot: 1394 | Board: []
+Players: gangster_0 (Kd,4d) | maniac_0 (2c,4h) | the_don_0 (Kc,Js) | maniac_1 (8c,8h) | the_don_1 (Ks,Kh)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:43% / B-Req:-25%] (AIR) (Value Raise) (d:3452ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:29% / B-Req:13%] (AIR) (Value Raise) (d:3052ms)>
+[PREFLOP] the_don_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:73% / B-Req:72%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 112 - < [Strategy: RESPONSE] [Eq:60% / C-Req:80% / B-Req:88%] (AIR) (Pure Bluff) (d:2049ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Raises to 1265 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1724ms)>
+[PREFLOP] the_don_0: Folds
+Showdown Results:
+  - the_don_1: One Pair (Kings) (Ks,Kh)
+Winner: the_don_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #371 | Pot: 2565 | Board: [9s, Ts, 3d, Ad, 7d]
+Players: gangster_0 (5s,Qs) | maniac_0 (6h,5d) | gangster_1 (Jc,Jh) | maniac_1 (9c,9d)
+--------------------------------------
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:85% / C-Req:40% / B-Req:-10%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:70% / C-Req:29% / B-Req:13%] (AIR) (Value Raise) (d:2054ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] gangster_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:85% / C-Req:59% / B-Req:80%] (AIR) (Value Raise) (d:1837ms)>
+[PREFLOP] maniac_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:70% / C-Req:61% / B-Req:66%] (AIR) (Value Raise) (d:4929ms)>
+[PREFLOP] gangster_1: Calls 42 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:4748ms)>
+[FLOP] gangster_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:70% / C-Req:-14% / B-Req:95%] (STRONG) (Call Odds) (d:1313ms)>
+[FLOP] maniac_1: Raises to 94 - < [Strategy: C_BETTER] [Eq:85% / C-Req:-20% / B-Req:60%] (MONSTER) (Value Raise) (d:500ms)>
+[FLOP] gangster_1: Calls 94 - < [Strategy: RESPONSE] [Eq:70% / C-Req:20% / B-Req:95%] (STRONG) (Call Odds) (d:1663ms)>
+[TURN] gangster_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:2276ms)>
+[TURN] maniac_1: Raises to 414 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:70%] (MONSTER) (Value Raise) (d:1275ms)>
+[TURN] gangster_1: Calls 414 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:95%] (GOOD) (Call Odds) (d:1700ms)>
+[RIVER] gangster_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:25% / C-Req:0% / B-Req:85%] (MARGINAL) (Call Odds) (d:1923ms)>
+[RIVER] maniac_1: Raises to 1392 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:70%] (MONSTER) (Value Raise) (d:1246ms)>
+[RIVER] gangster_1: Folds
+Showdown Results:
+  - maniac_1: Three of a Kind (9s) (9c,9d)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #458 | Pot: 750 | Board: [Jd, Jc, Ah, 6s]
+Players: maniac_0 (Ts,Td) | gangster_1 (Qs,6d) | maniac_1 (Jh,As)
+--------------------------------------
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:80% / C-Req:24% / B-Req:-40%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:70% / C-Req:9% / B-Req:-1%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:80% / C-Req:47% / B-Req:52%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:70% / C-Req:62% / B-Req:67%] (AIR) (Value Raise) (d:4640ms)>
+[PREFLOP] maniac_0: Calls 42 - < [Strategy: RESPONSE] [Eq:80% / C-Req:80% / B-Req:87%] (AIR) (Call Odds) (d:2066ms)>
+[FLOP] maniac_1: Raises to 93 - < [Strategy: C_BETTER] [Eq:85% / C-Req:-20% / B-Req:60%] (MONSTER) (Value Raise) (d:3215ms)>
+[FLOP] maniac_0: Calls 93 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:25% / C-Req:14% / B-Req:95%] (MARGINAL) (Call Odds) (d:1895ms)>
+[TURN] maniac_1: Raises to 409 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:70%] (MONSTER) (Value Raise) (d:2531ms)>
+[TURN] maniac_0: Folds
+Showdown Results:
+  - maniac_1: Full House (Jacks full of Aces) (Jh,As)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #485 | Pot: 761 | Board: [Tc, 3s, Kd, 8s]
+Players: gangster_0 (Qc,Ad) | maniac_0 (Kh,Qh) | maniac_1 (5h,8h)
+--------------------------------------
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:24% / B-Req:-30%] (AIR) (Value Raise) (d:2729ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:33% / B-Req:37%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:80% / C-Req:52% / B-Req:55%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] gangster_0: Calls 21 - < [Strategy: RESPONSE] [Eq:80% / C-Req:74% / B-Req:95%] (AIR) (Call Odds) (d:2120ms)>
+[FLOP] gangster_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:0% / C-Req:-14% / B-Req:95%] (ACE_HIGH) (Call Odds) (d:2936ms)>
+[FLOP] maniac_0: Raises to 44 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-20% / B-Req:35%] (STRONG) (Value Raise) (d:2657ms)>
+[FLOP] gangster_0: Raises to 136 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:0% / C-Req:20% / B-Req:94%] (ACE_HIGH) (Pure Bluff) (d:1300ms)>
+[FLOP] maniac_0: Calls 92 - < [Strategy: RESPONSE] [Eq:70% / C-Req:39% / B-Req:95%] (STRONG) (Call Odds) (d:1566ms)>
+[TURN] gangster_0: Calls 0 - < [Strategy: C_BETTER] [Eq:14% / C-Req:0% / B-Req:45%] (ACE_HIGH) (Call Odds) (d:1449ms)>
+[TURN] maniac_0: Raises to 415 - < [Strategy: OPENER] [Eq:70% / C-Req:0% / B-Req:45%] (STRONG) (Value Raise) (d:2201ms)>
+[TURN] gangster_0: Folds
+Showdown Results:
+  - maniac_0: One Pair (Kings) (Kh,Qh)
+Winner: maniac_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #522 | Pot: 1237 | Board: [6s, Ks, 6h, Kh, Ah]
+Players: gangster_0 (Th,Kd) | maniac_0 (5d,3c) | the_don_0 (7c,4c) | gangster_1 (Jh,Kc)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:42% / B-Req:-10%] (AIR) (Value Raise) (d:2603ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:41% / B-Req:43%] (AIR) (Value Raise) (d:3926ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Calls 10 - < [Strategy: RESPONSE] [Eq:60% / C-Req:59% / B-Req:80%] (AIR) (Call Odds) (d:2257ms)>
+[FLOP] gangster_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:-14% / B-Req:95%] (GOOD) (Call Odds) (d:2549ms)>
+[FLOP] gangster_0: Raises to 18 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-14% / B-Req:20%] (GOOD) (Value Raise) (d:3120ms)>
+[FLOP] gangster_1: Calls 18 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:79%] (GOOD) (Call Odds) (d:1893ms)>
+[TURN] gangster_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:70% / C-Req:0% / B-Req:95%] (STRONG) (Call Odds) (d:1665ms)>
+[TURN] gangster_0: Raises to 80 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:30%] (STRONG) (Value Raise) (d:500ms)>
+[TURN] gangster_1: Calls 80 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:72%] (STRONG) (Call Odds) (d:2246ms)>
+[RIVER] gangster_1: Raises to 158 - < [Strategy: DONK_AVOIDER] [Eq:70% / C-Req:0% / B-Req:55%] (STRONG) (Value Raise) (d:1923ms)>
+[RIVER] gangster_0: Raises to 505 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:66%] (STRONG) (Value Raise) (d:1164ms)>
+[RIVER] gangster_1: Calls 347 - < [Strategy: RESPONSE] [Eq:70% / C-Req:60% / B-Req:90%] (STRONG) (Call Odds) (d:3753ms)>
+Showdown Results:
+  - gangster_0: Full House (Kings full of 6s) (Th,Kd)
+  - gangster_1: Full House (Kings full of 6s) (Jh,Kc)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #593 | Pot: 1594 | Board: []
+Players: gangster_0 (Td,Qd) | maniac_0 (8c,Ac) | maniac_1 (Ad,6d)
+--------------------------------------
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:24% / B-Req:-30%] (AIR) (Value Raise) (d:2093ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:33% / B-Req:37%] (AIR) (Value Raise) (d:2660ms)>
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:60% / C-Req:52% / B-Req:55%] (AIR) (Value Raise) (d:4456ms)>
+[PREFLOP] maniac_1: Raises to 77 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:30% / C-Req:71% / B-Req:74%] (AIR) (Pure Bluff) (d:1300ms)>
+[PREFLOP] gangster_0: Raises to 1482 - < [Strategy: RESPONSE] [Eq:60% / C-Req:80% / B-Req:95%] (AIR) (Pure Bluff) (d:3327ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] maniac_1: Folds
+Showdown Results:
+  - gangster_0: High Card (Queen) (Td,Qd)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #617 | Pot: 890 | Board: [Jc, 7h, 8s, 6s, 8h]
+Players: gangster_0 (Qs,5s) | maniac_0 (2s,Qh) | gangster_1 (Jd,Ah) | maniac_1 (Kd,Kh)
+--------------------------------------
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:70% / C-Req:40% / B-Req:-10%] (AIR) (Value Raise) (d:3040ms)>
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:29% / B-Req:13%] (AIR) (Value Raise) (d:2857ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] gangster_1: Calls 10 - < [Strategy: RESPONSE] [Eq:70% / C-Req:59% / B-Req:80%] (AIR) (Call Odds) (d:1630ms)>
+[FLOP] gangster_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:70% / C-Req:-14% / B-Req:95%] (STRONG) (Call Odds) (d:1310ms)>
+[FLOP] maniac_1: Raises to 18 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-20% / B-Req:10%] (STRONG) (Value Raise) (d:500ms)>
+[FLOP] gangster_1: Calls 18 - < [Strategy: RESPONSE] [Eq:70% / C-Req:20% / B-Req:79%] (STRONG) (Call Odds) (d:1015ms)>
+[TURN] gangster_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:70% / C-Req:0% / B-Req:95%] (STRONG) (Call Odds) (d:2514ms)>
+[TURN] maniac_1: Raises to 80 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:20%] (STRONG) (Value Raise) (d:3283ms)>
+[TURN] gangster_1: Calls 80 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:72%] (STRONG) (Call Odds) (d:2935ms)>
+[RIVER] gangster_1: Raises to 158 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:55%] (GOOD) (Value Raise) (d:1995ms)>
+[RIVER] maniac_1: Raises to 505 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:56%] (STRONG) (Value Raise) (d:1817ms)>
+[RIVER] gangster_1: Folds
+Showdown Results:
+  - maniac_1: Two Pair (Kings and 8s) (Kd,Kh)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #636 | Pot: 879 | Board: [Kc, Ah, 7s, Ks, Tc]
+Players: maniac_0 (Jh,Qs) | the_don_0 (7c,6s) | gangster_1 (Qh,Kd)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:42% / B-Req:-10%] (AIR) (Value Raise) (d:2281ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:19% / B-Req:7%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Calls 10 - < [Strategy: RESPONSE] [Eq:60% / C-Req:60% / B-Req:81%] (AIR) (Call Odds) (d:3125ms)>
+[FLOP] maniac_0: Raises to 18 - < [Strategy: C_BETTER] [Eq:13% / C-Req:-20% / B-Req:10%] (AIR) (Value Raise) (d:2328ms)>
+[FLOP] gangster_1: Calls 18 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:79%] (GOOD) (Call Odds) (d:2851ms)>
+[TURN] maniac_0: Raises to 79 - < [Strategy: C_BETTER] [Eq:49% / C-Req:0% / B-Req:20%] (MARGINAL) (Value Raise) (d:3095ms)>
+[TURN] gangster_1: Calls 79 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:72%] (STRONG) (Call Odds) (d:2810ms)>
+[RIVER] maniac_0: Raises to 156 - < [Strategy: C_BETTER] [Eq:45% / C-Req:0% / B-Req:20%] (MARGINAL) (Value Raise) (d:3435ms)>
+[RIVER] gangster_1: Raises to 499 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:66%] (STRONG) (Value Raise) (d:1607ms)>
+[RIVER] maniac_0: Folds
+Showdown Results:
+  - gangster_1: Three of a Kind (Kings) (Qh,Kd)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #660 | Pot: 536 | Board: [5d, 4s, 9h, 3h, Tc]
+Players: maniac_0 (Kc,Kd) | the_don_0 (Qd,5s) | gangster_1 (9s,Ts)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:42% / B-Req:-10%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:19% / B-Req:7%] (AIR) (Value Raise) (d:3124ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Calls 10 - < [Strategy: RESPONSE] [Eq:60% / C-Req:60% / B-Req:81%] (AIR) (Call Odds) (d:4091ms)>
+[FLOP] maniac_0: Raises to 18 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-20% / B-Req:10%] (STRONG) (Value Raise) (d:2577ms)>
+[FLOP] gangster_1: Calls 18 - < [Strategy: RESPONSE] [Eq:70% / C-Req:20% / B-Req:79%] (STRONG) (Call Odds) (d:2804ms)>
+[TURN] maniac_0: Raises to 79 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:20%] (STRONG) (Value Raise) (d:2146ms)>
+[TURN] gangster_1: Calls 79 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:72%] (STRONG) (Call Odds) (d:1282ms)>
+[RIVER] maniac_0: Raises to 156 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:20%] (STRONG) (Value Raise) (d:2224ms)>
+[RIVER] gangster_1: Calls 156 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:66%] (GOOD) (Call Odds) (d:2721ms)>
+Showdown Results:
+  - maniac_0: One Pair (Kings) (Kc,Kd)
+  - gangster_1: Two Pair (10s and 9s) (9s,Ts)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #673 | Pot: 1293 | Board: [Th, 5h, 6d, 7c, 6s]
+Players: gangster_0 (Qs,Qc) | the_don_0 (9d,Ks) | gangster_1 (2c,3c) | maniac_1 (Tc,Jc)
+--------------------------------------
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:70% / C-Req:28% / B-Req:-40%] (AIR) (Value Raise) (d:2715ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:90% / C-Req:43% / B-Req:43%] (AIR) (Value Raise) (d:3232ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:70% / C-Req:45% / B-Req:50%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_0: Calls 21 - < [Strategy: RESPONSE] [Eq:90% / C-Req:75% / B-Req:95%] (AIR) (Call Odds) (d:2835ms)>
+[FLOP] maniac_1: Raises to 43 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-20% / B-Req:35%] (STRONG) (Value Raise) (d:2795ms)>
+[FLOP] gangster_0: Calls 43 - < [Strategy: RESPONSE] [Eq:70% / C-Req:20% / B-Req:94%] (STRONG) (Call Odds) (d:1590ms)>
+[TURN] maniac_1: Raises to 190 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:45%] (STRONG) (Value Raise) (d:3338ms)>
+[TURN] gangster_0: Calls 190 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:87%] (STRONG) (Call Odds) (d:1910ms)>
+[RIVER] maniac_1: Raises to 377 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:1653ms)>
+[RIVER] gangster_0: Calls 377 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:81%] (STRONG) (Call Odds) (d:2824ms)>
+Showdown Results:
+  - gangster_0: Two Pair (Queens and 6s) (Qs,Qc)
+  - maniac_1: Two Pair (10s and 6s) (Tc,Jc)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #766 | Pot: 2143 | Board: [4d, 9h, 5c, Qh, 7c]
+Players: gangster_0 (Js,Jc) | the_don_0 (Ac,Ad) | gangster_1 (Ks,Qc) | the_don_1 (6h,9d)
+--------------------------------------
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:41% / B-Req:-25%] (AIR) (Value Raise) (d:2817ms)>
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:43% / B-Req:43%] (AIR) (Value Raise) (d:3237ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:85% / C-Req:65% / B-Req:84%] (AIR) (Value Raise) (d:2095ms)>
+[PREFLOP] the_don_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:89%] (AIR) (Value Raise) (d:2911ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] gangster_0: Calls 42 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:2833ms)>
+[FLOP] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:70% / C-Req:-14% / B-Req:95%] (STRONG) (Call Odds) (d:2660ms)>
+[FLOP] the_don_0: Raises to 101 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-5% / B-Req:55%] (STRONG) (Value Raise) (d:1079ms)>
+[FLOP] gangster_0: Calls 101 - < [Strategy: RESPONSE] [Eq:70% / C-Req:20% / B-Req:95%] (STRONG) (Call Odds) (d:2741ms)>
+[TURN] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:2965ms)>
+[TURN] the_don_0: Raises to 445 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:65%] (STRONG) (Value Raise) (d:1758ms)>
+[TURN] gangster_0: Calls 445 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:95%] (GOOD) (Call Odds) (d:2943ms)>
+[RIVER] gangster_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:25% / C-Req:0% / B-Req:85%] (MARGINAL) (Call Odds) (d:1271ms)>
+[RIVER] the_don_0: Raises to 882 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:65%] (STRONG) (Value Raise) (d:1178ms)>
+[RIVER] gangster_0: Folds
+Showdown Results:
+  - the_don_0: One Pair (Aces) (Ac,Ad)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #801 | Pot: 536 | Board: [4c, 7h, 7d, Kh, Jh]
+Players: gangster_0 (Kc,Jd) | maniac_1 (Kd,Qd) | the_don_1 (6d,9c)
+--------------------------------------
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:42% / B-Req:-10%] (AIR) (Value Raise) (d:2496ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:19% / B-Req:7%] (AIR) (Value Raise) (d:2105ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Calls 10 - < [Strategy: RESPONSE] [Eq:60% / C-Req:60% / B-Req:81%] (AIR) (Call Odds) (d:4254ms)>
+[FLOP] maniac_1: Raises to 18 - < [Strategy: C_BETTER] [Eq:45% / C-Req:-20% / B-Req:10%] (MARGINAL) (Value Raise) (d:2708ms)>
+[FLOP] gangster_0: Calls 18 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:35% / C-Req:20% / B-Req:79%] (MARGINAL) (Call Odds) (d:1129ms)>
+[TURN] maniac_1: Raises to 79 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:20%] (GOOD) (Value Raise) (d:2907ms)>
+[TURN] gangster_0: Calls 79 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:72%] (GOOD) (Call Odds) (d:1641ms)>
+[RIVER] maniac_1: Raises to 156 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:20%] (GOOD) (Value Raise) (d:2749ms)>
+[RIVER] gangster_0: Calls 156 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:66%] (GOOD) (Call Odds) (d:2769ms)>
+Showdown Results:
+  - gangster_0: Two Pair (Kings and Jacks) (Kc,Jd)
+  - maniac_1: Two Pair (Kings and 7s) (Kd,Qd)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #809 | Pot: 2511 | Board: []
+Players: gangster_0 (9h,5h) | maniac_0 (Td,Ad) | the_don_0 (Kd,Kh)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:43% / B-Req:-25%] (AIR) (Value Raise) (d:2482ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:70% / C-Req:9% / B-Req:-1%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:62% / B-Req:67%] (AIR) (Value Raise) (d:2896ms)>
+[PREFLOP] maniac_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:70% / C-Req:62% / B-Req:67%] (AIR) (Value Raise) (d:2992ms)>
+[PREFLOP] the_don_0: Raises to 2433 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2377ms)>
+[PREFLOP] maniac_0: Folds
+Showdown Results:
+  - the_don_0: One Pair (Kings) (Kd,Kh)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #879 | Pot: 1293 | Board: [4d, Ac, Kh, Th, 9d]
+Players: gangster_0 (Ks,Ah) | the_don_0 (Js,As) | maniac_1 (8h,2c) | the_don_1 (4h,5d)
+--------------------------------------
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:85% / C-Req:42% / B-Req:-10%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:44% / B-Req:28%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:85% / C-Req:59% / B-Req:80%] (AIR) (Value Raise) (d:2064ms)>
+[PREFLOP] the_don_0: Calls 21 - < [Strategy: RESPONSE] [Eq:80% / C-Req:76% / B-Req:81%] (AIR) (Call Odds) (d:4460ms)>
+[FLOP] gangster_0: Raises to 43 - < [Strategy: C_BETTER] [Eq:85% / C-Req:-14% / B-Req:35%] (MONSTER) (Value Raise) (d:3447ms)>
+[FLOP] the_don_0: Calls 43 - < [Strategy: RESPONSE] [Eq:70% / C-Req:29% / B-Req:94%] (STRONG) (Call Odds) (d:1088ms)>
+[TURN] gangster_0: Raises to 190 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2438ms)>
+[TURN] the_don_0: Calls 190 - < [Strategy: RESPONSE] [Eq:74% / C-Req:42% / B-Req:87%] (STRONG) (Call Odds) (d:2165ms)>
+[RIVER] gangster_0: Raises to 377 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2506ms)>
+[RIVER] the_don_0: Calls 377 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:81%] (STRONG) (Call Odds) (d:2746ms)>
+Showdown Results:
+  - gangster_0: Two Pair (Aces and Kings) (Ks,Ah)
+  - the_don_0: One Pair (Aces) (Js,As)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #894 | Pot: 1101 | Board: [Qd, Qc, 3h, 8s]
+Players: maniac_0 (Js,Ts) | the_don_0 (3d,2s) | gangster_1 (Ks,Tc) | maniac_1 (Th,As)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:42% / B-Req:0%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:31% / B-Req:13%] (AIR) (Value Raise) (d:3115ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:70% / C-Req:54% / B-Req:55%] (AIR) (Value Raise) (d:2305ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Calls 21 - < [Strategy: RESPONSE] [Eq:60% / C-Req:60% / B-Req:65%] (AIR) (Call Odds) (d:2534ms)>
+[FLOP] maniac_0: Raises to 45 - < [Strategy: C_BETTER] [Eq:45% / C-Req:-20% / B-Req:35%] (MARGINAL) (Value Raise) (d:1005ms)>
+[FLOP] maniac_1: Calls 45 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:25% / C-Req:14% / B-Req:94%] (MARGINAL) (Call Odds) (d:1148ms)>
+[TURN] maniac_0: Raises to 199 - < [Strategy: C_BETTER] [Eq:49% / C-Req:0% / B-Req:45%] (MARGINAL) (Value Raise) (d:1450ms)>
+[TURN] maniac_1: Raises to 736 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:25% / C-Req:42% / B-Req:87%] (MARGINAL) (Pure Bluff) (d:2566ms)>
+[TURN] maniac_0: Folds
+Showdown Results:
+  - maniac_1: One Pair (Queens) (Th,As)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #917 | Pot: 3993 | Board: [3h, 6d, 4h, 7s, 7c]
+Players: gangster_0 (4d,2c) | maniac_0 (9c,Kh) | the_don_0 (Ks,Kd) | maniac_1 (As,Js)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:43% / B-Req:-25%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:29% / B-Req:13%] (AIR) (Value Raise) (d:2024ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:60% / B-Req:65%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:80% / C-Req:61% / B-Req:66%] (AIR) (Value Raise) (d:1556ms)>
+[PREFLOP] the_don_0: Raises to 1995 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1961ms)>
+[PREFLOP] maniac_1: Calls 1918 - < [Strategy: RESPONSE] [Eq:80% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:4406ms)>
+[FLOP] maniac_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: OPENER] [Eq:0% / C-Req:-20% / B-Req:95%] (ACE_HIGH) (Call Odds) (d:2615ms)>
+[TURN] maniac_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: OPENER] [Eq:0% / C-Req:0% / B-Req:95%] (ACE_HIGH) (Call Odds) (d:4795ms)>
+[RIVER] maniac_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: OPENER] [Eq:25% / C-Req:0% / B-Req:95%] (MARGINAL) (Call Odds) (d:1608ms)>
+Showdown Results:
+  - the_don_0: Two Pair (Kings and 7s) (Ks,Kd)
+  - maniac_1: One Pair (7s) (As,Js)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #942 | Pot: 1162 | Board: [4h, Jd, Ac, 7d, Ks]
+Players: maniac_0 (Qc,Qs) | the_don_0 (Ad,2c) | gangster_1 (As,Kc)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:85% / C-Req:42% / B-Req:-10%] (AIR) (Value Raise) (d:3472ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:90% / C-Req:19% / B-Req:7%] (AIR) (Value Raise) (d:2747ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:85% / C-Req:60% / B-Req:81%] (AIR) (Value Raise) (d:2417ms)>
+[PREFLOP] maniac_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:90% / C-Req:61% / B-Req:66%] (AIR) (Value Raise) (d:2296ms)>
+[PREFLOP] gangster_1: Calls 42 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:2134ms)>
+[FLOP] maniac_0: Calls 0 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-20% / B-Req:60%] (GOOD) (Call Odds) (d:2471ms)>
+[FLOP] gangster_1: Raises to 93 - < [Strategy: OPENER] [Eq:70% / C-Req:-14% / B-Req:60%] (STRONG) (Value Raise) (d:2118ms)>
+[FLOP] maniac_0: Calls 93 - < [Strategy: RESPONSE] [Eq:60% / C-Req:14% / B-Req:95%] (GOOD) (Call Odds) (d:2928ms)>
+[TURN] maniac_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:1302ms)>
+[TURN] gangster_1: Raises to 410 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:60%] (STRONG) (Value Raise) (d:2492ms)>
+[TURN] maniac_0: Calls 410 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:95%] (GOOD) (Call Odds) (d:1874ms)>
+[RIVER] maniac_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:25% / C-Req:0% / B-Req:95%] (MARGINAL) (Call Odds) (d:2440ms)>
+[RIVER] gangster_1: Calls 0 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:60%] (GOOD) (Call Odds) (d:1694ms)>
+Showdown Results:
+  - maniac_0: One Pair (Queens) (Qc,Qs)
+  - gangster_1: Two Pair (Aces and Kings) (As,Kc)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #65 | Pot: 4317 | Board: [7d, 4h, 5s, 7s, 5c]
+Players: gangster_0 (8h,As) | maniac_0 (3s,8d) | the_don_0 (Kc,Ac) | maniac_1 (Kh,Ks) | the_don_1 (9h,Jh)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:90% / C-Req:43% / B-Req:-25%] (AIR) (Value Raise) (d:2419ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:29% / B-Req:13%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:60% / C-Req:73% / B-Req:72%] (AIR) (Pure Bluff) (d:1300ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 112 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:88%] (AIR) (Value Raise) (d:2266ms)>
+[PREFLOP] maniac_1: Raises to 2265 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1609ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] the_don_0: Calls 2153 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:2803ms)>
+Showdown Results:
+  - the_don_0: Two Pair (7s and 5s) (Kc,Ac)
+  - maniac_1: Two Pair (Kings and 7s) (Kh,Ks)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #137 | Pot: 1898 | Board: []
+Players: gangster_0 (Ad,Ac) | maniac_0 (Kh,Js) | maniac_1 (8c,Kc)
+--------------------------------------
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:24% / B-Req:-30%] (AIR) (Value Raise) (d:3420ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:33% / B-Req:37%] (AIR) (Value Raise) (d:2985ms)>
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:60% / C-Req:52% / B-Req:55%] (AIR) (Value Raise) (d:3982ms)>
+[PREFLOP] maniac_1: Raises to 77 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:30% / C-Req:71% / B-Req:74%] (AIR) (Pure Bluff) (d:1300ms)>
+[PREFLOP] gangster_0: Raises to 1786 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1276ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] maniac_1: Folds
+Showdown Results:
+  - gangster_0: One Pair (Aces) (Ad,Ac)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #343 | Pot: 4300 | Board: []
+Players: maniac_0 (Tc,Ac) | gangster_1 (2c,7s) | maniac_1 (As,Ad)
+--------------------------------------
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:36% / B-Req:-40%] (AIR) (Value Raise) (d:2896ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:70% / C-Req:29% / B-Req:17%] (AIR) (Value Raise) (d:2133ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:46% / B-Req:51%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:70% / C-Req:61% / B-Req:66%] (AIR) (Value Raise) (d:2318ms)>
+[PREFLOP] maniac_1: Raises to 4221 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:87%] (AIR) (Value Raise) (d:2016ms)>
+[PREFLOP] maniac_0: Folds
+Showdown Results:
+  - maniac_1: One Pair (Aces) (As,Ad)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #401 | Pot: 3754 | Board: [2s, 5h, Ac, 7s, 9d]
+Players: gangster_0 (Tc,Ad) | maniac_0 (Jc,Js) | maniac_1 (Qc,Qh)
+--------------------------------------
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:90% / C-Req:24% / B-Req:-40%] (AIR) (Value Raise) (d:2446ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:33% / B-Req:37%] (AIR) (Value Raise) (d:2555ms)>
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:85% / C-Req:52% / B-Req:55%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:90% / C-Req:71% / B-Req:74%] (AIR) (Value Raise) (d:3113ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 1870 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:85%] (AIR) (Value Raise) (d:2879ms)>
+[PREFLOP] maniac_1: Calls 1793 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:2396ms)>
+[FLOP] maniac_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: OPENER] [Eq:25% / C-Req:-20% / B-Req:95%] (MARGINAL) (Call Odds) (d:2352ms)>
+[TURN] maniac_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: OPENER] [Eq:25% / C-Req:0% / B-Req:95%] (MARGINAL) (Call Odds) (d:2530ms)>
+[RIVER] maniac_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: OPENER] [Eq:25% / C-Req:0% / B-Req:95%] (MARGINAL) (Call Odds) (d:2449ms)>
+Showdown Results:
+  - maniac_0: One Pair (Jacks) (Jc,Js)
+  - maniac_1: One Pair (Queens) (Qc,Qh)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #665 | Pot: 1252 | Board: [8h, Ks, 5c, Td, 2s]
+Players: gangster_0 (Ah,Kd) | maniac_1 (Kh,Ad)
+--------------------------------------
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:85% / C-Req:32% / B-Req:-40%] (AIR) (Value Raise) (d:2164ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:39% / B-Req:45%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:85% / C-Req:48% / B-Req:53%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_0: Calls 21 - < [Strategy: RESPONSE] [Eq:85% / C-Req:76% / B-Req:95%] (AIR) (Call Odds) (d:4171ms)>
+[FLOP] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:-14% / B-Req:95%] (GOOD) (Call Odds) (d:1820ms)>
+[FLOP] maniac_1: Raises to 42 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-20% / B-Req:35%] (GOOD) (Value Raise) (d:2107ms)>
+[FLOP] gangster_0: Calls 42 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:1452ms)>
+[TURN] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:2174ms)>
+[TURN] maniac_1: Raises to 184 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:1281ms)>
+[TURN] gangster_0: Calls 184 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:2796ms)>
+[RIVER] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:70%] (GOOD) (Call Odds) (d:2934ms)>
+[RIVER] maniac_1: Raises to 365 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2451ms)>
+[RIVER] gangster_0: Calls 365 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:81%] (GOOD) (Call Odds) (d:2198ms)>
+Showdown Results:
+  - gangster_0: One Pair (Kings) (Ah,Kd)
+  - maniac_1: One Pair (Kings) (Kh,Ad)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #702 | Pot: 1851 | Board: []
+Players: gangster_0 (Kh,Kd) | gangster_1 (3h,7h) | maniac_1 (4d,4c)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:30% / C-Req:-2% / B-Req:0%] (AIR) (Value Raise) (d:2848ms)>
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:41% / B-Req:27%] (AIR) (Value Raise) (d:2280ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:72% / B-Req:91%] (AIR) (Value Raise) (d:1016ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 77 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:30% / C-Req:60% / B-Req:65%] (AIR) (Pure Bluff) (d:3363ms)>
+[PREFLOP] gangster_0: Raises to 1770 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1061ms)>
+[PREFLOP] maniac_1: Folds
+Showdown Results:
+  - gangster_0: One Pair (Kings) (Kh,Kd)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #731 | Pot: 3533 | Board: [3s, 6s, 3h, 6d, Kd]
+Players: gangster_0 (2c,Js) | gangster_1 (As,Ad) | maniac_1 (2s,Ks) | the_don_1 (Kh,Kc)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:48% / B-Req:-10%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:35% / B-Req:21%] (AIR) (Value Raise) (d:2541ms)>
+[PREFLOP] the_don_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:74% / B-Req:75%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] gangster_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2064ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Raises to 1809 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1620ms)>
+[PREFLOP] gangster_1: Calls 1732 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1519ms) (Downgraded to Call)>
+Showdown Results:
+  - gangster_1: Two Pair (Aces and 6s) (As,Ad)
+  - the_don_1: Full House (Kings full of 6s) (Kh,Kc)
+Winner: the_don_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #41 | Pot: 1118 | Board: [8h, 7c, Qc, 8c]
+Players: gangster_0 (Qs,3d) | maniac_0 (9c,6c) | the_don_0 (Kh,Qd) | gangster_1 (Ah,Qh) | maniac_1 (8d,9d)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:43% / B-Req:-25%] (AIR) (Value Raise) (d:3038ms)>
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:45% / B-Req:43%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:60% / C-Req:60% / B-Req:57%] (AIR) (Value Raise) (d:1300ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Calls 21 - < [Strategy: RESPONSE] [Eq:85% / C-Req:73% / B-Req:94%] (AIR) (Call Odds) (d:2897ms)>
+[FLOP] gangster_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:-14% / B-Req:95%] (GOOD) (Call Odds) (d:1291ms)>
+[FLOP] maniac_1: Raises to 46 - < [Strategy: C_BETTER] [Eq:45% / C-Req:-20% / B-Req:35%] (MARGINAL) (Value Raise) (d:2535ms)>
+[FLOP] gangster_1: Calls 46 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:2659ms)>
+[TURN] gangster_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:25% / C-Req:0% / B-Req:95%] (MARGINAL) (Call Odds) (d:1936ms)>
+[TURN] maniac_1: Raises to 202 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:1709ms)>
+[TURN] gangster_1: Raises to 747 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:25% / C-Req:42% / B-Req:87%] (MARGINAL) (Pure Bluff) (d:2445ms)>
+[TURN] maniac_1: Folds
+Showdown Results:
+  - gangster_1: Two Pair (Queens and 8s) (Ah,Qh)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #103 | Pot: 745 | Board: [8c, Jh, 3c, Qd]
+Players: gangster_0 (Qc,Ac) | the_don_0 (9h,Js) | gangster_1 (Kd,6d) | maniac_1 (As,Jc)
+--------------------------------------
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:70% / C-Req:28% / B-Req:-40%] (AIR) (Value Raise) (d:2810ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:43% / B-Req:43%] (AIR) (Value Raise) (d:2636ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:70% / C-Req:45% / B-Req:50%] (AIR) (Value Raise) (d:2799ms)>
+[PREFLOP] gangster_0: Calls 21 - < [Strategy: RESPONSE] [Eq:85% / C-Req:75% / B-Req:95%] (AIR) (Call Odds) (d:2556ms)>
+[FLOP] maniac_1: Raises to 43 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-20% / B-Req:35%] (GOOD) (Value Raise) (d:3245ms)>
+[FLOP] gangster_0: Raises to 133 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:15% / C-Req:20% / B-Req:94%] (ACE_HIGH) (Pure Bluff) (d:3692ms)>
+[FLOP] maniac_1: Calls 90 - < [Strategy: RESPONSE] [Eq:60% / C-Req:39% / B-Req:95%] (GOOD) (Call Odds) (d:1573ms)>
+[TURN] maniac_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:25% / C-Req:0% / B-Req:95%] (MARGINAL) (Call Odds) (d:2978ms)>
+[TURN] gangster_0: Raises to 406 - < [Strategy: C_BETTER] [Eq:68% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2076ms)>
+[TURN] maniac_1: Folds
+Showdown Results:
+  - gangster_0: One Pair (Queens) (Qc,Ac)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #135 | Pot: 2176 | Board: []
+Players: maniac_0 (4s,4c) | the_don_0 (Qh,Jc) | gangster_1 (Ah,Ac) | maniac_1 (Qd,2c) | the_don_1 (5c,9c)
+--------------------------------------
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:26% / B-Req:-30%] (AIR) (Value Raise) (d:2818ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:44% / B-Req:28%] (AIR) (Value Raise) (d:3371ms)>
+[PREFLOP] gangster_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:72% / B-Req:87%] (AIR) (Value Raise) (d:2136ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 112 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:30% / C-Req:74% / B-Req:79%] (AIR) (Pure Bluff) (d:1300ms)>
+[PREFLOP] gangster_1: Raises to 2057 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1465ms)>
+[PREFLOP] the_don_0: Folds
+Showdown Results:
+  - gangster_1: One Pair (Aces) (Ah,Ac)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #292 | Pot: 3514 | Board: [9h, Ts, 8s, 3d, Qs]
+Players: gangster_0 (8c,2h) | maniac_0 (Ac,As) | the_don_0 (Jd,Kc) | maniac_1 (Kh,Ks) | the_don_1 (Th,5c)
+--------------------------------------
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:28% / B-Req:-40%] (AIR) (Value Raise) (d:3074ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:46% / B-Req:28%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:58% / B-Req:57%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 112 - < [Strategy: RESPONSE] [Eq:95% / C-Req:70% / B-Req:73%] (AIR) (Value Raise) (d:2808ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] maniac_1: Raises to 1489 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:92%] (AIR) (Value Raise) (d:1981ms)>
+[PREFLOP] maniac_0: Raises to 2008 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2467ms)>
+Showdown Results:
+  - maniac_0: One Pair (Aces) (Ac,As)
+  - maniac_1: One Pair (Kings) (Kh,Ks)
+Winner: maniac_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #373 | Pot: 3861 | Board: [Jc, 9s, Qc, 8d, 6c]
+Players: gangster_0 (Kd,Ks) | maniac_0 (Jh,Js) | the_don_0 (3s,Qs) | gangster_1 (7s,3h)
+--------------------------------------
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:38% / B-Req:-10%] (AIR) (Value Raise) (d:2585ms)>
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:27% / B-Req:13%] (AIR) (Value Raise) (d:2436ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:59% / B-Req:80%] (AIR) (Value Raise) (d:3097ms)>
+[PREFLOP] maniac_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:85% / C-Req:61% / B-Req:66%] (AIR) (Value Raise) (d:3100ms)>
+[PREFLOP] gangster_0: Raises to 1929 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2282ms)>
+[PREFLOP] maniac_0: Calls 1852 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:3045ms)>
+[FLOP] maniac_0: Calls 0 - < [Strategy: OPENER] [Eq:85% / C-Req:-20% / B-Req:95%] (MONSTER) (Call Odds) (d:1688ms)>
+[TURN] maniac_0: Calls 0 - < [Strategy: OPENER] [Eq:74% / C-Req:0% / B-Req:95%] (STRONG) (Call Odds) (d:2590ms)>
+[RIVER] maniac_0: Calls 0 - < [Strategy: OPENER] [Eq:70% / C-Req:0% / B-Req:95%] (STRONG) (Call Odds) (d:1302ms)>
+Showdown Results:
+  - gangster_0: One Pair (Kings) (Kd,Ks)
+  - maniac_0: Three of a Kind (Jacks) (Jh,Js)
+Winner: maniac_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #385 | Pot: 1252 | Board: [Kc, 9h, As, 4d, 8c]
+Players: the_don_0 (Td,Ad) | gangster_1 (Ah,Qc)
+--------------------------------------
+[PREFLOP] the_don_1: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:70% / C-Req:20% / B-Req:-25%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:26% / B-Req:32%] (AIR) (Value Raise) (d:3345ms)>
+[PREFLOP] the_don_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:70% / C-Req:63% / B-Req:68%] (AIR) (Value Raise) (d:4768ms)>
+[PREFLOP] gangster_1: Calls 21 - < [Strategy: RESPONSE] [Eq:80% / C-Req:76% / B-Req:95%] (AIR) (Call Odds) (d:3900ms)>
+[FLOP] the_don_0: Raises to 42 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-5% / B-Req:35%] (GOOD) (Value Raise) (d:2117ms)>
+[FLOP] gangster_1: Calls 42 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:1841ms)>
+[TURN] the_don_0: Raises to 184 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2569ms)>
+[TURN] gangster_1: Calls 184 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:2032ms)>
+[RIVER] the_don_0: Raises to 365 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:1654ms)>
+[RIVER] gangster_1: Calls 365 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:81%] (GOOD) (Call Odds) (d:2754ms)>
+Showdown Results:
+  - the_don_0: One Pair (Aces) (Td,Ad)
+  - gangster_1: One Pair (Aces) (Ah,Qc)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #537 | Pot: 1286 | Board: [Ah, 3h, 2h, Ts, 5h]
+Players: maniac_0 (Ad,Th) | gangster_1 (Qs,Qh) | the_don_1 (3s,Kd)
+--------------------------------------
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:34% / B-Req:-40%] (AIR) (Value Raise) (d:3403ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:90% / C-Req:43% / B-Req:47%] (AIR) (Value Raise) (d:2623ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:60% / C-Req:46% / B-Req:51%] (AIR) (Value Raise) (d:1466ms)>
+[PREFLOP] gangster_1: Calls 21 - < [Strategy: RESPONSE] [Eq:90% / C-Req:75% / B-Req:95%] (AIR) (Call Odds) (d:2851ms)>
+[FLOP] maniac_0: Raises to 43 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-20% / B-Req:35%] (MARGINAL) (Value Raise) (d:500ms)>
+[FLOP] gangster_1: Calls 43 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (MARGINAL) (Call Odds) (d:1260ms)>
+[TURN] maniac_0: Raises to 189 - < [Strategy: C_BETTER] [Eq:68% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2944ms)>
+[TURN] gangster_1: Calls 189 - < [Strategy: RESPONSE] [Eq:53% / C-Req:42% / B-Req:87%] (MARGINAL) (Call Odds) (d:1738ms)>
+[RIVER] maniac_0: Raises to 375 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:45%] (STRONG) (Value Raise) (d:500ms)>
+[RIVER] gangster_1: Calls 375 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:81%] (STRONG) (Call Odds) (d:2106ms)>
+Showdown Results:
+  - maniac_0: Flush (Ace High, Score: 96) (Ad,Th)
+  - gangster_1: Flush (Ace High, Score: 98) (Qs,Qh)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #591 | Pot: 1286 | Board: [4d, Kc, 3c, 9s, 8c]
+Players: maniac_0 (9d,9c) | gangster_1 (Kh,As) | the_don_1 (4c,4h)
+--------------------------------------
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:70% / C-Req:34% / B-Req:-40%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:43% / B-Req:47%] (AIR) (Value Raise) (d:2112ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:70% / C-Req:46% / B-Req:51%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Calls 21 - < [Strategy: RESPONSE] [Eq:85% / C-Req:75% / B-Req:95%] (AIR) (Call Odds) (d:4943ms)>
+[FLOP] maniac_0: Raises to 43 - < [Strategy: C_BETTER] [Eq:45% / C-Req:-20% / B-Req:35%] (MARGINAL) (Value Raise) (d:1034ms)>
+[FLOP] gangster_1: Calls 43 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:2836ms)>
+[TURN] maniac_0: Raises to 189 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:45%] (MONSTER) (Value Raise) (d:500ms)>
+[TURN] gangster_1: Calls 189 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:2314ms)>
+[RIVER] maniac_0: Raises to 375 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:45%] (MONSTER) (Value Raise) (d:500ms)>
+[RIVER] gangster_1: Calls 375 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:81%] (GOOD) (Call Odds) (d:1814ms)>
+Showdown Results:
+  - maniac_0: Three of a Kind (9s) (9d,9c)
+  - gangster_1: One Pair (Kings) (Kh,As)
+Winner: maniac_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #28 | Pot: 507 | Board: [6d, Kh, 8d, 9h, 8s]
+Players: gangster_0 (5s,7d) | maniac_0 (Ah,8h) | the_don_0 (Qd,Kd) | maniac_1 (Ks,As) | the_don_1 (Qs,7c)
+--------------------------------------
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:28% / B-Req:-40%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:46% / B-Req:28%] (AIR) (Value Raise) (d:2803ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:90% / C-Req:58% / B-Req:57%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 112 - < [Strategy: RESPONSE] [Eq:80% / C-Req:74% / B-Req:79%] (AIR) (Value Raise) (d:3974ms)>
+[PREFLOP] maniac_1: Calls 77 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:93%] (AIR) (Call Odds) (d:2023ms)>
+[FLOP] the_don_0: Raises to 138 - < [Strategy: C_BETTER] [Eq:75% / C-Req:-5% / B-Req:55%] (GOOD) (Value Raise) (d:2561ms)>
+[FLOP] maniac_1: Calls 138 - < [Strategy: RESPONSE] [Eq:60% / C-Req:14% / B-Req:95%] (GOOD) (Call Odds) (d:2502ms)>
+[TURN] the_don_0: Calls 0 - < [Strategy: C_BETTER] [Eq:53% / C-Req:0% / B-Req:65%] (MARGINAL) (Call Odds) (d:1793ms)>
+[TURN] maniac_1: Calls 0 - < [Strategy: OPENER] [Eq:60% / C-Req:0% / B-Req:70%] (GOOD) (Call Odds) (d:2582ms)>
+[RIVER] the_don_0: Calls 0 - < [Strategy: OPENER] [Eq:45% / C-Req:0% / B-Req:65%] (MARGINAL) (Call Odds) (d:1524ms)>
+[RIVER] maniac_1: Calls 0 - < [Strategy: OPENER] [Eq:45% / C-Req:0% / B-Req:70%] (MARGINAL) (Call Odds) (d:2362ms)>
+Showdown Results:
+  - the_don_0: Two Pair (Kings and 8s) (Qd,Kd)
+  - maniac_1: Two Pair (Kings and 8s) (Ks,As)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #45 | Pot: 1052 | Board: [Kd, 5s, Qs, 9s]
+Players: maniac_0 (Js,Kh) | gangster_1 (Ks,As) | maniac_1 (7s,2s) | the_don_1 (Ad,3c)
+--------------------------------------
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:26% / B-Req:-40%] (AIR) (Value Raise) (d:3384ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:90% / C-Req:41% / B-Req:43%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:60% / C-Req:45% / B-Req:50%] (AIR) (Value Raise) (d:1849ms)>
+[PREFLOP] gangster_1: Calls 21 - < [Strategy: RESPONSE] [Eq:90% / C-Req:75% / B-Req:95%] (AIR) (Call Odds) (d:2478ms)>
+[FLOP] maniac_0: Raises to 43 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-20% / B-Req:35%] (GOOD) (Value Raise) (d:3329ms)>
+[FLOP] gangster_1: Calls 43 - < [Strategy: RESPONSE] [Eq:75% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:2701ms)>
+[TURN] maniac_0: Raises to 190 - < [Strategy: C_BETTER] [Eq:57% / C-Req:0% / B-Req:45%] (MARGINAL) (Value Raise) (d:2368ms)>
+[TURN] gangster_1: Raises to 703 - < [Strategy: RESPONSE] [Eq:85% / C-Req:42% / B-Req:67%] (MONSTER) (Value Raise) (d:2729ms)>
+[TURN] maniac_0: Folds
+Showdown Results:
+  - gangster_1: Flush (Ace High, Score: 99) (Ks,As)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #89 | Pot: 580 | Board: [3h, 9h, 4d]
+Players: gangster_0 (Qh,As) | maniac_0 (6d,7h) | gangster_1 (7c,6c) | maniac_1 (Kd,Kh)
+--------------------------------------
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:40% / B-Req:0%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:29% / B-Req:13%] (AIR) (Value Raise) (d:3097ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Calls 13 - < [Strategy: RESPONSE] [Eq:80% / C-Req:68% / B-Req:85%] (AIR) (Call Odds) (d:1497ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] gangster_1: Raises to 49 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:40% / C-Req:51% / B-Req:70%] (AIR) (Pure Bluff) (d:3876ms)>
+[PREFLOP] maniac_1: Raises to 156 - < [Strategy: RESPONSE] [Eq:95% / C-Req:65% / B-Req:68%] (AIR) (Value Raise) (d:2860ms)>
+[PREFLOP] gangster_0: Calls 142 - < [Strategy: RESPONSE] [Eq:80% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:2814ms)>
+[PREFLOP] gangster_1: Folds
+[FLOP] gangster_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:0% / C-Req:-14% / B-Req:95%] (ACE_HIGH) (Call Odds) (d:1819ms)>
+[FLOP] maniac_1: Raises to 217 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-20% / B-Req:60%] (STRONG) (Value Raise) (d:1845ms)>
+[FLOP] gangster_0: Folds
+Showdown Results:
+  - maniac_1: One Pair (Kings) (Kd,Kh)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #91 | Pot: 536 | Board: [4d, Kc, 8d, 9s, 3d]
+Players: gangster_0 (Ah,Kh) | the_don_0 (Ks,As) | gangster_1 (Kd,Td) | maniac_1 (Th,8h) | the_don_1 (Qd,7d)
+--------------------------------------
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:28% / B-Req:-30%] (AIR) (Value Raise) (d:2984ms)>
+[PREFLOP] the_don_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:46% / B-Req:28%] (AIR) (Value Raise) (d:2237ms)>
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:90% / C-Req:74% / B-Req:87%] (AIR) (Value Raise) (d:1063ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 112 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:90%] (AIR) (Value Raise) (d:4239ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Calls 77 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:3050ms)>
+[FLOP] the_don_0: Raises to 146 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-5% / B-Req:55%] (GOOD) (Value Raise) (d:1539ms)>
+[FLOP] gangster_0: Calls 146 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:95%] (GOOD) (Call Odds) (d:2128ms)>
+[TURN] the_don_0: Calls 0 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:65%] (GOOD) (Call Odds) (d:2197ms)>
+[TURN] gangster_0: Calls 0 - < [Strategy: OPENER] [Eq:60% / C-Req:0% / B-Req:60%] (GOOD) (Call Odds) (d:1258ms)>
+[RIVER] the_don_0: Calls 0 - < [Strategy: OPENER] [Eq:60% / C-Req:0% / B-Req:65%] (GOOD) (Call Odds) (d:2506ms)>
+[RIVER] gangster_0: Calls 0 - < [Strategy: OPENER] [Eq:60% / C-Req:0% / B-Req:60%] (GOOD) (Call Odds) (d:1981ms)>
+Showdown Results:
+  - gangster_0: One Pair (Kings) (Ah,Kh)
+  - the_don_0: One Pair (Kings) (Ks,As)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #231 | Pot: 2241 | Board: [5d, Ts, 3c, 9s]
+Players: gangster_0 (Th,Td) | maniac_1 (Ad,3d) | the_don_1 (9h,Tc)
+--------------------------------------
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:80% / C-Req:42% / B-Req:-10%] (AIR) (Value Raise) (d:2818ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:19% / B-Req:7%] (AIR) (Value Raise) (d:2910ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Calls 10 - < [Strategy: RESPONSE] [Eq:80% / C-Req:60% / B-Req:81%] (AIR) (Call Odds) (d:2835ms)>
+[FLOP] maniac_1: Raises to 18 - < [Strategy: C_BETTER] [Eq:45% / C-Req:-20% / B-Req:10%] (MARGINAL) (Value Raise) (d:3380ms)>
+[FLOP] gangster_0: Raises to 55 - < [Strategy: RESPONSE] [Eq:85% / C-Req:20% / B-Req:59%] (MONSTER) (Value Raise) (d:2929ms)>
+[FLOP] maniac_1: Raises to 154 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:35% / C-Req:39% / B-Req:94%] (MARGINAL) (Pure Bluff) (d:1300ms)>
+[FLOP] gangster_0: Calls 99 - < [Strategy: RESPONSE] [Eq:85% / C-Req:67% / B-Req:95%] (MONSTER) (Call Odds) (d:1952ms)>
+[TURN] maniac_1: Raises to 405 - < [Strategy: C_BETTER] [Eq:45% / C-Req:0% / B-Req:20%] (MARGINAL) (Value Raise) (d:500ms)>
+[TURN] gangster_0: Raises to 1498 - < [Strategy: RESPONSE] [Eq:85% / C-Req:42% / B-Req:52%] (MONSTER) (Value Raise) (d:2655ms)>
+[TURN] maniac_1: Folds
+Showdown Results:
+  - gangster_0: Three of a Kind (10s) (Th,Td)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #322 | Pot: 3333 | Board: [2d, Jc, 9d, 6s, 5h]
+Players: gangster_0 (Js,Th) | maniac_0 (9h,9c) | the_don_0 (4s,4d) | maniac_1 (Kc,Kd) | the_don_1 (Ad,7h)
+--------------------------------------
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:70% / C-Req:28% / B-Req:-40%] (AIR) (Value Raise) (d:2340ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:46% / B-Req:28%] (AIR) (Value Raise) (d:2283ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:58% / B-Req:57%] (AIR) (Value Raise) (d:2374ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Calls 31 - < [Strategy: RESPONSE] [Eq:70% / C-Req:70% / B-Req:73%] (AIR) (Call Odds) (d:3161ms)>
+[PREFLOP] the_don_0: Folds
+[FLOP] maniac_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:85% / C-Req:-20% / B-Req:95%] (MONSTER) (Call Odds) (d:1491ms)>
+[FLOP] maniac_1: Raises to 52 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-20% / B-Req:35%] (STRONG) (Value Raise) (d:2398ms)>
+[FLOP] maniac_0: Raises to 161 - < [Strategy: RESPONSE] [Eq:85% / C-Req:14% / B-Req:74%] (MONSTER) (Value Raise) (d:2195ms)>
+[FLOP] maniac_1: Calls 109 - < [Strategy: RESPONSE] [Eq:70% / C-Req:39% / B-Req:95%] (STRONG) (Call Odds) (d:1760ms)>
+[TURN] maniac_0: Raises to 490 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:45%] (MONSTER) (Value Raise) (d:3417ms)>
+[TURN] maniac_1: Calls 490 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:87%] (STRONG) (Call Odds) (d:2082ms)>
+[RIVER] maniac_0: Raises to 972 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:45%] (MONSTER) (Value Raise) (d:2853ms)>
+[RIVER] maniac_1: Calls 972 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:81%] (GOOD) (Call Odds) (d:1641ms)>
+Showdown Results:
+  - maniac_0: Three of a Kind (9s) (9h,9c)
+  - maniac_1: One Pair (Kings) (Kc,Kd)
+Winner: maniac_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #343 | Pot: 1339 | Board: [7c, Tc, 5c, Kh, 6d]
+Players: maniac_0 (Qh,Ad) | the_don_0 (8s,8d) | gangster_1 (Qc,Ac) | the_don_1 (Ks,As)
+--------------------------------------
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Raises to 4 - < [Strategy: OPENER] [Eq:90% / C-Req:41% / B-Req:-25%] (AIR) (Value Raise) (d:2240ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:27% / B-Req:13%] (AIR) (Value Raise) (d:2971ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:85% / C-Req:65% / B-Req:84%] (AIR) (Value Raise) (d:1797ms)>
+[PREFLOP] the_don_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:89%] (AIR) (Value Raise) (d:3297ms)>
+[PREFLOP] maniac_0: Calls 63 - < [Strategy: RESPONSE] [Eq:80% / C-Req:80% / B-Req:93%] (AIR) (Call Odds) (d:4094ms)>
+[PREFLOP] gangster_1: Calls 42 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:2873ms)>
+[FLOP] gangster_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:85% / C-Req:-9% / B-Req:95%] (MONSTER) (Call Odds) (d:2284ms)>
+[FLOP] the_don_1: Calls 0 - < [Strategy: C_BETTER] [Eq:18% / C-Req:0% / B-Req:55%] (ACE_HIGH) (Call Odds) (d:2591ms)>
+[FLOP] maniac_0: Calls 0 - < [Strategy: OPENER] [Eq:18% / C-Req:-15% / B-Req:70%] (ACE_HIGH) (Call Odds) (d:1029ms)>
+[TURN] gangster_1: Raises to 278 - < [Strategy: OPENER] [Eq:89% / C-Req:5% / B-Req:60%] (MONSTER) (Value Raise) (d:500ms)>
+[TURN] the_don_1: Calls 278 - < [Strategy: RESPONSE] [Eq:60% / C-Req:47% / B-Req:95%] (GOOD) (Call Odds) (d:1999ms)>
+[TURN] maniac_0: Folds
+[RIVER] gangster_1: Raises to 551 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:60%] (MONSTER) (Value Raise) (d:3055ms)>
+[RIVER] the_don_1: Folds
+Showdown Results:
+  - gangster_1: Flush (Ace High, Score: 98) (Qc,Ac)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #360 | Pot: 1212 | Board: [2h, Js, 5s, Qc]
+Players: gangster_0 (Jc,Jh) | maniac_0 (6h,8s) | the_don_0 (Ts,As) | gangster_1 (7h,7s) | maniac_1 (9s,Kh)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:42% / B-Req:-10%] (AIR) (Value Raise) (d:3300ms)>
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:31% / B-Req:13%] (AIR) (Value Raise) (d:2225ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Calls 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:72% / B-Req:87%] (AIR) (Call Odds) (d:2736ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 49 - < [Strategy: RESPONSE] [Eq:70% / C-Req:57% / B-Req:58%] (AIR) (Value Raise) (d:1409ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Folds
+[PREFLOP] gangster_0: Calls 35 - < [Strategy: RESPONSE] [Eq:85% / C-Req:76% / B-Req:95%] (AIR) (Call Odds) (d:4885ms)>
+[FLOP] the_don_0: Calls 0 - < [Strategy: C_BETTER] [Eq:35% / C-Req:-5% / B-Req:35%] (ACE_HIGH) (Call Odds) (d:1846ms)>
+[FLOP] gangster_0: Raises to 70 - < [Strategy: OPENER] [Eq:85% / C-Req:-14% / B-Req:45%] (MONSTER) (Value Raise) (d:2901ms)>
+[FLOP] the_don_0: Raises to 217 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:15% / C-Req:29% / B-Req:94%] (ACE_HIGH) (Pure Bluff) (d:1300ms)>
+[FLOP] gangster_0: Calls 147 - < [Strategy: RESPONSE] [Eq:85% / C-Req:45% / B-Req:95%] (MONSTER) (Call Odds) (d:2657ms)>
+[TURN] the_don_0: Calls 0 - < [Strategy: C_BETTER] [Eq:23% / C-Req:0% / B-Req:45%] (ACE_HIGH) (Call Odds) (d:1284ms)>
+[TURN] gangster_0: Raises to 661 - < [Strategy: OPENER] [Eq:85% / C-Req:0% / B-Req:45%] (MONSTER) (Value Raise) (d:2629ms)>
+[TURN] the_don_0: Folds
+Showdown Results:
+  - gangster_0: Three of a Kind (Jacks) (Jc,Jh)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #381 | Pot: 1457 | Board: [Jc, 8s, 3h, 4d, Td]
+Players: the_don_0 (Ah,As) | maniac_1 (Tc,Ac) | the_don_1 (Qh,Kc)
+--------------------------------------
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:39% / B-Req:-25%] (AIR) (Value Raise) (d:2704ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:70% / C-Req:19% / B-Req:7%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] the_don_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:61% / B-Req:66%] (AIR) (Value Raise) (d:2301ms)>
+[PREFLOP] maniac_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:70% / C-Req:61% / B-Req:66%] (AIR) (Value Raise) (d:4841ms)>
+[PREFLOP] the_don_0: Raises to 1320 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1967ms)>
+[PREFLOP] maniac_1: Calls 1243 - < [Strategy: RESPONSE] [V-Committed] [Eq:75% / C-Req:0% / B-Req:95%] (AIR) (Call Odds) (d:2273ms)>
+Showdown Results:
+  - the_don_0: One Pair (Aces) (Ah,As)
+  - maniac_1: One Pair (10s) (Tc,Ac)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #539 | Pot: 539 | Board: [7h, Ah, 2d, 3h, 6c]
+Players: gangster_0 (5s,Js) | maniac_0 (5c,8h) | the_don_0 (Th,Tc) | gangster_1 (Jh,Jd)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:80% / C-Req:41% / B-Req:-25%] (AIR) (Value Raise) (d:3486ms)>
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:43% / B-Req:43%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:80% / C-Req:60% / B-Req:65%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Calls 21 - < [Strategy: RESPONSE] [Eq:85% / C-Req:75% / B-Req:95%] (AIR) (Call Odds) (d:2952ms)>
+[FLOP] the_don_0: Raises to 43 - < [Strategy: C_BETTER] [Eq:45% / C-Req:-5% / B-Req:35%] (MARGINAL) (Value Raise) (d:1059ms)>
+[FLOP] gangster_1: Calls 43 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:25% / C-Req:20% / B-Req:94%] (MARGINAL) (Call Odds) (d:4101ms)>
+[TURN] the_don_0: Raises to 190 - < [Strategy: C_BETTER] [Eq:53% / C-Req:0% / B-Req:45%] (MARGINAL) (Value Raise) (d:2415ms)>
+[TURN] gangster_1: Calls 190 - < [Strategy: RESPONSE] [Eq:53% / C-Req:42% / B-Req:87%] (MARGINAL) (Call Odds) (d:2120ms)>
+[RIVER] the_don_0: Calls 0 - < [Strategy: C_BETTER] [Eq:45% / C-Req:0% / B-Req:45%] (MARGINAL) (Call Odds) (d:2683ms)>
+[RIVER] gangster_1: Calls 0 - < [Strategy: OPENER] [Eq:45% / C-Req:0% / B-Req:45%] (MARGINAL) (Call Odds) (d:2425ms)>
+Showdown Results:
+  - the_don_0: One Pair (10s) (Th,Tc)
+  - gangster_1: One Pair (Jacks) (Jh,Jd)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #720 | Pot: 2170 | Board: [Kc, 7h, 6s, 5c, 9d]
+Players: gangster_0 (8c,8h) | maniac_0 (7d,Ac) | the_don_0 (Kh,3s)
+--------------------------------------
+[PREFLOP] gangster_1: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:36% / B-Req:-10%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:19% / B-Req:7%] (AIR) (Value Raise) (d:3264ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_0: Calls 10 - < [Strategy: RESPONSE] [Eq:60% / C-Req:60% / B-Req:81%] (AIR) (Call Odds) (d:3556ms)>
+[FLOP] maniac_0: Raises to 18 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-20% / B-Req:10%] (GOOD) (Value Raise) (d:3125ms)>
+[FLOP] gangster_0: Calls 18 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:35% / C-Req:20% / B-Req:79%] (MARGINAL) (Call Odds) (d:1937ms)>
+[TURN] maniac_0: Raises to 79 - < [Strategy: C_BETTER] [Eq:45% / C-Req:0% / B-Req:20%] (MARGINAL) (Value Raise) (d:3037ms)>
+[TURN] gangster_0: Calls 79 - < [Strategy: RESPONSE] [Eq:53% / C-Req:42% / B-Req:72%] (MARGINAL) (Call Odds) (d:1137ms)>
+[RIVER] maniac_0: Raises to 156 - < [Strategy: C_BETTER] [Eq:45% / C-Req:0% / B-Req:20%] (MARGINAL) (Value Raise) (d:3479ms)>
+[RIVER] gangster_0: Raises to 499 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:66%] (STRONG) (Value Raise) (d:1616ms)>
+[RIVER] maniac_0: Raises to 1447 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:35% / C-Req:60% / B-Req:80%] (MARGINAL) (Pure Bluff) (d:2252ms)>
+[RIVER] gangster_0: Folds
+Showdown Results:
+  - maniac_0: One Pair (7s) (7d,Ac)
+Winner: maniac_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #865 | Pot: 4523 | Board: [3d, 6c, 8s, 5d, Jc]
+Players: maniac_0 (Ah,Qd) | the_don_0 (2c,5c) | gangster_1 (As,Ac) | the_don_1 (7h,Jh)
+--------------------------------------
+[PREFLOP] the_don_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:41% / B-Req:-15%] (AIR) (Value Raise) (d:2849ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:27% / B-Req:13%] (AIR) (Value Raise) (d:3374ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:65% / B-Req:84%] (AIR) (Value Raise) (d:2490ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] maniac_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:80% / C-Req:60% / B-Req:65%] (AIR) (Value Raise) (d:1872ms)>
+[PREFLOP] gangster_1: Raises to 2259 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2700ms)>
+[PREFLOP] maniac_0: Calls 2182 - < [Strategy: RESPONSE] [Eq:80% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:2908ms)>
+[FLOP] maniac_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: OPENER] [Eq:0% / C-Req:-20% / B-Req:95%] (ACE_HIGH) (Call Odds) (d:2681ms)>
+[TURN] maniac_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: OPENER] [Eq:0% / C-Req:0% / B-Req:95%] (ACE_HIGH) (Call Odds) (d:2385ms)>
+[RIVER] maniac_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: OPENER] [Eq:0% / C-Req:0% / B-Req:95%] (ACE_HIGH) (Call Odds) (d:3784ms)>
+Showdown Results:
+  - maniac_0: High Card (Ace) (Ah,Qd)
+  - gangster_1: One Pair (Aces) (As,Ac)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #952 | Pot: 916 | Board: [Js, 6h, 5c, Th, Qs]
+Players: gangster_0 (Ah,3s) | the_don_0 (Kc,Kd) | gangster_1 (Jc,Ac) | the_don_1 (9h,8c)
+--------------------------------------
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:39% / B-Req:-25%] (AIR) (Value Raise) (d:2501ms)>
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:41% / B-Req:43%] (AIR) (Value Raise) (d:3324ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] the_don_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:60% / B-Req:65%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Calls 21 - < [Strategy: RESPONSE] [Eq:80% / C-Req:75% / B-Req:95%] (AIR) (Call Odds) (d:4142ms)>
+[FLOP] the_don_0: Raises to 43 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-5% / B-Req:35%] (STRONG) (Value Raise) (d:500ms)>
+[FLOP] gangster_1: Calls 43 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:1348ms)>
+[TURN] the_don_0: Raises to 190 - < [Strategy: C_BETTER] [Eq:70% / C-Req:0% / B-Req:45%] (STRONG) (Value Raise) (d:2471ms)>
+[TURN] gangster_1: Calls 190 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:2321ms)>
+[RIVER] the_don_0: Raises to 377 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:1010ms)>
+[RIVER] gangster_1: Folds
+Showdown Results:
+  - the_don_0: One Pair (Kings) (Kc,Kd)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #17 | Pot: 4020 | Board: [3d, 7c, Td, Kc, Tc]
+Players: gangster_0 (8s,Qc) | maniac_0 (As,Ah) | the_don_0 (Kd,Kh) | the_don_1 (Th,Qd)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:43% / B-Req:-25%] (AIR) (Value Raise) (d:3195ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:42% / B-Req:28%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:51% / B-Req:54%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:89%] (AIR) (Value Raise) (d:2305ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] maniac_0: Raises to 1838 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:85%] (AIR) (Value Raise) (d:2932ms)>
+[PREFLOP] the_don_0: Raises to 2167 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1094ms)>
+Showdown Results:
+  - maniac_0: Two Pair (Aces and 10s) (As,Ah)
+  - the_don_0: Full House (Kings full of 10s) (Kd,Kh)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #52 | Pot: 3992 | Board: [Kh, Ks, Kd, 7c, Ad]
+Players: gangster_0 (6s,8h) | the_don_0 (Ac,3c) | maniac_1 (2d,2h) | the_don_1 (9d,9h)
+--------------------------------------
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:41% / B-Req:-15%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:27% / B-Req:13%] (AIR) (Value Raise) (d:2142ms)>
+[PREFLOP] the_don_1: Calls 13 - < [Strategy: RESPONSE] [Eq:70% / C-Req:69% / B-Req:70%] (AIR) (Call Odds) (d:3414ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] the_don_0: Folds
+[FLOP] the_don_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:85% / C-Req:-5% / B-Req:90%] (MONSTER) (Call Odds) (d:2725ms)>
+[FLOP] maniac_1: Raises to 28 - < [Strategy: C_BETTER] [Eq:85% / C-Req:-20% / B-Req:10%] (MONSTER) (Value Raise) (d:2711ms)>
+[FLOP] the_don_1: Raises to 86 - < [Strategy: RESPONSE] [Eq:85% / C-Req:33% / B-Req:58%] (MONSTER) (Value Raise) (d:3433ms)>
+[FLOP] maniac_1: Raises to 240 - < [Strategy: RESPONSE] [Eq:85% / C-Req:40% / B-Req:75%] (MONSTER) (Value Raise) (d:2232ms)>
+[FLOP] the_don_1: Calls 154 - < [Strategy: RESPONSE] [Eq:85% / C-Req:77% / B-Req:95%] (MONSTER) (Call Odds) (d:4693ms)>
+[TURN] the_don_1: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:85% / C-Req:0% / B-Req:90%] (MONSTER) (Call Odds) (d:1983ms)>
+[TURN] maniac_1: Raises to 616 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:20%] (MONSTER) (Value Raise) (d:2008ms)>
+[TURN] the_don_1: Raises to 1737 - < [Strategy: RESPONSE] [Eq:85% / C-Req:42% / B-Req:47%] (MONSTER) (Value Raise) (d:500ms)>
+[TURN] maniac_1: Raises to 1741 - < [Strategy: RESPONSE] [Eq:85% / C-Req:60% / B-Req:60%] (MONSTER) (Value Raise) (d:2836ms)>
+Showdown Results:
+  - maniac_1: Full House (Kings full of 2s) (2d,2h)
+  - the_don_1: Full House (Kings full of 9s) (9d,9h)
+Winner: the_don_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #145 | Pot: 1350 | Board: [Ks, Th, Jh, 5s]
+Players: gangster_0 (Ts,Ah) | the_don_0 (6d,Kd) | gangster_1 (8d,3d)
+--------------------------------------
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:36% / B-Req:-10%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:34% / B-Req:22%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] gangster_0: Calls 10 - < [Strategy: RESPONSE] [Eq:60% / C-Req:60% / B-Req:81%] (AIR) (Call Odds) (d:2746ms)>
+[FLOP] the_don_0: Raises to 18 - < [Strategy: C_BETTER] [Eq:45% / C-Req:-5% / B-Req:15%] (MARGINAL) (Value Raise) (d:2696ms)>
+[FLOP] gangster_0: Calls 18 - < [Strategy: RESPONSE] [Eq:53% / C-Req:20% / B-Req:79%] (MARGINAL) (Call Odds) (d:2936ms)>
+[TURN] the_don_0: Raises to 79 - < [Strategy: C_BETTER] [Eq:45% / C-Req:0% / B-Req:25%] (MARGINAL) (Value Raise) (d:3440ms)>
+[TURN] gangster_0: Raises to 292 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:39% / C-Req:42% / B-Req:72%] (MARGINAL) (Pure Bluff) (d:2607ms)>
+[TURN] the_don_0: Raises to 992 - < [Intensity Adj: -10%] [Strategy: RESPONSE] [Eq:35% / C-Req:65% / B-Req:90%] (MARGINAL) (Pure Bluff) (d:3816ms)>
+[TURN] gangster_0: Folds
+Showdown Results:
+  - the_don_0: One Pair (Kings) (6d,Kd)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #302 | Pot: 1575 | Board: [3c, 8s, 7d, Kh]
+Players: gangster_0 (Tc,Ts) | the_don_0 (Kd,Kc) | gangster_1 (As,Jd)
+--------------------------------------
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:80% / C-Req:46% / B-Req:-10%] (AIR) (Value Raise) (d:2366ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:48% / B-Req:36%] (AIR) (Value Raise) (d:2536ms)>
+[PREFLOP] gangster_1: Calls 13 - < [Strategy: RESPONSE] [Eq:70% / C-Req:69% / B-Req:88%] (AIR) (Call Odds) (d:4405ms)>
+[PREFLOP] gangster_0: Raises to 49 - < [Strategy: RESPONSE] [Eq:80% / C-Req:52% / B-Req:71%] (AIR) (Value Raise) (d:1527ms)>
+[PREFLOP] the_don_0: Raises to 156 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:83%] (AIR) (Value Raise) (d:2731ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] gangster_0: Calls 107 - < [Strategy: RESPONSE] [Eq:80% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:2127ms)>
+[FLOP] gangster_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:70% / C-Req:-14% / B-Req:95%] (STRONG) (Call Odds) (d:2948ms)>
+[FLOP] the_don_0: Raises to 195 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-5% / B-Req:55%] (STRONG) (Value Raise) (d:1790ms)>
+[FLOP] gangster_0: Calls 195 - < [Strategy: RESPONSE] [Eq:70% / C-Req:20% / B-Req:95%] (STRONG) (Call Odds) (d:1146ms)>
+[TURN] gangster_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:25% / C-Req:0% / B-Req:95%] (MARGINAL) (Call Odds) (d:1810ms)>
+[TURN] the_don_0: Raises to 859 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:65%] (MONSTER) (Value Raise) (d:2338ms)>
+[TURN] gangster_0: Folds
+Showdown Results:
+  - the_don_0: Three of a Kind (Kings) (Kd,Kc)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #372 | Pot: 3748 | Board: [6d, 7h, 5h, 8c, Tc]
+Players: the_don_0 (Qs,Qd) | gangster_1 (Kh,Kc)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:48% / B-Req:-10%] (AIR) (Value Raise) (d:2651ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:90% / C-Req:27% / B-Req:17%] (AIR) (Value Raise) (d:2455ms)>
+[PREFLOP] gangster_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:62% / B-Req:83%] (AIR) (Value Raise) (d:2052ms)>
+[PREFLOP] the_don_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:90% / C-Req:77% / B-Req:82%] (AIR) (Value Raise) (d:1165ms)>
+[PREFLOP] gangster_1: Raises to 1874 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2140ms)>
+[PREFLOP] the_don_0: Calls 1797 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:4370ms)>
+[FLOP] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:-5% / B-Req:95%] (GOOD) (Call Odds) (d:2038ms)>
+[TURN] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:68% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:1940ms)>
+[RIVER] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:1870ms)>
+Showdown Results:
+  - the_don_0: One Pair (Queens) (Qs,Qd)
+  - gangster_1: One Pair (Kings) (Kh,Kc)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #384 | Pot: 1320 | Board: [7h, Jd, Tc, 5h, 6d]
+Players: gangster_0 (Qh,Qc) | the_don_0 (Kd,Kc) | the_don_1 (Qs,9s)
+--------------------------------------
+[PREFLOP] gangster_1: Folds
+[PREFLOP] the_don_1: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:47% / B-Req:-25%] (AIR) (Value Raise) (d:2108ms)>
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:90% / C-Req:43% / B-Req:47%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:67% / B-Req:70%] (AIR) (Value Raise) (d:2305ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Calls 21 - < [Strategy: RESPONSE] [Eq:90% / C-Req:74% / B-Req:95%] (AIR) (Call Odds) (d:1484ms)>
+[FLOP] the_don_0: Raises to 44 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-5% / B-Req:35%] (GOOD) (Value Raise) (d:3143ms)>
+[FLOP] gangster_0: Calls 44 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:1671ms)>
+[TURN] the_don_0: Raises to 194 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2711ms)>
+[TURN] gangster_0: Calls 194 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:2059ms)>
+[RIVER] the_don_0: Raises to 385 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2652ms)>
+[RIVER] gangster_0: Calls 385 - < [Strategy: RESPONSE] [Eq:60% / C-Req:36% / B-Req:81%] (GOOD) (Call Odds) (d:1013ms)>
+Showdown Results:
+  - gangster_0: One Pair (Queens) (Qh,Qc)
+  - the_don_0: One Pair (Kings) (Kd,Kc)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #470 | Pot: 4539 | Board: [2s, 7d, Jc, 2c, 5c]
+Players: gangster_0 (Kh,Kc) | gangster_1 (Ah,As)
+--------------------------------------
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:46% / B-Req:-10%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:39% / B-Req:45%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:62% / B-Req:83%] (AIR) (Value Raise) (d:2295ms)>
+[PREFLOP] gangster_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:95% / C-Req:76% / B-Req:95%] (AIR) (Value Raise) (d:2163ms)>
+[PREFLOP] gangster_0: Raises to 850 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2247ms)>
+[PREFLOP] gangster_1: Raises to 3689 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1511ms)>
+Showdown Results:
+  - gangster_0: Two Pair (Kings and 2s) (Kh,Kc)
+  - gangster_1: Two Pair (Aces and 2s) (Ah,As)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #70 | Pot: 1751 | Board: [As, Qh, 3h, Jd]
+Players: gangster_0 (Ts,Tc) | maniac_0 (Jc,9c) | maniac_1 (Qd,Qc) | the_don_1 (9h,8s)
+--------------------------------------
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:60% / C-Req:28% / B-Req:-40%] (AIR) (Value Raise) (d:2743ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:90% / C-Req:27% / B-Req:13%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Calls 12 - < [Strategy: RESPONSE] [Eq:80% / C-Req:65% / B-Req:84%] (AIR) (Call Odds) (d:1607ms)>
+[PREFLOP] maniac_0: Raises to 49 - < [Strategy: RESPONSE] [Eq:60% / C-Req:38% / B-Req:41%] (AIR) (Value Raise) (d:2409ms)>
+[PREFLOP] maniac_1: Raises to 156 - < [Strategy: RESPONSE] [Eq:90% / C-Req:65% / B-Req:68%] (AIR) (Value Raise) (d:2969ms)>
+[PREFLOP] gangster_0: Calls 142 - < [Strategy: RESPONSE] [Eq:80% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:2048ms)>
+[PREFLOP] maniac_0: Folds
+[FLOP] gangster_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:25% / C-Req:-14% / B-Req:95%] (MARGINAL) (Call Odds) (d:1519ms)>
+[FLOP] maniac_1: Raises to 217 - < [Strategy: C_BETTER] [Eq:85% / C-Req:-20% / B-Req:60%] (MONSTER) (Value Raise) (d:2940ms)>
+[FLOP] gangster_0: Calls 217 - < [Intensity Adj: -20%] [Strategy: RESPONSE] [Eq:25% / C-Req:20% / B-Req:95%] (MARGINAL) (Call Odds) (d:4157ms)>
+[TURN] gangster_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:29% / C-Req:0% / B-Req:95%] (MARGINAL) (Call Odds) (d:1914ms)>
+[TURN] maniac_1: Raises to 955 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:70%] (MONSTER) (Value Raise) (d:2790ms)>
+[TURN] gangster_0: Folds
+Showdown Results:
+  - maniac_1: Three of a Kind (Queens) (Qd,Qc)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #126 | Pot: 1271 | Board: [Ac, Jd, 7c, 3c, Ts]
+Players: maniac_0 (Kd,Qd) | the_don_0 (Jc,Jh) | maniac_1 (Tc,6c) | the_don_1 (Ah,Qh)
+--------------------------------------
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:26% / B-Req:-30%] (AIR) (Value Raise) (d:2156ms)>
+[PREFLOP] the_don_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:44% / B-Req:28%] (AIR) (Value Raise) (d:2942ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:80% / C-Req:54% / B-Req:55%] (AIR) (Value Raise) (d:2461ms)>
+[PREFLOP] the_don_0: Calls 33 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:90%] (AIR) (Call Odds) (d:4140ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Raises to 112 - < [Strategy: RESPONSE] [Eq:85% / C-Req:68% / B-Req:71%] (AIR) (Value Raise) (d:2271ms)>
+[PREFLOP] maniac_0: Calls 77 - < [Strategy: RESPONSE] [Eq:80% / C-Req:80% / B-Req:89%] (AIR) (Call Odds) (d:3935ms)>
+[PREFLOP] the_don_0: Calls 77 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:2357ms)>
+[FLOP] maniac_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:0% / C-Req:-15% / B-Req:95%] (AIR) (Call Odds) (d:2346ms)>
+[FLOP] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:85% / C-Req:0% / B-Req:95%] (MONSTER) (Call Odds) (d:1688ms)>
+[FLOP] the_don_1: Raises to 204 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:55%] (GOOD) (Value Raise) (d:2841ms)>
+[FLOP] maniac_0: Folds
+[FLOP] the_don_0: Calls 204 - < [Strategy: RESPONSE] [Eq:85% / C-Req:29% / B-Req:94%] (MONSTER) (Call Odds) (d:2207ms)>
+[TURN] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:93% / C-Req:0% / B-Req:95%] (MONSTER) (Call Odds) (d:2577ms)>
+[TURN] the_don_1: Calls 0 - < [Strategy: C_BETTER] [Eq:45% / C-Req:0% / B-Req:65%] (MARGINAL) (Call Odds) (d:1442ms)>
+[RIVER] the_don_0: Raises to 523 - < [Strategy: OPENER] [Eq:70% / C-Req:0% / B-Req:65%] (STRONG) (Value Raise) (d:1058ms)>
+[RIVER] the_don_1: Folds
+Showdown Results:
+  - the_don_0: Three of a Kind (Jacks) (Jc,Jh)
+Winner: the_don_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #264 | Pot: 556 | Board: [8d, Ac, Qc, Kh]
+Players: gangster_0 (Ah,Jh) | maniac_0 (2c,7s) | the_don_0 (Qh,Js) | gangster_1 (Td,Tc) | the_don_1 (6s,6h)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:80% / C-Req:42% / B-Req:-10%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:44% / B-Req:28%] (AIR) (Value Raise) (d:3304ms)>
+[PREFLOP] gangster_0: Calls 14 - < [Strategy: RESPONSE] [Eq:80% / C-Req:72% / B-Req:87%] (AIR) (Call Odds) (d:4784ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 49 - < [Strategy: RESPONSE] [Eq:80% / C-Req:50% / B-Req:69%] (AIR) (Value Raise) (d:1642ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Calls 35 - < [Strategy: RESPONSE] [Eq:80% / C-Req:77% / B-Req:95%] (AIR) (Call Odds) (d:4706ms)>
+[FLOP] gangster_1: Raises to 69 - < [Strategy: C_BETTER] [Eq:45% / C-Req:-14% / B-Req:35%] (MARGINAL) (Value Raise) (d:2676ms)>
+[FLOP] gangster_0: Calls 69 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:2290ms)>
+[TURN] gangster_1: Raises to 303 - < [Strategy: C_BETTER] [Eq:49% / C-Req:0% / B-Req:45%] (MARGINAL) (Value Raise) (d:1633ms)>
+[TURN] gangster_0: Folds
+Showdown Results:
+  - gangster_1: One Pair (10s) (Td,Tc)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #269 | Pot: 3263 | Board: [Jh, 9d, 7s, Ah, Td]
+Players: gangster_0 (Kd,Kh) | maniac_0 (Qs,Qc) | maniac_1 (Ad,8c)
+--------------------------------------
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:24% / B-Req:-30%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:33% / B-Req:37%] (AIR) (Value Raise) (d:2892ms)>
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:90% / C-Req:52% / B-Req:55%] (AIR) (Value Raise) (d:3154ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] gangster_0: Raises to 77 - < [Strategy: RESPONSE] [Eq:95% / C-Req:74% / B-Req:95%] (AIR) (Value Raise) (d:2211ms)>
+[PREFLOP] maniac_0: Raises to 1768 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:86%] (AIR) (Value Raise) (d:3534ms)>
+[PREFLOP] gangster_0: Calls 1691 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1902ms) (Downgraded to Call)>
+Showdown Results:
+  - gangster_0: One Pair (Kings) (Kd,Kh)
+  - maniac_0: One Pair (Queens) (Qs,Qc)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #354 | Pot: 1293 | Board: [Kd, 9s, Qs, Ac, 3d]
+Players: gangster_0 (Kc,Ad) | maniac_0 (8s,Js) | the_don_0 (5s,6s) | maniac_1 (Ah,As)
+--------------------------------------
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:26% / B-Req:-40%] (AIR) (Value Raise) (d:3368ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:41% / B-Req:43%] (AIR) (Value Raise) (d:2255ms)>
+[PREFLOP] maniac_0: Folds
+[PREFLOP] the_don_0: Folds
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:45% / B-Req:50%] (AIR) (Value Raise) (d:2376ms)>
+[PREFLOP] gangster_0: Calls 21 - < [Strategy: RESPONSE] [Eq:85% / C-Req:75% / B-Req:95%] (AIR) (Call Odds) (d:2130ms)>
+[FLOP] maniac_1: Raises to 43 - < [Strategy: C_BETTER] [Eq:60% / C-Req:-20% / B-Req:35%] (GOOD) (Value Raise) (d:500ms)>
+[FLOP] gangster_0: Calls 43 - < [Strategy: RESPONSE] [Eq:60% / C-Req:20% / B-Req:94%] (GOOD) (Call Odds) (d:1613ms)>
+[TURN] maniac_1: Raises to 190 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:45%] (MONSTER) (Value Raise) (d:2637ms)>
+[TURN] gangster_0: Calls 190 - < [Strategy: RESPONSE] [Eq:70% / C-Req:42% / B-Req:87%] (STRONG) (Call Odds) (d:2820ms)>
+[RIVER] maniac_1: Raises to 377 - < [Strategy: C_BETTER] [Eq:85% / C-Req:0% / B-Req:45%] (MONSTER) (Value Raise) (d:2531ms)>
+[RIVER] gangster_0: Calls 377 - < [Strategy: RESPONSE] [Eq:70% / C-Req:36% / B-Req:81%] (STRONG) (Call Odds) (d:1843ms)>
+Showdown Results:
+  - gangster_0: Two Pair (Aces and Kings) (Kc,Ad)
+  - maniac_1: Three of a Kind (Aces) (Ah,As)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #426 | Pot: 680 | Board: [Td, Jc, 8h, 3h, 5h]
+Players: maniac_0 (Ad,Ac) | the_don_0 (Ts,Ah) | maniac_1 (Qc,Qs) | the_don_1 (7s,9s)
+--------------------------------------
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:90% / C-Req:26% / B-Req:-40%] (AIR) (Value Raise) (d:2564ms)>
+[PREFLOP] the_don_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:44% / B-Req:28%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:54% / B-Req:55%] (AIR) (Value Raise) (d:3346ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] maniac_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:90% / C-Req:70% / B-Req:73%] (AIR) (Value Raise) (d:2833ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] maniac_0: Raises to 332 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:85%] (AIR) (Value Raise) (d:2618ms)>
+[PREFLOP] maniac_1: Calls 255 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:4429ms)>
+[FLOP] maniac_1: Calls 0 - < [Strategy: OPENER] [Eq:68% / C-Req:-20% / B-Req:95%] (GOOD) (Call Odds) (d:2788ms)>
+[TURN] maniac_1: Calls 0 - < [Strategy: OPENER] [Eq:64% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:2350ms)>
+[RIVER] maniac_1: Calls 0 - < [Strategy: OPENER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:1537ms)>
+Showdown Results:
+  - maniac_0: One Pair (Aces) (Ad,Ac)
+  - maniac_1: One Pair (Queens) (Qc,Qs)
+Winner: maniac_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #435 | Pot: 706 | Board: []
+Players: maniac_0 (Ah,Ac) | maniac_1 (As,Jc) | the_don_1 (6c,5s)
+--------------------------------------
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:26% / B-Req:-40%] (AIR) (Value Raise) (d:2567ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:70% / C-Req:19% / B-Req:7%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:46% / B-Req:51%] (AIR) (Value Raise) (d:2797ms)>
+[PREFLOP] maniac_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:70% / C-Req:61% / B-Req:66%] (AIR) (Value Raise) (d:4755ms)>
+[PREFLOP] maniac_0: Raises to 627 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:87%] (AIR) (Value Raise) (d:2506ms)>
+[PREFLOP] maniac_1: Folds
+Showdown Results:
+  - maniac_0: One Pair (Aces) (Ah,Ac)
+Winner: maniac_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #439 | Pot: 1426 | Board: [8s, 3c, 4s, 5h, 8c]
+Players: gangster_0 (Ac,7c) | maniac_0 (Kc,Kh) | the_don_0 (Qc,Qs) | gangster_1 (Ad,8h) | maniac_1 (Kd,Tc)
+--------------------------------------
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:28% / B-Req:-30%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:43% / B-Req:43%] (AIR) (Value Raise) (d:3451ms)>
+[PREFLOP] maniac_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:58% / B-Req:57%] (AIR) (Value Raise) (d:3120ms)>
+[PREFLOP] the_don_0: Raises to 112 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:90%] (AIR) (Value Raise) (d:4540ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] maniac_0: Raises to 703 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:91%] (AIR) (Value Raise) (d:2483ms)>
+[PREFLOP] the_don_0: Calls 591 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:3367ms)>
+[FLOP] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:70% / C-Req:-5% / B-Req:95%] (STRONG) (Call Odds) (d:1003ms)>
+[TURN] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:1966ms)>
+[RIVER] the_don_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:0% / C-Req:0% / B-Req:95%] (WEAK) (Call Odds) (d:2996ms)>
+Showdown Results:
+  - maniac_0: Two Pair (Kings and 8s) (Kc,Kh)
+  - the_don_0: Two Pair (Queens and 8s) (Qc,Qs)
+Winner: maniac_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #472 | Pot: 3698 | Board: [3d, 9h, 7s, 5d, 4c]
+Players: gangster_0 (Ad,Ah) | maniac_0 (Qs,Qh) | the_don_0 (As,Ts) | the_don_1 (9s,9c)
+--------------------------------------
+[PREFLOP] maniac_0: Raises to 4 - < [Strategy: OPENER] [Eq:90% / C-Req:28% / B-Req:-40%] (AIR) (Value Raise) (d:2054ms)>
+[PREFLOP] the_don_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:70% / C-Req:46% / B-Req:28%] (AIR) (Value Raise) (d:2187ms)>
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Calls 13 - < [Strategy: RESPONSE] [Eq:70% / C-Req:69% / B-Req:70%] (AIR) (Call Odds) (d:3163ms)>
+[PREFLOP] gangster_0: Raises to 49 - < [Strategy: RESPONSE] [Eq:95% / C-Req:56% / B-Req:73%] (AIR) (Value Raise) (d:2155ms)>
+[PREFLOP] maniac_0: Raises to 156 - < [Strategy: RESPONSE] [Eq:90% / C-Req:72% / B-Req:73%] (AIR) (Value Raise) (d:2907ms)>
+[PREFLOP] the_don_0: Folds
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 2235 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1775ms)>
+[PREFLOP] maniac_0: Calls 2079 - < [Strategy: RESPONSE] [Eq:90% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:4112ms)>
+Showdown Results:
+  - gangster_0: One Pair (Aces) (Ad,Ah)
+  - maniac_0: One Pair (Queens) (Qs,Qh)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #626 | Pot: 3042 | Board: [Th, 7d, 3h, 7c, Ac]
+Players: gangster_1 (Ah,Ad) | maniac_1 (Js,Jc)
+--------------------------------------
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Folds
+[PREFLOP] the_don_0: Folds
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:19% / B-Req:-10%] (AIR) (Value Raise) (d:2740ms)>
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:85% / C-Req:12% / B-Req:2%] (AIR) (Value Raise) (d:2306ms)>
+[PREFLOP] gangster_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:62% / B-Req:83%] (AIR) (Value Raise) (d:2040ms)>
+[PREFLOP] maniac_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:85% / C-Req:62% / B-Req:67%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Raises to 1521 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1114ms)>
+[PREFLOP] maniac_1: Calls 1444 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:95%] (AIR) (Call Odds) (d:3632ms)>
+[FLOP] maniac_1: Calls 0 - < [Strategy: OPENER] [Eq:70% / C-Req:-20% / B-Req:95%] (STRONG) (Call Odds) (d:2281ms)>
+[TURN] maniac_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: OPENER] [Eq:0% / C-Req:0% / B-Req:95%] (WEAK) (Call Odds) (d:2377ms)>
+[RIVER] maniac_1: Calls 0 - < [Intensity Adj: -20%] [Strategy: OPENER] [Eq:0% / C-Req:0% / B-Req:95%] (WEAK) (Call Odds) (d:2125ms)>
+Showdown Results:
+  - gangster_1: Full House (Aces full of 7s) (Ah,Ad)
+  - maniac_1: Two Pair (Jacks and 7s) (Js,Jc)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #774 | Pot: 652 | Board: [6c, 7h, 2h, 8s, 6s]
+Players: gangster_0 (Qc,Qh) | the_don_0 (Jh,Jd) | maniac_1 (6h,5h) | the_don_1 (Td,As)
+--------------------------------------
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:34% / B-Req:-30%] (AIR) (Value Raise) (d:2480ms)>
+[PREFLOP] the_don_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:46% / B-Req:32%] (AIR) (Value Raise) (d:2552ms)>
+[PREFLOP] gangster_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:90% / C-Req:71% / B-Req:88%] (AIR) (Value Raise) (d:2181ms)>
+[PREFLOP] the_don_0: Calls 33 - < [Strategy: RESPONSE] [Eq:85% / C-Req:80% / B-Req:90%] (AIR) (Call Odds) (d:3668ms)>
+[PREFLOP] maniac_1: Folds
+[PREFLOP] the_don_1: Folds
+[FLOP] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:70% / C-Req:-5% / B-Req:95%] (STRONG) (Call Odds) (d:1031ms)>
+[FLOP] gangster_0: Raises to 52 - < [Strategy: C_BETTER] [Eq:70% / C-Req:-14% / B-Req:35%] (STRONG) (Value Raise) (d:2720ms)>
+[FLOP] the_don_0: Calls 52 - < [Strategy: RESPONSE] [Eq:70% / C-Req:29% / B-Req:94%] (STRONG) (Call Odds) (d:1736ms)>
+[TURN] the_don_0: Calls 0 - < [Strategy: DONK_AVOIDER] [Eq:60% / C-Req:0% / B-Req:95%] (GOOD) (Call Odds) (d:1203ms)>
+[TURN] gangster_0: Raises to 230 - < [Strategy: C_BETTER] [Eq:60% / C-Req:0% / B-Req:45%] (GOOD) (Value Raise) (d:2525ms)>
+[TURN] the_don_0: Calls 230 - < [Strategy: RESPONSE] [Eq:60% / C-Req:42% / B-Req:87%] (GOOD) (Call Odds) (d:1393ms)>
+[RIVER] the_don_0: Calls 0 - < [Intensity Adj: -20%] [Strategy: DONK_AVOIDER] [Eq:0% / C-Req:0% / B-Req:70%] (WEAK) (Call Odds) (d:4172ms)>
+[RIVER] gangster_0: Calls 0 - < [Strategy: C_BETTER] [Eq:20% / C-Req:0% / B-Req:45%] (WEAK) (Call Odds) (d:2165ms)>
+Showdown Results:
+  - gangster_0: Two Pair (Queens and 6s) (Qc,Qh)
+  - the_don_0: Two Pair (Jacks and 6s) (Jh,Jd)
+Winner: gangster_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #804 | Pot: 2800 | Board: [Td, Jd, Ts, 6c, 8c]
+Players: gangster_0 (9s,Qs) | the_don_0 (Kd,Ks) | maniac_1 (Ah,Ad)
+--------------------------------------
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:34% / B-Req:-40%] (AIR) (Value Raise) (d:2774ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:43% / B-Req:47%] (AIR) (Value Raise) (d:2325ms)>
+[PREFLOP] the_don_0: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:67% / B-Req:70%] (AIR) (Value Raise) (d:3030ms)>
+[PREFLOP] maniac_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:95% / C-Req:71% / B-Req:74%] (AIR) (Value Raise) (d:3127ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] the_don_0: Raises to 1426 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:1265ms)>
+[PREFLOP] maniac_1: Calls 1349 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2385ms) (Downgraded to Call)>
+Showdown Results:
+  - the_don_0: Two Pair (Kings and 10s) (Kd,Ks)
+  - maniac_1: Two Pair (Aces and 10s) (Ah,Ad)
+Winner: maniac_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #813 | Pot: 3054 | Board: [4c, Kc, 5d, 7h, 3s]
+Players: the_don_0 (Qd,Qh) | gangster_1 (Ks,Kh) | maniac_1 (9s,9c) | the_don_1 (2h,3c)
+--------------------------------------
+[PREFLOP] gangster_0: Folds
+[PREFLOP] the_don_0: Raises to 4 - < [Strategy: OPENER] [Eq:99% / C-Req:39% / B-Req:-25%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] gangster_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:95% / C-Req:41% / B-Req:43%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] maniac_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:70% / C-Req:54% / B-Req:55%] (AIR) (Value Raise) (d:2997ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] the_don_0: Raises to 52 - < [Strategy: RESPONSE] [Eq:99% / C-Req:80% / B-Req:88%] (AIR) (Value Raise) (d:1070ms)>
+[PREFLOP] gangster_1: Raises to 2965 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2935ms)>
+[PREFLOP] maniac_1: Folds
+Showdown Results:
+  - the_don_0: One Pair (Queens) (Qd,Qh)
+  - gangster_1: Three of a Kind (Kings) (Ks,Kh)
+Winner: gangster_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #836 | Pot: 1561 | Board: []
+Players: gangster_1 (Jh,5d) | maniac_1 (8h,Ah) | the_don_1 (Kc,Ks)
+--------------------------------------
+[PREFLOP] the_don_1: Raises to 4 - < [Strategy: OPENER] [Eq:95% / C-Req:39% / B-Req:-25%] (AIR) (Value Raise) (d:3035ms)>
+[PREFLOP] gangster_0: Folds
+[PREFLOP] gangster_1: Folds
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:60% / C-Req:9% / B-Req:-1%] (AIR) (Value Raise) (d:500ms)>
+[PREFLOP] the_don_1: Raises to 35 - < [Strategy: RESPONSE] [Eq:95% / C-Req:62% / B-Req:67%] (AIR) (Value Raise) (d:3281ms)>
+[PREFLOP] maniac_1: Raises to 77 - < [Strategy: RESPONSE] [Eq:60% / C-Req:62% / B-Req:67%] (AIR) (Pure Bluff) (d:2588ms)>
+[PREFLOP] the_don_1: Raises to 1483 - < [Strategy: RESPONSE] [Eq:95% / C-Req:80% / B-Req:95%] (AIR) (Value Raise) (d:2531ms)>
+[PREFLOP] maniac_1: Folds
+Showdown Results:
+  - the_don_1: One Pair (Kings) (Kc,Ks)
+Winner: the_don_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #851 | Pot: 6432 | Board: [9d, Tc, 8s, 3d, 4s]
+Players: gangster_0 (Jc,Qc) | gangster_1 (As,3s) | maniac_1 (Jh,7h)
+--------------------------------------
+[PREFLOP] gangster_1: Raises to 4 - < [Strategy: OPENER] [Eq:50% / C-Req:48% / B-Req:0%] (AIR) (Value Raise) (d:2085ms)>
+[PREFLOP] maniac_1: Raises to 14 - < [Strategy: RESPONSE] [Eq:50% / C-Req:35% / B-Req:21%] (AIR) (Value Raise) (d:2861ms)>
+[PREFLOP] the_don_1: Folds
+[PREFLOP] gangster_0: Calls 13 - < [Strategy: RESPONSE] [Eq:70% / C-Req:69% / B-Req:88%] (AIR) (Call Odds) (d:4188ms)>
+[PREFLOP] gangster_1: Folds
+[FLOP] gangster_0: Raises to 19 - < [Strategy: DONK_AVOIDER] [Eq:98% / C-Req:-14% / B-Req:95%] (MONSTER) (Value Raise) (d:1418ms)>
+[FLOP] maniac_1: Raises to 58 - < [Strategy: RESPONSE] [Eq:98% / C-Req:14% / B-Req:49%] (MONSTER) (Value Raise) (d:2144ms)>
+[FLOP] gangster_0: Raises to 162 - < [Strategy: RESPONSE] [Eq:98% / C-Req:45% / B-Req:84%] (MONSTER) (Value Raise) (d:1789ms)>
+[FLOP] maniac_1: Raises to 2602 - < [Strategy: RESPONSE] [Eq:98% / C-Req:61% / B-Req:95%] (MONSTER) (Value Raise) (d:1146ms)>
+[FLOP] gangster_0: Raises to 3798 - < [Strategy: RESPONSE] [Eq:98% / C-Req:80% / B-Req:95%] (MONSTER) (Value Raise) (d:2050ms)>
+Showdown Results:
+  - gangster_0: Straight (Queen High) (Jc,Qc)
+  - maniac_1: Straight (Jack High) (Jh,7h)
+Winner: gangster_0
+======================================

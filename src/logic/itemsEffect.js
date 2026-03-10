@@ -655,8 +655,8 @@ export const ITEM_EFFECT_DATA = [
     trigger: ['winAtShowdown', 'winAtShowdownWithAllIn', 'lose'],
     get desc() {
       return store.settings.language === 'en' ?
-        `Grants +${Math.floor(this.value * 100)}% XP bonus upon winning a Showdown. (Current total: +${this.stackPerValue}%. This effect accumulates upon losing, resets on valid win.)` :
-        `쇼다운에서 승리시 경험치 보너스 +${this.value * 100}% (현재 누적량: ${this.stackPerValue}%. 이 효과는 쇼다운에서 패배할 때마다 누적되며, 승리할때 초기화.)`;
+        `Each defeat grants a +${this.value * 100}% XP bonus for your next Showdown victory. (Current stack: ${this.stackPerValue}%. This effect stacks and resets upon winning.)` :
+        `패배할 때마다 다음 쇼다운 승리시 경험치 보너스 +${this.value * 100}% (현재 누적량: ${this.stackPerValue}%. 이 효과는 누적되며, 승리할때 초기화.)`;
     },
     value: .2,
     stack: 0,
