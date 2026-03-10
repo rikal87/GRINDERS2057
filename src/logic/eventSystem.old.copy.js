@@ -240,7 +240,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.MAX_BANKRUPT_RESOLVE_DEBT_LOW_RELATIONSHIP,
+    id: EVENT_ID.MAX_BANKRUPT_HAS_DEBT_LOW_RELATIONSHIP,
     scenario: 'Max가 파산했고 플레이어와의 관계가 낮습니다(관계도 <= 0). 플에이어에게 빚을 갚으라고 독촉합니다. (플레이어가 빚을 갚지 않으면 게임 오버 처리합니다.)',
     title_ko: '당장 내 돈 내놔',
     title_en: 'Give me my money now.',

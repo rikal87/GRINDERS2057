@@ -4,7 +4,7 @@ import { store, saveStore, getLanguage, gainMissedPayments, getMissedPayments, M
 import { EVENT_FLORENCE, EventData as FlorenceEventData } from "./eventSystemFlorence.js";
 import { EVENT_MAX, EventData as MaxEventData } from "./eventSystemMax.js";
 import { ENEMY_ID, LOCATION_ID } from "./constants.js";
-
+import { audioManager } from "./audioManager.js";
 const pay_rent_bill = 5000;
 
 export const EVENT_ID = {
@@ -30,9 +30,13 @@ export const EVENT_ID = {
 };
 
 const handleGameOver = async (reason) => {
-  store.isRealGameOver = true;
   store.realGameOverReason = reason;
+  store.isRealGameOver = true;
+  audioManager.pause();
   await saveStore(); // 강제 종료 방지: 사망 상태 즉시 저장
+  setTimeout(() => {
+    audioManager.playSFX('game_over');
+  }, 1000)
 };
 export const EventData = [
   ...FlorenceEventData,
@@ -248,7 +252,7 @@ const START_TIME = new Date('2057-01-20T09:00:00').getTime();
 
 export const scheduleEvent = (eventId, delayMinutes = 0, payload = {}) => {
   // Prevent duplicate scheduling if it's already pending or completed
-  if (store.completedEvents.includes(eventId)) return;
+  if (store.completedEvents.includes(eventId) && !EventData.find(e => e.id === eventId).repeatable) return;
   if (store.pendingEvents.some(e => e.id === eventId)) return;
 
   const triggerTime = store.gameTime + (delayMinutes * 60000);

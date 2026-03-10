@@ -296,7 +296,9 @@ const visibleReportLines = ref([]);
 const reportFinished = ref(false);
 const fullReportLines = ref([]);
 const consoleBox = ref(null);
-const handleSleepClick = () => {
+const currentSleepDuration = ref(0);
+const handleSleepClick = (duration = 8.0) => {
+  currentSleepDuration.value = duration;
   // bankroll_history
   const report = calculateSessionReport();
   const details = [];
@@ -345,7 +347,7 @@ function loopShowReport(i) {
   }, 350 - (i * 10));
 }
 const wakeUp = () => {
-  performSleep(advanceTime)
+  performSleep(advanceTime, currentSleepDuration.value)
   showSleepModal.value = false;
   audioManager.playSFX('action-confirm');
 };

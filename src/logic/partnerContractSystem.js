@@ -11,18 +11,18 @@ import { CONTRACT_TYPE, TYPE_CHANGE_BANKROLL } from "./constants.js";
 //  [CONTRACT_TYPE.STAKING]:700,
 // }
 export const CONTRACT_REQUIRED_RELATIONSHIP = {
-  [CONTRACT_TYPE.SHARE_BENEFIT]: 0,
-  [CONTRACT_TYPE.BANKRUPT_RESCUE]: 0,
-  [CONTRACT_TYPE.A_DATE_WITH_YOU]: 0,
-  [CONTRACT_TYPE.COLLUSION]: 0,
-  [CONTRACT_TYPE.STAKING]: 0,
+  [CONTRACT_TYPE.SHARE_BENEFIT]: 300,
+  [CONTRACT_TYPE.BANKRUPT_RESCUE]: 600,
+  [CONTRACT_TYPE.A_DATE_WITH_YOU]: 800,
+  [CONTRACT_TYPE.COLLUSION]: 800,
+  [CONTRACT_TYPE.STAKING]: 1000,
 }
 export const CONTRACT_BREAK_RELATIONSHIP = {
-  [CONTRACT_TYPE.SHARE_BENEFIT]: 0,
-  [CONTRACT_TYPE.BANKRUPT_RESCUE]: 0,
-  [CONTRACT_TYPE.A_DATE_WITH_YOU]: 0,
-  [CONTRACT_TYPE.COLLUSION]: 0,
-  [CONTRACT_TYPE.STAKING]: 0,
+  [CONTRACT_TYPE.SHARE_BENEFIT]: 250,
+  [CONTRACT_TYPE.BANKRUPT_RESCUE]: 300,
+  [CONTRACT_TYPE.A_DATE_WITH_YOU]: 400,
+  [CONTRACT_TYPE.COLLUSION]: 400,
+  [CONTRACT_TYPE.STAKING]: 500,
 }
 // export const CONTRACT_BREAK_RELATIONSHIP = {
 //   [CONTRACT_TYPE.SHARE_BENEFIT]: 300,
@@ -76,9 +76,9 @@ export const Contract = (type = CONTRACT_TYPE.NOTHING) => {
     relationshipToBreak: CONTRACT_BREAK_RELATIONSHIP[type] || 0,
   }
 }
-export const ContractCollusion = (ratio = 0.5) => { return { ratio, profitTotal: 0, ...Contract(CONTRACT_TYPE.COLLUSION) } }
+export const ContractCollusion = (ratio = 0.5) => { return { ratio, profitTotal: 0, profitTotalLatest: 0, ...Contract(CONTRACT_TYPE.COLLUSION) } }
 export const ContractBankruptRescue = (ratio = 0.3) => { return { ratio, activeRepaymentPeriod: false, debtRepaymentDue: 0, initDebtRepaymentDue: 24 * 7, debt: 0, ...Contract(CONTRACT_TYPE.BANKRUPT_RESCUE) } }
-export const ContractShareBenefit = (ratio = 0.5) => { return { ratio, profitTotal: 0, ...Contract(CONTRACT_TYPE.SHARE_BENEFIT) } }
+export const ContractShareBenefit = (ratio = 0.5) => { return { ratio, profitTotal: 0, profitTotalLatest: 0, ...Contract(CONTRACT_TYPE.SHARE_BENEFIT) } }
 export const ContractADateWithYou = () => { return { ...Contract(CONTRACT_TYPE.A_DATE_WITH_YOU) } }
 
 export const signContract = (partnerId, type, ratio = 0.5) => {
@@ -168,7 +168,8 @@ export const shareBenefit = (partner = null, amount = 0, contract = null, toPlay
 export const requestRescueDebt = (partner = null) => {
   if (!partner) return false;
   const getEvent = EVENT_ID[partner.id.toUpperCase()].BANKRUPT
-  if (getEvent && !partner.sendedEventIds.includes(getEvent.id)) {
+  if (getEvent) {
+    console.info('requestRescueDebt', partner.id, getEvent)
     scheduleEvent(getEvent, 2);
     return true;
   }

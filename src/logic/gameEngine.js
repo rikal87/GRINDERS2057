@@ -190,7 +190,7 @@ export class GameEngine {
       locationConfig.guests.forEach(guestName => {
         if (enemiesToPlace.length >= size - 1) return;
         const targetId = guestName.toLowerCase();
-        const template = CLASSES_ENEMY.find(e => e.name.toLowerCase() === targetId)
+        const template = [...CLASSES_ENEMY, ...CLASSES_PARTNER].find(e => e.name.toLowerCase() === targetId)
         if (template) {
           enemiesToPlace.push({ ...template });
           setTimeout(() => {

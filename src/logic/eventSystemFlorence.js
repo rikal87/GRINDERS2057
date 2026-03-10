@@ -1,8 +1,10 @@
 import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_RESOLVE_TYPE } from "./messageSystem.js";
-import { store, getLanguage, getCurrentBankroll } from "./store.js";
+import { store, getLanguage, getCurrentBankroll, getBustEnemyCount } from "./store.js";
 import { gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
 import { scheduleEvent } from "./eventSystem.js";
 import { EVENT_MAX } from "./eventSystemMax.js";
+import { isEventCompleted } from "./eventSystem.js";
+import { ENEMY_ID } from './constants.js'
 
 import { PARTNER_ID, LOCATION_ID } from './constants.js'
 /**
@@ -85,10 +87,8 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     timer: 11,
     condition: () => {
-      // return isEventCompleted(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE) &&
-      //   true
-      // return new Date(store.gameTime).getHours() >= 22 // for test
-      return true;
+      return isEventCompleted(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE);
+      // return isEventCompleted(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE) && getBustEnemyCount(ENEMY_ID.GANGSTER) > 3;
     },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
@@ -104,9 +104,6 @@ export const EventData = [
     body_en: "Those idiots from the gang... they dared to underestimate me just because I'm a woman. I found that highly offensive.",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    condition: () => {
-      // return new Date(store.gameTime).getHours() >= 22 // for test
-    },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_3_KBT_UNDERGROUND, 10)
@@ -121,9 +118,6 @@ export const EventData = [
     body_en: "Do you happen to know the exact location of [The Bunker], the secret casino managed by the KBT gang? It's a place where standard odds don't apply, filled with dangerous yet attractive volatility.",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    condition: () => {
-      // return new Date(store.gameTime).getHours() >= 22 // for test
-    },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_4_KBT_UNDERGROUND, 25)
@@ -138,9 +132,6 @@ export const EventData = [
     body_en: "My proposal is simple. Come with me to that place. I'll explain the detailed options on-site. With your guts and my calculations, I'm certain our win rate will exceed 90%. Shall we demonstrate some teamwork?",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    condition: () => {
-      // return new Date(store.gameTime).getHours() >= 22 // for test
-    },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_5_KBT_UNDERGROUND, 20)
@@ -177,7 +168,7 @@ export const EventData = [
     },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_6_KBT_UNDERGROUND, 24 * 60)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_7_KBT_UNDERGROUND, 24 * 60)
     },
   },
   {
@@ -196,14 +187,20 @@ export const EventData = [
       // return new Date(store.gameTime).getHours() >= 22 // for test
     },
     func() {
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [{
+        label: this.label,
+        actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
+        payload: {
+          location_id: LOCATION_ID.MIDDLE_UNDERGROUND_CASINO_WITH_FLORENCE,
+        }
+      }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
     id: EVENT_FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL,
     scenario: 'MAIN_STORY_2_7_KBT_UNDERGROUND 연계 이벤트, 주인공이 미션을 실패했을 때, (주인공에게 가진 플로렌스는 크게 실망하였습니다.)',
-    title_ko: '[미션 실패: 신뢰의 균열]',
-    title_en: '[Mission Failed: Breach of Trust]',
+    title_ko: '[신뢰의 균열]',
+    title_en: '[Breach of Trust]',
     body_ko: '아... 실망스럽네요. 제 계산이 빗나간 건가요, 아니면 당신의 집중력이 흐트러진 건가요? 이런 식의 리스크는 비즈니스에 치명적이에요. 당분간은 서로 거리를 두는 게 현명할 것 같네요.',
     body_en: "Ah... how disappointing. Did my calculations fail, or did your focus waver? Risks like this are fatal to business. It seems wise for us to keep our distance for the time being.",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
@@ -216,14 +213,14 @@ export const EventData = [
   {
     id: EVENT_FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_SUCCESS,
     scenario: 'MAIN_STORY_2_7_KBT_UNDERGROUND 연계 이벤트, 주인공이 미션을 성공했을 때, (플로렌스는 크게 기뻐합니다.)',
-    title_ko: '[미션 성공: 완벽한 실행]',
-    title_en: '[Mission Success: Perfect Execution]',
+    title_ko: '[완벽한 실행]',
+    title_en: '[Perfect Execution]',
     body_ko: '역시 제 안목은 틀리지 않았군요. 그 지옥 같은 벙커에서 살아남아 수익까지 챙기다니... 기대 이상의 성과예요. 당신이라는 \'변수\'가 제 포트폴리오에 아주 긍정적인 영향을 주고 있네요. 조만간 더 재미있는 제안을 하러 가죠.',
     body_en: "As expected, my intuition was correct. To survive that hellish bunker and even come away with a profit... it's a performance beyond expectations. The 'variable' that is you is having a very positive impact on my portfolio. I'll come to you with a more interesting proposal soon.",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      gainRelationship(PARTNER_ID.FLORENCE, 200);
+      gainRelationship(PARTNER_ID.FLORENCE, 100);
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_FLORENCE.JOIN_PARTNER, 2 * 24 * 60); // Join after 2 days
     },
@@ -285,6 +282,7 @@ export const EventData = [
     body_en: 'If my calculations are correct, sitting at the same table allows us to absorb the table\'s EV most efficiently. Let me show you what real Las Vegas poker looks like.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
@@ -298,6 +296,7 @@ export const EventData = [
     body_en: 'Poker is ultimately a battle of controlling variance. Hedging profits with you perfectly complements my portfolio. And of course, you get to enjoy the stability of a veteran. Let\'s make it official.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
@@ -311,6 +310,7 @@ export const EventData = [
     body_en: 'Even the most perfect TAG player can\'t escape downswings. Hedging against the worst-case scenario of bankruptcy is highly rational. This will serve as an excellent safety net for both of us.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
@@ -324,6 +324,7 @@ export const EventData = [
     body_en: '...I\'m not exactly used to calculating odds away from the poker table. I might just allow a little emotion.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
@@ -335,32 +336,16 @@ export const EventData = [
     title_en: 'Urgent Capital Request',
     body_ko: '어머, 제 자산 관리에 작은 틈이 생겼네요. 저한테 갚을 돈 있으시죠? 지금 당장 상환해 주셨으면 좋겠어요.',
     body_en: 'Oh my, it seems there\'s a tiny gap in my asset management. You owe me some money, don\'t you? I\'d appreciate an immediate repayment.',
-    label_accept_ko: '승낙하기',
-    label_accept_en: 'Accept',
-    label_refuse_ko: '거절하기',
-    label_refuse_en: 'Refuse',
-    get label_accept() { return store.settings.language === 'en' ? this.label_accept_en : this.label_accept_ko; },
-    get label_refuse() { return store.settings.language === 'en' ? this.label_refuse_en : this.label_refuse_ko; },
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       const partner = getPartner(PARTNER_ID.FLORENCE);
       if (!partner) return;
       // NO OPTION TO REFUSE
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [
-        {
-          label: this.label_accept,
-          actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
-          payload: {
-            amount: partner.debt,
-            currency: 'CR',
-            nextEvent: getRelationship(partner.id) < 200 ? EVENT_FLORENCE.BANKRUPT_ACCEPT_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_FLORENCE.BANKRUPT_ACCEPT_RESCUE,
-          }
-        }
-      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-    },
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO, 24 * 60 * 1)
+    }
   },
-
   {
     id: EVENT_FLORENCE.BANKRUPT_HAS_DEBT_LOW_RELATIONSHIP,
     scenario: 'Florence가 파산했고 관계도가 낮을 때 빚 상환을 다소 싸늘하게 요구합니다.',
@@ -368,27 +353,14 @@ export const EventData = [
     title_en: 'Notice of Repayment',
     body_ko: '지금 제가 많이 예민한 상태거든요. 귀찮은 일 만들지 말고, 밀린 돈 당장 가져오시죠.',
     body_en: 'I am on quite a short fuse right now. Don\'t make things difficult and bring me the money you owe, immediately.',
-    lebel_ko: '빚 갚기',
-    lebel_en: 'Pay debt',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
+    repeatable: true,
     func() {
       const partner = getPartner(PARTNER_ID.FLORENCE);
       if (!partner) return;
       // NO OPTION TO REFUSE
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [{
-        label: this.label,
-        actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
-        payload: {
-          amount: partner.debt,
-          currency: 'CR',
-          id: partner.id,
-          resolveType: MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT,
-          to: partner.fullName,
-          nextEvent: getRelationship(partner.id) < 200 ? EVENT_FLORENCE.BANKRUPT_ACCEPT_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_FLORENCE.BANKRUPT_ACCEPT_RESCUE,
-        }
-      }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO, 24 * 60 * 1)
     },
   },
   {
@@ -406,6 +378,7 @@ export const EventData = [
     get label_refuse() { return store.settings.language === 'en' ? this.label_refuse_en : this.label_refuse_ko; },
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       const partner = getPartner(PARTNER_ID.FLORENCE);
       if (!partner) return;
@@ -431,7 +404,7 @@ export const EventData = [
             nextEvent: getRelationship(partner.id) < 200 ? EVENT_FLORENCE.BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_FLORENCE.BANKRUPT_REFUSE_RESCUE
           }
         }
-      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO, 24 * 60 * 2)
     },
   },
   {
@@ -441,6 +414,7 @@ export const EventData = [
     title_en: 'Investment Accepted',
     body_ko: '후후, 멋진 안목이네요. 이번 타이밍에 절 도와주신 건 절대 잊지 않을게요.',
     body_en: 'Hehe, what a wonderful eye you have. I definitely won\'t forget that you helped me out this time.',
+    repeatable: true,
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
@@ -455,6 +429,7 @@ export const EventData = [
     title_en: 'Funds Received',
     body_ko: '어라, 당신이 도와줄 줄은 정말 몰랐는걸요? 생각보다 괜찮은 구석이 있네요.',
     body_en: 'Well, I really didn\'t expect you to help out. You might be a bit more decent than I thought.',
+    repeatable: true,
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
@@ -471,6 +446,7 @@ export const EventData = [
     body_en: 'What a shame. It was a great chance to bet on me. Well, it\'s your choice, I can\'t force you.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       gainRelationship(PARTNER_ID.FLORENCE, -150);
       const partner = getPartner(PARTNER_ID.FLORENCE)
@@ -486,6 +462,7 @@ export const EventData = [
     title_en: 'Depreciated Value',
     body_ko: '역시 수준 안 맞는 파트너에게 기대하는 건 무리였나 보네요. 당신과의 비즈니스는 여기까지 할게요.',
     body_en: 'Guess it was too much to expect from a partner out of my league. Our business ends right here.',
+    repeatable: true,
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
@@ -504,10 +481,10 @@ export const EventData = [
     body_en: 'Playing with you brings no inspiration to me anymore. I\'m sorry, but I think our time sitting at the same table ends here.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
-    repeatable: true
   },
   {
     id: EVENT_FLORENCE.BREAK_CONTRACT_BANKRUPT_RESCUE,
@@ -515,12 +492,12 @@ export const EventData = [
     title_en: 'Debt Rescue Contract Termination',
     body_ko: '저도 땅 파서 장사하는 건 아니라서요. 당신의 끝없는 부채를 감당하다간 저까지 위험해질 것 같네요. 약속했던 구제 계약은 물를게요.',
     body_en: 'I don\'t print money myself, you know. Handling your endless debt is putting me at risk. I\'ll have to cancel our rescue contract.',
+    repeatable: true,
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
-    repeatable: true
   },
   {
     id: EVENT_FLORENCE.BREAK_CONTRACT_SHARE_BENEFIT,
@@ -530,9 +507,9 @@ export const EventData = [
     body_en: 'The return rate is quite disappointing compared to my expectations. An unappealing partnership is just a waste of time for both of us. The contract ends here.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
-    repeatable: true
   },
 ];

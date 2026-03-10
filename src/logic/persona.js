@@ -205,11 +205,11 @@ export const CLASSES_ENEMY = [
   },
 ];
 export const CLASSES_ENEMY_BOSS = [
-  { name: 'IVY_00', philosophy: 'TAG', vPIP: .27, AF: 3.5, WTSD: .27, chipMultiply: 2, isBoss: true, note: '균형잡힌, 그리고 전설적인 포커 플레이어입니다.' },
-  { name: 'D_NEURAL', philosophy: 'LAG', vPIP: .34, AF: 2.7, WTSD: .26, chipMultiply: 2, isBoss: true, note: '유쾌하며 상대방의 핸드리딩 실력이 정말 좋습니다.' },
-  { name: 'D.W.A.N_V2', philosophy: 'LAG', vPIP: .33, AF: 4.2, WTSD: .30, chipMultiply: 2, isBoss: true, note: '매우 공격적인 프로 포커 플레이어입니다.' },
-  { name: 'JNGL_MAN', philosophy: 'TAG', vPIP: .30, AF: 3.3, WTSD: .31, chipMultiply: 2, isBoss: true, note: '헤즈업 전문 프로 포커 플레이어입니다.' },
-  { name: 'YH0_V1RAL', philosophy: 'LAG', vPIP: .33, AF: 3.7, WTSD: .29, chipMultiply: 2, isBoss: true, note: '프랑스 출신 유명 포커 플레이어입니다.' },
+  { id: 'ivy_00', name: 'IVY_00', philosophy: 'TAG', vPIP: .27, AF: 3.5, WTSD: .27, chipMultiply: 2, isBoss: true, note: '균형잡힌, 그리고 전설적인 포커 플레이어입니다.' },
+  { id: 'd_neural', name: 'D_NEURAL', philosophy: 'LAG', vPIP: .34, AF: 2.7, WTSD: .26, chipMultiply: 2, isBoss: true, note: '유쾌하며 상대방의 핸드리딩 실력이 정말 좋습니다.' },
+  { id: 'd_wan_v2', name: 'D.W.A.N_V2', philosophy: 'LAG', vPIP: .33, AF: 4.2, WTSD: .30, chipMultiply: 2, isBoss: true, note: '매우 공격적인 프로 포커 플레이어입니다.' },
+  { id: 'jngl_man', name: 'JNGL_MAN', philosophy: 'TAG', vPIP: .30, AF: 3.3, WTSD: .31, chipMultiply: 2, isBoss: true, note: '헤즈업 전문 프로 포커 플레이어입니다.' },
+  { id: 'yh0_v1ral', name: 'YH0_V1RAL', philosophy: 'LAG', vPIP: .33, AF: 3.7, WTSD: .29, chipMultiply: 2, isBoss: true, note: '프랑스 출신 유명 포커 플레이어입니다.' },
 ]
 
 export const PERSONALITIES = {

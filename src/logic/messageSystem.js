@@ -38,7 +38,7 @@ export const MESSAGE_ACTION_RESOLVE_TYPE = {
   PAY: 'PAY',
   JOIN: 'JOIN',
 }
-export const sendMessage = (type, title, body, actions = [], sender = 'System', expireAt = null) => {
+export const sendMessage = (type, title, body, actions = [], sender = 'System', expireMinutes = null) => {
   const id = Date.now().toString(36) + Math.random().toString(36).substr(2);
   const msg = {
     id,
@@ -49,7 +49,7 @@ export const sendMessage = (type, title, body, actions = [], sender = 'System', 
     timestamp: store.gameTime,
     isRead: false,
     actions, // [{ label, actionType, payload }]
-    expireAt: expireAt // Optional absolute timestamp
+    expireAt: expireMinutes ? store.gameTime + (expireMinutes * 60 * 1000) : null // Treat expireMinutes as relative minutes
   };
   audioManager.playSFX('inmessage');
   store.messages.unshift(msg);
@@ -72,10 +72,11 @@ export const deleteMessage = (id) => {
 
 export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
   const msg = store.messages.find(m => m.id === msgId);
+  console.info('msg', msg)
   if (!msg || !msg.actions[actionIndex]) return;
 
   const action = msg.actions[actionIndex];
-
+  console.info('action', action)
   // Process Action Logic
   switch (action.actionType) {
     case MESSAGE_ACTION_TYPE.RECEIVE:
@@ -104,9 +105,10 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
       break;
     case MESSAGE_ACTION_TYPE.DEBT_REPAYMENT: {
       const p = action.payload;
+      console.info('p', p)
       if (p.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT) {
         console.info('p.id', p.id, p.amount)
-        const result = debtRepayment(p.id, p.amount, false);
+        const result = debtRepayment(p.id, p.amount, false, true);
         if (result) {
           audioManager.playSFX('paybill');
           sendMessage('SYSTEM', 'Transaction Successful', `Successfully transferred ${(p.amount || 0).toLocaleString()} CR.to ${p.to}.`);

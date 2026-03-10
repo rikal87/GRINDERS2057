@@ -5,6 +5,29 @@ export const CONTRACT_TYPE = {
   COLLUSION: 'COLLUSION', // with you gambling then session end share net worth
   STAKING: 'STAKING' // 그가 스테이커(Staker)가 되어 플레이어에게 자금을 대주고, 게임결과에 대해 수익을 나눕니다.
 };
+export const ENEMY_ID = {
+  MAX: 'Max',
+  FLORENCE: 'Florence',
+  KATE: 'Kate',
+  Sloan: 'Sloan',
+  MR_CALL: 'mr_call',
+  FISH: 'fish',
+  BROKE: 'broke',
+  AN_UNKNOWN_WOMAN: 'an_unknown_woman',
+  GAMBLER: 'gambler',
+  MANIAC: 'maniac',
+  RICH_GUY: 'rich_guy',
+  GANGSTER: 'gangster',
+  NIT: 'nit',
+  QUANT_PRO: 'quant_pro',
+  OLD_LION: 'old_lion',
+  SHARK: 'shark',
+  THE_DON: 'the_don',
+  THE_WHALE: 'the_whale',
+  NAMED_PRO: 'named_pro',
+}
+
+
 export const TYPE_CHANGE_BANKROLL = {
   GAMBLING: 'GAMBLING',
   CRYPTO_TRADE: 'CRYPTO_TRADE',
@@ -56,24 +79,7 @@ export const CHAT_TRIGGERS = {
   BLUFF_CAUGHT_FOR_PLAYER: 'BLUFF_CAUGHT_FOR_PLAYER',
 };
 
-export const ENEMY_ID = {
-  MAX: 'Max',
-  FLORENCE: 'Florence',
-  AN_UNKNOWN_WOMAN: 'An_Unknown_Woman',
-  MR_CALL: 'MR_CALL',
-  FISH: 'Fish',
-  BROKE: 'Broke',
-  GAMBLER: 'Gambler',
-  MANIAC: 'Maniac',
-  OLD_LION: 'Old_Lion',
-  RICH_GUY: 'Rich_Guy',
-  GANGSTER: 'Gangster',
-  NIT: 'Nit',
-  QUANT_PRO: 'Quant_Pro',
-  THE_DON: 'The_Don',
-  SHARK: 'Shark',
-  WHALE: 'Whale',
-};
+
 
 export const PARTNER_ID = {
   MAX: 'Max',

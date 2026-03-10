@@ -12,8 +12,8 @@ import { LOCATION_ID, PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js'
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const getDefaultState = () => ({
-  // bankroll: 12220000,
-  bankroll: 20000,
+  bankroll: 12220000,
+  // bankroll: 20000,
   chips: 0, // Chips on table
   // currentBB: 0,
   xp: 0,
@@ -504,6 +504,8 @@ const processMissionResult = (player, result, engine) => {
       scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_MEET_AT_CLUB, 2 * 60);
     }
   }
+  // for TEST
+  scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_MEET_AT_CLUB, 2 * 60);
   // Mission LOW_UNDERGROUND_CLUB_MEET_MAX
   if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX) {
     const client = engine.players.find(p => p.id === PARTNER_ID.MAX);

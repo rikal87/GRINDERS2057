@@ -58,7 +58,12 @@
             </div>
           </div>
         </div>
-        <button class="btn" @click="$emit('sleep')">SLEEP</button>
+        <div class="sleep-timer-container">
+          <span class="label">INTERVAL</span>
+          <input id="sleep-timer" type="range" min="0.5" max="24.0" step="0.5" v-model.number="sleepDuration">
+          <span class="val highlight">{{ sleepDuration }} HR</span>
+        </div>
+        <button class="btn" @click="$emit('sleep', sleepDuration)">SLEEP</button>
         <!-- Program Setup -->
         <!-- Ai Agent Template -->
         <div class="v5-panel v5-neural-template">
@@ -82,8 +87,8 @@
               <div class="v5-status-badges">
                 <span class="v5-badge-mini" v-if="store.gameTime < store.aiAgent.subscriptionExpireAt">SYS_ACTIVE</span>
                 <span class="v5-badge-mini" v-else style="color:var(--neon-red)">SYS_EXPIRED</span>
-                <span class="v5-badge-mini">HUD_ACTIVE</span>
-                <span class="v5-badge-mini">RAM_V1</span>
+                <span class="v5-badge-mini">XK254015</span>
+                <span class="v5-badge-mini">RAID_X</span>
               </div>
             </div>
             <div class="v5-slot-list">
@@ -126,7 +131,7 @@
           <div class="v5-item-container">
             <!-- Chip Protector View -->
             <template v-if="mainTab === 'hardware'">
-              <div class="items-grid">
+              <div v-if="store.ownedProtectors.length > 0" class="items-grid">
                 <div v-for="item in store.ownedProtectors" :key="item.instanceId" class="item-card"
                   @click="equipItem(item.instanceId)">
                   <div class="card-header">
@@ -151,7 +156,7 @@
                   </div>
                 </div>
               </div>
-              <div v-if="store.ownedProtectors.length === 0" class="empty-stock">
+              <div v-else class="empty-stock">
                 <h2>OUT_OF_INVENTORY</h2>
                 <p>BUY AT THE SHOP</p>
               </div>
@@ -191,13 +196,13 @@
                         <span class="val" :class="getProfitClass(partner.debt)">{{ partner.debt.toLocaleString() }}
                           <small>CR</small></span>
                         <p>
-                          <input type="range" min="0.0" max="1" step="0.05" value="0" :disabled="partner.debt >= 0"
-                            v-model="repaymentRatio">
+                          <input type="range" min="0" :max="-partner.debt" step="1000"
+                            v-model.number="repaymentAmounts[partner.id]">
                           <label class="label text-align-right">
-                            {{ Math.round(getCurrentBankroll() * repaymentRatio).toLocaleString() }} CR ({{
-                              Math.round(repaymentRatio * 100) }}%)
-                            <button class="set-up-agent-btn" @click="sendDebtRepayment(partner)"
-                              :disabled="repaymentRatio === 0.0">REPAYMENT</button>
+                            {{ (repaymentAmounts[partner.id] || 0).toLocaleString() }} CR
+                            <button class="set-up-agent-btn"
+                              @click="sendDebtRepayment(partner, repaymentAmounts[partner.id] || 0)"
+                              :disabled="(repaymentAmounts[partner.id] || 0) <= 0">REPAYMENT</button>
                           </label>
                         </p>
                       </div>
@@ -328,14 +333,14 @@
             <div class="v5-reader-body" v-html="selectedMessage.body">
             </div>
             <div class="v5-reader-actions">
-              <div v-for="(act, idx) in selectedMessage.actions" :key="idx">
-                <small v-if="act.payload" :class="`${act.payload.currency}`">
-                  {{ act.payload.amount ? ' ' + act.payload.amount.toLocaleString() : '' }} {{ act.payload.currency }}
-                </small>
+              <label v-for="(act, idx) in selectedMessage.actions" :key="idx">
                 <button class="btn" :class="`btn-${idx}`" @click="triggerMessageAction(selectedMessage.id, idx)">
+                  <small v-if="act.payload && act.payload.amount" :class="`${act.payload.currency}`">
+                    {{ act.payload.amount ? ' ' + act.payload.amount.toLocaleString() : '' }} {{ act.payload.currency }}
+                  </small>
                   <span v-if="act.label">{{ act.label }}</span>
                 </button>
-              </div>
+              </label>
             </div>
           </div>
           <div v-else class="v5-msg-h-reader">
@@ -395,14 +400,15 @@ const checkDisableContractSign = (partner, contract) => {
   return false
 }
 const emit = defineEmits(['sleep', 'back', 'open-task-selector', 'open-agent-modal', 'open-skill-selector', 'open-stats-modal']);
+const sleepDuration = ref(8.0);
 const mainTab = ref('hardware');
 const selectedMessage = ref(null);
-
-const repaymentRatio = ref(0.0);
-const sendDebtRepayment = (partner) => {
-  const amount = Math.round(getCurrentBankroll() * repaymentRatio.value);
-  debtRepayment(partner, amount, false);
-  repaymentRatio.value = 0;
+const repaymentAmounts = ref({});
+const sendDebtRepayment = (partner, amount) => {
+  if (debtRepayment(partner.id, amount, false)) {
+    audioManager.playSFX('paybill');
+    repaymentAmounts.value[partner.id] = 0;
+  }
 };
 
 // Task Selector Logic

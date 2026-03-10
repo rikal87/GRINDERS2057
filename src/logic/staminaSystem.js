@@ -16,17 +16,16 @@ export const recoverStamina = (amount) => {
 
 
 
-export const performSleep = (advanceTimeFunc) => {
+export const performSleep = (advanceTimeFunc, hours = 0) => {
   const maxStaminaVal = getEffectiveMaxStamina();
-  const staminaToRecover = maxStaminaVal - store.stamina;
-  const hoursToSkip = staminaToRecover / 10;
-
-  // Recovery
-  store.stamina = maxStaminaVal;
+  // Recovery: 10 stamina per hour
+  const staminaToRecover = hours * 10;
+  
+  store.stamina = Math.min(maxStaminaVal, store.stamina + staminaToRecover);
 
   // Advance time
   if (advanceTimeFunc) {
-    advanceTimeFunc(hoursToSkip);
+    advanceTimeFunc(hours);
   }
 
   // Reset session stats start point

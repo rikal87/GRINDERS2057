@@ -1,5 +1,5 @@
 import { CLASSES_PARTNER } from "./persona";
-import { store, gainBankroll } from "./store";
+import { store, gainBankroll, getCurrentBankroll } from "./store";
 import { scheduleEvent, EVENT_ID } from "./eventSystem";
 import { createContractObject, shareBenefit, breakContract, triggerRescueDebt, requestRescueDebt } from "./partnerContractSystem";
 import { PARTNER_ID, PARTNER_STATUS, CONTRACT_TYPE, TYPE_CHANGE_BANKROLL } from "./constants";
@@ -25,14 +25,17 @@ export const getRelationship = (partnerId = null) => {
 export const joinPartner = (partnerId = null) => {
   if (!partnerId) return;
   const partner = getPartners().find(p => p.id === partnerId);
+
+  //for testing
+  // partner.bankroll = 0;
   if (partner) partner.isJoined = true;
 }
 export const leavePartner = (partnerId = null) => {
   if (!partnerId) return;
-  const partner = getPartners().find((p) => p.id === partnerId);
+  const partner = getJoinedPartners().find((p) => p.id === partnerId);
   if (partner) {
     scheduleEvent(EVENT_ID[partnerId.toUpperCase()]['GONE'], 2);
-    partner.find(p => p.id === partnerId).isJoined = false;
+    partner.isJoined = false;
   }
 }
 export const gainPartnersRelationshipOliveBranch = () => {
@@ -51,10 +54,11 @@ export const gainRelationship = (partnerId = null, amount = 0) => {
 export const gainPartnerBankroll = (partner = null, amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
   if (Number.isNaN(amount)) return false;
   if (!partner) return false;
-  const finalAmount = Math.round(Math.max(0, partner.bankroll + amount));
-  partner.bankroll += finalAmount;
+  const oldBankroll = partner.bankroll;
+  partner.bankroll = Math.round(Math.max(0, partner.bankroll + amount));
+  const actualChange = partner.bankroll - oldBankroll;
   if (type === TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT) {
-    partner.debt += amount;
+    partner.debt += actualChange;
   }
   partner.netWorthHistory.push({ time: store.gameTime, netWorth: partner.bankroll })
   if (partner.netWorthHistory.length > 150) partner.netWorthHistory.shift();
@@ -62,25 +66,30 @@ export const gainPartnerBankroll = (partner = null, amount = 0, type = TYPE_CHAN
 }
 export const transferBankroll = (partnerId = null, amount = 0, toPlayer = false) => {
   if (!partnerId || amount <= 0) return false;
-  const partner = store.partners.find((p) => p.id === partnerId);
+  const partner = getJoinedPartners().find((p) => p.id === partnerId);
   if (!partner) return false;
   const direction = toPlayer ? 1 : -1;
   gainBankroll(amount * direction, TYPE_CHANGE_BANKROLL.TRANSFER);
   gainPartnerBankroll(partner, amount * -direction, TYPE_CHANGE_BANKROLL.TRANSFER);
   return true;
 }
-export const debtRepayment = (partnerId = null, amount = 0, toPlayer = true) => {
+export const debtRepayment = (partnerId = null, amount = 0, toPlayer = true, isRequest = false) => {
+  console.info('debtRepayment', partnerId, amount, toPlayer)
   if (!partnerId || amount <= 0) return false;
-  const partner = store.partners.find((p) => p.id === partnerId);
+  const partner = getJoinedPartners().find((p) => p.id === partnerId);
   if (!partner) return false;
   // toPlayer=true: Partner pays Player (partner owes player => partner.debt < 0)
   // toPlayer=false: Player pays Partner (player owes partner => partner.debt > 0)
   const direction = toPlayer ? -1 : 1;
+  if (!toPlayer) {
+    const canRepay = getCurrentBankroll() >= amount
+    if (!canRepay) return false;
+  }
   gainPartnerBankroll(partner, amount * direction, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
   gainBankroll(amount * -direction, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
-  if (partnerId === PARTNER_ID.MAX) {
-    if (toPlayer) scheduleEvent(`${EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE + (partner.relationship < 200 ? '_LOW_RELATIONSHIP' : '')}`, 2, partner);
-    else scheduleEvent(`${EVENT_ID.MAX.BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER + (partner.relationship < 200 ? '_LOW_RELATIONSHIP' : '')}`, 2, partner, true);
+  if (!toPlayer && !isRequest) {
+    const foundEventId = `${EVENT_ID[partnerId.toUpperCase()].RESOLVED_DEBT}${partner.relationship < 200 ? '_LOW_RELATIONSHIP' : ''}`;
+    if (foundEventId) scheduleEvent(foundEventId, 2, partner);
   }
   return true;
 }
@@ -222,44 +231,44 @@ const triggerRelationshipChange = (partner) => {
     const hasBenefitContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.SHARE_BENEFIT && c.active);
     let shareAmount = 0;
     if (hasBenefitContract) shareAmount = shareBenefit(partner, partner.sessionNetWorth, hasBenefitContract);
-    partner.sessionNetWorth = 0; // RESET
   }
+  partner.sessionNetWorth = 0; // RESET
   // partner is how thinking about contract and debt
   let finalRelationshipChange = 0;
   // check debt penalty
   if (partner.debt !== 0) {
     const forDebt = Math.round(partner.debt / impactPercentage);
-    finalRelationshipChange += Math.max(-150, forDebt);
+    finalRelationshipChange += Math.min(50, Math.max(-100, forDebt));
     console.info(`${partner.id} : forDebt = ${forDebt}`);
   }
   // about share benefit
   const hasBenefitContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.SHARE_BENEFIT && c.active);
   if (hasBenefitContract) {
-    const baseGain = hasBenefitContract.profitTotal / impactPercentage;
+    const baseGain = (hasBenefitContract.profitTotal - hasBenefitContract.profitTotalLatest) / impactPercentage;
     const ratioModifier = Math.abs((0.5 - hasBenefitContract.ratio) * 4) + 1;
     const forShareBenefit = Math.round(baseGain * ratioModifier);
     finalRelationshipChange += Math.max(-50, Math.min(50, forShareBenefit));
+    hasBenefitContract.profitTotalLatest = hasBenefitContract.profitTotal
     console.info(`${partner.id} : forShareBenefit = ${forShareBenefit}`);
   }
   // about collusion
   const hasCollusionContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.COLLUSION && c.active);
   if (hasCollusionContract) {
-    const baseGain = hasCollusionContract.profitTotal / impactPercentage;
+    const baseGain = (hasCollusionContract.profitTotal - hasCollusionContract.profitTotalLatest) / impactPercentage;
     const ratioModifier = Math.abs((0.5 - hasCollusionContract.ratio) * 4) + 1;
     const forCollusion = Math.round(baseGain * ratioModifier);
     finalRelationshipChange += Math.max(-50, Math.min(50, forCollusion));
+    hasCollusionContract.profitTotalLatest = hasCollusionContract.profitTotal
     console.info(`${partner.id} : forCollusion = ${forCollusion}`);
   }
-  gainRelationship(partner, finalRelationshipChange);
+  gainRelationship(partner.id, finalRelationshipChange);
   console.info(`${partner.id} : ${finalRelationshipChange}`);
-  // check bankrupt partner
   if (partner.bankroll <= 0) {
     const isTriggered = triggerBankruptRescueForPartner(partner);
     if (!isTriggered && partner.debt < 0) {
       scheduleEvent(EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_HAS_DEBT' + (partner.relationship <= 200 ? '_LOW_RELATIONSHIP' : '')], 2);
     } else {
-      const firstRequest = requestRescueDebt(partner);
-      if (!firstRequest) gainRelationship(partner.id, -50); // no have contract. (but, Players do not support their partners.)
+      requestRescueDebt(partner);
     }
   }
   // steady or break about contracts
@@ -307,7 +316,8 @@ export const simulatePartnersNetWorth = (partner) => {
   // simulate partner's net worth logic
   if (partner.status === PARTNER_STATUS.GAMBLING) {
     // for Testing
-    partner.bankroll = 0
+    // partner.bankroll = -99999;
+    // partner.debt = -10000;
 
     // 잔고가 0 이하(파산)인 경우 도박 종료
     if (partner.bankroll <= 0) {

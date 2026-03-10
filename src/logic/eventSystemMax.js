@@ -47,8 +47,6 @@ import { get } from "idb-keyval";
  * @property {string} MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS // 맥스와 플레이어가 클럽에서 게임을 합니다. (승리)
  * @property {string} MAIN_STORY_1_2_MEET_AT_CLUB_FAILED // 맥스와 플레이어가 클럽에서 게임을 합니다. (패배)
  * @property {string} GONE
- * @property {string} BANKRUPT_REPAYMENT
- * @property {string} BANKRUPT_RESCUE_REPAYMENT_DONE_PLAYER
  * @property {string} DEBT_REPAYMENT_DONE
  * @property {string} DEBT_REPAYMENT_DONE_PLAYER
  * @property {string} DEBT_REPAYMENT_DONE_LOW_RELATIONSHIP
@@ -285,20 +283,6 @@ export const EventData = [
       scheduleEvent(EVENT_MAX.MAIN_STORY_1_5_MEET_AT_CLUB_DONE, 20)
     },
   },
-  // {
-  //   id: EVENT_MAX.MAIN_STORY_1_4_MEET_AT_CLUB_DONE,
-  //   scenario: 'MAIN_STORY_1_3_MEET_AT_CLUB_DONE 연계',
-  //   title_ko: '어디서 본 얼굴인데...',
-  //   title_en: 'I\'ve seen that face before...',
-  //   body_ko: '분명 텍사스 그라인더 판에서 굴러먹던 시절에 어디선가 마주친 적이 있는 거 같단 말이지. 아... 썅, 누구였더라?',
-  //   body_en: 'I swear I bumped into her back when I was grinding in the Texas underground. Ah... shit, who was it?',
-  //   get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
-  //   get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-  //   func() {
-  //     sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [],  getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-  //     scheduleEvent(EVENT_MAX.MAIN_STORY_1_5_MEET_AT_CLUB_DONE, 20)
-  //   },
-  // },
   {
     id: EVENT_MAX.MAIN_STORY_1_5_MEET_AT_CLUB_DONE,
     scenario: 'MAIN_STORY_1_4_MEET_AT_CLUB_DONE 연계',
@@ -363,6 +347,7 @@ export const EventData = [
     body_en: 'Hah! Perfect! I\'m all in for this. I\'ll stir up the whole table with my crazy bets, you just sit back and scoop up the sweet pots! Watch my six, partner.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
@@ -376,6 +361,7 @@ export const EventData = [
     body_en: 'You know my crazy Texas style, right? Whether I hit a massive pot or you quietly rake them in, we split the loot! Just don\'t become a leech on my stack. Keep it fair!',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
@@ -389,6 +375,7 @@ export const EventData = [
     body_en: 'Oh man... Now this is a real man\'s handshake. If one of us goes broke going all-in on life, the other bails him out! If you hit rock bottom, I\'ll come find you with some premium Texas BBQ. But you\'ll owe me big time, yeah?',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
@@ -402,45 +389,27 @@ export const EventData = [
     body_en: 'Hey man, you didn\'t forget the money you owe me, right? I\'m in a damn tight spot right now, so pay up quick. I\'m about to get kicked off the table.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       const partner = getPartner(PARTNER_ID.MAX);
       if (!partner) return;
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, this.body, [{
-        label: 'PAY DEBT',
-        actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
-        payload: {
-          id: PARTNER_ID.MAX,
-          amount: partner.debt,
-          currency: 'CR',
-          to: partner.fullName,
-          nextEvent: EVENT_MAX.RESOLVED_DEBT
-        }
-      }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
-    id: EVENT_MAX.BANKRUPT_RESOLVE_DEBT_LOW_RELATIONSHIP,
-    scenario: 'Max가 파산했고 플레이어와의 관계가 낮습니다(관계도 <= 0). 플에이어에게 빚을 갚으라고 독촉합니다. (플레이어가 빚을 갚지 않으면 게임 오버 처리합니다.)',
+    id: EVENT_MAX.BANKRUPT_HAS_DEBT_LOW_RELATIONSHIP,
+    scenario: 'Max가 파산했고 플레이어와의 관계가 낮습니다(관계도 <= 0). 플에이어에게 빚을 갚으라고 독촉합니다.',
     title_ko: '당장 내 돈 내놔',
     title_en: 'Give me my money now.',
     body_ko: '야!! 너 때문에 내가 이 지경까지 왔잖아! 장난하냐? 뒤지게 맞기 싫으면 지금 당장 내 돈 뱉어내!',
     body_en: 'Hey!! I\'m in this mess because of you! Are you kidding me? Cough up my money right now if you don\'t want a beating!',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       const partner = getPartner(PARTNER_ID.MAX);
       if (!partner) return;
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [{
-        label: `PAY DEBT`,
-        actionType: MESSAGE_ACTION_TYPE.DEBT_REPAYMENT,
-        payload: {
-          id: PARTNER_ID.MAX,
-          amount: partner.debt,
-          currency: 'CR',
-          to: partner.fullName,
-          nextEvent: EVENT_MAX.RESOLVED_DEBT_LOW_RELATIONSHIP
-        }
-      }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -452,6 +421,7 @@ export const EventData = [
     body_en: 'Alright, I feel relieved now that you\'ve paid your debt. As expected, money relationships must be thorough. See you next time.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       gainRelationship(PARTNER_ID.MAX, 200);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
@@ -466,6 +436,7 @@ export const EventData = [
     body_en: 'We would have been better off if you\'d paid me back earlier. Pay me back on time next time.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       gainRelationship(PARTNER_ID.MAX, 50);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
@@ -486,6 +457,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     get label_accept() { return store.settings.language === 'en' ? this.label_accept_en : this.label_accept_ko; },
     get label_refuse() { return store.settings.language === 'en' ? this.label_refuse_en : this.label_refuse_ko; },
+    repeatable: true,
     func() {
       const partner = getPartner(PARTNER_ID.MAX)
       if (!partner) return;
@@ -510,7 +482,7 @@ export const EventData = [
             nextEvent: getRelationship(partner.id) < 200 ? EVENT_MAX.BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP : EVENT_MAX.BANKRUPT_REFUSE_RESCUE
           }
         }
-      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO, 24 * 60 * 2)
     },
   },
   {
@@ -522,6 +494,7 @@ export const EventData = [
     body_en: 'Hell yeah... thanks a ton! Texan loyalty never dies! I\'m never gonna forget this. Wait here, I\'m gonna go scoop a huge pot!',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       gainRelationship(PARTNER_ID.MAX, 400);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
@@ -536,6 +509,7 @@ export const EventData = [
     body_en: 'Wow... you actually covering me? That\'s a real surprise. Sorry for being a bit on the edge last time, I\'ll put this to good use.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       gainRelationship(PARTNER_ID.MAX, 400);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
@@ -550,6 +524,7 @@ export const EventData = [
     body_en: 'What? You\'re broke too? That\'s cold... fine, I\'ll find it somewhere else. Don\'t regret this later.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       gainRelationship(PARTNER_ID.MAX, -200);
       const partner = getPartner(PARTNER_ID.MAX);
@@ -567,6 +542,7 @@ export const EventData = [
     body_en: 'Ugh, you\'re an embarrassment to Texas. I\'m an idiot for expecting anything from a jerk like you. Lose my number.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       gainRelationship(PARTNER_ID.MAX, -999);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
@@ -580,6 +556,7 @@ export const EventData = [
     body_en: 'Sigh, sitting at the same table as you is dragging my luck down too. Let\'s end this partner gig. It\'s every man for himself, Texas style, you know?',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
@@ -593,6 +570,7 @@ export const EventData = [
     body_en: 'Hey, I\'ve got my own problems to worry about. I can cover you once or twice, but paying your debts is gonna bankrupt me too. Our rescue deal is over today.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
@@ -669,6 +647,7 @@ export const EventData = [
     get acceptLabel() { return store.settings.language === 'en' ? this.accept_en : this.accept_ko; },
     get refuseLabel() { return store.settings.language === 'en' ? this.refuse_en : this.refuse_ko; },
     get timer() { return Math.random() * 2 + 2 * 24 * 60; }, // 2~4 days
+    repeatable: true,
     condition() {
       return store.completedEvents.includes(EVENT_MAX.TUTORIAL_WIN_AFTER) && getRelationship(PARTNER_ID.MAX) >= 300
     },
@@ -703,6 +682,7 @@ export const EventData = [
     body_en: 'If you don\'t come, I\'ll just eat it all myself. You just do your thing.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
     condition() {
       return getRelationship(PARTNER_ID.MAX) >= 500;
     },
