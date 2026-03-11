@@ -1,7 +1,7 @@
 import { CLASSES_PARTNER } from "./persona";
 import { store, gainBankroll, getCurrentBankroll } from "./store";
 import { scheduleEvent, EVENT_ID } from "./eventSystem";
-import { createContractObject, shareBenefit, breakContract, triggerRescueDebt, requestRescueDebt } from "./partnerContractSystem";
+import { createContractObject, shareBenefit, breakContract, triggerRescueDebt, requestRescueDebt, triggerDebtRepaymentDue } from "./partnerContractSystem";
 import { PARTNER_ID, PARTNER_STATUS, CONTRACT_TYPE, TYPE_CHANGE_BANKROLL } from "./constants";
 
 export const getPartners = () => {
@@ -25,7 +25,6 @@ export const getRelationship = (partnerId = null) => {
 export const joinPartner = (partnerId = null) => {
   if (!partnerId) return;
   const partner = getPartners().find(p => p.id === partnerId);
-
   //for testing
   // partner.bankroll = 0;
   if (partner) partner.isJoined = true;
@@ -211,7 +210,7 @@ export const updatePartnerStatusBySchedule = (partner) => {
   partner.status = newStatus;
   partner.contracts.forEach(contract => {
     if (contract.cooldown > 0) contract.cooldown--;
-    if (contract.debtRepaymentDue > 0) contract.debtRepaymentDue--;
+    if (contract.type === CONTRACT_TYPE.BANKRUPT_RESCUE) triggerDebtRepaymentDue(partner, contract)
   });
 }
 const triggerRelationshipChange = (partner) => {
@@ -263,26 +262,35 @@ const triggerRelationshipChange = (partner) => {
   }
   gainRelationship(partner.id, finalRelationshipChange);
   console.info(`${partner.id} : ${finalRelationshipChange}`);
+  let isBankrupt = false;
   if (partner.bankroll <= 0) {
     const isTriggered = triggerBankruptRescueForPartner(partner);
-    if (!isTriggered && partner.debt < 0) {
-      scheduleEvent(EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_HAS_DEBT' + (partner.relationship <= 200 ? '_LOW_RELATIONSHIP' : '')], 2);
-    } else {
-      requestRescueDebt(partner);
+    if (!isTriggered) {
+      isBankrupt = true;
+      if (partner.debt < 0) {
+        scheduleEvent(EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_HAS_DEBT' + (partner.relationship <= 200 ? '_LOW_RELATIONSHIP' : '')], 2);
+      } else {
+        requestRescueDebt(partner);
+      }
     }
+  }
+  if (getCurrentBankroll() === 0) {
+    triggerBankruptRescueForPlayer();
   }
   // steady or break about contracts
   partner.contracts.forEach(contract => {
     if (!contract.active) return;
-    if (partner.relationship < contract.relationshipToBreak) { // MUST USE relationshipToBreak
-      const result = breakContract(partner.id, contract.type);
-      const eId = EVENT_ID[partner.id.toUpperCase()]['BREAK_CONTRACT_' + contract.type.toUpperCase()];
-      if (result && eId) scheduleEvent(eId, 2 * Math.random() + 1);
-    }
     if (contract.type === CONTRACT_TYPE.BANKRUPT_RESCUE) {
-      if (partner.id === 'max') gainRelationship(partner.id, 1); // only max
+      if (partner.id === PARTNER_ID.MAX) gainRelationship(partner.id, 1); // only max
     } else if (contract.type === CONTRACT_TYPE.A_DATE_WITH_YOU) {
-      if (partner.id === 'florence') gainRelationship(partner.id, Math.random() * 6 - 4); // only florence
+      if (partner.id === PARTNER_ID.FLORENCE) gainRelationship(partner.id, Math.random() * 6 - 4); // only florence
+    }
+    if (partner.relationship < contract.relationshipToBreak || isBankrupt) {
+      const result = breakContract(partner.id, contract.type);
+      if (!isBankrupt) {
+        const eId = EVENT_ID[partner.id.toUpperCase()]['BREAK_CONTRACT_' + contract.type.toUpperCase()];
+        if (result && eId) scheduleEvent(eId, 2 * Math.random() + 1);
+      }
     }
   });
 }
@@ -291,7 +299,9 @@ export const triggerBankruptRescueForPlayer = () => {
   const partners = getJoinedPartners()
   partners.forEach(partner => {
     const hasRescueBankruptContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BANKRUPT_RESCUE && c.active);
-    isTriggered = triggerRescueDebt(partner, 0.3, hasRescueBankruptContract, true);
+    if (hasRescueBankruptContract) {
+      isTriggered = triggerRescueDebt(partner, 0.3, hasRescueBankruptContract, true);
+    }
   });
   return isTriggered;
 }

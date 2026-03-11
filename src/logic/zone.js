@@ -47,7 +47,7 @@ export const zones = [
           "borderColor": "#3f6ae2ff",
           "boxShadow": "0 0 20px rgba(146, 148, 255, 0.8)"
         },
-        'bgMusic': [TRACK_ENUM.BGM_Kinetic, TRACK_ENUM.VelvetShadows, TRACK_ENUM.Nightscape, TRACK_ENUM.DreamVector]
+        'bgMusic': [TRACK_ENUM.Kaazoom_DrivingHome, TRACK_ENUM.Nightscape]
       },
       {
         "id": "free_street_shop",
@@ -75,7 +75,8 @@ export const zones = [
           "borderColor": "#555",
           "boxShadow": "0 0 20px rgba(0,0,0,0.8)"
         },
-        'bgMusic': [TRACK_ENUM.Nightscape, TRACK_ENUM.Placebo]
+        // 'bgMusic': [TRACK_ENUM.Kaazoom_DrivingHome, TRACK_ENUM.Nightscape, TRACK_ENUM.Placebo]
+        'bgMusic': [TRACK_ENUM.Kaazoom_DrivingHome, TRACK_ENUM.Alexgrohl_Synthwave, TRACK_ENUM.Alexgrohl_OneStepAHead, TRACK_ENUM.Lnplusmusic_Technology, TRACK_ENUM.TheMountain_Technologies, TRACK_ENUM.Lnplusmusic_LatinTrap, TRACK_ENUM.Lnplusmusic_Reels, TRACK_ENUM.Placebo]
       },
       {
         "id": "free_street_shop_with_max",
@@ -140,7 +141,7 @@ export const zones = [
           "borderColor": "#8B4513",
           "boxShadow": "0 0 20px rgba(139, 69, 19, 0.3)"
         },
-        'bgMusic': [TRACK_ENUM.Nightscape, TRACK_ENUM.Placebo]
+        'bgMusic': [TRACK_ENUM.PartyInTheRuins, TRACK_ENUM.Futuristic]
       },
       {
         "id": "micro_warehouse",
@@ -165,7 +166,7 @@ export const zones = [
           "borderColor": "#8B4513",
           "boxShadow": "0 0 20px rgba(139, 69, 19, 0.3)"
         },
-        'bgMusic': [TRACK_ENUM.Nightscape, TRACK_ENUM.Placebo]
+        'bgMusic': [TRACK_ENUM.PartyInTheRuins, TRACK_ENUM.Futuristic]
       },
       {
         "id": "micro_underground_bar",
@@ -189,7 +190,7 @@ export const zones = [
           "borderColor": "#9d00ff",
           "boxShadow": "0 0 25px rgba(157, 0, 255, 0.4)"
         },
-        'bgMusic': [TRACK_ENUM.MalibuMoon]
+        'bgMusic': [TRACK_ENUM.MalibuMoon, TRACK_ENUM.Lnplusmusic_LatinTrap]
       }
     ]
   },
@@ -223,7 +224,7 @@ export const zones = [
           "borderColor": "#00f0ff",
           "boxShadow": "0 0 30px rgba(0, 240, 255, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.Dystopia, TRACK_ENUM.BeThere, TRACK_ENUM.Overnight]
+        'bgMusic': [TRACK_ENUM.lnplusmusic_Reels, TRACK_ENUM.Dystopia, TRACK_ENUM.BeThere, TRACK_ENUM.Overnight]
       },
       {
         "id": "low_underground_club_meet_max",
@@ -334,7 +335,7 @@ export const zones = [
           "borderColor": "#708090",
           "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.Grainders2057]
+        'bgMusic': [TRACK_ENUM.ArgonGroove]
       },
       {
         "id": "middle_underground_casino",
@@ -356,7 +357,7 @@ export const zones = [
           "borderColor": "#708090",
           "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.JourneyToTitan]
+        'bgMusic': [TRACK_ENUM.JourneyToTitan, TRACK_ENUM.ArgonGroove]
       },
       {
         "id": "middle_underground_casino_with_florence",
@@ -379,7 +380,7 @@ export const zones = [
           "borderColor": "#708090",
           "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.JourneyToTitan]
+        'bgMusic': [TRACK_ENUM.JourneyToTitan, TRACK_ENUM.ArgonGroove]
       },
       {
         "id": "middle_casino_hotel",
@@ -406,7 +407,7 @@ export const zones = [
           "borderColor": "#ffd700",
           "boxShadow": "0 0 30px rgba(255, 215, 0, 0.4)"
         },
-        'bgMusic': [TRACK_ENUM.Nightscape]
+        'bgMusic': [TRACK_ENUM.Futuristic, TRACK_ENUM.RemoteLocation]
       },
       {
         "id": "middle_holdem_house",
@@ -429,7 +430,7 @@ export const zones = [
           "borderColor": "#4682b4",
           "boxShadow": "0 0 25px rgba(70, 130, 180, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.BGM_Kinetic, TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
+        'bgMusic': [TRACK_ENUM.Alexgrohl_OneStepAHead, TRACK_ENUM.Alexgrohl_Synthwave]
       },
     ]
   },
@@ -489,7 +490,7 @@ export const zones = [
           "borderColor": "#3f6ae2ff",
           "boxShadow": "0 0 20px rgba(146, 148, 255, 0.8)"
         },
-        'bgMusic': [TRACK_ENUM.Grainders2057, TRACK_ENUM.VelvetShadows, TRACK_ENUM.Nightscape, TRACK_ENUM.DreamVector]
+        'bgMusic': [TRACK_ENUM.VelvetShadows, TRACK_ENUM.Nightscape, TRACK_ENUM.DreamVector]
       },
       {
         "id": "high_grand_casino",
@@ -570,7 +571,7 @@ export const zones = [
           "borderColor": "#00ffff",
           "boxShadow": "0 0 60px rgba(0, 255, 255, 0.8)"
         },
-        'bgMusic': [TRACK_ENUM.RemoteLocation]
+        'bgMusic': [TRACK_ENUM.Lnplusmusic_Technology, TRACK_ENUM.TheMountain_Technologies]
       }
     ]
   }

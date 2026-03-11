@@ -48,11 +48,15 @@ export const EventData = [
     title_en: 'Emergency Debt Issued',
     func(payload) {
       const partnerName = payload.partnerName;
-      const body = store.settings.language === 'en'
+      const lang = store.settings.language;
+      const body = lang === 'en'
+
         ? `${payload.amount.toLocaleString()} CR has been loaned via [${partnerName}]. (This balance is subject to future repayment)`
         : `[${partnerName}]의 승인에 따라 ${payload.amount.toLocaleString()} CR이 대출되었습니다. (해당 금액은 향후 상환 대상입니다.)`;
-      const sender = store.settings.language === 'en' ? 'System' : '시스템';
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, body, [], sender)
+
+      const title = lang === 'en' ? this.title_en : this.title_ko
+      const sender = lang === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.FINANCE, title, body, [], sender)
     },
   },
   {
@@ -62,11 +66,15 @@ export const EventData = [
     title_en: 'Emergency Debt Issued',
     func(payload) {
       const partner = payload.partner;
-      const body = store.settings.language === 'en'
+      const lang = store.settings.language;
+
+      const body = lang === 'en'
         ? `${payload.amount.toLocaleString()} CR has been loaned to [${partner.name}]. (This balance is subject to future repayment)`
         : `당신의 승인에 따라 [${partner.name}]에게 ${payload.amount.toLocaleString()} CR이 대출되었습니다. (해당 금액은 향후 상환 대상입니다.)`;
-      const sender = store.settings.language === 'en' ? 'System' : '시스템';
-      sendMessage(MESSAGE_TYPE.FINANCE, this.title, body, [], sender)
+
+      const sender = lang === 'en' ? 'System' : '시스템';
+      const title = lang === 'en' ? this.title_en : this.title_ko
+      sendMessage(MESSAGE_TYPE.FINANCE, title, body, [], sender)
     },
   },
   {

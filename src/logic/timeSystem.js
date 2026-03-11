@@ -1,5 +1,5 @@
 
-import { store, gainInfamy, gainSuspicion } from './store';
+import { store, gainInfamy, gainSuspicion, checkPlayerBankrupt } from './store';
 import { consumeStamina } from './staminaSystem';
 import { processAiTasks } from './aiAgentTaskSystem';
 import { sendLoreAndSpamMessage, checkMessageExpiration } from './messageSystem';
@@ -59,7 +59,7 @@ export const startTimeSystem = () => {
     // For now, we can pass a simple flag or let the stamina system handle state check if possible.
     // However, App.vue has currentView.
     consumeStamina(window.isAtTable || false);
-
+    checkPlayerBankrupt()
     // Check for daily rollover or other time-based events here if needed
     // processTimeBasedEvents(store.gameTime);
   }, 1000 / TICKS_PER_SECOND);

@@ -12,13 +12,13 @@ import { LOCATION_ID, PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js'
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const getDefaultState = () => ({
-  bankroll: 12220000,
-  // bankroll: 20000,
+  // bankroll: 12220000,
+  bankroll: 0,
   chips: 0, // Chips on table
   // currentBB: 0,
   xp: 0,
-  // level:1,
-  level: 41,
+  level: 1,
+  // level: 41,
   selectedClass: 'GRINDER',
   ownedProtectors: [], // Array of materialized item objects
   equippedProtector: null, // item object or null
@@ -386,6 +386,13 @@ export const gameResult = (winBB) => {
   if (winBB <= -50) return GAME_RESULT_CODE.LOSE_MEDIUM;
   if (winBB <= -30) return GAME_RESULT_CODE.LOSE_SMALL;
   return GAME_RESULT_CODE.NEUTRAL;
+}
+export const checkPlayerBankrupt = () => {
+  if (getCurrentBankroll() === 0) {
+    const isTriggered = triggerBankruptRescueForPlayer();
+    if (isTriggered) return false;
+  }
+  return true;
 }
 export const applySessionExit = (engine) => {
 

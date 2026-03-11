@@ -2,17 +2,11 @@ import { getPartners, gainPartnerBankroll, gainRelationship } from "./partnerSys
 import { store, gainBankroll, getCurrentBankroll, getGameTime } from "./store.js";
 import { audioManager } from "./audioManager";
 import { scheduleEvent, EVENT_ID } from "./eventSystem";
-import { CONTRACT_TYPE, TYPE_CHANGE_BANKROLL } from "./constants.js";
-// export const CONTRACT_REQUIRED_RELATIONSHIP = {
-//   [CONTRACT_TYPE.SHARE_BENEFIT]: 600,
-//   [CONTRACT_TYPE.BANKRUPT_RESCUE]: 800,
-//   [CONTRACT_TYPE.A_DATE_WITH_YOU]: 1000,
-//   [CONTRACT_TYPE.COLLUSION]: 900
-//  [CONTRACT_TYPE.STAKING]:700,
-// }
+import { CONTRACT_TYPE, TYPE_CHANGE_BANKROLL, PARTNER_ID } from "./constants.js";
+
 export const CONTRACT_REQUIRED_RELATIONSHIP = {
   [CONTRACT_TYPE.SHARE_BENEFIT]: 300,
-  [CONTRACT_TYPE.BANKRUPT_RESCUE]: 600,
+  [CONTRACT_TYPE.BANKRUPT_RESCUE]: 0,
   [CONTRACT_TYPE.A_DATE_WITH_YOU]: 800,
   [CONTRACT_TYPE.COLLUSION]: 800,
   [CONTRACT_TYPE.STAKING]: 1000,
@@ -24,13 +18,7 @@ export const CONTRACT_BREAK_RELATIONSHIP = {
   [CONTRACT_TYPE.COLLUSION]: 400,
   [CONTRACT_TYPE.STAKING]: 500,
 }
-// export const CONTRACT_BREAK_RELATIONSHIP = {
-//   [CONTRACT_TYPE.SHARE_BENEFIT]: 300,
-//   [CONTRACT_TYPE.BANKRUPT_RESCUE]: 500,
-//   [CONTRACT_TYPE.A_DATE_WITH_YOU]: 700,
-//   [CONTRACT_TYPE.COLLUSION]: 700
-//   [CONTRACT_TYPE.STAKING]:300,
-// }
+
 export const CONTRACT_TYPE_DESC_FIELD = {
   DESC: 'desc',
   NOTE: 'note'
@@ -51,8 +39,8 @@ export const CONTRACT_TYPE_DESC = {
   [CONTRACT_TYPE.BANKRUPT_RESCUE]: {
     desc_ko: '한쪽이 파산할 경우, 보유 뱅크롤의 30%를 긴급 지원합니다.',
     desc_en: 'If either party goes bankrupt, 30% of the active bankroll will be provided as emergency funds.',
-    note_ko: '본 계약으로 발생한 채무는 7일간의 유예 기간을 거친 후 일반 채무로 전환됩니다.\n(계약은 자동 해제됩니다.)',
-    note_en: 'Debts incurred under this contract will be converted into general liabilities after a 7-day grace period.\n(The contract is automatically terminated.)',
+    note_ko: '본 계약으로 발생한 채무는 7일간의 유예 기간을 거친 후 일반 채무로 전환됩니다.',
+    note_en: 'Debts incurred under this contract will be converted into general liabilities after a 7-day grace period.',
   },
   [CONTRACT_TYPE.A_DATE_WITH_YOU]: {
     desc_ko: '파트너와 개인적으로 만나는 사이가 됩니다.',
@@ -100,7 +88,6 @@ export const signContract = (partnerId, type, ratio = 0.5) => {
     const eventId = EVENT_ID[partner.id.toUpperCase()]['SIGN_CONTRACT_' + type.toUpperCase()];
     if (eventId) scheduleEvent(eventId, 1 + (2 * Math.random()));
   }
-
   contract.active = true;
   contract.ratio = ratio;
   contract.cooldown = 24;
@@ -175,19 +162,26 @@ export const requestRescueDebt = (partner = null) => {
   }
   return false;
 }
+export const triggerDebtRepaymentDue = (partner = null, contract = null) => {
+  if (contract.debtRepaymentDue > 0) contract.debtRepaymentDue--
+  else {
+    partner.debt += contract.debt;
+    contract.activeRepaymentPeriod = false;
+  }
+}
 export const triggerRescueDebt = (partner = null, ratio = 0.3, contract = null, toPlayer = false) => {
   if (!contract || !partner) return false;
   if (contract.active) {
     ratio = contract.ratio;
-    contract.active = false;
     contract.debtRepaymentDue = contract.initDebtRepaymentDue
     contract.activeRepaymentPeriod = true;
   }
   const whosBankroll = toPlayer ? partner.bankroll : getCurrentBankroll();
   const amount = whosBankroll * ratio * (toPlayer ? 1 : -1);
-
+  contract.debt = toPlayer ? -amount : amount
   gainBankroll(amount, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
-  gainPartnerBankroll(partner, -amount, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
+  gainPartnerBankroll(partner, -amount, TYPE_CHANGE_BANKROLL.CONTRACT);
+  console.info('partner', partner)
   audioManager.playSFX('ATM');
   if (!toPlayer) {
     const getEvent = EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_ACCEPT_RESCUE' + (partner.relationship < 200 ? '_LOW_RELATIONSHIPSHIP' : '')]
@@ -198,7 +192,7 @@ export const triggerRescueDebt = (partner = null, ratio = 0.3, contract = null, 
   } else {
     // EVENT_ID.MAX.BANKRUPT_RESCUE_FOR_PLAYER is only for Max
     if (partner.id === PARTNER_ID.MAX) {
-      scheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_FOR_PLAYER, 15, partner);
+      scheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_FOR_PLAYER, 15);
     }
     scheduleEvent(EVENT_ID.SYSTEM_PARTNER_BANKRUPT_RESCUE_FOR_PLAYER, 2, { partnerName: partner.fullName, amount })
   }

@@ -192,8 +192,13 @@
                         <span class="val bankroll">{{ partner.bankroll.toLocaleString() }} <small>CR</small></span>
                       </div>
                       <div class="stat-box">
-                        <span class="label">CURRENT_BALANCE</span>
-                        <span class="val" :class="getProfitClass(partner.debt)">{{ partner.debt.toLocaleString() }}
+                        <label class="label">
+                          <span>CURRENT_BALANCE</span>
+                          <span class="v5-badge-info"
+                            :data-tooltip="getLocalizedText(INFO_DESC.BALANCE, INFO_DESC_TYPE.BALANCE)">?</span>
+                        </label>
+                        <span class="val" :class="getProfitClass(partner.debt)">{{ partner.debt > 0 ? '+' : '' }}{{
+                          partner.debt.toLocaleString() }}
                           <small>CR</small></span>
                         <p>
                           <input type="range" min="0" :max="-partner.debt" step="1000"
@@ -260,6 +265,14 @@
                               </span>
                             </label>
                           </p>
+                          <p>
+                            <label class="label">
+                              <span class="label">DUE_DATE</span>
+                              <span class="val" :class="getDueDate(contract.debtRepaymentDue)">{{
+                                formatDebtRemainingTime(contract.debtRepaymentDue) }}
+                              </span>
+                            </label>
+                          </p>
                         </div>
                         <p>
                           <button class="sign" :disabled="checkDisableContractSign(partner, contract)"
@@ -321,7 +334,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-              }} UNREAD]</small>
+          }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
@@ -377,6 +390,20 @@ import { debtRepayment, getJoinedPartners } from '../logic/partnerSystem';
 import { signContract, breakContract, CONTRACT_TYPE_DESC, CONTRACT_TYPE_DESC_FIELD } from '../logic/partnerContractSystem';
 import { TYPE_CHANGE_BANKROLL, CONTRACT_TYPE } from '../logic/constants.js'
 import { CLASSES_PARTNER } from '../logic/persona.js'
+const INFO_DESC_TYPE = {
+  BALANCE: 'BALANCE',
+  BANKROLL: 'BANKROLL'
+}
+const INFO_DESC = {
+  BALANCE: {
+    ko: '[+]는 파트너가 당신에게 빚진 상태, [-]는 당신이 파트너에게 빚진 상태입니다. (파산시 해당 파트너와 맺은 모든 계약은 자동 해제됩니다.)',
+    en: '[+] Balance due from partner | [-] Balance owed to partner. (Note: All contracts are voided immediately upon bankruptcy.)'
+  },
+  BANKROLL: {
+    ko: '파트너가 보유중인 뱅크롤입니다.',
+    en: 'The amount of bankroll your partner has.'
+  }
+}
 const getRelationClass = (v) => {
   if (v > 700) return 'high';
   if (v < 300) return 'low';
@@ -386,6 +413,10 @@ const getProfitClass = (v) => {
   if (v > 0.0) return 'high';
   if (v < 0.0) return 'low';
   else return '';
+}
+const getDueDate = (v) => {
+  if (v > 48) return 'high';
+  return 'low';
 }
 const checkDisableContractSign = (partner, contract) => {
   if (contract.type === CONTRACT_TYPE.SHARE_BENEFIT) {
@@ -409,6 +440,12 @@ const sendDebtRepayment = (partner, amount) => {
     audioManager.playSFX('paybill');
     repaymentAmounts.value[partner.id] = 0;
   }
+};
+
+const formatDebtRemainingTime = (hours) => {
+  if (hours <= 0) return 'DUE';
+  const d = Math.floor(hours / 24);
+  return `D-${d}`
 };
 
 // Task Selector Logic

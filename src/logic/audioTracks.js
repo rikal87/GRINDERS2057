@@ -17,6 +17,21 @@ import BGM_Kinetic from '../assets/music/fsm-team-escp-kinetics.mp3';
 import BGM_Overnight from '../assets/music/Qlowdy_Overnight.mp3';
 import BGM_HearTheBass from '../assets/music/Infraction_HearTheBass.ogg';
 import BGM_NairobiVibes from '../assets/music/Infraction_NairobiVibes.ogg';
+import BGM_Amsleybeats_DeepVibes from '../assets/music/Amsleybeats_DeepVibes.mp3'
+import BGM_Rockot_ArgonGroove from '../assets/music/Rockot_ArgonGroove.mp3'
+import BGM_Rockot_Futuristic from '../assets/music/Rockot_Futuristic.mp3'
+
+import BGM_Rockot_PartyInTheRuins from '../assets/music/Rockot_PartyInTheRuins.mp3'
+import BGM_Kaazoom_DrivingHome from '../assets/music/Kaazoom_DrivingHome.mp3'
+import BGM_Lnplusmusic_Beauty from '../assets/music/Lnplusmusic_Beauty.mp3'
+import BGM_Lnplusmusic_LatinTrap from '../assets/music/Lnplusmusic_LatinTrap.mp3'
+import BGM_Lnplusmusic_Reels from '../assets/music/Lnplusmusic_Reels.mp3'
+import BGM_Lnplusmusic_Technology from '../assets/music/Lnplusmusic_Technology.mp3'
+import BGM_Lnplusmusic_Background from '../assets/music/Lnplusmusic_Background.mp3'
+import BGM_Penguinmusic_FutureDesign from '../assets/music/Penguinmusic_FutureDesign.mp3'
+import BGM_TheMountain_Technologies from '../assets/music/TheMountain_Technologies.mp3'
+import BGM_Alexgrohl_OneStepAHead from '../assets/music/Alexgrohl_OneStepAHead.mp3'
+import BGM_Alexgrohl_Synthwave from '../assets/music/Alexgrohl_Synthwave.mp3'
 
 // Dusk Horizon by | escp | https://www.escp.space https://escp-music.bandcamp.com
 export const TRACK_ENUM = {
@@ -36,12 +51,120 @@ export const TRACK_ENUM = {
   BeThere: "BeThere",
   Overnight: "Overnight",
   HearTheBass: "HearTheBass",
-  NairobiVibes: "NairobiVibes"
+  NairobiVibes: "NairobiVibes",
+  PartyInTheRuins: "PartyInTheRuins",
+  ArgonGroove: "ArgonGroove",
+  Futuristic: "Futuristic",
+  DeepVibes: "DeepVibes",
+  Kaazoom_DrivingHome: "DrivingHome",
+  Lnplusmusic_Beauty: "Lnplusmusic_Beauty",
+  Lnplusmusic_LatinTrap: "Lnplusmusic_LatinTrap",
+  Lnplusmusic_Reels: "Lnplusmusic_Reels",
+  Lnplusmusic_Technology: "Lnplusmusic_Technology",
+  Lnplusmusic_Background: "Lnplusmusic_Background",
+  Penguinmusic_FutureDesign: "Penguinmusic_FutureDesign",
+  TheMountain_Technologies: "TheMountain_Technologies",
+  Alexgrohl_OneStepAHead: "Alexgrohl_OneStepAHead",
+  Alexgrohl_Synthwave: "Alexgrohl_Synthwave",
+  Amsleybeats_DeepVibes: "Amsleybeats_DeepVibes",
+
+
 };
 //  Karl Casey @ White Bat Audio"
 export const TRACK_INFO = {
+  [TRACK_ENUM.Lnplusmusic_Technology]: {
+    "title": "Technology",
+    "artist": "Lnplusmusic",
+    "license": "",
+    "file": BGM_Lnplusmusic_Technology
+  },
+  [TRACK_ENUM.TheMountain_Technologies]: {
+    "title": "Technologies",
+    "artist": "The Mountain",
+    "license": "",
+    "file": BGM_TheMountain_Technologies
+  },
+  [TRACK_ENUM.Alexgrohl_OneStepAHead]: {
+    "title": "One Step A Head",
+    "artist": "Alexgrohl",
+    "license": "",
+    "file": BGM_Alexgrohl_OneStepAHead
+  },
+  [TRACK_ENUM.Alexgrohl_Synthwave]: {
+    "title": "Synthwave",
+    "artist": "Alexgrohl",
+    "license": "",
+    "file": BGM_Alexgrohl_Synthwave
+  },
+
+  [TRACK_ENUM.Kaazoom_DrivingHome]: {
+    "title": "Driving Home",
+    "artist": "Kaazoom",
+    "license": "",
+    "file": BGM_Kaazoom_DrivingHome
+  },
+  [TRACK_ENUM.Lnplusmusic_Beauty]: {
+    "title": "Beauty",
+    "artist": "Lnplusmusic",
+    "license": "",
+    "file": BGM_Lnplusmusic_Beauty
+  },
+  [TRACK_ENUM.Lnplusmusic_LatinTrap]: {
+    "title": "Latin Trap",
+    "artist": "Lnplusmusic",
+    "license": "",
+    "file": BGM_Lnplusmusic_LatinTrap
+  },
+  [TRACK_ENUM.Lnplusmusic_Reels]: {
+    "title": "Reels",
+    "artist": "Lnplusmusic",
+    "license": "",
+    "file": BGM_Lnplusmusic_Reels
+  },
+  [TRACK_ENUM.Lnplusmusic_Background]: {
+    "title": "Background",
+    "artist": "Lnplusmusic",
+    "license": "",
+    "file": BGM_Lnplusmusic_Background
+  },
+  [TRACK_ENUM.Penguinmusic_FutureDesign]: {
+    "title": "Future Design",
+    "artist": "Penguinmusic",
+    "license": "",
+    "file": BGM_Penguinmusic_FutureDesign
+  },
+  [TRACK_ENUM.TheMountain_Technologies]: {
+    "title": "Technologies",
+    "artist": "The Mountain",
+    "license": "",
+    "file": BGM_TheMountain_Technologies
+  },
+  [TRACK_ENUM.Amsleybeats_DeepVibes]: {
+    "title": "Deep Vibes",
+    "artist": "Amsleybeats",
+    "license": "",
+    "file": BGM_Amsleybeats_DeepVibes
+  },
+  [TRACK_ENUM.ArgonGroove]: {
+    "title": "Argon Groove",
+    "artist": "Rockot",
+    "license": "",
+    "file": BGM_Rockot_ArgonGroove
+  },
+  [TRACK_ENUM.PartyInTheRuins]: {
+    "title": "Deep Vibes",
+    "artist": "Rockot",
+    "license": "",
+    "file": BGM_Rockot_PartyInTheRuins
+  },
+  [TRACK_ENUM.Futuristic]: {
+    "title": "Futuristic",
+    "artist": "Rockot",
+    "license": "",
+    "file": BGM_Rockot_Futuristic
+  },
   [TRACK_ENUM.Overnight]: {
-    "title": "Overnight",
+    "title": "Over Night",
     "artist": "Qlowdy",
     "license": "",
     "file": BGM_Overnight
@@ -155,3 +278,4 @@ export const TRACK_INFO = {
     "file": BGM_DreamVector,
   },
 };
+
