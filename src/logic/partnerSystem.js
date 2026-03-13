@@ -1,7 +1,7 @@
 import { CLASSES_PARTNER } from "./persona";
 import { store, gainBankroll, getCurrentBankroll } from "./store";
 import { scheduleEvent, EVENT_ID } from "./eventSystem";
-import { createContractObject, shareBenefit, breakContract, triggerRescueDebt, requestRescueDebt, triggerDebtRepaymentDue } from "./partnerContractSystem";
+import { createContractObject, shareBenefit, breakContract, triggerBankruptcyRelief, requestBailout, triggerDebtRepaymentDue } from "./partnerContractSystem";
 import { PARTNER_ID, PARTNER_STATUS, CONTRACT_TYPE, TYPE_CHANGE_BANKROLL } from "./constants";
 
 export const getPartners = () => {
@@ -86,7 +86,7 @@ export const debtRepayment = (partnerId = null, amount = 0, toPlayer = true, isR
   }
   gainPartnerBankroll(partner, amount * direction, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
   gainBankroll(amount * -direction, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
-  if (!toPlayer && !isRequest) {
+  if (!toPlayer && !isRequest && partner.debt === 0) {
     const foundEventId = `${EVENT_ID[partnerId.toUpperCase()].RESOLVED_DEBT}${partner.relationship < 200 ? '_LOW_RELATIONSHIP' : ''}`;
     if (foundEventId) scheduleEvent(foundEventId, 2, partner);
   }
@@ -210,7 +210,7 @@ export const updatePartnerStatusBySchedule = (partner) => {
   partner.status = newStatus;
   partner.contracts.forEach(contract => {
     if (contract.cooldown > 0) contract.cooldown--;
-    if (contract.type === CONTRACT_TYPE.BANKRUPT_RESCUE) triggerDebtRepaymentDue(partner, contract)
+    if (contract.type === CONTRACT_TYPE.BAILOUT) triggerDebtRepaymentDue(partner, contract)
   });
 }
 const triggerRelationshipChange = (partner) => {
@@ -227,7 +227,7 @@ const triggerRelationshipChange = (partner) => {
       const finalAmount = Math.min(partner.debt, Math.round(partner.sessionNetWorth * 0.5))
       debtRepayment(partner.id, finalAmount, true);
     }
-    const hasBenefitContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.SHARE_BENEFIT && c.active);
+    const hasBenefitContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BENEFIT_SHARE && c.active);
     let shareAmount = 0;
     if (hasBenefitContract) shareAmount = shareBenefit(partner, partner.sessionNetWorth, hasBenefitContract);
   }
@@ -241,12 +241,12 @@ const triggerRelationshipChange = (partner) => {
     console.info(`${partner.id} : forDebt = ${forDebt}`);
   }
   // about share benefit
-  const hasBenefitContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.SHARE_BENEFIT && c.active);
+  const hasBenefitContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BENEFIT_SHARE && c.active);
   if (hasBenefitContract) {
     const baseGain = (hasBenefitContract.profitTotal - hasBenefitContract.profitTotalLatest) / impactPercentage;
     const ratioModifier = Math.abs((0.5 - hasBenefitContract.ratio) * 4) + 1;
     const forShareBenefit = Math.round(baseGain * ratioModifier);
-    finalRelationshipChange += Math.max(-50, Math.min(50, forShareBenefit));
+    finalRelationshipChange += Math.max(-150, Math.min(75, forShareBenefit));
     hasBenefitContract.profitTotalLatest = hasBenefitContract.profitTotal
     console.info(`${partner.id} : forShareBenefit = ${forShareBenefit}`);
   }
@@ -256,7 +256,7 @@ const triggerRelationshipChange = (partner) => {
     const baseGain = (hasCollusionContract.profitTotal - hasCollusionContract.profitTotalLatest) / impactPercentage;
     const ratioModifier = Math.abs((0.5 - hasCollusionContract.ratio) * 4) + 1;
     const forCollusion = Math.round(baseGain * ratioModifier);
-    finalRelationshipChange += Math.max(-50, Math.min(50, forCollusion));
+    finalRelationshipChange += Math.max(-150, Math.min(75, forCollusion));
     hasCollusionContract.profitTotalLatest = hasCollusionContract.profitTotal
     console.info(`${partner.id} : forCollusion = ${forCollusion}`);
   }
@@ -270,7 +270,7 @@ const triggerRelationshipChange = (partner) => {
       if (partner.debt < 0) {
         scheduleEvent(EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_HAS_DEBT' + (partner.relationship <= 200 ? '_LOW_RELATIONSHIP' : '')], 2);
       } else {
-        requestRescueDebt(partner);
+        requestBailout(partner);
       }
     }
   }
@@ -280,7 +280,7 @@ const triggerRelationshipChange = (partner) => {
   // steady or break about contracts
   partner.contracts.forEach(contract => {
     if (!contract.active) return;
-    if (contract.type === CONTRACT_TYPE.BANKRUPT_RESCUE) {
+    if (contract.type === CONTRACT_TYPE.BAILOUT) {
       if (partner.id === PARTNER_ID.MAX) gainRelationship(partner.id, 1); // only max
     } else if (contract.type === CONTRACT_TYPE.A_DATE_WITH_YOU) {
       if (partner.id === PARTNER_ID.FLORENCE) gainRelationship(partner.id, Math.random() * 6 - 4); // only florence
@@ -298,18 +298,18 @@ export const triggerBankruptRescueForPlayer = () => {
   let isTriggered = false;
   const partners = getJoinedPartners()
   partners.forEach(partner => {
-    const hasRescueBankruptContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BANKRUPT_RESCUE && c.active);
+    const hasRescueBankruptContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BAILOUT && c.active);
     if (hasRescueBankruptContract) {
-      isTriggered = triggerRescueDebt(partner, 0.3, hasRescueBankruptContract, true);
+      isTriggered = triggerBankruptcyRelief(partner, 0.3, hasRescueBankruptContract, true);
     }
   });
   return isTriggered;
 }
 export const triggerBankruptRescueForPartner = (partner) => {
   let isTriggered = false;
-  const hasRescueBankruptContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BANKRUPT_RESCUE && c.active);
+  const hasRescueBankruptContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BAILOUT && c.active);
   if (hasRescueBankruptContract) {
-    isTriggered = triggerRescueDebt(partner, 0.3, hasRescueBankruptContract, false);
+    isTriggered = triggerBankruptcyRelief(partner, 0.3, hasRescueBankruptContract, false);
   }
   return isTriggered;
 }

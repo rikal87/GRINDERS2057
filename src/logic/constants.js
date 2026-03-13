@@ -1,6 +1,6 @@
 export const CONTRACT_TYPE = {
-  SHARE_BENEFIT: 'SHARE_BENEFIT', // your win and lose net share
-  BANKRUPT_RESCUE: 'BANKRUPT_RESCUE', // rescue bankrupt each other
+  BENEFIT_SHARE: 'BENEFIT_SHARE', // your win and lose net share
+  BAILOUT: 'BAILOUT', // rescue bankrupt each other
   A_DATE_WITH_YOU: 'A_DATE_WITH_YOU', // a date with you
   COLLUSION: 'COLLUSION', // with you gambling then session end share net worth
   STAKING: 'STAKING' // 그가 스테이커(Staker)가 되어 플레이어에게 자금을 대주고, 게임결과에 대해 수익을 나눕니다.
@@ -26,7 +26,10 @@ export const ENEMY_ID = {
   THE_WHALE: 'the_whale',
   NAMED_PRO: 'named_pro',
 }
-
+export const TASK_STATS_TYPE = {
+  COST_LT_TOTAL: 'cost_lt_total',
+  COMPLETED_TASK_COUNT: 'completed_task_count'
+}
 
 export const TYPE_CHANGE_BANKROLL = {
   GAMBLING: 'GAMBLING',
@@ -94,7 +97,7 @@ export const PARTNER_STATUS = {
   IDLE: 'IDLE',
 };
 export const LOCATION_ID = {
-  FREE_SAFE_HOUSE: "free_safe_house",
+  FREE_HABITAT: "free_habitat",
   FREE_STREET_SHOP_WITH_MAX: "free_street_shop_with_max",
   MICRO_WAREHOUSE: "micro_warehouse",
   MICRO_UNDERGROUND_BAR: "micro_underground_bar",
@@ -110,6 +113,6 @@ export const LOCATION_ID = {
   MICRO_WAREHOUSE_WITH_MAX: "micro_warehouse_with_max",
   LOW_UNDERGROUND_CLUB_MEET_MAX: "low_underground_club_meet_max",
   MIDDLE_UNDERGROUND_CASINO_WITH_FLORENCE: "middle_underground_casino_with_florence",
-  FREE_SAFE_HOUSE: 'free_safe_house',
+  FREE_HABITAT: 'free_habitat',
   MIDDLE_KBT_BASE: "middle_kbt_base",
 }

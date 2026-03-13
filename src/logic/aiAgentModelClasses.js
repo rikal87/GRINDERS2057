@@ -18,7 +18,7 @@ export const AI_AGENT_MODEL_ENUM = {
 export const AI_AGENT_MODEL_AND_PLAN_DATA = {
   // FREE TIER
   [AI_AGENT_MODEL_ENUM.VANGUARD]: {
-    slogan: "A.I is not a choice, it's a survival.",
+    slogan: "A.I is not a choice,\nit's a survival.",
     key_features: "Free for use.",
     price_plan: [
       { cost: 0, maxLt: 100, slot: ['T1'] }
@@ -26,7 +26,7 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
   },
   // LOW TIER?
   [AI_AGENT_MODEL_ENUM.ARIES]: {
-    slogan: "Aggressive optimization for the boldest users.",
+    slogan: "Aggressive optimization\nfor the boldest users.",
     key_features: "Focus on high-tier slot access and rapid processing.",
     price_plan: [
       { cost: 8000, maxLt: 200, slot: ['T2'] },
@@ -36,7 +36,7 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
     ]
   },
   [AI_AGENT_MODEL_ENUM.TAURUS]: {
-    slogan: "Unwavering stability. Built for the long term.",
+    slogan: "Unwavering stability.\nBuilt for the long term.",
     key_features: "Massive Ludus Token capacity and consistent efficiency.",
     price_plan: [
       { cost: 10000, maxLt: 400, slot: ['T1'] },
@@ -57,7 +57,7 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
     ]
   },
   [AI_AGENT_MODEL_ENUM.LEO]: {
-    slogan: "Majestic power. Only at the top.",
+    slogan: "Majestic power.\nOnly at the top.",
     key_features: "Middle Tier slot access at lower price tiers.",
     price_plan: [
       { cost: 17000 * 1.00, maxLt: 400, slot: ['T2', 'T2', 'T2'] },
@@ -98,7 +98,7 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
     ]
   },
   [AI_AGENT_MODEL_ENUM.SAGITTARIUS]: {
-    slogan: "Aims for the stars, hits the mark.",
+    slogan: "Aims for the stars,\nhits the mark.",
     key_features: "High Task Success probability bonus.",
     price_plan: [
       { cost: 35000 * 1.00, maxLt: 750, slot: ['T2'], probability_bonus: 0.02 },
@@ -108,7 +108,7 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
     ]
   },
   [AI_AGENT_MODEL_ENUM.CAPRICORN]: {
-    slogan: "Eternal persistence. Foundation of the Net.",
+    slogan: "Eternal persistence.\nFoundation of the Net.",
     key_features: "The highest Max LT limits in the mid-high range.",
     price_plan: [
       { cost: 40000 * 1.00, maxLt: 1000, slot: ['T2', 'T2', 'T2'] },
@@ -119,7 +119,7 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
   },
   // HIGH TIER
   [AI_AGENT_MODEL_ENUM.AQUARIUS]: {
-    slogan: "Deep technical insight. Visionary.",
+    slogan: "Deep technical insight.\nVisionary.",
     key_features: "Can Access to dual elite Slot(T6) and Task duration bonus.",
     price_plan: [
       { cost: 65000 * 1.00, maxLt: 800, slot: ['T3', 'T3'], duration_bonus: 0.25 },
@@ -129,7 +129,7 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
     ]
   },
   [AI_AGENT_MODEL_ENUM.PISCES]: {
-    slogan: "Deep net exploration. Boundless.",
+    slogan: "Deep net exploration.\nBoundless.",
     key_features: "Massive LT regeneration",
     price_plan: [
       { cost: 80000 * 1.00, maxLt: 500, slot: ['T3'], lt_regen_bonus_rate: 2.0 },
@@ -140,7 +140,7 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
   },
   // EXCLUSIVE TIER
   [AI_AGENT_MODEL_ENUM.ZODIAC]: {
-    slogan: "THE COMPLETED SYSTEM. DIVINE INTERVENTION.",
+    slogan: "THE COMPLETED SYSTEM.\nDIVINE INTERVENTION.",
     key_features: "Ultimate everything. If you have this, you own the Net.",
     isHidden: true,
     price_plan: [

@@ -880,23 +880,32 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
     if (isBoardOnehandFlushPossible) caseSum++;
     if (isBoardOnehandStraightPossible) caseSum++;
 
-    // Normal Two Pair (No board pair)
-    if (hole1 && hole2) caseSum--; // Top Two
-    if (hole1 || hole2) caseSum--; // Top Pair + Middle Pair
+    if (isBoardPaired) {
+      if (isPocketPair) {
+        if (holeVal[0] > boardHigh1) caseSum -= 2; // Overpair to the board
+        else if (holeVal[0] > boardHigh2) caseSum -= 1; // Middle pocket pair
+        else caseSum += 2; // Underpair counterfeited
+      } else {
+        if (hole1) caseSum -= 1; // Top Pair + Board Pair
+        else if (hole2) caseSum += 0; // 2nd Pair + Board Pair
+        else caseSum += 2; // Weak Pair + Board Pair
+      }
+    } else {
+      // Normal Two Pair (No board pair)
+      if (hole1 && hole2) caseSum -= 2; // Top Two
+      else if (hole1 || hole2) caseSum -= 1; // Top Pair + Middle Pair
+      if (myPair > 0 && myPair < boardHigh1 && myPair < boardHigh2) caseSum += 2; // Counterfeited
+    }
 
     // [FIX] If the two-pair is entirely on the board and player matched nothing
-    if (!isPocketPair && !hole1 && !hole2) {
+    if (!isPocketPair && !hole1 && !hole2 && myPair === 0) {
       if (holeVal.includes(12)) return 'ACE_HIGH';
       return 'AIR';
     }
 
-    if (myPair < boardHigh1 || myPair < boardHigh2) caseSum += 2; // Counterfeited
-    // if ()
-    if (caseSum <= -2) return 'MONSTER';
-    else if (caseSum === -1) return 'STRONG';
-    else if (caseSum === 0) return 'GOOD';
-    else if (caseSum <= 2) return 'MARGINAL';
-    else return 'WEAK';
+    if (caseSum <= -2) return 'STRONG';
+    else if (caseSum <= 2) return 'GOOD';
+    return 'MARGINAL';
   }
   // 2: One Pair
   if (rank === 2) {

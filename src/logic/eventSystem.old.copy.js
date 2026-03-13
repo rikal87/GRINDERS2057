@@ -32,8 +32,8 @@ export const EVENT_ID = {
   RESOLVED_DEBT_FOR_MAX_LOW_RELATIONSHIP: 'RESOLVED_DEBT_FOR_MAX_LOW_RELATIONSHIP',
 
   MAX_BREAK_CONTRACT_COLLUSION: 'MAX_BREAK_CONTRACT_COLLUSION',
-  MAX_BREAK_CONTRACT_BANKRUPT_RESCUE: 'MAX_BREAK_CONTRACT_BANKRUPT_RESCUE',
-  MAX_BREAK_CONTRACT_SHARE_BENEFIT: 'MAX_BREAK_CONTRACT_SHARE_BENEFIT',
+  MAX_BREAK_CONTRACT_BAILOUT: 'MAX_BREAK_CONTRACT_BAILOUT',
+  MAX_BREAK_CONTRACT_BENEFIT_SHARE: 'MAX_BREAK_CONTRACT_BENEFIT_SHARE',
   MAX_BANKRUPT: 'MAX_BANKRUPT',
   MAX_BANKRUPT_ACCEPT_RESCUE: 'MAX_BANKRUPT_ACCEPT_RESCUE',
   MAX_BANKRUPT_REFUSE_RESCUE: 'MAX_BANKRUPT_REFUSE_RESCUE',
@@ -41,11 +41,11 @@ export const EVENT_ID = {
   MAX_BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP: 'MAX_BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP',
   MAX_BANKRUPT_HAS_DEBT: 'MAX_BANKRUPT_HAS_DEBT',
   MAX_BANKRUPT_HAS_DEBT_LOW_RELATIONSHIP: 'MAX_BANKRUPT_HAS_DEBT_LOW_RELATIONSHIP',
-  MAX_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE: 'MAX_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE',
-  MAX_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE_FAIL: 'MAX_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE_FAIL',
-  MAX_SIGN_CONTRACT_SHARE_BENEFIT: 'MAX_SIGN_CONTRACT_SHARE_BENEFIT',
+  MAX_BANKRUPT_HAS_CONTRACT_BAILOUT: 'MAX_BANKRUPT_HAS_CONTRACT_BAILOUT',
+  MAX_BANKRUPT_HAS_CONTRACT_BAILOUT_FAIL: 'MAX_BANKRUPT_HAS_CONTRACT_BAILOUT_FAIL',
+  MAX_SIGN_CONTRACT_BENEFIT_SHARE: 'MAX_SIGN_CONTRACT_BENEFIT_SHARE',
   MAX_SIGN_CONTRACT_COLLUSION: 'MAX_SIGN_CONTRACT_COLLUSION',
-  MAX_SIGN_CONTRACT_BANKRUPT_RESCUE: 'MAX_SIGN_CONTRACT_BANKRUPT_RESCUE',
+  MAX_SIGN_CONTRACT_BAILOUT: 'MAX_SIGN_CONTRACT_BAILOUT',
   MAX_GONE: 'MAX_GONE',
   FLORENCE_REFUSE_CONTRACT_CAUSE_YOU_HAS_DEBT: 'FLORENCE_REFUSE_CONTRACT_CAUSE_YOU_HAS_DEBT',
   FLORENCE_REFUSE_CONTRACT_CAUSE_YOU_HAS_RELATIONSHIP_LOW: 'FLORENCE_REFUSE_CONTRACT_CAUSE_YOU_HAS_RELATIONSHIP_LOW',
@@ -55,14 +55,14 @@ export const EVENT_ID = {
   FLORENCE_BANKRUPT_REFUSE_RESCUE: 'FLORENCE_BANKRUPT_REFUSE_RESCUE',
   FLORENCE_BANKRUPT_ACCEPT_RESCUE_LOW_RELATIONSHIPSHIP: 'FLORENCE_BANKRUPT_ACCEPT_RESCUE_LOW_RELATIONSHIPSHIP',
   FLORENCE_BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP: 'FLORENCE_BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP',
-  FLORENCE_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE: 'FLORENCE_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE',
-  FLORENCE_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE_FAIL: 'FLORENCE_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE_FAIL',
+  FLORENCE_BANKRUPT_HAS_CONTRACT_BAILOUT: 'FLORENCE_BANKRUPT_HAS_CONTRACT_BAILOUT',
+  FLORENCE_BANKRUPT_HAS_CONTRACT_BAILOUT_FAIL: 'FLORENCE_BANKRUPT_HAS_CONTRACT_BAILOUT_FAIL',
   FLORENCE_BREAK_CONTRACT_COLLUSION: 'FLORENCE_BREAK_CONTRACT_COLLUSION',
-  FLORENCE_BREAK_CONTRACT_BANKRUPT_RESCUE: 'FLORENCE_BREAK_CONTRACT_BANKRUPT_RESCUE',
-  FLORENCE_BREAK_CONTRACT_SHARE_BENEFIT: 'FLORENCE_BREAK_CONTRACT_SHARE_BENEFIT',
+  FLORENCE_BREAK_CONTRACT_BAILOUT: 'FLORENCE_BREAK_CONTRACT_BAILOUT',
+  FLORENCE_BREAK_CONTRACT_BENEFIT_SHARE: 'FLORENCE_BREAK_CONTRACT_BENEFIT_SHARE',
   FLORENCE_SIGN_CONTRACT_COLLUSION: 'FLORENCE_SIGN_CONTRACT_COLLUSION',
-  FLORENCE_SIGN_CONTRACT_SHARE_BENEFIT: 'FLORENCE_SIGN_CONTRACT_SHARE_BENEFIT',
-  FLORENCE_SIGN_CONTRACT_BANKRUPT_RESCUE: 'FLORENCE_SIGN_CONTRACT_BANKRUPT_RESCUE',
+  FLORENCE_SIGN_CONTRACT_BENEFIT_SHARE: 'FLORENCE_SIGN_CONTRACT_BENEFIT_SHARE',
+  FLORENCE_SIGN_CONTRACT_BAILOUT: 'FLORENCE_SIGN_CONTRACT_BAILOUT',
   FLORENCE_SIGN_CONTRACT_DATE_WITH_ME: 'FLORENCE_SIGN_CONTRACT_DATE_WITH_ME',
   FLORENCE_GONE: 'FLORENCE_GONE',
 };
@@ -122,7 +122,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.MAX_SIGN_CONTRACT_SHARE_BENEFIT,
+    id: EVENT_ID.MAX_SIGN_CONTRACT_BENEFIT_SHARE,
     scenario: 'Max와 (수익분배)계약을 체결했습니다. 이제 서로의 수익을 일정 지분만큼 공유합니다!(다만 수익 분배가 불균형하면 관계가 악화될 수 있습니다..)',
     title_ko: '우리 사이에 이정도는 나눠야지',
     title_en: 'We Share the Spoils',
@@ -138,7 +138,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.MAX_SIGN_CONTRACT_BANKRUPT_RESCUE,
+    id: EVENT_ID.MAX_SIGN_CONTRACT_BAILOUT,
     scenario: 'Max와 (파산 구제)계약을 체결했습니다. 이제 둘 중 한명이 파산하면 초기 자금을 지원해 줄겁니다!',
     title_ko: '사나이 최고의 보험',
     title_en: 'The Ultimate Bromance Insurance',
@@ -170,7 +170,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.FLORENCE_SIGN_CONTRACT_SHARE_BENEFIT,
+    id: EVENT_ID.FLORENCE_SIGN_CONTRACT_BENEFIT_SHARE,
     scenario: 'Florence와 (수익분배)계약을 체결했습니다. 이제 서로의 수익을 일정 지분만큼 공유합니다!(다만 수익 분배가 불균형하면 관계가 악화될 수 있습니다..)',
     title_ko: '위험 분산 포트폴리오',
     title_en: 'Risk Diversification Portfolio',
@@ -186,7 +186,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.FLORENCE_SIGN_CONTRACT_BANKRUPT_RESCUE,
+    id: EVENT_ID.FLORENCE_SIGN_CONTRACT_BAILOUT,
     scenario: 'Florence와 (파산 구제)계약을 체결했습니다. 이제 둘 중 한명이 파산하면 초기 자금을 지원해 줄겁니다!',
     title_ko: '최후의 안전장치',
     title_en: 'The Final Safety Net',
@@ -342,7 +342,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.MAX_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE,
+    id: EVENT_ID.MAX_BANKRUPT_HAS_CONTRACT_BAILOUT,
     scenario: 'Max가 파산했지만, 플레이어와 계약되어 있어 자동으로 초기 자원을 지원했습니다.(계약은 해지됩니다.)',
     title_ko: '자동 이체',
     title_en: 'Automatic Transfer',
@@ -472,7 +472,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.FLORENCE_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE,
+    id: EVENT_ID.FLORENCE_BANKRUPT_HAS_CONTRACT_BAILOUT,
     scenario: 'Florence가 파산했지만, 플레이어와 자금 지원 계약을 맺은 상태라 초기 자원을 자동으로 지원했습니다. (계약은 해지됩니다.)',
     title_ko: '자동 이체',
     title_en: 'Automatic Transfer',
@@ -490,7 +490,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.FLORENCE_BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE_FAIL,
+    id: EVENT_ID.FLORENCE_BANKRUPT_HAS_CONTRACT_BAILOUT_FAIL,
     scenario: 'Florence가 파산했고, 플레이어와 자금 지원 계약을 맺은 상태지만, 자금이 부족하여 초기 자원을 지원할 수 없었습니다. (계약은 해지됩니다.)',
     title_ko: '자동 이체',
     title_en: 'Automatic Transfer',
@@ -659,7 +659,7 @@ export const EventData = [
     repeatable: true
   },
   {
-    id: EVENT_ID.MAX_BREAK_CONTRACT_BANKRUPT_RESCUE,
+    id: EVENT_ID.MAX_BREAK_CONTRACT_BAILOUT,
     title_ko: '밑 빠진 독에 물 붓기',
     title_en: 'Pouring water in a broken jug',
     body_ko: '야, 나도 내 코가 석 자야. 한두 번이야 땜빵해 주지, 네 빚 처리하다간 나까지 파산하겠다. 구제 계약은 오늘부터 취소다.',
@@ -675,7 +675,7 @@ export const EventData = [
     repeatable: true
   },
   {
-    id: EVENT_ID.MAX_BREAK_CONTRACT_SHARE_BENEFIT,
+    id: EVENT_ID.MAX_BREAK_CONTRACT_BENEFIT_SHARE,
     title_ko: '각자 벌어먹자고',
     title_en: 'Eat what you kill',
     body_ko: '수익 공유? 장난하냐? 이건 뭐 너 좋은 일만 시켜주는 꼴이잖아. 앞으론 각자 벌어서 각자 먹자. 계약 해지야.',
@@ -707,7 +707,7 @@ export const EventData = [
     repeatable: true
   },
   {
-    id: EVENT_ID.FLORENCE_BREAK_CONTRACT_BANKRUPT_RESCUE,
+    id: EVENT_ID.FLORENCE_BREAK_CONTRACT_BAILOUT,
     title_ko: '부채 구제 계약 파기',
     title_en: 'Debt Rescue Contract Termination',
     body_ko: '저도 땅 파서 장사하는 건 아니라서요. 당신의 끝없는 부채를 감당하다간 저까지 위험해질 것 같네요. 약속했던 구제 계약은 물를게요.',
@@ -723,7 +723,7 @@ export const EventData = [
     repeatable: true
   },
   {
-    id: EVENT_ID.FLORENCE_BREAK_CONTRACT_SHARE_BENEFIT,
+    id: EVENT_ID.FLORENCE_BREAK_CONTRACT_BENEFIT_SHARE,
     title_ko: '수익 공유 계약 해지',
     title_en: 'Termination of Profit Sharing Contract',
     body_ko: '수익률이 제가 기대했던 것보다 좀 많이 아쉽네요. 매력 없는 파트너십은 서로에게 시간 낭비일 뿐이죠. 계약은 이걸로 끝이에요.',
@@ -922,7 +922,7 @@ export const EventData = [
           label: this.label,
           actionType: 'ACCEPT_INVITE',
           payload: {
-            location_id: 'free_safe_house'
+            location_id: 'free_habitat'
           }
         }
       ], this.sender)

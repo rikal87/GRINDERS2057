@@ -97,7 +97,62 @@ body,
   width: 100%;
   background: linear-gradient(to bottom, #0d1218 0%, #050a0e 100%);
 }
+.reboot-hold-btn {
+  position: relative;
+  overflow: hidden;
+  background: #332b00;
+  color: #ffdd00;
+  border: 1px solid #ffdd00;
+  transition: all 0.2s;
+}
+.app-shell,
+.layout-container {
+  height: 100vh;
+}
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* overflow: auto; */
+}
+.layout-container>section>div {
+  justify-content: center;
+}
+.app-shell {
+  display: flex;
+  flex-direction: column;
+}
+.game-container {
+  /* height: 100vh; */
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+/* .lobby-container {
+  flex-grow: 1;
+} */
+.reboot-hold-btn:active {
+  transform: scale(0.98);
+}
+.reboot-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(255, 221, 0, 0.6);
+  z-index: 1;
+  transition: width 0.05s linear;
+}
 
+.reboot-hold-btn .btn-text {
+  position: relative;
+  z-index: 2;
+}
+
+.reboot-hold-btn.rebooting {
+  border-color: #ffe600;
+  box-shadow: 0 0 15px rgba(255, 230, 0, 0.4);
+}
 h1 {
   font-size: 3em;
   line-height: 1;
@@ -170,7 +225,7 @@ button {
 }
 button:disabled {
   opacity: 0.5;
-  cursor: not-allowed;
+  cursor: not-allowed !important;
   filter: grayscale(1);
 }
 button:disabled:hover {
@@ -448,9 +503,8 @@ code {
 .game-container {
   width: 100%;
   max-width: 500px;
-  /* max-width: 1920px; */
   /* Mobile first default */
-  margin: 50px auto;
+  margin: auto;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -462,14 +516,17 @@ code {
   .game-container {
     max-width: 1600px;
   }
-
   :root {
-    font-size: 18px;
-    /* Slightly larger base font for FHD */
+    /* 
+       Base: 1rem = 18px at 1440p (QHD height).
+       Scaling factor: 18 / 1440 = 0.0125 (1.25vh).
+       This ensures FHD (1080p) renders at ~13.5px, perfectly proportional.
+    */
+    /* font-size: 1.25vh; */
   }
-
   .glitch-text {
     font-size: 3.5rem;
+    /* Will scale with root font-size */
   }
 }
 
@@ -630,11 +687,9 @@ main {
 }
 
 .setting-item .label {
-
   color: var(--neon-cyan);
   font-size: 0.9rem;
 }
-
 .setting-item button {
   clip-path: none;
   border-left: 2px solid var(--neon-cyan);
@@ -1046,7 +1101,9 @@ footer {
   display: flex;
   gap: 10px;
 }
-
+.table-search-overlay .btn-group {
+  gap: 0;
+}
 .btn-group button {
   padding: 5px 15px;
   font-size: 0.8rem;
@@ -1197,6 +1254,41 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: 0 0 10px var(--neon-cyan), 0 0 20px rgba(82, 248, 4, 0.315);
   cursor: pointer;
   margin-top: -6px;
-
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+input[type="range"]:disabled::-webkit-slider-thumb {
+  filter: grayscale(100%);
+  cursor: not-allowed;
+}
+.partner-stats-grid button.sign.disabled {
+  /* background: var(--neon-yellow) !important; */
+  cursor: not-allowed !important;
+}
+.red {
+  color: var(--neon-red) !important;
+}
+.green {
+  color: var(--neon-green) !important;
+}
+.yellow {
+  color: var(--neon-yellow) !important;
+}
+.v5-msg-card .head .event {
+  color: var(--neon-orange);
+}
+.v5-msg-card .head .reward {
+  color: var(--neon-pink);
+}
+.v5-msg-card .head .social {
+  color: var(--neon-cyan);
+}
+.v5-msg-card .head .system {
+  color: var(--neon-red);
+}
+.v5-msg-card .head .finance {
+  color: var(--neon-yellow);
+}
+.v5-msg-card .head .mission,
+.v5-msg-card .head .tutorial {
+  color: var(--neon-green);
 }

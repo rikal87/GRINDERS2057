@@ -43,9 +43,7 @@
 
         <div class="control-actions">
 
-          <button class="btn-leave" @click="$emit('back')">
-            LEAVE_AREA
-          </button>
+          <button class="btn-leave" @click="$emit('back')">LEAVE</button>
         </div>
       </aside>
       <!-- RIGHT PANEL: Merchandise -->

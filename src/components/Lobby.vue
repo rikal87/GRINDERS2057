@@ -28,9 +28,9 @@
           <div class="label">TABLE_SEARCH</div>
           <div class="desc">CASINO_DISTRICT</div>
         </div>
-        <div class="grid-item" @click="$emit('view', 'home')" @mouseenter="setMapLocation('SAFE_HOUSE')">
+        <div class="grid-item" @click="$emit('view', 'home')" @mouseenter="setMapLocation('HABITAT')">
           <div class="icon">H</div>
-          <div class="label">SAFE_HOUSE</div>
+          <div class="label">HABITAT</div>
           <div class="desc">RESIDENTIAL_ZONE</div>
         </div>
         <div class="grid-item" @click="$emit('view', 'shop')" @mouseenter="setMapLocation('BLACK_MARKET')">
@@ -63,7 +63,7 @@ const currentMapKey = ref('DEFAULT');
 const mapPositions = {
   DEFAULT: { pos: '50% 50%', name: 'FINDING_LOCATION...' },
   CASINO: { pos: '1% 90%', name: 'CASINO_STRIP' },
-  SAFE_HOUSE: { pos: '53% 54%', name: 'SAFE_HOUSE' },
+  HABITAT: { pos: '53% 54%', name: 'HABITAT' },
   BLACK_MARKET: { pos: '100% 0%', name: 'KBT_UNDERGROUND' },
   EXCHANGE: { pos: '17% 10%', name: 'FINANCIAL_SECTOR' }
 };

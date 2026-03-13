@@ -57,6 +57,15 @@ export class EventAdaptor {
   gameOver({ winnerId }) {
     console.info('gameOver', winnerId);
   }
+  bustEnemy(player, bestWinner) {
+    recordPlayStatsSession(bestWinner, PLAY_RECORD_STATS_TYPE.BUST_ENEMY, { enemyClass: player.class.id });
+    player.item?.effects?.forEach(e => {
+      if (e.trigger.includes('bust_enemy')) {
+        this.executeItemEffect(player, e, {});
+      }
+    });
+  }
+
   playerBankrupt(player, bestWinner, locationId, inviteId) {
     console.info('playerBankrupt', player.name);
     recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.BANKRUPT);
@@ -253,8 +262,11 @@ export class EventAdaptor {
             player.isJoinPot = true;
           }
           recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.PFR);
-          if (preflopRaises === 1) {
+          if (preflopRaises === 2) {
             recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE._3BET);
+          }
+          if (preflopRaises >= 3) {
+            recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE._4BET_OR_MORE);
           }
         }
         break;

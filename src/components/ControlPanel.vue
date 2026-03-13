@@ -65,6 +65,15 @@
           <span class="value">{{ currentHandRank }}</span>
         </div>
       </div>
+      <!-- Victory Condition Display (Always Visible) -->
+      <div class="permanent-hud">
+        <div class="hud-stat">
+          <span class="label">{{ getLanguage() === 'ko' ? '승리 조건' : 'VICTORY_CONDITION' }}:</span>
+          <span class="value" :class="victoryConditionChips >= acquiredChips ? 'yellow' : 'green'">
+            {{ formatUnit(acquiredChips) }} / {{ formatUnit(victoryConditionChips) }}
+          </span>
+        </div>
+      </div>
       <!-- Permanent Stamina Display (Always Visible) -->
       <div class="permanent-hud">
         <div class="hud-stat" :class="{ 'low-stamina': store.stamina < 25 }">
@@ -73,6 +82,7 @@
             getEffectiveMaxStamina() }}</span>
         </div>
       </div>
+
       <!-- [MOVED] Protector Badge & Effects HUD -->
       <div class="status-row" v-if="player.item">
         <div class="protector-badge" :data-tooltip="player.item.desc">
@@ -137,7 +147,9 @@ import { audioManager } from '../logic/audioManager.js';
 const props = defineProps({
   engine: Object
 });
-
+const victoryConditionChips = computed(() => {
+  return Math.round(props.engine.bb * 30);
+});
 const emit = defineEmits(['action', 'skill']);
 const cashoutTooltip = computed(() => {
   return getLanguage() === 'ko' ?
@@ -170,6 +182,8 @@ const minRaise = computed(() => {
   return Math.min(logicalMin, playerTotalAvailable.value);
 });
 const currentBetValue = ref(minRaise.value);
+
+const acquiredChips = computed(() => player.value.chips - player.value.totalBuyIn);
 
 const formatUnit = (val) => {
   if (store.settings.showAsBB && props.engine.bb > 0) {

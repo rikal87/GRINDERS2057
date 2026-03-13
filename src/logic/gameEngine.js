@@ -15,7 +15,7 @@ import { recordPlayStatsSession, PLAY_RECORD_STATS_TYPE } from './playRecordStat
 const eventAdaptor = new EventAdaptor();
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 export class GameEngine {
-  constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isAdvanced = false, locationId = 'micro_street_shop', locationLV = 1, buyInLimit = 999999, inviteId = null) {
+  constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isAdvanced = false, locationId = 'micro_street_shop', locationLV = 1, buyInLimit = 999999, isMonitoring = false, inviteId = null) {
     this.locationId = locationId;
     this.tableSize = tableSize;
     this.sb = sb;
@@ -56,7 +56,10 @@ export class GameEngine {
     this.preflopRaises = 0;
     this.suspicion = 0;
     this.infamy = 0;
-    this.players = this.initializePlayers(playerClass, tableSize); // [FIX] Initialize players after all properties are set
+    this.playersPools = [];
+    this.isMonitoring = isMonitoring;
+    // [FIX] Initialize players after all properties are set
+    this.players = this.initializePlayers(playerClass, tableSize);
     // this.partners = [];
   }
 
@@ -89,6 +92,7 @@ export class GameEngine {
         vPIPCount: 0,
         pfrCount: 0,
         threeBetCount: 0,
+        fourBetOrMoreCount: 0,
         facedFlopBet: 0,
         foldedToFlopBet: 0,
         aggressiveActions: 0, // Bet + Raise
@@ -96,6 +100,7 @@ export class GameEngine {
         get vPIP() { return this.handsPlayed > 0 ? (this.vPIPCount / this.handsPlayed) * 100 : 0; },
         get pfr() { return this.handsPlayed > 0 ? (this.pfrCount / this.handsPlayed) * 100 : 0; },
         get threeBet() { return this.handsPlayed > 0 ? (this.threeBetCount / this.handsPlayed) * 100 : 0; },
+        get fourBetOrMore() { return this.handsPlayed > 0 ? (this.fourBetOrMoreCount / this.handsPlayed) * 100 : 0; },
         get foldToFlop() { return this.facedFlopBet > 0 ? (this.foldedToFlopBet / this.facedFlopBet) * 100 : 0; },
         get aggressionFactor() { return this.calls > 0 ? this.aggressiveActions / this.calls : (this.aggressiveActions > 0 ? 10 : 0); } // Infinite if no calls but has raises
       },
@@ -167,7 +172,7 @@ export class GameEngine {
         break;
       }
     }
-    const allowedNames = locationConfig.npcs;
+    this.allowedNames = locationConfig.npcs;
 
     // Some tasks might allow spawning an enemy even if it's not strictly allowed by the zone.
     // For now we'll allow forced spawns to override loc allowedNames
@@ -202,7 +207,7 @@ export class GameEngine {
       });
     }
     // 2. Forced Spawns (Boosts)
-    const bossPool = [...CLASSES_ENEMY_BOSS].filter(p => p.isBoss).sort(() => Math.random() - 0.5);
+    this.bossPool = [...CLASSES_ENEMY_BOSS].filter(p => p.isBoss).sort(() => Math.random() - 0.5);
 
     spawnBoosts.forEach(eff => {
       // Find the enemy template
@@ -211,7 +216,7 @@ export class GameEngine {
       let template = null;
       if (targetId === 'named_pro') {
         // Pop boss if available
-        if (bossPool.length > 0) template = bossPool.pop();
+        if (this.bossPool.length > 0) template = this.bossPool.pop();
       } else {
         template = CLASSES_ENEMY.find(e => e.name.toLowerCase() === targetId);
       }
@@ -227,115 +232,151 @@ export class GameEngine {
     });
 
     // 3. Weighted Random Spawns for remainders
-    const availableEnemies = CLASSES_ENEMY.filter(enemy => enemy.name !== 'Named_Pro' && allowedNames.includes(enemy.name));
+    this.availableEnemies = CLASSES_ENEMY.filter(enemy => enemy.name !== 'Named_Pro' && this.allowedNames.includes(enemy.name));
 
     // Prepare weights based on multiply boosts
-    const weightMap = {};
-    availableEnemies.forEach(env => {
-      weightMap[env.name.toLowerCase()] = 1.0;
+    this.weightMap = {};
+    this.availableEnemies.forEach(env => {
+      this.weightMap[env.name.toLowerCase()] = 1.0;
     });
 
     spawnMultBoosts.forEach(eff => {
       const targetId = eff.id.toLowerCase();
-      if (weightMap[targetId] !== undefined) {
-        weightMap[targetId] *= eff.amount;
+      if (this.weightMap[targetId] !== undefined) {
+        this.weightMap[targetId] *= eff.amount;
       }
     });
 
     // Helper to pick randomly based on weights
-    const getWeightedRandomEnemy = () => {
+    this.getWeightedRandomEnemy = () => {
       // Add Named_Pro logic (random chance if allowed)
-      if (allowedNames.includes('Named_Pro') && Math.random() < 0.1 && bossPool.length > 0) {
-        return bossPool.pop();
+      if (this.allowedNames.includes('Named_Pro') && Math.random() < 0.1 && this.bossPool.length > 0) {
+        return this.bossPool.pop();
       }
 
-      const totalWeight = availableEnemies.reduce((sum, en) => sum + weightMap[en.name.toLowerCase()], 0);
+      const totalWeight = this.availableEnemies.reduce((sum, en) => sum + this.weightMap[en.name.toLowerCase()], 0);
       let rand = Math.random() * totalWeight;
-      for (const en of availableEnemies) {
-        rand -= weightMap[en.name.toLowerCase()];
+      for (const en of this.availableEnemies) {
+        rand -= this.weightMap[en.name.toLowerCase()];
         if (rand <= 0) return { ...en };
       }
-      return { ...availableEnemies[0] }; // Fallback
+      return { ...this.availableEnemies[0] }; // Fallback
     };
 
-    while (enemiesToPlace.length < size - 1) {
-      enemiesToPlace.push(getWeightedRandomEnemy());
-    }
-
-    // Optional: Shuffle enemiesToPlace so forced spawns aren't always seated right next to YOU
+    // Optional: Shuffle enemiesToPlace to randomize seat positions
     enemiesToPlace = enemiesToPlace.sort(() => Math.random() - 0.5);
 
+    // Create the generic pool of random enemies for substitutions later
+    const fallbackPool = [];
+    while (fallbackPool.length < size * 2) {
+      fallbackPool.push(this.getWeightedRandomEnemy());
+    }
+    this.playersPools = fallbackPool.sort(() => Math.random() - 0.5);
+
     // --- Apply Infamy Modifications to NPC Template base on Zone ---
-    // const currentZoneData = store.status_zone[this.locationId] || { infamy: 0, suspicion: 0 };
     this.infamy = getCurrentInfamy(this.locationId);
     this.suspicion = getCurrentSuspicion(this.locationId);
-    for (let i = 0; i < enemiesToPlace.length; i++) {
-      let villanTemplate = enemiesToPlace[i];
-      // Clone the template so we don't mutate the base CLASSES_ENEMY object directly
-      let villan = { ...villanTemplate };
 
-      // Apply Infamy Modifiers
-      if (this.infamy >= 60) {
-        villan.chipMultiply = (villan.chipMultiply || 1) * 1.5;
-        villan.isAdvanced = true;
-      }
+    // Gather all NPCs needed for the table
+    const tableNpcs = [];
 
-      if (this.infamy >= 40) {
-        villan.vPIP_modifier = (villan.vPIP_modifier || 1) * 0.7;
-        villan.WTSD_modifier = (villan.WTSD_modifier || 1) * 1.3;
-      }
-
-      if (this.infamy >= 20) {
-        // NPC AF = ((3 - {NPC 초기 AF} ) * 0.5) + {NPC 초기 AF} 로 보정.
-        const baseAF = villan.af || 1.0;
-        villan.af_modifier = ((3 - baseAF) * 0.5) + baseAF;
-      }
-      const chips = this.buyIn * villan.chipMultiply
-      const aiPlayer = {
-        id: villan.isPartner ? villan.id : `cpu_${i + 1}`,
-        name: `${villan.name}`,
-        tempXPBonus: 0,
-        class: villan,
-        hand: [],
-        chips: chips,
-        initialChips: chips,
-        currentBet: 0,
-        totalWagered: 0,
-        isFolded: false,
-        isHuman: false,
-        isPartner: villan.isPartner || false,
-        isBoss: villan.isBoss || false,
-        item: null,
-        // Helper methods for skills
-        maxTimeBank: 15, // Default 30s for AI
-        timeBankRemaining: 15,
-        stats: {
-          handsPlayed: 0,
-          vPIPCount: 0,
-          pfrCount: 0,
-          threeBetCount: 0,
-          facedFlopBet: 0,
-          foldedToFlopBet: 0,
-          aggressiveActions: 0, // Bet + Raise
-          calls: 0,
-          get vPIP() { return this.handsPlayed > 0 ? (this.vPIPCount / this.handsPlayed) * 100 : 0; },
-          get pfr() { return this.handsPlayed > 0 ? (this.pfrCount / this.handsPlayed) * 100 : 0; },
-          get threeBet() { return this.handsPlayed > 0 ? (this.threeBetCount / this.handsPlayed) * 100 : 0; },
-          get foldToFlop() { return this.facedFlopBet > 0 ? (this.foldedToFlopBet / this.facedFlopBet) * 100 : 0; },
-          get aggressionFactor() { return this.calls > 0 ? this.aggressiveActions / this.calls : (this.aggressiveActions > 0 ? 10 : 0); } // Infinite if no calls but has raises
-        },
-      };
-
-      if (Math.random() < 0.3) chatAI(aiPlayer, CHAT_TRIGGERS.GAME_START)
-      players.push(aiPlayer);
+    // First put the guaranteed enemies (Partners, Guests, Forced) up to the table limit
+    for (let i = 0; i < enemiesToPlace.length && tableNpcs.length < size - 1; i++) {
+      tableNpcs.push(this.createAIPlayerFromTemplate(enemiesToPlace[i], `cpu_${i + 1}`));
     }
+
+    // Fill the empty seats with random NPCs from the pool
+    let cpuCount = enemiesToPlace.length + 1;
+    while (tableNpcs.length < size - 1) {
+      tableNpcs.push(this.createAIPlayer(`cpu_${cpuCount++}`));
+    }
+
+    // Completely shuffle the NPCs so guaranteed ones don't always sit right next to the player
+    const shuffledNpcs = tableNpcs.sort(() => Math.random() - 0.5);
+    players.push(...shuffledNpcs);
+
     if (this.isTutorial) {
       this.mentor = players.find(e => e.name === 'Max(Mentor)');
-      console.log('MENTOR', this.mentor);
     }
     return players;
   }
 
+  createAIPlayerFromTemplate(villanTemplate, customId) {
+    const villan = { ...villanTemplate };
+    console.info('vt', villanTemplate)
+    console.info('villan', villan);
+
+    // Apply Infamy Modifiers
+    if (this.infamy >= 60) {
+      villan.chipMultiply = (villan.chipMultiply || 1) * 1.5;
+      villan.isAdvanced = true;
+    }
+
+    if (this.infamy >= 40) {
+      villan.vPIP_modifier = (villan.vPIP_modifier || 1) * 0.7;
+      villan.WTSD_modifier = (villan.WTSD_modifier || 1) * 1.3;
+    }
+
+    if (this.infamy >= 20) {
+      // NPC AF = ((3 - {NPC 초기 AF} ) * 0.5) + {NPC 초기 AF} 로 보정.
+      const baseAF = villan.af || 1.0;
+      villan.af_modifier = ((3 - baseAF) * 0.5) + baseAF;
+    }
+    const chips = this.buyIn * villan.chipMultiply;
+    const genId = customId || `cpu_${Math.random().toString(36).substr(2, 5)}`;
+
+    const aiPlayer = {
+      id: villan.isPartner ? villan.id : genId,
+      name: `${villan.name}`,
+      tempXPBonus: 0,
+      class: villan,
+      hand: [],
+      chips: chips,
+      initialChips: chips,
+      currentBet: 0,
+      totalWagered: 0,
+      isFolded: false,
+      isHuman: false,
+      isPartner: villan.isPartner || false,
+      isBoss: villan.isBoss || false,
+      item: null,
+      maxTimeBank: 15,
+      timeBankRemaining: 15,
+      stats: {
+        handsPlayed: 0,
+        vPIPCount: 0,
+        pfrCount: 0,
+        threeBetCount: 0,
+        fourBetOrMoreCount: 0,
+        facedFlopBet: 0,
+        foldedToFlopBet: 0,
+        aggressiveActions: 0,
+        calls: 0,
+        get vPIP() { return this.handsPlayed > 0 ? (this.vPIPCount / this.handsPlayed) * 100 : 0; },
+        get pfr() { return this.handsPlayed > 0 ? (this.pfrCount / this.handsPlayed) * 100 : 0; },
+        get threeBet() { return this.handsPlayed > 0 ? (this.threeBetCount / this.handsPlayed) * 100 : 0; },
+        get fourBetOrMore() { return this.handsPlayed > 0 ? (this.fourBetOrMoreCount / this.handsPlayed) * 100 : 0; },
+        get foldToFlop() { return this.facedFlopBet > 0 ? (this.foldedToFlopBet / this.facedFlopBet) * 100 : 0; },
+        get aggressionFactor() { return this.calls > 0 ? this.aggressiveActions / this.calls : (this.aggressiveActions > 0 ? 10 : 0); }
+      },
+    };
+
+    if (Math.random() < 0.25) chatAI(aiPlayer, CHAT_TRIGGERS.GAME_START)
+    return aiPlayer;
+  }
+
+  createAIPlayer(customId = null) {
+    let villanTemplate = null;
+    if (this.playersPools && this.playersPools.length > 0) {
+      villanTemplate = this.playersPools.pop();
+    } else if (this.getWeightedRandomEnemy) {
+      // Use the newly extracted probability logic when pool runs out
+      villanTemplate = this.getWeightedRandomEnemy();
+    } else {
+      return null;
+    }
+    return this.createAIPlayerFromTemplate(villanTemplate, customId);
+  }
   async startNewHand() {
     audioManager.disableTensionMode();
     this.deck = createDeck();
@@ -361,7 +402,7 @@ export class GameEngine {
       p.totalWagered = 0;
       p.isBlind = false; // Reset blind status
       p.isJoinPot = false; // Reset VPIP tracker
-      recordPlayStatsSession(p, PLAY_RECORD_STATS_TYPE.HANDS_PLAYED);
+      if (!p.isEliminated) recordPlayStatsSession(p, PLAY_RECORD_STATS_TYPE.HANDS_PLAYED);
     });
     this.calculationInProgress = false;
     // Check Trigger: PREFLOP start (or Round Start)
@@ -747,7 +788,7 @@ export class GameEngine {
         const primaryAiWinner = this.players.find(p => p.id === aiWinners[0].id);
         if (primaryAiWinner) {
           const isHuge = this.pot > (this.bb * 40);
-          chatAI(primaryAiWinner, isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL);
+          if (this.street !== 'PREFLOP' && Math.random() < 0.3) chatAI(primaryAiWinner, isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL);
         }
       }
 
@@ -758,14 +799,14 @@ export class GameEngine {
         if (losers.length > 0 && Math.random() < 0.5) {
           const complainer = losers[Math.floor(Math.random() * losers.length)];
           const isHuge = this.pot > (this.bb * 40);
-          chatAI(complainer, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL);
+          if (this.street !== 'PREFLOP') chatAI(complainer, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL);
 
           // [FIX] Infamy and suspicion system
           if (this.infamy >= 80) {
             const suspicionGainBase = this.pot / this.bb * (this.infamy === 100 ? 0.4 : 0.2);
             const suspicionGainBoost = 1.0;
             const suspicionGainPenalty = me.born_villain * 0.25;
-            gainSuspicion(this.locationId, suspicionGainBase * (suspicionGainBoost - suspicionGainPenalty));
+            if (this.isMonitoring) gainSuspicion(this.locationId, suspicionGainBase * (suspicionGainBoost - suspicionGainPenalty));
           }
         }
       }
@@ -782,11 +823,11 @@ export class GameEngine {
       if (netProfit > 0) {
         // Player Profited
         const isHugeWin = netProfit > (this.bb * 20);
-        if (Math.random() < 0.5) chatAI(this.mentor, isHugeWin ? CHAT_TRIGGERS.WIN_HUGE_FOR_PLAYER : CHAT_TRIGGERS.WIN_SMALL_FOR_PLAYER);
+        if (Math.random() < 0.5 && this.street !== 'PREFLOP') chatAI(this.mentor, isHugeWin ? CHAT_TRIGGERS.WIN_HUGE_FOR_PLAYER : CHAT_TRIGGERS.WIN_SMALL_FOR_PLAYER);
       } else if (netProfit < 0) {
         // Player Lost Money (either lost entirely, or chop/side pot refund was less than wagered)
         const isHugeLoss = me.totalWagered > (this.bb * 20);
-        if (Math.random() < 0.5) chatAI(this.mentor, isHugeLoss ? CHAT_TRIGGERS.LOSE_HUGE_FOR_PLAYER : CHAT_TRIGGERS.LOSE_SMALL_FOR_PLAYER);
+        if (Math.random() < 0.5 && this.street !== 'PREFLOP') chatAI(this.mentor, isHugeLoss ? CHAT_TRIGGERS.LOSE_HUGE_FOR_PLAYER : CHAT_TRIGGERS.LOSE_SMALL_FOR_PLAYER);
       } else {
         // Even break (Chop)
         if (Math.random() < 0.5) chatAI(this.mentor, CHAT_TRIGGERS.CHOP);
@@ -829,8 +870,8 @@ export class GameEngine {
     let cheatingThreshold = 0;
     const cheatingThresholdMap = {
       [CONTRACT_TYPE.COLLUSION]: 999, // this is obviously cheating!!
-      [CONTRACT_TYPE.SHARE_BENEFIT]: 25,
-      [CONTRACT_TYPE.BANKRUPT_RESCUE]: 10,
+      [CONTRACT_TYPE.BENEFIT_SHARE]: 25,
+      [CONTRACT_TYPE.BAILOUT]: 10,
       [CONTRACT_TYPE.A_DATE_WITH_YOU]: 5,
     };
     partners.forEach(p => {
@@ -881,7 +922,15 @@ export class GameEngine {
 
   checkBankruptcy(bestWinner, isConfiscation = false) {
     // 1. Bankrupt Players
-    this.players.forEach(p => {
+    this.players.forEach((p, index) => {
+      if (p.isEliminated === true && !p.isHuman && Math.random() < 0.3) {
+        const newPlayer = this.createAIPlayer(p.id);
+        if (!newPlayer) return;
+        this.players.splice(index, 1, newPlayer);
+        p = newPlayer; // update local reference
+        console.log(`[GAME] Empty seat filled by ${p.name}`);
+        chatAI(p, CHAT_TRIGGERS.GAME_START); // Say hi
+      }
       if (p.chips <= 0 && !p.isEliminated) {
         console.log(`[GAME] ${p.name} eliminated.`);
 
@@ -893,9 +942,9 @@ export class GameEngine {
             return true; // Skip elimination
           }
         } else {
+          eventAdaptor.bustEnemy(p, bestWinner);
           chatAI(p, CHAT_TRIGGERS.SELF_ELIMINATED);
         }
-
         p.isEliminated = true;
         if (bestWinner && !bestWinner.isMe) chatAI(bestWinner, CHAT_TRIGGERS.ELIMINATED_ENEMY);
         // Handle Human Bankruptcy
@@ -904,6 +953,7 @@ export class GameEngine {
           this.winnerId = bestWinner ? bestWinner.id : 'cpu';
           // this.state = 'IDLE';
         }
+
         eventAdaptor.playerBankrupt(p, bestWinner, this.locationId, this.inviteId);
       }
     });
@@ -1030,7 +1080,7 @@ export class GameEngine {
   async cashOut(isForceExit = false) {
     if (!isForceExit) {
       const rounds = this.exitReservationRoundDefault - this.exitReservationRounds;
-      gainSuspicion(this.locationId, rounds);
+      if (this.isMonitoring) gainSuspicion(this.locationId, rounds);
       if (this.checkTriggerCasinoInvestigation()) return;
     }
 

@@ -14,6 +14,7 @@ export const MESSAGE_TYPE = {
   TUTORIAL: 'TUTORIAL',
   MISSION: 'MISSION',
   REWARD: 'REWARD',
+  EVENT: 'EVENT',
 }
 export const MESSAGE_ACTION_TYPE = {
   RECEIVE: 'RECEIVE',
@@ -51,11 +52,16 @@ export const sendMessage = (type, title, body, actions = [], sender = 'System', 
     actions, // [{ label, actionType, payload }]
     expireAt: expireMinutes ? store.gameTime + (expireMinutes * 60 * 1000) : null // Treat expireMinutes as relative minutes
   };
-  audioManager.playSFX('inmessage');
+
   store.messages.unshift(msg);
 
-  // Optional: Play notification sound if not spam
-  // if (type !== 'SPAM') audioManager.playSFX('notification');
+  // Play notification sound if not spam (Debounced to prevent loud bursts)
+  const now = Date.now();
+  // Use a static property on sendMessage to track time across calls
+  if (!sendMessage.lastSoundTime || now - sendMessage.lastSoundTime > 500) {
+    audioManager.playSFX('inmessage');
+    sendMessage.lastSoundTime = now;
+  }
 
   return id;
 };
@@ -95,12 +101,12 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
         if (action.actionType === MESSAGE_ACTION_TYPE.PAY_RENT && store.missedPayments) {
           store.missedPayments.rent_bill = Math.max(0, store.missedPayments.rent_bill - 1);
         }
-        sendMessage('SYSTEM', 'Payment Successful', `Successfully paid ${amount.toLocaleString()} ${action.payload.currency || 'CR'}.`);
+        sendMessage(MESSAGE_TYPE.FINANCE, 'Payment Successful', `Successfully paid ${amount.toLocaleString()} ${action.payload.currency || 'CR'}.`);
         deleteMessage(msgId); // Remove bill after payment
         // Trigger success effect?
       } else {
         audioManager.playSFX('error');
-        sendMessage('SYSTEM', 'Insufficient Funds!', `Failed to pay ${amount.toLocaleString()} ${action.payload.currency || 'CR'}.`);
+        sendMessage(MESSAGE_TYPE.FINANCE, 'Insufficient Funds!', `Failed to pay ${amount.toLocaleString()} ${action.payload.currency || 'CR'}.`);
       }
       break;
     case MESSAGE_ACTION_TYPE.DEBT_REPAYMENT: {
@@ -111,12 +117,12 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
         const result = debtRepayment(p.id, p.amount, false, true);
         if (result) {
           audioManager.playSFX('paybill');
-          sendMessage('SYSTEM', 'Transaction Successful', `Successfully transferred ${(p.amount || 0).toLocaleString()} CR.to ${p.to}.`);
+          sendMessage(MESSAGE_TYPE.FINANCE, 'Transaction Successful', `Successfully transferred ${(p.amount || 0).toLocaleString()} CR.to ${p.to}.`);
           deleteMessage(msgId);
           if (p.nextEvent) scheduleEvent(p.nextEvent, 5 + Math.random() * 12);
         } else {
           audioManager.playSFX('error');
-          sendMessage('SYSTEM', 'Insufficient Funds!', `Failed to transfer ${(p.amount || 0).toLocaleString()} CR.to ${p.to}.`);
+          sendMessage(MESSAGE_TYPE.FINANCE, 'Insufficient Funds!', `Failed to transfer ${(p.amount || 0).toLocaleString()} CR.to ${p.to}.`);
         }
       } else if (p.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.REFUSE) {
         audioManager.playSFX('error');
@@ -131,12 +137,12 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
         const result = transferBankroll(p.id, p.amount, false);
         if (result.success) {
           audioManager.playSFX('paybill');
-          sendMessage('SYSTEM', 'Transaction Successful', `Successfully transferred ${(p.amount || 0).toLocaleString()} CR.to ${p.to}.`);
+          sendMessage(MESSAGE_TYPE.FINANCE, 'Transaction Successful', `Successfully transferred ${(p.amount || 0).toLocaleString()} CR.to ${p.to}.`);
           deleteMessage(msgId);
           if (p.nextEvent) scheduleEvent(p.nextEvent, 5 + Math.random() * 12);
         } else {
           audioManager.playSFX('error');
-          sendMessage('SYSTEM', 'Insufficient Funds!', `Failed to transfer ${(p.amount || 0).toLocaleString()} CR.to ${p.to}.`);
+          sendMessage(MESSAGE_TYPE.FINANCE, 'Insufficient Funds!', `Failed to transfer ${(p.amount || 0).toLocaleString()} CR.to ${p.to}.`);
         }
       } else if (p.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.REFUSE) {
         audioManager.playSFX('error');
@@ -155,7 +161,7 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
         if (store.missedPayments) {
           store.missedPayments.income_tax = 0; // Reset completely upon payment
         }
-        sendMessage('SYSTEM', 'Tax Paid', `Income tax of ${taxAmount.toLocaleString()} CR has been settled.Next cycle base is now ${store.latest_pay_income_base_amount.toLocaleString()} CR.`, 1);
+        sendMessage(MESSAGE_TYPE.FINANCE, 'Tax Paid', `Income tax of ${taxAmount.toLocaleString()} CR has been settled. Next cycle base is now ${store.latest_pay_income_base_amount.toLocaleString()} CR.`, 1);
 
         // Remove ALL pending income tax messages since paying updates the base correctly
         store.messages = store.messages.filter(m =>
@@ -163,12 +169,12 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
         );
       } else {
         audioManager.playSFX('error');
-        sendMessage('SYSTEM', 'Insufficient Funds!', `You need ${taxAmount.toLocaleString()} CR to pay your income tax.Failure to pay will result in severe penalties!`);
+        sendMessage(MESSAGE_TYPE.FINANCE, 'Insufficient Funds!', `You need ${taxAmount.toLocaleString()} CR to pay your income tax.Failure to pay will result in severe penalties!`);
       }
       break;
     case MESSAGE_ACTION_TYPE.ACCEPT_INVITE:
       if (action.payload.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.REFUSE) {
-        scheduleEvent(action.payload.nextEvent, 1);
+        scheduleEvent(action.payload.nextEvent, 5 + Math.random() * 12);
         deleteMessage(msgId);
         break;
       }
@@ -183,23 +189,12 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
         }
       }
       if (locationConfig) {
-        const table = locationConfig.tables;
-        const joinPayload = {
-          inviteId: msgId,
-          locationId: locationConfig.id,
-          locationName: locationConfig.name,
-          locationLV: locationConfig.level,
-          rake: table.baseRake || 0,
-          buyIn: table.amount,
-          rakeCap: table.rakeCap || 0,
-          isAdvanced: table.isAdvanced || false,
-          size: table.available[0] || 2,
-          sb: table.sb,
-          bb: table.bb,
-          buyInLimit: table.buyInLimit,
-        };
-        window.dispatchEvent(new CustomEvent('join-table', { detail: joinPayload }));
-        // deleteMessage(msgId);
+        window.dispatchEvent(new CustomEvent('open-table-search', {
+          detail: {
+            locationId: locationConfig.id,
+            inviteId: msgId
+          }
+        }));
       }
       break;
     case 'DELETE_MESSAGE':
@@ -212,7 +207,7 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
 export const sendLoreAndSpamMessage = () => {
   const loreSpamMessage = getRndLoreSpamMessage();
 
-  sendMessage('SPAM', loreSpamMessage.title, loreSpamMessage.body, [], loreSpamMessage.sender);
+  sendMessage(MESSAGE_TYPE.SPAM, loreSpamMessage.title, loreSpamMessage.body, [], loreSpamMessage.sender);
 }
 
 export const checkMessageExpiration = () => {

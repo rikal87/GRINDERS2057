@@ -17,18 +17,19 @@ import { PARTNER_ID, LOCATION_ID } from './constants.js'
  * @property {string} BANKRUPT_REFUSE_RESCUE
  * @property {string} BANKRUPT_ACCEPT_RESCUE_LOW_RELATIONSHIPSHIP
  * @property {string} BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP
- * @property {string} BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE
- * @property {string} BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE_FAIL
+ * @property {string} BANKRUPT_HAS_CONTRACT_BAILOUT
+ * @property {string} BANKRUPT_HAS_CONTRACT_BAILOUT_FAIL
  * @property {string} BREAK_CONTRACT_COLLUSION
- * @property {string} BREAK_CONTRACT_BANKRUPT_RESCUE
- * @property {string} BREAK_CONTRACT_SHARE_BENEFIT
+ * @property {string} BREAK_CONTRACT_BAILOUT
+ * @property {string} BREAK_CONTRACT_BENEFIT_SHARE
  * @property {string} SIGN_CONTRACT_COLLUSION
- * @property {string} SIGN_CONTRACT_SHARE_BENEFIT
- * @property {string} SIGN_CONTRACT_BANKRUPT_RESCUE
+ * @property {string} SIGN_CONTRACT_BENEFIT_SHARE
+ * @property {string} SIGN_CONTRACT_BAILOUT
  * @property {string} SIGN_CONTRACT_DATE_WITH_ME
  * @property {string} GONE
  * @property {string} MAIN_STORY_2_1_KBT_UNDERGROUND // KBT UNDERGROUND THE BUNKER 미션
  * @property {string} MAIN_STORY_2_2_KBT_UNDERGROUND
+ * @property {string} MAIN_STORY_2_2_B_KBT_UNDERGROUND
  * @property {string} MAIN_STORY_2_3_KBT_UNDERGROUND
  * @property {string} MAIN_STORY_2_4_KBT_UNDERGROUND
  * @property {string} MAIN_STORY_2_5_KBT_UNDERGROUND
@@ -36,6 +37,7 @@ import { PARTNER_ID, LOCATION_ID } from './constants.js'
  * @property {string} MAIN_STORY_2_7_KBT_UNDERGROUND // 주인공과 접선
  * @property {string} MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL // 미션 실패
  * @property {string} MAIN_STORY_2_8_KBT_UNDERGROUND_SUCCESS // 미션 성공
+ * @property {string} MAIN_STORY_2_9_KBT_UNDERGROUND_RETRY // 미션 재도전
  * @property {string} JOIN_PARTNER // 플로렌스가 정식 파트너가 되기로 결심합니다.
  * @property {string} JOINED_PARTNER // 프로렌스를 정식 파트너로 등록했습니다.
  * @property {string} RESOLVED_DEBT
@@ -77,19 +79,31 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_1_KBT_UNDERGROUND,
-    scenario: 'MAIN_STORY_2_1_KBT_UNDERGROUND 이벤트, 주인공의 명성이 높아져서 미션을 의뢰하려는 플로렌스',
-    title_ko: '[비즈니스 제안]',
-    title_en: '[Business Proposal]',
-    body_ko: '안녕? 전에 H.B.D 클럽에서 봤던 기억이 나네요. 거기서 기웃거리는 KBT 깡패 녀석들을 꽤나 효율적으로 처리했다는 소문을 들었어요. 당신의 실력이 제 예상보다 훨씬 정교하더군요.',
-    body_en: 'Hello. I remember seeing you at the H.B.D Club. I heard rumors that you handled those KBT thugs quite efficiently. Your skill is much sophisticated than I expected.',
+    id: EVENT_FLORENCE.MAIN_STORY_2_0_KBT_UNDERGROUND,
+    scenario: 'MAIN_STORY_1_7_MEET_AT_CLUB_DONE 이후, 플레이어의 명성이 높아져서 미션을 의뢰하려는 플로렌스 이벤트',
+    title_ko: '안녕? 혹시 저를 잊은 건 아니죠?',
+    title_en: 'Hello. I remember seeing you at the H.B.D Club.',
+    body_ko: '왜 있잖아요, 저번에 H.B.D 클럽 VIP 룸에서 같이 앉아 게임했던... 우리 그때 돈만 많은 호구 녀석들 아주 탈탈 털어먹었잖아요.',
+    body_en: "Hello. You haven't forgotten me already, have you? We played at the H.B.D Club VIP room—right next to each other. Remember how we absolutely cleaned out those wealthy idiots?",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    timer: 11,
     condition: () => {
-      return isEventCompleted(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE);
-      // return isEventCompleted(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE) && getBustEnemyCount(ENEMY_ID.GANGSTER) > 3;
+      return isEventCompleted(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE) && getBustEnemyCount(ENEMY_ID.GANGSTER) >= 3 && getCurrentBankroll() >= 300000;
     },
+    func() {
+      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_1_KBT_UNDERGROUND, 10)
+    },
+  },
+  {
+    id: EVENT_FLORENCE.MAIN_STORY_2_1_KBT_UNDERGROUND,
+    scenario: 'MAIN_STORY_2_1_KBT_UNDERGROUND 이벤트, 주인공의 명성이 높아져서 미션을 의뢰하려는 플로렌스',
+    title_ko: '다시 생각해도 정말 허접한 판이었죠.',
+    title_en: 'It was such an amateur table, looking back.',
+    body_ko: '아무튼, 요즘 KBT 깡패 녀석들을 아주 "효율적"으로 처리하고 있다는 소문을 들었어요. 포커 테이블에서 그 무식한 놈들을 줄줄이 파산시켰다면서요? 덕분에 제 체증이 다 내려가더군요!',
+    body_en: "Anyway, I've heard rumors that you've been 'efficiently' dealing with those KBT thugs lately. Busting those brutes one by one? Honestly, it's the best news I've heard all week!",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_2_KBT_UNDERGROUND, 10)
@@ -97,11 +111,25 @@ export const EventData = [
   },
   {
     id: EVENT_FLORENCE.MAIN_STORY_2_2_KBT_UNDERGROUND,
-    scenario: 'MAIN_STORY_2_1_KBT_UNDERGROUND 연계 이벤트, 주인공의 명성이 높아져서 미션을 의뢰하려는 플로렌스',
+    scenario: '주인공의 활약(KBT 격파)에 만족감을 드러내는 플로렌스',
     title_ko: '무례한 리스크들',
     title_en: 'Disrespectful Risks',
-    body_ko: '그 갱단 녀석들, 단지 제가 여자라는 이유로 제 실력을 무시하는 게 꽤나 불쾌했거든요.',
-    body_en: "Those idiots from the gang... they dared to underestimate me just because I'm a woman. I found that highly offensive.",
+    body_ko: "그 갱단 녀석들, 단지 제가 여자라는 이유로 제 실력을 무시하는 게 꽤나 불쾌했거든요.",
+    body_en: "Those idiots from the gang... they underestimated me just because I'm a woman, which was highly offensive.",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_2_B_KBT_UNDERGROUND, 6)
+    },
+  },
+  {
+    id: EVENT_FLORENCE.MAIN_STORY_2_2_B_KBT_UNDERGROUND,
+    scenario: '이름을 밝히며 친근감을 표시하는 플로렌스',
+    title_ko: '아, 맞다!',
+    title_en: 'Oh, wait!',
+    body_ko: "그러고 보니 아직 제 이름을 안 알려줬네요. 미안해요, 너무 제 기분에만 취해 있었나 봐요. 제 이름은 [플로렌스]라고 해요. 이렇게 다시 만나게 돼서 정말 반가워요 :)",
+    body_en: "I just realized I haven't even told you my name yet. My apologies, I guess I got a bit carried away. My name is [Florence]. It's a real pleasure to cross paths with you again :)",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
@@ -111,11 +139,11 @@ export const EventData = [
   },
   {
     id: EVENT_FLORENCE.MAIN_STORY_2_3_KBT_UNDERGROUND,
-    scenario: 'MAIN_STORY_2_2_KBT_UNDERGROUND 연계 이벤트, 주인공의 명성이 높아져서 미션을 의뢰하려는 플로렌스',
-    title_ko: '[더 벙커]의 위치',
-    title_en: 'Location of [The Bunker]',
-    body_ko: '혹시 KBT 갱단이 관리하는 비밀 카지노, [더 벙커]의 정확한 위치를 알고 있나요? 그곳은 표준적인 확률이 통하지 않는, 아주 위험하고도 매력적인 변동성이 존재하는 곳이죠.',
-    body_en: "Do you happen to know the exact location of [The Bunker], the secret casino managed by the KBT gang? It's a place where standard odds don't apply, filled with dangerous yet attractive volatility.",
+    scenario: '불법 개조된 지하 카지노의 위치를 알려주는 플로렌스',
+    title_ko: '[더 벙커]에 대해 들어본 적 없나요?',
+    title_en: 'Heard of [The Bunker]?',
+    body_ko: "일단 다시 본론으로 돌아가죠. 혹시 [더 벙커] 라고 들어봤나요? KBT 녀석들이 버려진 지하 방공호를 개조해 만든 불법 카지노예요. 아주 위험하고도 매력적인 '변동성'이 지배하는 곳이죠. 실력 좋은 그라인더인 당신에겐 꽤나 구미가 당기는 정보 아닌가요?",
+    body_en: "Back to business. Ever heard of [The Bunker]? It's an illegal casino in an old fallout shelter run by the KBT. It's filled with dangerous yet 'attractive volatility.' For a skilled grinder like you, it sounds like a tempting opportunity, doesn't it?",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
@@ -125,7 +153,7 @@ export const EventData = [
   },
   {
     id: EVENT_FLORENCE.MAIN_STORY_2_4_KBT_UNDERGROUND,
-    scenario: 'MAIN_STORY_2_3_KBT_UNDERGROUND 연계 이벤트, 주인공의 명성이 높아져서 미션을 의뢰하려는 플로렌스',
+    scenario: '불법 개조된 지하 카지노 [더 벙커]에  플로렌스가 주인공과 함께 가기로 제안하는 이벤트',
     title_ko: '공동 작업 제안',
     title_en: 'Joint Operation Proposal',
     body_ko: '제 제안은 심플해요. 저와 함께 그곳에 가주시는 거예요. 자세한 옵션은 현장에서 설명해 드릴게요. 당신의 배짱과 제 계산이 합쳐진다면, 승률은 90%를 상회할 거라 확신해요. 팀워크를 한번 발휘해 볼까요?',
@@ -146,9 +174,6 @@ export const EventData = [
     body_en: "Let's split the profits from there cleanly 5:5. Ordinarily, I'd demand a higher share considering my edge, but your skills are well-proven. Isn't this quite an attractive contract term?",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    condition: () => {
-      // return new Date(store.gameTime).getHours() >= 22 // for test
-    },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_6_KBT_UNDERGROUND, 20)
@@ -163,19 +188,16 @@ export const EventData = [
     body_en: "I'll take that as an acceptance. Unnecessary negotiation is a waste of energy. You'll need time to prepare, so I'll contact you again tomorrow. Maintain your peak condition.",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    condition: () => {
-      // return new Date(store.gameTime).getHours() >= 22 // for test
-    },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_7_KBT_UNDERGROUND, 24 * 60)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_7_KBT_UNDERGROUND, 19 * 60)
     },
   },
   {
     id: EVENT_FLORENCE.MAIN_STORY_2_7_KBT_UNDERGROUND,
     scenario: 'MAIN_STORY_2_6_KBT_UNDERGROUND 연계 이벤트, 하루 뒤 주인공에게 준비가 되었음을 알리고 접선 준비',
-    title_ko: '접전 준비 완료',
-    title_en: 'Ready for Engagement',
+    title_ko: '[접전 준비 완료]',
+    title_en: '[Ready for Engagement]',
     body_ko: '지금 즉시 [더 벙커]로 오세요. 위치 데이터는 전송했어요. 늦는 건 제 계산에 없는 변수니, 부디 정시에 도착해 주시길 바랄게요. 게임을 시작해 보죠.',
     body_en: "Come to [The Bunker] immediately. I've sent the location data. Being late is a variable I haven't accounted for, so please arrive on time. Let's start the game.",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
@@ -183,9 +205,6 @@ export const EventData = [
     label_ko: '참가하기',
     label_en: 'Join',
     get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
-    condition: () => {
-      // return new Date(store.gameTime).getHours() >= 22 // for test
-    },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [{
         label: this.label,
@@ -195,6 +214,7 @@ export const EventData = [
         }
       }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
+    repeatable: true,
   },
   {
     id: EVENT_FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL,
@@ -206,8 +226,25 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      gainRelationship(PARTNER_ID.FLORENCE, -100);
+      // gainRelationship(PARTNER_ID.FLORENCE, -50);
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_9_KBT_UNDERGROUND_RETRY, (Math.random() * 72 + 67) * 60)
+    },
+    repeatable: true,
+  },
+  {
+    id: EVENT_FLORENCE.MAIN_STORY_2_9_KBT_UNDERGROUND_RETRY,
+    scenario: 'MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL 이후, 하루 뒤 플로렌스가 다시 미션을 제안',
+    title_ko: '[재도전의 기회]',
+    title_en: '[Opportunity for Redemption]',
+    body_ko: '당신의 이전 데이터는 실망스러웠지만, 시장 상황이 변했어요. [더 벙커]의 테이블 엣지가 지금 최고조에 달했거든요. 리스크를 안고 다시 한번 협력해 볼 의향이 있나요? 이번엔 확실히 증명해 주길 바랄게요.',
+    body_en: "Your previous data was disappointing, but market conditions have changed. The table edge at [The Bunker] is peaking right now. Are you willing to take the risk and cooperate once more? I expect you to truly prove yourself this time.",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
+    func() {
+      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_7_KBT_UNDERGROUND, (Math.random() * 8 + 4) * 60) // 4 ~ 12
     },
   },
   {
@@ -215,12 +252,12 @@ export const EventData = [
     scenario: 'MAIN_STORY_2_7_KBT_UNDERGROUND 연계 이벤트, 주인공이 미션을 성공했을 때, (플로렌스는 크게 기뻐합니다.)',
     title_ko: '[완벽한 실행]',
     title_en: '[Perfect Execution]',
-    body_ko: '역시 제 안목은 틀리지 않았군요. 그 지옥 같은 벙커에서 살아남아 수익까지 챙기다니... 기대 이상의 성과예요. 당신이라는 \'변수\'가 제 포트폴리오에 아주 긍정적인 영향을 주고 있네요. 조만간 더 재미있는 제안을 하러 가죠.',
-    body_en: "As expected, my intuition was correct. To survive that hellish bunker and even come away with a profit... it's a performance beyond expectations. The 'variable' that is you is having a very positive impact on my portfolio. I'll come to you with a more interesting proposal soon.",
+    body_ko: '역시 제 안목은 틀리지 않았군요. 그 지옥 같은 벙커에서 살아남아 수익까지 챙기다니... 기대 이상의 성과예요. 당신이라는 \'변수\'가 제 포트폴리오에 아주 긍정적인 영향을 주고 있네요. 조만간 더 재미있는 제안을 하러 가죠. :)',
+    body_en: "As expected, my intuition was correct. To survive that hellish bunker and even come away with a profit... it's a performance beyond expectations. The 'variable' that is you is having a very positive impact on my portfolio. I'll come to you with a more interesting proposal soon :)",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      gainRelationship(PARTNER_ID.FLORENCE, 100);
+      // gainRelationship(PARTNER_ID.FLORENCE, 100);
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_FLORENCE.JOIN_PARTNER, 2 * 24 * 60); // Join after 2 days
     },
@@ -228,18 +265,14 @@ export const EventData = [
   {
     id: EVENT_FLORENCE.JOIN_PARTNER,
     scenario: '플로렌스가 정식 파트너가 되기로 결심합니다. (조건 달성시)',
-    title_ko: '신뢰의 증명',
-    title_en: 'Proof of Trust',
+    title_ko: '[신뢰의 증명]',
+    title_en: '[Proof of Trust]',
     body_ko: '당신과 함께라면 꽤나 합리적인 기대수익을 기대할 수 있겠군요. 정식으로 파트너 계약을 제안합니다. 아, 물론 비즈니스일 뿐이니 오해는 말아주셨으면 해요.',
     body_en: 'I believe partnering with you will yield a fairly reasonable expected value. Consider this a formal proposal. And... please don\'t get the wrong idea. This is strictly business.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    timer: 30,
-    condition: () => {
-      // return getCurrentBankroll() > 500000 || getRelationship(PARTNER_ID.FLORENCE) >= 500;
-      return getCurrentBankroll() > 3000 || getRelationship(PARTNER_ID.FLORENCE) >= 150;
-    },
     func() {
+      // gainRelationship(PARTNER_ID.FLORENCE, 100);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_FLORENCE.JOINED_PARTNER, 1);
     },
@@ -262,8 +295,8 @@ export const EventData = [
   {
     id: EVENT_FLORENCE.GONE,
     scenario: '플로렌스는 사라졌습니다 (관계악화, 관계도 < 0)',
-    title_ko: '계약 완전 종료',
-    title_en: 'Contract Terminated',
+    title_ko: '[계약 완전 종료]',
+    title_en: '[Contract Terminated]',
     body_ko: '당신과의 비즈니스는 이걸로 완전히 끝이네요. 당신처럼 통제 안 되는 리스크를 계속 둘 순 없으니까요. 뭐... 각자의 테이블에서 건승하길 바랄게요. 안녕.',
     body_en: 'Our business arrangement ends completely with this. I cannot keep an unpredictable risk like you. Well... I wish you the best of luck at your own tables. Goodbye.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
@@ -278,7 +311,7 @@ export const EventData = [
     scenario: 'Florence와 [담합] 계약을 체결했습니다. 이제 플레이어와 함께 게임에 참가할 것입니다!',
     title_ko: '완벽한 뱅크롤 메이트',
     title_en: 'Perfect Bankroll Mate',
-    body_ko: '제 계산이 맞다면, 우리 둘이 같은 테이블에 앉을 때 테이블의 EV(기댓값)를 가장 효율적으로 흡수할 수 있어요. 라스베가스의 진짜 게임이 뭔지 보여드리죠.',
+    body_ko: '제 계산이 맞다면, 우리 둘이 같은 테이블에 앉을 때 테이블의 EV를 가장 효율적으로 흡수할 수 있어요. 라스베가스의 진짜 게임이 뭔지 보여드리죠.',
     body_en: 'If my calculations are correct, sitting at the same table allows us to absorb the table\'s EV most efficiently. Let me show you what real Las Vegas poker looks like.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
@@ -288,7 +321,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_FLORENCE.SIGN_CONTRACT_SHARE_BENEFIT,
+    id: EVENT_FLORENCE.SIGN_CONTRACT_BENEFIT_SHARE,
     scenario: 'Florence와 (수익분배)계약을 체결했습니다. 이제 서로의 수익을 일정 지분만큼 공유합니다!(다만 수익 분배가 불균형하면 관계가 악화될 수 있습니다..)',
     title_ko: '위험 분산 포트폴리오',
     title_en: 'Risk Diversification Portfolio',
@@ -302,7 +335,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_FLORENCE.SIGN_CONTRACT_BANKRUPT_RESCUE,
+    id: EVENT_FLORENCE.SIGN_CONTRACT_BAILOUT,
     scenario: 'Florence와 (파산 구제)계약을 체결했습니다. 이제 둘 중 한명이 파산하면 초기 자금을 지원해 줄겁니다!',
     title_ko: '최후의 안전장치',
     title_en: 'The Final Safety Net',
@@ -487,7 +520,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_FLORENCE.BREAK_CONTRACT_BANKRUPT_RESCUE,
+    id: EVENT_FLORENCE.BREAK_CONTRACT_BAILOUT,
     title_ko: '부채 구제 계약 파기',
     title_en: 'Debt Rescue Contract Termination',
     body_ko: '저도 땅 파서 장사하는 건 아니라서요. 당신의 끝없는 부채를 감당하다간 저까지 위험해질 것 같네요. 약속했던 구제 계약은 물를게요.',
@@ -500,7 +533,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_FLORENCE.BREAK_CONTRACT_SHARE_BENEFIT,
+    id: EVENT_FLORENCE.BREAK_CONTRACT_BENEFIT_SHARE,
     title_ko: '수익 공유 계약 해지',
     title_en: 'Termination of Profit Sharing Contract',
     body_ko: '수익률이 제가 기대했던 것보다 좀 많이 아쉽네요. 매력 없는 파트너십은 서로에게 시간 낭비일 뿐이죠. 계약은 이걸로 끝이에요.',

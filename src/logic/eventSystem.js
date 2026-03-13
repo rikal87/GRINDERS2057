@@ -5,6 +5,7 @@ import { EVENT_FLORENCE, EventData as FlorenceEventData } from "./eventSystemFlo
 import { EVENT_MAX, EventData as MaxEventData } from "./eventSystemMax.js";
 import { ENEMY_ID, LOCATION_ID } from "./constants.js";
 import { audioManager } from "./audioManager.js";
+import { CONTRACT_SIGN_PREVENT_REASON, CONTRACT_SIGN_PREVENT_REASON_DESC } from './partnerContractSystem.js'
 const pay_rent_bill = 5000;
 
 export const EVENT_ID = {
@@ -18,15 +19,15 @@ export const EVENT_ID = {
   SHARK_HUNTER_APPEARS: 'SHARK_HUNTER_APPEARS',
   GANGSTER_WARNING: 'GANGSTER_WARNING',
   UNLOCK_ZONE: {
-    HIGH_ROYAL_ROOM: 'HIGH_ROYAL_ROOM',
-    MIDDLE_HOLDEM_HOUSE: 'MIDDLE_HOLDEM_HOUSE',
-    LOW_UNDERGROUND_CLUB: 'LOW_UNDERGROUND_CLUB',
-    MIDDLE_UNDERGROUND_CASINO: 'MIDDLE_UNDERGROUND_CASINO',
-    MICRO_UNDERGROUND_BAR: 'MICRO_UNDERGROUND_BAR',
-    HIGH_HOLDEM_HOUSE: 'HIGH_HOLDEM_HOUSE',
+    UNDERGROUND_BAR_INVITE: 'UNDERGROUND_BAR_INVITE',
+    CLUB_MEMBERSHIP: 'CLUB_MEMBERSHIP',
+    THE_BUNKER_KEY: 'THE_BUNKER_KEY',
+    HOLDEM_HOUSE_MEMBERSHIP: 'HOLDEM_HOUSE_MEMBERSHIP',
+    ROYAL_ROOM_INVITE: 'ROYAL_ROOM_INVITE',
   },
-  SYSTEM_PARTNER_BANKRUPT_RESCUE_FOR_PLAYER: 'SYSTEM_PARTNER_BANKRUPT_RESCUE_FOR_PLAYER',
-  SYSTEM_PLAYER_BANKRUPT_RESCUE_FOR_PARTNER: 'SYSTEM_PLAYER_BANKRUPT_RESCUE_FOR_PARTNER',
+  SYSTEM_PARTNER_BAILOUT_FOR_PLAYER: 'SYSTEM_PARTNER_BAILOUT_FOR_PLAYER',
+  SYSTEM_PLAYER_BAILOUT_FOR_PARTNER: 'SYSTEM_PLAYER_BAILOUT_FOR_PARTNER',
+  CONTRACT_SIGN_PREVENT_REASON: CONTRACT_SIGN_PREVENT_REASON
 };
 
 const handleGameOver = async (reason) => {
@@ -42,7 +43,67 @@ export const EventData = [
   ...FlorenceEventData,
   ...MaxEventData,
   {
-    id: EVENT_ID.SYSTEM_PARTNER_BANKRUPT_RESCUE_FOR_PLAYER,
+    id: EVENT_ID.CONTRACT_SIGN_PREVENT_REASON.BENEFIT_SHARE_MAX_COUNT,
+    scenario: '[이익 공유] 계약 최대치',
+    title_ko: '[이익 공유]는 동시에 하나의 계약만 가능합니다.',
+    title_en: '[Benefit Share] is Only One Contract',
+    func(payload) {
+      const lang = store.settings.language;
+      const body = lang === 'en'
+        ? CONTRACT_SIGN_PREVENT_REASON_DESC.BENEFIT_SHARE_MAX_COUNT.en
+        : CONTRACT_SIGN_PREVENT_REASON_DESC.BENEFIT_SHARE_MAX_COUNT.ko;
+      const title = lang === 'en' ? this.title_en : this.title_ko
+      const sender = lang === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.SYSTEM, title, body, [], sender)
+    },
+  },
+  {
+    id: EVENT_ID.CONTRACT_SIGN_PREVENT_REASON.RELATIONSHIP,
+    scenario: '파트너와의 관계가 너무 낮아 계약을 체결할 수 없습니다.',
+    title_ko: '관계가 너무 낮습니다.',
+    title_en: 'Relationship is too low.',
+    func(payload) {
+      const lang = store.settings.language;
+      const body = lang === 'en'
+        ? CONTRACT_SIGN_PREVENT_REASON_DESC.BENEFIT_SHARE_MAX_COUNT.en
+        : CONTRACT_SIGN_PREVENT_REASON_DESC.BENEFIT_SHARE_MAX_COUNT.ko;
+      const title = lang === 'en' ? this.title_en : this.title_ko
+      const sender = lang === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.SYSTEM, title, body, [], sender)
+    },
+  },
+  {
+    id: EVENT_ID.CONTRACT_SIGN_PREVENT_REASON.COOLDOWN,
+    scenario: '계약이 종료된지 얼마 되지 않아 계약을 체결할 수 없습니다.',
+    title_ko: '계약이 종료된지 얼마 되지 않았습니다.',
+    title_en: 'Contract is too new.',
+    func(payload) {
+      const lang = store.settings.language;
+      const body = lang === 'en'
+        ? CONTRACT_SIGN_PREVENT_REASON_DESC.COOLDOWN.en
+        : CONTRACT_SIGN_PREVENT_REASON_DESC.COOLDOWN.ko;
+      const title = lang === 'en' ? this.title_en : this.title_ko
+      const sender = lang === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.SYSTEM, title, body, [], sender)
+    },
+  },
+  {
+    id: EVENT_ID.CONTRACT_SIGN_PREVENT_REASON.ACTIVE,
+    scenario: '이미 계약중입니다.',
+    title_ko: '이미 계약중입니다.',
+    title_en: 'Contract is already active.',
+    func(payload) {
+      const lang = store.settings.language;
+      const body = lang === 'en'
+        ? CONTRACT_SIGN_PREVENT_REASON_DESC.ACTIVE.en
+        : CONTRACT_SIGN_PREVENT_REASON_DESC.ACTIVE.ko;
+      const title = lang === 'en' ? this.title_en : this.title_ko
+      const sender = lang === 'en' ? 'System' : '시스템';
+      sendMessage(MESSAGE_TYPE.SYSTEM, title, body, [], sender)
+    },
+  },
+  {
+    id: EVENT_ID.SYSTEM_PARTNER_BAILOUT_FOR_PLAYER,
     scenario: '플레이어가 파산했고 [파산 구제]를 계약한 파트너가 자금을 대출해줌.(시스템 발신용)',
     title_ko: '긴급 채무 집행',
     title_en: 'Emergency Debt Issued',
@@ -60,7 +121,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.SYSTEM_PLAYER_BANKRUPT_RESCUE_FOR_PARTNER,
+    id: EVENT_ID.SYSTEM_PLAYER_BAILOUT_FOR_PARTNER,
     scenario: '파트너가 파산했고 [파산 구제]를 계약한 플레이어가 자금을 대출해줌.(시스템 발신용)',
     title_ko: '긴급 채무 집행',
     title_en: 'Emergency Debt Issued',
@@ -78,10 +139,11 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.UNLOCK_ZONE.MICRO_UNDERGROUND_BAR,
+    id: EVENT_ID.UNLOCK_ZONE.UNDERGROUND_BAR_INVITE,
     scenario: '[언더그라운드 바] 잠금 해제',
+    timer: 0,
     condition: () => {
-      return isUnlockedLocation(LOCATION_ID.MICRO_UNDERGROUND_BAR);
+      return isUnlockedLocation('underground_bar_invite');
     },
     func() {
       const title = store.settings.language === 'en' ? 'Reward for unlocking [Underground Bar]' : '[언더그라운드 바] 이용가능';
@@ -92,10 +154,11 @@ export const EventData = [
   },
 
   {
-    id: EVENT_ID.UNLOCK_ZONE.LOW_UNDERGROUND_CLUB,
+    id: EVENT_ID.UNLOCK_ZONE.CLUB_MEMBERSHIP,
     scenario: '[H.B.D 클럽] 잠금 해제',
+    timer: 0,
     condition: () => {
-      return isUnlockedLocation(LOCATION_ID.LOW_UNDERGROUND_CLUB);
+      return isUnlockedLocation('club_membership');
     },
     func() {
       const title = store.settings.language === 'en' ? 'Reward for unlocking [H.B.D Club]' : '[H.B.D 클럽] 이용가능';
@@ -105,10 +168,11 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.UNLOCK_ZONE.MIDDLE_UNDERGROUND_CASINO,
+    id: EVENT_ID.UNLOCK_ZONE.THE_BUNKER_KEY,
     scenario: '[The Bunker] 잠금 해제',
+    timer: 0,
     condition: () => {
-      return isUnlockedLocation(LOCATION_ID.MIDDLE_UNDERGROUND_CASINO);
+      return isUnlockedLocation('the_bunker_key');
     },
     func() {
       const title = store.settings.language === 'en' ? 'Reward for unlocking [The Bunker]' : '[더 벙커] 이용가능';
@@ -118,10 +182,11 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.UNLOCK_ZONE.MIDDLE_HOLDEM_HOUSE,
+    id: EVENT_ID.UNLOCK_ZONE.HOLDEM_HOUSE_MEMBERSHIP,
     scenario: '[홀덤 하우스] 잠금 해제',
+    timer: 0,
     condition: () => {
-      return isUnlockedLocation(LOCATION_ID.MIDDLE_HOLDEM_HOUSE);
+      return isUnlockedLocation('holdem_house_membership');
     },
     func() {
       const title = store.settings.language === 'en' ? 'Reward for unlocking [Holdem House]' : '[홀덤 하우스] 이용가능';
@@ -131,10 +196,11 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_ID.UNLOCK_ZONE.HIGH_ROYAL_ROOM,
+    id: EVENT_ID.UNLOCK_ZONE.ROYAL_ROOM_INVITE,
     scenario: '[로열 프라이빗 카드룸] 잠금 해제',
+    timer: 0,
     condition: () => {
-      return isUnlockedLocation(LOCATION_ID.HIGH_ROYAL_ROOM);
+      return isUnlockedLocation('royal_room_invite');
     },
     func() {
       const title = store.settings.language === 'en' ? 'Reward for unlocking [Royal Private Cardroom]' : '[로열 프라이빗 카드룸] 이용가능';

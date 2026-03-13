@@ -63,7 +63,10 @@
           <input id="sleep-timer" type="range" min="0.5" max="24.0" step="0.5" v-model.number="sleepDuration">
           <span class="val highlight">{{ sleepDuration }} HR</span>
         </div>
-        <button class="btn" @click="$emit('sleep', sleepDuration)">SLEEP</button>
+        <div class="btn-container">
+          <button class="btn-cancel" @click="$emit('back')">LEAVE</button>
+          <button class="btn-accept" @click="$emit('sleep', sleepDuration)">SLEEP</button>
+        </div>
         <!-- Program Setup -->
         <!-- Ai Agent Template -->
         <div class="v5-panel v5-neural-template">
@@ -114,17 +117,15 @@
             </div>
           </div>
         </div>
-        <button class="btn-leave" @click="$emit('back')">
-          LEAVE_AREA
-        </button>
+
       </section>
 
       <!-- CENTER COLUMN: Chip Protector / Partner / Crypto -->
       <section class="v5-main-col">
         <div class="v5-panel v5-storage-unit" style="flex:1; overflow:hidden">
           <div class="v5-tabs">
-            <button :class="{ active: mainTab === 'hardware' }" @click="mainTab = 'hardware'">Chip Protector</button>
-            <button :class="{ active: mainTab === 'partner' }" @click="mainTab = 'partner'">Partner</button>
+            <button :class="{ active: mainTab === 'hardware' }" @click="mainTab = 'hardware'">ITEM</button>
+            <button :class="{ active: mainTab === 'partner' }" @click="mainTab = 'partner'">PARTNER</button>
             <!-- <button :class="{ active: mainTab === 'crypto' }" @click="mainTab = 'crypto'">Crypto Currency</button> -->
           </div>
 
@@ -194,17 +195,16 @@
                       <div class="stat-box">
                         <label class="label">
                           <span>CURRENT_BALANCE</span>
-                          <span class="v5-badge-info"
-                            :data-tooltip="getLocalizedText(INFO_DESC.BALANCE, INFO_DESC_TYPE.BALANCE)">?</span>
+                          <label class="v5-badge-info" :data-tooltip="getHelpTooltip(INFO_DESC_TYPE.BALANCE)">?</label>
                         </label>
-                        <span class="val" :class="getProfitClass(partner.debt)">{{ partner.debt > 0 ? '+' : '' }}{{
-                          partner.debt.toLocaleString() }}
+                        <span class="val" :class="getProfitClass(partner.debt)">{{ partner.debt > 0 ? '+' : '' }}
+                          {{ partner.debt.toLocaleString() }}
                           <small>CR</small></span>
                         <p>
-                          <input type="range" min="0" :max="-partner.debt" step="1000"
+                          <input type="range" min="0" :max="-partner.debt" step="1"
                             v-model.number="repaymentAmounts[partner.id]">
                           <label class="label text-align-right">
-                            {{ (repaymentAmounts[partner.id] || 0).toLocaleString() }} CR
+                            {{ Math.ceil(repaymentAmounts[partner.id] || 0).toLocaleString() }} CR
                             <button class="set-up-agent-btn"
                               @click="sendDebtRepayment(partner, repaymentAmounts[partner.id] || 0)"
                               :disabled="(repaymentAmounts[partner.id] || 0) <= 0">REPAYMENT</button>
@@ -227,20 +227,19 @@
                         </span>
                       </div>
                       <div class="stat-box" v-for="contract in partner.contracts" :key="contract.type">
-                        <span class="label">{{ contract.type }}</span>
+                        <h2 class="label">{{ contract.type }}</h2>
                         <p class="v5-class-desc">
                           {{ getLocalizedText(CONTRACT_TYPE_DESC[contract.type], CONTRACT_TYPE_DESC_FIELD.DESC) }}
                         </p>
                         <p class="v5-class-desc note">
                           {{ getLocalizedText(CONTRACT_TYPE_DESC[contract.type], CONTRACT_TYPE_DESC_FIELD.NOTE) }}
                         </p>
-                        <div v-if="[CONTRACT_TYPE.SHARE_BENEFIT, CONTRACT_TYPE.COLLUSION].includes(contract.type)">
+                        <div v-if="[CONTRACT_TYPE.BENEFIT_SHARE, CONTRACT_TYPE.COLLUSION].includes(contract.type)">
                           <p>
                             <label class="ratio-group">
                               <span class="label">PARTNER</span>
-                              <input type="range" min="0.1" max="0.9" step="0.1" value="0.5"
-                                :disabled="!contract.active" v-model="contract.ratio"
-                                @change="signContract(partner.id, contract.type, contract.ratio)">
+                              <input type="range" min="0.1" max="0.9" step="0.1" value="0.5" :disabled="contract.active"
+                                v-model="contract.ratio">
                               <span class="label">YOU</span>
                             </label>
                             <label class="label"> {{ Math.round((1 - contract.ratio) * 10) }} : {{
@@ -256,7 +255,8 @@
                             </label>
                           </p>
                         </div>
-                        <div v-if="contract.type === CONTRACT_TYPE.BANKRUPT_RESCUE">
+                        <!--CONTRACT FOR BAILOUT-->
+                        <div v-if="contract.type === CONTRACT_TYPE.BAILOUT">
                           <p>
                             <label class="label">
                               <span class="label">SAFETY_MAKER</span>
@@ -275,9 +275,15 @@
                           </p>
                         </div>
                         <p>
-                          <button class="sign" :disabled="checkDisableContractSign(partner, contract)"
-                            @click="signContract(partner.id, contract.type, contract.ratio)">SIGN</button>
-                          <button class="cancel" :disabled="!contract.active || contract.cooldown > 0"
+                          <label :data-tooltip="getContractSignPreventReason(partner, contract)">
+                            <button class="sign"
+                              :disabled="checkDisableContractSign(partner, contract) !== CONTRACT_SIGN_PREVENT_REASON.NONE"
+                              @click="signContractFunc(partner.id, contract.type, contract.ratio, partner, contract)"
+                              :style="getContractCooldown(contract)">
+                              <span>SIGN</span>
+                            </button>
+                          </label>
+                          <button class="cancel" :disabled="!contract.active"
                             @click="breakContract(partner.id, contract.type)">CANCEL</button>
                         </p>
                         <!-- <p v-else>
@@ -380,29 +386,44 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import { store, getNextLevelThreshold, getEffectiveMaxStamina, gainBankroll, getCurrentBankroll, getLocalizedText } from '../logic/store';
+import { store, getNextLevelThreshold, getEffectiveMaxStamina, gainBankroll, getLocalizedText, getLanguage } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
 import { AI_TASK_DATA } from '../logic/aiAgentTaskData';
 import { audioManager } from '../logic/audioManager';
 import { deleteMessage } from '../logic/messageSystem';
 import { debtRepayment, getJoinedPartners } from '../logic/partnerSystem';
-import { signContract, breakContract, CONTRACT_TYPE_DESC, CONTRACT_TYPE_DESC_FIELD } from '../logic/partnerContractSystem';
+import { signContract, breakContract, CONTRACT_TYPE_DESC, CONTRACT_TYPE_DESC_FIELD, CONTRACT_SIGN_PREVENT_REASON, CONTRACT_SIGN_PREVENT_REASON_DESC } from '../logic/partnerContractSystem';
 import { TYPE_CHANGE_BANKROLL, CONTRACT_TYPE } from '../logic/constants.js'
 import { CLASSES_PARTNER } from '../logic/persona.js'
+import { EVENT_ID, scheduleEvent } from '../logic/eventSystem.js';
 const INFO_DESC_TYPE = {
   BALANCE: 'BALANCE',
   BANKROLL: 'BANKROLL'
 }
 const INFO_DESC = {
   BALANCE: {
-    ko: '[+]는 파트너가 당신에게 빚진 상태, [-]는 당신이 파트너에게 빚진 상태입니다. (파산시 해당 파트너와 맺은 모든 계약은 자동 해제됩니다.)',
-    en: '[+] Balance due from partner | [-] Balance owed to partner. (Note: All contracts are voided immediately upon bankruptcy.)'
+    ko: '[+]는 파트너가 당신에게 빚진 상태\n[-]는 당신이 파트너에게 빚진 상태입니다.\n(파산시 해당 파트너와 맺은 모든 계약은 자동 해제됩니다.)',
+    en: '[+] Balance due from partner\n[-] Balance owed to partner.\n(Note: All contracts are voided immediately upon bankruptcy.)'
   },
   BANKROLL: {
     ko: '파트너가 보유중인 뱅크롤입니다.',
     en: 'The amount of bankroll your partner has.'
   }
+}
+const getHelpTooltip = (type) => {
+  return INFO_DESC[type][getLanguage()]
+}
+const getContractSignPreventReason = (partner, contract) => {
+  return CONTRACT_SIGN_PREVENT_REASON_DESC[checkDisableContractSign(partner, contract)][getLanguage()]
+}
+const getContractCooldown = (contract) => {
+  return { backgroundImage: `linear-gradient(90deg, rgba(255, 0, 60, 0.4) ${(contract.cooldown / (contract.initCooldown || 24)) * 100}%, transparent ${(contract.cooldown / (contract.initCooldown || 24)) * 100}%)` };
+}
+const signContractFunc = (partnerId, type, ratio = 0.5, partner, contract) => {
+  audioManager.playSFX('ui-click');
+  if (checkDisableContractSign(partner, contract, true) !== CONTRACT_SIGN_PREVENT_REASON.NONE) return false;
+  signContract(partnerId, type, ratio);
 }
 const getRelationClass = (v) => {
   if (v > 700) return 'high';
@@ -418,17 +439,28 @@ const getDueDate = (v) => {
   if (v > 48) return 'high';
   return 'low';
 }
-const checkDisableContractSign = (partner, contract) => {
-  if (contract.type === CONTRACT_TYPE.SHARE_BENEFIT) {
+const checkDisableContractSign = (partner, contract, isClick = false) => {
+  let reason = CONTRACT_SIGN_PREVENT_REASON.NONE;
+  if (contract.type === CONTRACT_TYPE.BENEFIT_SHARE) {
     const partners = getJoinedPartners();
-    const contractCount = partners.filter(p => p.contracts.find(c => c.type === CONTRACT_TYPE.SHARE_BENEFIT && c.active)).length
-    if (contractCount >= 1) {
-      return true;
-    }
+    const contractCount = partners.filter(p => p.contracts.find(c => c.type === CONTRACT_TYPE.BENEFIT_SHARE && c.active)).length
+    if (contractCount > 1 && reason === CONTRACT_SIGN_PREVENT_REASON.NONE) reason = CONTRACT_SIGN_PREVENT_REASON.BENEFIT_SHARE_MAX_COUNT;
   }
-  if (partner.relationship <= contract.requiredRelationship || contract.active || contract.cooldown > 0) return true
+  if (partner.relationship <= contract.requiredRelationship) {
+    if (reason === CONTRACT_SIGN_PREVENT_REASON.NONE) reason = CONTRACT_SIGN_PREVENT_REASON.RELATIONSHIP;
+  }
+  if (contract.active) {
+    if (reason === CONTRACT_SIGN_PREVENT_REASON.NONE) reason = CONTRACT_SIGN_PREVENT_REASON.ACTIVE;
+  }
+  if (contract.cooldown > 0) {
+    if (reason === CONTRACT_SIGN_PREVENT_REASON.NONE) reason = CONTRACT_SIGN_PREVENT_REASON.COOLDOWN;
+  }
+  if (isClick && reason !== CONTRACT_SIGN_PREVENT_REASON.NONE) {
+    scheduleEvent(EVENT_ID.CONTRACT_SIGN_PREVENT_REASON[reason])
+    audioManager.playSFX('error');
+  }
+  return reason;
 
-  return false
 }
 const emit = defineEmits(['sleep', 'back', 'open-task-selector', 'open-agent-modal', 'open-skill-selector', 'open-stats-modal']);
 const sleepDuration = ref(8.0);
@@ -496,6 +528,9 @@ const getTaskStatusClass = (slot) => {
 
 const startLongPress = (idx) => {
   if (!taskSlots.value[idx]?.state) return;
+  // Prevent cancellation if task is on cooldown
+  if (taskSlots.value[idx].state.status === 'COOLDOWN') return;
+
   longPressIdx.value = idx;
   longPressProgress.value = 0;
 
@@ -518,6 +553,8 @@ const cancelLongPress = () => {
 const cancelTask = (idx) => {
   const taskIdx = store.onWorkTasks.findIndex(t => t.slotIndex === idx);
   if (taskIdx !== -1) {
+    const taskState = store.onWorkTasks[taskIdx];
+    store.activeBoosts = store.activeBoosts.filter(b => b.taskId !== taskState.taskId);
     store.onWorkTasks.splice(taskIdx, 1);
     audioManager.playSFX('ui-click');
   }
@@ -566,8 +603,8 @@ const getStaminaColor = computed(() => {
 const getContractLabel = (type) => {
   const lang = store.settings.language;
   const labels = {
-    'SHARE_BENEFIT': lang === 'ko' ? '수익률 스왑' : 'Share Benefit',
-    'BANKRUPT_RESCUE': lang === 'ko' ? '파산 구조' : 'Bankrupt Rescue',
+    'BENEFIT_SHARE': lang === 'ko' ? '수익률 스왑' : 'Share Benefit',
+    'BAILOUT': lang === 'ko' ? '파산 구조' : 'Bankrupt Rescue',
     'COLLUSION': lang === 'ko' ? '담합' : 'Collusion',
     'A_DATE_WITH_YOU': lang === 'ko' ? '데이트 신청' : 'A Date with You',
   };

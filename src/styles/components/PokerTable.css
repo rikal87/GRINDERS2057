@@ -104,10 +104,12 @@
 
 .player-info.active {
   filter: drop-shadow(0 0 10px var(--neon-cyan));
-  transform: scale(1.05);
-
+  transform: scale(1.1);
 }
-
+.player-info.bust {
+  filter: grayscale(100%) brightness(50%);
+  opacity: 0.5;
+}
 .player-seat.folded {
   opacity: 0.4;
 }
@@ -242,8 +244,10 @@
   .cards .poker-card,
   .board-cards .poker-card,
   .card-placeholder {
-    width: 65px !important;
-    height: 90px !important;
+    width: 3.6rem !important;
+    /* ~65px on QHD, ~54px on FHD */
+    height: 5rem !important;
+    /* ~90px on QHD, ~75px on FHD */
   }
 
   .cards .poker-card :deep(.rank),
@@ -299,39 +303,67 @@
 
 /* Seating Distribution Logic */
 /* 9-Player Distribution (Professional Elliptical) */
-@media (min-width: 1400px) {
-  .max9.seat-1 {
-    left: 20%;
-    bottom: 0;
-  }
-  .max9.seat-2 {
-    left: 5%;
-    bottom: 25%;
-  }
-  .max9.seat-3 {
-    left: 5%;
-    top: 20%;
-  }
-  .max9.seat-4 {
-    left: 25%;
-    top: 0%;
-  }
-  .max9.seat-5 {
-    top: 0%;
-    right: 25%;
-  }
-  .max9.seat-6 {
-    right: 5%;
-    top: 20%;
-  }
-  .max9.seat-7 {
-    right: 5%;
-    bottom: 25%;
-  }
-  .max9.seat-8 {
-    right: 20%;
-    bottom: 0;
-  }
+@media (min-width: 1400px) {}
+.max9.seat-0 {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.max9.seat-1 {
+  left: 20%;
+  bottom: 0;
+}
+.max9.seat-1 .chip-stack {
+  top: -20%;
+}
+.max9.seat-2 {
+  left: 5%;
+  bottom: 25%;
+}
+.max9.seat-2 .chip-stack {
+  top: -20%;
+}
+.max9.seat-3 {
+  left: 5%;
+  top: 20%;
+}
+.max9.seat-3 .chip-stack {
+  top: -30%;
+}
+.max9.seat-4 {
+  left: 25%;
+  top: 0%;
+}
+.max9.seat-4 .chip-stack {
+  top: -20%;
+}
+.max9.seat-5 {
+  top: 0%;
+  right: 25%;
+}
+.max9.seat-5 .chip-stack {
+  top: -20%;
+}
+.max9.seat-6 {
+  right: 5%;
+  top: 20%;
+}
+.max9.seat-6 .chip-stack {
+  top: -20%;
+}
+.max9.seat-7 {
+  right: 5%;
+  bottom: 25%;
+}
+.max9.seat-7 .chip-stack {
+  top: -20%;
+}
+.max9.seat-8 {
+  right: 20%;
+  bottom: 0;
+}
+.max9.seat-8 .chip-stack {
+  top: -20%;
 }
 /* Bottom-Right */
 
@@ -640,8 +672,8 @@
 /* Dialogue Bubble */
 .dialogue-bubble {
   position: absolute;
-  top: -12%;
-  /* bottom: 60%; */
+  /* top: -12%; */
+  bottom: 80%;
   /* left: 50%; */
   /* transform: translateX(-50%); */
   min-width: 100px;

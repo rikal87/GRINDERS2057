@@ -5,11 +5,11 @@
         <h2 class="glitch-text" data-text="NET_TABLE_FINDER">NET_TABLE_FINDER</h2>
 
         <div class="location-browser">
-          <button class="nav-btn prev" @click="prevLocation" :disabled="currentLocationIndex === 0">&lt;</button>
+          <button class="nav-btn prev" @click="prevLocation" :disabled="currentInviteId">&lt;</button>
 
           <div class="location-display" :style="{ backgroundImage: `url(${currentLocation.imgSrc})` }">
             <div class="location-header">
-              <b class="zone-label">{{ getLocalizedText(currentLocation, 'name') }}</b>
+              <b class="zone-label">{{ currentLocation.zoneName }}</b>
               <h3 class="location-name">{{ getLocalizedText(currentLocation, 'name') }}</h3>
               <!-- <span class="location-subname">{{ currentLocation.name }}</span> -->
             </div>
@@ -36,6 +36,7 @@
                   <span class="stat-value">{{ currentTableConfig.sb.toLocaleString() }}/{{
                     currentTableConfig.bb.toLocaleString() }}</span>
                 </div>
+
                 <div class="stat-row">
                   <span class="stat-label">RAKE:</span>
                   <span class="stat-value">
@@ -46,8 +47,13 @@
                     {{ (currentRake * 100).toFixed(1) }}% (Max {{ currentTableConfig.rakeCap.toLocaleString() }})
                   </span>
                 </div>
+                <div class="stat-row" v-if="currentTableConfig.buyInLimit">
+                  <span class="stat-label">BUY_IN_LIMIT:</span>
+                  <span class="stat-value red">
+                    {{ currentTableConfig.buyInLimit }}
+                  </span>
+                </div>
               </div>
-
             </div>
             <div class="house-status">
               <span class="tag CRITICAL" :data-tooltip="blacklistInfo" v-if="isBlacklisted(currentLocation.id)">
@@ -56,21 +62,22 @@
               <span class="tag" :data-tooltip="infamyinfo" :class="`${getInfamyColorlabel(currentLocation.id)}`">
                 {{ getInfamyNote(currentLocation.id) }}
               </span>
-              <span class="tag" :data-tooltip="suspicioninfo" :class="`${getSuspicionColorLabel(currentLocation.id)}`">
+              <span class="tag" v-if="currentTableConfig.isMonitoring" :data-tooltip="suspicioninfo"
+                :class="`${getSuspicionColorLabel(currentLocation.id)}`">
                 {{ getSuspicionNote(currentLocation.id) }}
               </span>
             </div>
           </div>
-          <button class="nav-btn next" @click="nextLocation"
-            :disabled="currentLocationIndex === flatLocations.length - 1">&gt;</button>
+          <button class="nav-btn next" @click="nextLocation" :disabled="currentInviteId">&gt;</button>
         </div>
 
         <div class="search-options">
           <div class="option-group">
             <span class="label">TABLE_SIZE:</span>
             <div class="btn-group">
-              <button class="btn" :class="{ active: selectedSize === 6 }" @click="selectedSize = 6">6-MAX</button>
-              <button class="btn" :class="{ active: selectedSize === 9 }" @click="selectedSize = 9">9-MAX</button>
+              <button class="btn-accept" v-for="size in currentTableConfig.available"
+                :class="{ active: selectedSize === size }" @click="selectedSize = size">{{ size === 2 ? 'HEADS_UP' :
+                  `${size}-MAX` }}</button>
             </div>
           </div>
         </div>
@@ -81,7 +88,7 @@
             <span v-else-if="canAfford">INITIATE_LINK</span>
             <span v-else>INSUFFICIENT_FUNDS</span>
           </button>
-          <button class="btn-cancel" @click="showSearchPopup = false">ABORT</button>
+          <button class="btn-cancel" @click="closePopup">ABORT</button>
         </div>
       </div>
     </div>
@@ -98,14 +105,26 @@ import { CLASSES_ENEMY } from '../logic/persona.js';
 const showSearchPopup = ref(false);
 const emit = defineEmits(['join', 'close']);
 
+const currentInviteId = ref(null);
+const closePopup = () => {
+  currentLocationIndex.value = 0
+  currentInviteId.value = null;
+  showSearchPopup.value = false;
+}
 // Expose ability to open popup from parent
 defineExpose({
   open() {
+    currentInviteId.value = null;
     showSearchPopup.value = true;
   },
-  close() {
-    showSearchPopup.value = false;
-  }
+  openWithLocation(locationId, inviteId = null) {
+    const idx = flatLocations.value.findIndex(loc => loc.id === locationId);
+    if (idx !== -1) {
+      currentLocationIndex.value = idx;
+    }
+    currentInviteId.value = inviteId;
+    showSearchPopup.value = true;
+  },
 });
 
 watch(showSearchPopup, (newVal) => {
@@ -170,7 +189,7 @@ const flatLocations = computed(() => {
   const locs = [];
   zones.forEach(zone => {
     zone.locations.forEach(loc => {
-      if (loc.isHidden) return true;
+      // if (loc.isHidden && !currentInviteId.value) return true;
       locs.push({
         ...loc,
         zoneName: zone.name,
@@ -186,17 +205,29 @@ const currentLocationIndex = ref(0);
 const currentLocation = computed(() => flatLocations.value[currentLocationIndex.value]);
 
 const nextLocation = () => {
-  if (currentLocationIndex.value < flatLocations.value.length - 1) {
-    currentLocationIndex.value++;
-    audioManager.playSFX('ui-click');
+  currentLocationIndex.value++;
+  if (currentLocationIndex.value >= flatLocations.value.length) {
+    currentLocationIndex.value = 0;
   }
-};
+  if (flatLocations.value[currentLocationIndex.value].isHidden) {
+    nextLocation();
+    return;
+  }
 
+  audioManager.playSFX('ui-click');
+};
 const prevLocation = () => {
-  if (currentLocationIndex.value > 0) {
-    currentLocationIndex.value--;
-    audioManager.playSFX('ui-click');
+  currentLocationIndex.value--;
+  if (currentLocationIndex.value < 0) {
+    currentLocationIndex.value = flatLocations.value.length - 1;
   }
+  console.log(flatLocations.value[currentLocationIndex.value]);
+  if (flatLocations.value[currentLocationIndex.value].isHidden) {
+    prevLocation();
+    return;
+  }
+
+  audioManager.playSFX('ui-click');
 };
 
 const currentTableConfig = computed(() => currentLocation.value.tables);
@@ -247,6 +278,7 @@ const confirmJoin = () => {
       return;
     }
     emit('join', {
+      inviteId: currentInviteId.value,
       size: selectedSize.value,
       buyIn: table.amount,
       rake: currentRake.value,

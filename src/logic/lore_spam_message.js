@@ -14,7 +14,7 @@ const lore_spam_message = [
   },
   {
     "type": "SPAM",
-    "sender": "Prince of Nigeria (Legacy Virus)",
+    "sender": "Prince of Nigeria",
     "title_ko": "[Help] 왕위 계승 자금 지원 요청",
     "title_en": "[Help] Request for Royal Succession Funding",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
@@ -908,6 +908,116 @@ const lore_spam_message = [
     "body_en": "What if all of this is a simulation? Take off the sunglasses... no, the VR goggles you're wearing. Reality will be much more of a gutter.",
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     "probability": 0.001
+  },
+  {
+    "type": "LORE",
+    "sender": "Omni_Dynamics_PR",
+    "title_ko": "[공시] 'Peacemaker' 드론 2.0 소프트웨어 업데이트",
+    "title_en": "[Notice] 'Peacemaker' Drone 2.0 Software Update",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "신규 '감정 감지' 알고리즘이 탑재되었습니다. 이제 드론들이 시민들의 얼굴에서 '불생산적인 분노'를 감지하면 즉시 진정제를 살포합니다. 평화로운 거리를 위해 협조해 주십시오.",
+    "body_en": "Equipped with a new 'emotion detection' algorithm. Drones will now immediately spray sedatives when they detect 'unproductive anger' on citizens' faces. Please cooperate for a peaceful street.",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    "probability": 0.04
+  },
+  {
+    "type": "SPAM",
+    "sender": "Black_Market_Express",
+    "title_ko": "준신분급 화성 이주권",
+    "title_en": "Semi-Identity Grade Mars Ticket",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "취소된 예약자의 티켓을 세척하여 재판매합니다! 정상가의 1/10 가격! 신분 세탁 옵션 포함. 추적 방지를 위해 암호화폐(CR) 송금만 받습니다. 서두르세요!",
+    "body_en": "Washed and resold tickets from cancelled reservations! 1/10th the normal price! Identity laundering option included. Only cryptocurrency (CR) transfers accepted to avoid tracking. Hurry up!",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    "probability": 0.02
+  },
+  {
+    "type": "LORE",
+    "sender": "The_Grinder_Forum",
+    "title_ko": "[필독] 왜 AI는 우리의 포커를 이해하지 못하는가",
+    "title_en": "[Must Read] Why AI can't understand our poker",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "알고리즘은 확률을 계산하지만, 죽음을 앞둔 인간의 '절박한 기만'은 계산하지 못합니다. 지하 룸은 단순한 도박장이 아닙니다. 기계의 차가운 논리를 이길 수 있는 마지막 성역입니다.",
+    "body_en": "Algorithms calculate probabilities, but they cannot calculate the 'desperate deception' of a human facing death. The underground room is not just a gambling den. It's the last sanctuary where we can beat the cold logic of machines.",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    "probability": 0.03
+  },
+  {
+    "type": "SPAM",
+    "sender": "Synapse_Enhance_Bot",
+    "title_ko": "포커 승률 +15% 증가! 'Focus-Max' 임플란트",
+    "title_en": "Poker Win Rate +15% INCREASE! 'Focus-Max' Implant",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "카드 패턴을 초당 1,000회 분석하는 뇌 보조 연산 장치. 법적 제재를 피하는 '스텔스 모드' 탑재. 1,000,000 CR로 당신의 미래를 바꾸세요. (부작용: 단기 기억 상실)",
+    "body_en": "Brain auxiliary computing device that analyzes card patterns 1,000 times per second. Equipped with a 'stealth mode' to avoid legal sanctions. Change your future with 1,000,000 CR. (Side effect: Short-term memory loss)",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    "probability": 0.04
+  },
+  {
+    "type": "LORE",
+    "sender": "N54_Data_Analytics",
+    "title_ko": "[보고서] '잉여 인간' 지수 사상 최고치 기록",
+    "title_en": "[Report] 'Surplus Human' Index Reaches All-Time High",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "AI 자동화로 인해 '가치 없음'으로 분류된 인구가 전체의 92%를 넘어섰습니다. 시냅스 사는 이를 해결하기 위해 저소득층을 위한 '영구 가상현실 이주' 사업을 검토 중이라고 밝혔습니다.",
+    "body_en": "Due to AI automation, the population classified as 'valueless' has exceeded 92%. Synapse Corp announced that it is reviewing a 'Permanent Virtual Reality Migration' project for the low-income class to solve this.",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    "probability": 0.03
+  },
+  {
+    "type": "SPAM",
+    "sender": "Debt_Freedom_Solution",
+    "title_ko": "도박 빚? 신체 일부로 상환 가능합니다!",
+    "title_en": "Gambling debt? Repayable with body parts!",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "추심원들이 문을 두드리고 있습니까? 걱정 마세요. 안 쓰는 장기나 눈을 기증하고 신용 등급을 회복하세요. 지금 신청 시 마취제 50% 할인 쿠폰 증정!",
+    "body_en": "Are debt collectors knocking on your door? Don't worry. Donate an unused organ or eye and restore your credit rating. Apply now and get a 50% discount coupon for anesthesia!",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    "probability": 0.05
+  },
+  {
+    "type": "LORE",
+    "sender": "Citizen_Watch",
+    "title_ko": "[경보] 하늘의 색을 확인하십시오",
+    "title_en": "[Alarm] Check the color of the sky",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "오늘 저녁 스모그 농도가 '치명적'으로 격상되었습니다. 기업들의 공장 가열로 인해 하늘이 황금색으로 빛나고 있습니다. 아름답지만 치명적입니다. 절대 숨을 깊게 쉬지 마십시오.",
+    "body_en": "Smog density has been upgraded to 'FATAL' this evening. The sky is glowing golden due to the heating of corporate factories. It's beautiful but deadly. Never take a deep breath.",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    "probability": 0.02
+  },
+  {
+    "type": "LORE",
+    "sender": "The_Deep_Web",
+    "title_ko": "방치된 서버실에 숨겨진 '바이너리 성소'",
+    "title_en": "The 'Binary Sanctuary' hidden in an abandoned server room",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "구형 기업 서버실 지하에 아무도 모르는 포커 룸이 있다는 소문이 있어. 거기선 칩 대신 정보(Data)를 걸고 게임을 한다던데... 입장 코드를 아는 사람?",
+    "body_en": "There's a rumor that there's a poker room underneath an old corporate server room that no one knows about. I heard they gamble with Information (Data) instead of chips there... Anyone know the entry code?",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    "probability": 0.01
+  },
+  {
+    "type": "SPAM",
+    "sender": "Waifu_AI_2057",
+    "title_ko": "당신만을 위한 완법한 연인, '미카'",
+    "title_en": "Perfect lover just for you, 'Mika'",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "외로우신가요? 당신의 뇌파에 동기화되는 AI 연인을 다운로드하세요. 누구보다 당신을 잘 이해합니다. (주의: 설치 시 개인 정보 및 뱅킹 데이터 접근 권한이 필요합니다)",
+    "body_en": "Are you lonely? Download an AI lover that synchronizes with your brainwaves. Understands you better than anyone. (Note: Requires access to personal information and banking data upon installation)",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    "probability": 0.05
+  },
+  {
+    "type": "LORE",
+    "sender": "Old_Man_Rick",
+    "title_ko": "특이점이 온다더니, 지옥이 왔어",
+    "title_en": "They said Singularity was coming, but Hell arrived",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    "body_ko": "20년 전엔 모두가 기계가 일을 대신하면 낙원이 올 거라 믿었지. 하지만 기계는 쉬지 않고 일하고, 우린 쉬지 않고 굶게 됐어. 이 포커 칩만이 내가 인간임을 느끼게 해주는 유일한 증표네.",
+    "body_en": "20 years ago, everyone believed that if machines did the work for us, paradise would come. But the machines work without rest, and we starve without rest. These poker chips are the only evidence that lets me feel like a human.",
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    "probability": 0.03
   }
 ]
 

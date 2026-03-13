@@ -5,11 +5,11 @@ import { getAIAction } from './aiEngine.js';
 import { getAdvancedAIAction } from './aiEngineAdvanced.js';
 import { PotManager } from './PotManager.js';
 
-const CLASSES_ENEMY = [...D1, ...D2]
+const CLASSES_ENEMY = [...D2, ...D1]
 export async function runSimulation() {
-  const opp1 = 'gangster'
-  const opp2 = 'maniac'
-  const opp3 = 'the_don'
+  const opp1 = 'Max'
+  const opp2 = 'the_don'
+  const opp3 = 'Florence'
   console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
   const logHeader = `Simulation Log - ${new Date().toLocaleString()}\n\n`;
   fs.writeFileSync('hand_history.log', logHeader, 'utf8');

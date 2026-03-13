@@ -27,8 +27,8 @@ import { get } from "idb-keyval";
  * @property {string} RESOLVED_DEBT
  * @property {string} RESOLVED_DEBT_LOW_RELATIONSHIP
  * @property {string} BREAK_CONTRACT_COLLUSION
- * @property {string} BREAK_CONTRACT_BANKRUPT_RESCUE
- * @property {string} BREAK_CONTRACT_SHARE_BENEFIT
+ * @property {string} BREAK_CONTRACT_BAILOUT
+ * @property {string} BREAK_CONTRACT_BENEFIT_SHARE
  * @property {string} BANKRUPT
  * @property {string} BANKRUPT_ACCEPT_RESCUE
  * @property {string} BANKRUPT_REFUSE_RESCUE
@@ -36,11 +36,11 @@ import { get } from "idb-keyval";
  * @property {string} BANKRUPT_REFUSE_RESCUE_LOW_RELATIONSHIPSHIP
  * @property {string} BANKRUPT_HAS_DEBT // 맥스파산, 플레이어 빚 존재
  * @property {string} BANKRUPT_HAS_DEBT_LOW_RELATIONSHIP // 맥스파산, 플레이어 빚 존재 (관계도 낮음)
- * @property {string} BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE
- * @property {string} BANKRUPT_HAS_CONTRACT_BANKRUPT_RESCUE_FAIL
- * @property {string} SIGN_CONTRACT_SHARE_BENEFIT
+ * @property {string} BANKRUPT_HAS_CONTRACT_BAILOUT
+ * @property {string} BANKRUPT_HAS_CONTRACT_BAILOUT_FAIL
+ * @property {string} SIGN_CONTRACT_BENEFIT_SHARE
  * @property {string} SIGN_CONTRACT_COLLUSION
- * @property {string} SIGN_CONTRACT_BANKRUPT_RESCUE
+ * @property {string} SIGN_CONTRACT_BAILOUT
  * @property {string} JOIN_PARTNER // 맥스가 정식 파트너가 되기로 결심합니다.
  * @property {string} JOINED_PARTNER // 맥스를 정식 파트너로 등록했습니다.
  * @property {string} MAIN_STORY_1_MEET_AT_CLUB // 맥스가 클럽에서 플레이어를 만납니다.
@@ -55,7 +55,7 @@ import { get } from "idb-keyval";
  * @property {string} MAIN_STORY_1_5_MEET_AT_CLUB_DONE
  * @property {string} MAIN_STORY_1_6_MEET_AT_CLUB_DONE
  * @property {string} MAIN_STORY_1_7_MEET_AT_CLUB_DONE
- * @property {string} BANKRUPT_RESCUE_FOR_PLAYER
+ * @property {string} BAILOUT_FOR_PLAYER
  * @property {string} ELIMINATED
  * @property {string} PLAYER_LEAVE
  * @property {string} PLAYER_ELIMINATED
@@ -139,7 +139,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_MAX.BANKRUPT_RESCUE_FOR_PLAYER,
+    id: EVENT_MAX.BAILOUT_FOR_PLAYER,
     scenario: '플레이어가 파산했고 맥스가 자금을 지원했습니다.',
     title_ko: '역시 내 친구다!',
     title_en: 'That\'s My Friend!',
@@ -175,8 +175,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     timer: 30,
     condition: () => {
-      // return getCurrentBankroll() > 30000 || getRelationship(PARTNER_ID.MAX) >= 650;
-      return getCurrentBankroll() > 3000 || getRelationship(PARTNER_ID.MAX) >= 150;
+      return getCurrentBankroll() > 30000 || getRelationship(PARTNER_ID.MAX) > 650;
     },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
@@ -226,7 +225,6 @@ export const EventData = [
     timer: 32,
     condition: () => {
       return isEventCompleted(EVENT_MAX.MAIN_STORY_1_MEET_AT_CLUB) && new Date(store.gameTime).getHours() >= 22;
-      // return new Date(store.gameTime).getHours() >= 22 // for test
     },
     func() {
       sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [
@@ -353,7 +351,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_MAX.SIGN_CONTRACT_SHARE_BENEFIT,
+    id: EVENT_MAX.SIGN_CONTRACT_BENEFIT_SHARE,
     scenario: 'Max와 (수익분배)계약을 체결했습니다. 이제 서로의 수익을 일정 지분만큼 공유합니다!(다만 수익 분배가 불균형하면 관계가 악화될 수 있습니다..)',
     title_ko: '우리 사이에 이정도는 나눠야지',
     title_en: 'We Share the Spoils',
@@ -367,7 +365,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_MAX.SIGN_CONTRACT_BANKRUPT_RESCUE,
+    id: EVENT_MAX.SIGN_CONTRACT_BAILOUT,
     scenario: 'Max와 (파산 구제)계약을 체결했습니다. 이제 둘 중 한명이 파산하면 긴급 자금을 지원해 줄겁니다!',
     title_ko: '사나이 최고의 보험',
     title_en: 'The Ultimate Bromance Insurance',
@@ -563,7 +561,7 @@ export const EventData = [
     repeatable: true
   },
   {
-    id: EVENT_MAX.BREAK_CONTRACT_BANKRUPT_RESCUE,
+    id: EVENT_MAX.BREAK_CONTRACT_BAILOUT,
     title_ko: '밑 빠진 독에 물 붓기',
     title_en: 'Pouring water in a broken jug',
     body_ko: '야, 나도 내 코가 석 자야. 한두 번이야 땜빵해 주지, 네 빚 처리하다간 나까지 파산하겠다. 구제 계약은 오늘부터 취소다.',
@@ -577,7 +575,7 @@ export const EventData = [
     repeatable: true
   },
   {
-    id: EVENT_MAX.BREAK_CONTRACT_SHARE_BENEFIT,
+    id: EVENT_MAX.BREAK_CONTRACT_BENEFIT_SHARE,
     title_ko: '각자 벌어먹자고',
     title_en: 'Eat what you kill',
     body_ko: '수익 공유? 장난하냐? 이건 뭐 너 좋은 일만 시켜주는 꼴이잖아. 앞으론 각자 벌어서 각자 먹자. 계약 해지야.',
@@ -646,13 +644,12 @@ export const EventData = [
     refuse_en: 'Refuse',
     get acceptLabel() { return store.settings.language === 'en' ? this.accept_en : this.accept_ko; },
     get refuseLabel() { return store.settings.language === 'en' ? this.refuse_en : this.refuse_ko; },
-    get timer() { return Math.random() * 2 + 2 * 24 * 60; }, // 2~4 days
-    repeatable: true,
+    timer: 3 * 24 * 60, // 3days
     condition() {
       return store.completedEvents.includes(EVENT_MAX.TUTORIAL_WIN_AFTER) && getRelationship(PARTNER_ID.MAX) >= 300
     },
     func() {
-      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [
+      sendMessage(MESSAGE_TYPE.EVENT, this.title, this.body, [
         {
           label: this.acceptLabel,
           actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
@@ -669,7 +666,7 @@ export const EventData = [
             nextEvent: EVENT_MAX.FISH_HUNTER_REFUSE
           }
         }
-      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO, 60 * 24)
     },
     repeatable: true // if repeatable is true, do not register store.completedEvents
   },
@@ -721,10 +718,10 @@ export const EventData = [
   {
     id: EVENT_MAX.TUTORIAL_THEN_LEAVE_RETRY,
     desc_for_dev: 'max가 플레이어에게 포커를 가르쳐주는 이벤트(도망간 후 재시도)',
-    title_ko: '어이, 어디가?',
-    title_en: 'Hey, where are you running off to?',
+    title_ko: '지금 나한테서 도망치는 거냐?',
+    title_en: 'You running away from me?',
     body_ko: '지금 진지하게 가르쳐 주려는데 어디가냐? 얼른 안 돌아와? 이번엔 중간에 도망가면 진짜 가만 안 둔다.',
-    body_en: 'I\'m trying to teach you something here. Better get back here. Run away again, and we’re gonna have a problem.',
+    body_en: 'I\'m trying to teach you something here. Better get back here. Run away again, and we\'re gonna have a problem.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },

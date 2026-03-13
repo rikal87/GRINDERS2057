@@ -109,6 +109,16 @@ onMounted(() => {
     handleJoinTable(e.detail);
   });
 
+  window.addEventListener('open-table-search', (e) => {
+    if (searchPopupRef.value) {
+      if (e.detail?.locationId) {
+        searchPopupRef.value.openWithLocation(e.detail.locationId, e.detail.inviteId);
+      } else {
+        searchPopupRef.value.open();
+      }
+    }
+  });
+
   window.addEventListener('trigger-cashout', () => {
     if (engine.value) {
       handleAction({ type: 'cashout' });
@@ -205,7 +215,7 @@ const handleStart = (mode) => {
 };
 
 const handleJoinTable = async (payload) => {
-  const { inviteId, size, buyIn, rake, rakeCap, isAdvanced, sb, bb, locationId, locationLV, buyInLimit } = payload;
+  const { inviteId, size, buyIn, rake, rakeCap, isAdvanced, sb, bb, locationId, locationLV, buyInLimit, isMonitoring } = payload;
   console.info('handleJoinTable', payload);
   // [CLEANUP] Ensure previous engine is destroyed
   if (engine.value) {
@@ -218,7 +228,7 @@ const handleJoinTable = async (payload) => {
   const finalRake = rake !== undefined ? rake : 0.05;
   const finalRakeCap = rakeCap !== undefined ? rakeCap : (bb * 10);
   // const finalBuyInLimit = buyInLimit !== undefined ? buyInLimit : 999999;
-  engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isAdvanced, locationId, locationLV, buyInLimit, inviteId);
+  engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isAdvanced, locationId, locationLV, buyInLimit, isMonitoring, inviteId);
 
   const equipped = store.ownedProtectors.find(p => (p.instanceId || p.id) === store.equippedProtector);
   if (equipped) {
@@ -310,7 +320,7 @@ const handleSleepClick = (duration = 8.0) => {
   if (details.length === 0) {
     details.push(`DATA_NOT_FOUND`)
   }
-  audioManager.playSFX('bootup');
+  audioManager.playSFX('plus-sound-short');
   fullReportLines.value = [
     `--------------------------------`,
     `ACCESS_PROFIT_DETAILES...`,
@@ -442,7 +452,8 @@ watch(currentView, (newView) => {
             </div>
             <div class="row">
               <div class="status-group">
-                <span class="status-value">{{ formatGameDate(store.gameTime) }} ({{ formatGameDayOfWeek(store.gameTime) }})</span>
+                <span class="status-value">{{ formatGameDate(store.gameTime) }} ({{ formatGameDayOfWeek(store.gameTime)
+                  }})</span>
                 <span class="status-divider"></span>
                 <span class="status-value">{{ formatGameTime(store.gameTime) }}</span>
               </div>
@@ -663,57 +674,4 @@ watch(currentView, (newView) => {
 
 <style>
 /* Global Styles moved to style.css */
-.reboot-hold-btn {
-  position: relative;
-  overflow: hidden;
-  background: #332b00;
-  color: #ffdd00;
-  border: 1px solid #ffdd00;
-  transition: all 0.2s;
-}
-.app-shell,
-.layout-container {
-  height: 100vh;
-}
-.layout-container {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  overflow: hidden;
-  /* overflow: auto; */
-}
-.app-shell {
-  display: flex;
-  flex-direction: column;
-}
-.game-container {
-  /* height: 100vh; */
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
-/* .lobby-container {
-  flex-grow: 1;
-} */
-.reboot-hold-btn:active {
-  transform: scale(0.98);
-}
-.reboot-progress {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  background: rgba(255, 221, 0, 0.6);
-  z-index: 1;
-  transition: width 0.05s linear;
-}
-
-.reboot-hold-btn .btn-text {
-  position: relative;
-  z-index: 2;
-}
-
-.reboot-hold-btn.rebooting {
-  border-color: #ffe600;
-  box-shadow: 0 0 15px rgba(255, 230, 0, 0.4);
-}
 </style>

@@ -3,17 +3,45 @@ import { store, gainBankroll, getCurrentBankroll, getGameTime } from "./store.js
 import { audioManager } from "./audioManager";
 import { scheduleEvent, EVENT_ID } from "./eventSystem";
 import { CONTRACT_TYPE, TYPE_CHANGE_BANKROLL, PARTNER_ID } from "./constants.js";
-
+export const CONTRACT_SIGN_PREVENT_REASON = {
+  BENEFIT_SHARE_MAX_COUNT: 'BENEFIT_SHARE_MAX_COUNT',
+  RELATIONSHIP: 'RELATIONSHIP',
+  ACTIVE: 'ACTIVE',
+  COOLDOWN: 'COOLDOWN',
+  NONE: 'NONE'
+}
+export const CONTRACT_SIGN_PREVENT_REASON_DESC = {
+  BENEFIT_SHARE_MAX_COUNT: {
+    ko: '[이익 공유]는 동시에 하나의 계약만 가능합니다.',
+    en: 'You can only sign one [Benefit Share] contract at a time.'
+  },
+  RELATIONSHIP: {
+    ko: `파트너와의 관계가 너무 낮아 계약을 체결할 수 없습니다.`,
+    en: `Relationship is too low to sign the contract.`
+  },
+  ACTIVE: {
+    ko: '이미 계약중입니다.',
+    en: 'Contract is already active.'
+  },
+  COOLDOWN: {
+    ko: '계약이 종료된지 얼마 되지 않아 계약을 체결할 수 없습니다.',
+    en: 'Contract is too new to sign the contract.'
+  },
+  NONE: {
+    ko: '계약 가능',
+    en: 'Contract Ready'
+  }
+}
 export const CONTRACT_REQUIRED_RELATIONSHIP = {
-  [CONTRACT_TYPE.SHARE_BENEFIT]: 300,
-  [CONTRACT_TYPE.BANKRUPT_RESCUE]: 0,
+  [CONTRACT_TYPE.BENEFIT_SHARE]: 300,
+  [CONTRACT_TYPE.BAILOUT]: 100,
   [CONTRACT_TYPE.A_DATE_WITH_YOU]: 800,
   [CONTRACT_TYPE.COLLUSION]: 800,
   [CONTRACT_TYPE.STAKING]: 1000,
 }
 export const CONTRACT_BREAK_RELATIONSHIP = {
-  [CONTRACT_TYPE.SHARE_BENEFIT]: 250,
-  [CONTRACT_TYPE.BANKRUPT_RESCUE]: 300,
+  [CONTRACT_TYPE.BENEFIT_SHARE]: 250,
+  [CONTRACT_TYPE.BAILOUT]: 300,
   [CONTRACT_TYPE.A_DATE_WITH_YOU]: 400,
   [CONTRACT_TYPE.COLLUSION]: 400,
   [CONTRACT_TYPE.STAKING]: 500,
@@ -30,13 +58,13 @@ export const CONTRACT_TYPE_DESC = {
     note_ko: '이 행위는 불법으로, 적발될 가능성이 있습니다. 적발시 가진 모든 바이인이 몰수됩니다.',
     note_en: 'This action is illegal and may be detected. If caught, all your buy-ins will be confiscated.',
   },
-  [CONTRACT_TYPE.SHARE_BENEFIT]: {
+  [CONTRACT_TYPE.BENEFIT_SHARE]: {
     desc_ko: '파트너와 이익 공유 계약을 체결합니다. 이제 파트너와 플레이어가 게임을 통해 창출한 수익을 정산하며, 계약된 분배율에 따라 상호 이익을 나눕니다',
     desc_en: 'Upon entering this contract, all game profits will be settled and distributed according to the agreed-upon split.',
     note_ko: '수익 기여율 차이가 불균형하면, 관계가 변화할 수 있습니다.\n(이 계약은 동시에 1명의 파트너와만 맺을 수 있습니다.)',
     note_en: 'Disparities in profit contribution may impact your relationship.\n(You can only maintain one active partnership contract at a time)',
   },
-  [CONTRACT_TYPE.BANKRUPT_RESCUE]: {
+  [CONTRACT_TYPE.BAILOUT]: {
     desc_ko: '한쪽이 파산할 경우, 보유 뱅크롤의 30%를 긴급 지원합니다.',
     desc_en: 'If either party goes bankrupt, 30% of the active bankroll will be provided as emergency funds.',
     note_ko: '본 계약으로 발생한 채무는 7일간의 유예 기간을 거친 후 일반 채무로 전환됩니다.',
@@ -59,22 +87,22 @@ export const Contract = (type = CONTRACT_TYPE.NOTHING) => {
   return {
     type,
     cooldown: 0,
+    initCooldown: 24 * 3,
     active: false,
     requiredRelationship: CONTRACT_REQUIRED_RELATIONSHIP[type] || 0,
     relationshipToBreak: CONTRACT_BREAK_RELATIONSHIP[type] || 0,
   }
 }
 export const ContractCollusion = (ratio = 0.5) => { return { ratio, profitTotal: 0, profitTotalLatest: 0, ...Contract(CONTRACT_TYPE.COLLUSION) } }
-export const ContractBankruptRescue = (ratio = 0.3) => { return { ratio, activeRepaymentPeriod: false, debtRepaymentDue: 0, initDebtRepaymentDue: 24 * 7, debt: 0, ...Contract(CONTRACT_TYPE.BANKRUPT_RESCUE) } }
-export const ContractShareBenefit = (ratio = 0.5) => { return { ratio, profitTotal: 0, profitTotalLatest: 0, ...Contract(CONTRACT_TYPE.SHARE_BENEFIT) } }
+export const ContractBailout = (ratio = 0.3) => { return { ratio, activeRepaymentPeriod: false, debtRepaymentDue: 0, initDebtRepaymentDue: 24 * 7, debt: 0, ...Contract(CONTRACT_TYPE.BAILOUT) } }
+export const ContractBenefitShare = (ratio = 0.5) => { return { ratio, profitTotal: 0, profitTotalLatest: 0, ...Contract(CONTRACT_TYPE.BENEFIT_SHARE) } }
 export const ContractADateWithYou = () => { return { ...Contract(CONTRACT_TYPE.A_DATE_WITH_YOU) } }
 
 export const signContract = (partnerId, type, ratio = 0.5) => {
-  audioManager.playSFX('ui-click');
   const partner = store.partners.find((p) => p.id === partnerId);
   if (!partner) return false;
-  if (type === CONTRACT_TYPE.SHARE_BENEFIT) {
-    const contractCount = getPartners().filter(p => p.contracts.find(c => c.type === CONTRACT_TYPE.SHARE_BENEFIT && c.active)).length > 0
+  if (type === CONTRACT_TYPE.BENEFIT_SHARE) {
+    const contractCount = getPartners().filter(p => p.contracts.find(c => c.type === CONTRACT_TYPE.BENEFIT_SHARE && c.active)).length > 0
     if (contractCount > 1) {
       audioManager.playSFX('error');
       return false;
@@ -82,15 +110,17 @@ export const signContract = (partnerId, type, ratio = 0.5) => {
   }
   let contract = partner.contracts.find((c) => c.type === type);
   if (!contract) return false;
-  // Check cooldown
-  if (contract.cooldown > 0) return false;
+  console.info('contract', contract)
+
   if (!contract.active) {
     const eventId = EVENT_ID[partner.id.toUpperCase()]['SIGN_CONTRACT_' + type.toUpperCase()];
     if (eventId) scheduleEvent(eventId, 1 + (2 * Math.random()));
   }
+  console.info('signContract', partnerId, type, ratio);
   contract.active = true;
   contract.ratio = ratio;
-  contract.cooldown = 24;
+  contract.cooldown = contract.initCooldown;
+  // contract.initCooldown = ;
   return true;
 }
 export const breakContract = (partnerId, type) => {
@@ -100,12 +130,12 @@ export const breakContract = (partnerId, type) => {
   if (!contract || !contract.active) return false;
   contract.active = false;
   contract.profitTotal = 0; // reset profit total
-  contract.cooldown = 72; // 3 days in game time (72 hours)
+  contract.cooldown = contract.initCooldown;
   return true;
 }
 export const createContractObject = (type, ratio) => {
-  if (type === CONTRACT_TYPE.SHARE_BENEFIT) return ContractShareBenefit(ratio ?? 0.5);
-  if (type === CONTRACT_TYPE.BANKRUPT_RESCUE) return ContractBankruptRescue(ratio ?? 0.3);
+  if (type === CONTRACT_TYPE.BENEFIT_SHARE) return ContractBenefitShare(ratio ?? 0.5);
+  if (type === CONTRACT_TYPE.BAILOUT) return ContractBailout(ratio ?? 0.3);
   if (type === CONTRACT_TYPE.A_DATE_WITH_YOU) return ContractADateWithYou();
   if (type === CONTRACT_TYPE.COLLUSION) return ContractCollusion(ratio ?? 0.5);
   return Contract(type);
@@ -122,7 +152,7 @@ export const shareCollusion = (partnerId = null, yourNetWinnings = 0, partnerNet
     if (!contract) return 0;
     const yourShare = partnerNetWinnings * contract.ratio;
     const partnerShare = yourNetWinnings * contract.ratio;
-    diffShare = partnerShare - yourShare; // if +: partner gain, if -: you gain
+    diffShare = Math.floor(partnerShare - yourShare); // if +: partner gain, if -: you gain
     gainBankroll(yourShare, TYPE_CHANGE_BANKROLL.COLLUSION);
     gainPartnerBankroll(partner, partnerShare, TYPE_CHANGE_BANKROLL.COLLUSION);
     contract.profitTotal += diffShare;
@@ -132,10 +162,11 @@ export const shareCollusion = (partnerId = null, yourNetWinnings = 0, partnerNet
 export const shareBenefitForPartners = (amount = 0) => {
   const targetPartners = getPartners().filter(p => p.isJoined);
   let sum = 0
+  if (amount < 0) return sum;
   targetPartners.forEach((partner) => {
     partner.contracts.forEach((contract) => {
-      if (contract.type === CONTRACT_TYPE.SHARE_BENEFIT && contract.active) {
-        const finalAmount = amount * contract.ratio;
+      if (contract.type === CONTRACT_TYPE.BENEFIT_SHARE && contract.active) {
+        const finalAmount = Math.floor(amount * contract.ratio);
         sum += shareBenefit(partner, finalAmount, contract, false)
       }
     });
@@ -144,7 +175,7 @@ export const shareBenefitForPartners = (amount = 0) => {
 }
 export const shareBenefit = (partner = null, amount = 0, contract = null, toPlayer = true) => {
   if (!partner || !contract) return 0;
-  const finalAmount = amount * contract.ratio * (toPlayer ? -1 : 1);
+  const finalAmount = Math.floor(amount * contract.ratio * (toPlayer ? -1 : 1));
   gainPartnerBankroll(partner, finalAmount, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
   gainBankroll(-finalAmount, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
   contract.profitTotal += finalAmount;
@@ -152,11 +183,11 @@ export const shareBenefit = (partner = null, amount = 0, contract = null, toPlay
   partner.netWorthHistory.push({ time: getGameTime(), netWorth: partner.bankroll + finalAmount });
   return finalAmount;
 }
-export const requestRescueDebt = (partner = null) => {
+export const requestBailout = (partner = null) => {
   if (!partner) return false;
   const getEvent = EVENT_ID[partner.id.toUpperCase()].BANKRUPT
   if (getEvent) {
-    console.info('requestRescueDebt', partner.id, getEvent)
+    console.info('requestBailout', partner.id, getEvent)
     scheduleEvent(getEvent, 2);
     return true;
   }
@@ -169,7 +200,9 @@ export const triggerDebtRepaymentDue = (partner = null, contract = null) => {
     contract.activeRepaymentPeriod = false;
   }
 }
-export const triggerRescueDebt = (partner = null, ratio = 0.3, contract = null, toPlayer = false) => {
+// BANKRUPTCY_RELIEF
+// BankruptcyRelief
+export const triggerBankruptcyRelief = (partner = null, ratio = 0.3, contract = null, toPlayer = false) => {
   if (!contract || !partner) return false;
   if (contract.active) {
     ratio = contract.ratio;
@@ -177,7 +210,7 @@ export const triggerRescueDebt = (partner = null, ratio = 0.3, contract = null, 
     contract.activeRepaymentPeriod = true;
   }
   const whosBankroll = toPlayer ? partner.bankroll : getCurrentBankroll();
-  const amount = whosBankroll * ratio * (toPlayer ? 1 : -1);
+  const amount = Math.floor(whosBankroll * ratio * (toPlayer ? 1 : -1));
   contract.debt = toPlayer ? -amount : amount
   gainBankroll(amount, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
   gainPartnerBankroll(partner, -amount, TYPE_CHANGE_BANKROLL.CONTRACT);
@@ -188,13 +221,13 @@ export const triggerRescueDebt = (partner = null, ratio = 0.3, contract = null, 
     if (getEvent) {
       scheduleEvent(getEvent, 15, partner);
     }
-    scheduleEvent(EVENT_ID.SYSTEM_PLAYER_BANKRUPT_RESCUE_FOR_PARTNER, 2, { partnerName: partner.fullName, amount })
+    scheduleEvent(EVENT_ID.SYSTEM_PLAYER_BAILOUT_FOR_PARTNER, 2, { partnerName: partner.fullName, amount })
   } else {
-    // EVENT_ID.MAX.BANKRUPT_RESCUE_FOR_PLAYER is only for Max
+    // EVENT_ID.MAX.BAILOUT_FOR_PLAYER is only for Max
     if (partner.id === PARTNER_ID.MAX) {
-      scheduleEvent(EVENT_ID.MAX.BANKRUPT_RESCUE_FOR_PLAYER, 15);
+      scheduleEvent(EVENT_ID.MAX.BAILOUT_FOR_PLAYER, 15);
     }
-    scheduleEvent(EVENT_ID.SYSTEM_PARTNER_BANKRUPT_RESCUE_FOR_PLAYER, 2, { partnerName: partner.fullName, amount })
+    scheduleEvent(EVENT_ID.SYSTEM_PARTNER_BAILOUT_FOR_PLAYER, 2, { partnerName: partner.fullName, amount })
   }
   return true;
 }

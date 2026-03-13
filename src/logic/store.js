@@ -4,6 +4,7 @@ import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 import { initializePartners, triggerBankruptRescueForPlayer, gainRelationship } from './partnerSystem';
 import { shareBenefitForPartners, shareCollusion } from './partnerContractSystem'
+import { TASK_STATS_TYPE } from './constants.js';
 import { setLanguageGetter } from './persona.js';
 import { deleteMessage } from './messageSystem';
 import { zones } from './zone.js';
@@ -12,8 +13,8 @@ import { LOCATION_ID, PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js'
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const getDefaultState = () => ({
-  // bankroll: 12220000,
-  bankroll: 0,
+  bankroll: 20000,
+  // bankroll: 23589230,
   chips: 0, // Chips on table
   // currentBB: 0,
   xp: 0,
@@ -194,6 +195,7 @@ export const getAgent = () => {
 }
 export const gainLT = (amount) => {
   store.ludusTokens = Math.max(0, Math.min(getEffectiveMaxLT(), store.ludusTokens + amount));
+  if (amount < 0) gainAgentTaskStat(TASK_STATS_TYPE.COST_LT_TOTAL, -amount);
 }
 export const getCurrentLT = () => {
   return store.ludusTokens;
@@ -422,9 +424,7 @@ export const applySessionExit = (engine) => {
   // share collusion
   const partners = engine.players.filter(p => p.isPartner);
   partners.forEach(partner => {
-    console.info('shareCollusion in game', partner, engine)
     const partnerNetWinnings = partner.chips - partner.initialChips;
-    console.info('in game', partner, partnerNetWinnings)
     const share = shareCollusion(partner.id, netWinnings, partnerNetWinnings)
     recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
     // todo chips calculate to partner.bankroll
@@ -432,6 +432,7 @@ export const applySessionExit = (engine) => {
   // share benefit
   const share = shareBenefitForPartners(netWinnings);
   recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
+
   if (store.bankroll === 0) triggerBankruptRescueForPlayer();
   saveStore();
   // return t
@@ -466,22 +467,22 @@ const processMissionResult = (player, result, engine) => {
     if (!client) return;
     if (result.indexOf('WIN') !== -1) {
       if (client.chips > player.chips) {
-        gainRelationship(client.id, 50);
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN_MAX, 30);
-      } else {
         gainRelationship(client.id, 100);
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 30);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN_MAX, 45);
+      } else {
+        gainRelationship(client.id, 50);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 45);
       }
     } else if (result.indexOf('LOSE') !== -1) {
       if (!client.isEliminated) {
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_PLAYER, 30);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_PLAYER, 60);
       }
-      scheduleEvent(EVENT_ID.MAX.TUTORIAL_THEN_LOSE_RETRY, 45);
+      scheduleEvent(EVENT_ID.MAX.TUTORIAL_THEN_LOSE_RETRY, 60);
     } else {
       if (store.completedEvents.includes(EVENT_ID.MAX.TUTORIAL_LEAVE)) {
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE_AGAIN, 30);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE_AGAIN, 45);
       } else {
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE, 30);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE, 45);
       }
     }
   }
@@ -490,16 +491,15 @@ const processMissionResult = (player, result, engine) => {
     console.info('client', client)
     if (!client) return;
     if (result.indexOf('WIN') !== -1) {
+      gainRelationship(client.id, 50);
       if (client.chips > player.chips) {
-        gainRelationship(client.id, 50);
         scheduleEvent(EVENT_ID.MAX.WIN_PLAYER, 30);
       } else {
-        gainRelationship(client.id, 100);
         scheduleEvent(EVENT_ID.MAX.WIN_MAX, 30);
       }
     } else if (result.indexOf('LOSE') !== -1) {
       if (!client.isEliminated) {
-        scheduleEvent(EVENT_ID.MAX.PLAYER_ELIMINATED, 30);
+        scheduleEvent(EVENT_ID.MAX.PLAYER_ELIMINATED, 15);
       }
     } else {
       scheduleEvent(EVENT_ID.MAX.PLAYER_LEAVE, 30);
@@ -511,8 +511,6 @@ const processMissionResult = (player, result, engine) => {
       scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_MEET_AT_CLUB, 2 * 60);
     }
   }
-  // for TEST
-  scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_MEET_AT_CLUB, 2 * 60);
   // Mission LOW_UNDERGROUND_CLUB_MEET_MAX
   if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX) {
     const client = engine.players.find(p => p.id === PARTNER_ID.MAX);

@@ -1,10 +1,13 @@
 import imgMicroStreetShop from '../assets/image/zone/micro_street_shop.jpg';
+import imgFreeHabitat from '../assets/image/zone/free_habitat.png';
 import imgMicroWarehouse from '../assets/image/zone/micro_warehouse.png';
 import imgMicroUndergroundBar from '../assets/image/zone/micro_underground_bar.png';
 import imgLowNeonLounge from '../assets/image/zone/low_neon_lounge.png';
 import imgLowUndergroundClub from '../assets/image/zone/low_underground_club.png';
+import imgLowUndergroundClubWithMax from '../assets/image/zone/low_underground_club_with_max.png';
 import imgLowOldCasino from '../assets/image/zone/low_old_casino.png';
 import imgMiddleUndergroundCasino from '../assets/image/zone/middle_underground_casino.png';
+import imgMiddleUndergroundCasinoVipRoom from '../assets/image/zone/middle_underground_casino_vip_room.png';
 import imgMiddleHoldemHouse from '../assets/image/zone/middle_holdem_house.png';
 import imgMiddleCasinoHotel from '../assets/image/zone/middle_casino_hotel.png';
 import imgHighProHouse from '../assets/image/zone/high_pro_house.png'; // Used for Royal Private Cardroom
@@ -15,40 +18,10 @@ import { TRACK_ENUM } from './audioTracks.js';
 export const zones = [
   {
     "id": "free",
-    "name_ko": "Free Stakes",
-    "name_en": "Free Stakes",
+    "name": "Free Stakes",
     "description_ko": "게임의 첫 여정의 시작점.",
     "description_en": "The starting point of your first journey in the game.",
     "locations": [
-      {
-        "id": "free_safe_house",
-        "name_ko": "안전가옥",
-        "name_en": "Safe House",
-        "imgSrc": null,
-        "description_ko": "안전가옥으로 친구들을 초대하였습니다.",
-        "description_en": "Invited friends to the safe house.",
-        "atmosphere": "다소 어두움, 가벼운 분위기, 가끔 절박함",
-        "requirements": null,
-        "isHidden": true,
-        "level": 1,
-        "npcs": [
-          "Fish",
-          "Broke",
-          "MR_CALL"
-        ],
-        "tables": {
-          buyInLimit: 1,
-          amount: 2000, amount_fmt: '2K', amount_min_fmt: '1K', sb: 10, bb: 20, available: [
-            6
-          ], baseRake: 0.0, rakeCap: 0
-        },
-        "theme": {
-          "background": "radial-gradient(circle, #2c2c2c 0%, #1a1a1a 100%)",
-          "borderColor": "#3f6ae2ff",
-          "boxShadow": "0 0 20px rgba(146, 148, 255, 0.8)"
-        },
-        'bgMusic': [TRACK_ENUM.Kaazoom_DrivingHome, TRACK_ENUM.Nightscape]
-      },
       {
         "id": "free_street_shop",
         "name_ko": "길거리 상점 뒷편",
@@ -76,7 +49,36 @@ export const zones = [
           "boxShadow": "0 0 20px rgba(0,0,0,0.8)"
         },
         // 'bgMusic': [TRACK_ENUM.Kaazoom_DrivingHome, TRACK_ENUM.Nightscape, TRACK_ENUM.Placebo]
-        'bgMusic': [TRACK_ENUM.Kaazoom_DrivingHome, TRACK_ENUM.Alexgrohl_Synthwave, TRACK_ENUM.Alexgrohl_OneStepAHead, TRACK_ENUM.Lnplusmusic_Technology, TRACK_ENUM.TheMountain_Technologies, TRACK_ENUM.Lnplusmusic_LatinTrap, TRACK_ENUM.Lnplusmusic_Reels, TRACK_ENUM.Placebo]
+        'bgMusic': [TRACK_ENUM.Kaazoom_DrivingHome, TRACK_ENUM.Placebo]
+      },
+      {
+        "id": "free_habitat",
+        "name_ko": "거주공간",
+        "name_en": "Habitat",
+        "imgSrc": imgFreeHabitat,
+        "description_ko": "거주공간으로 이웃들을 초대하였습니다.",
+        "description_en": "Invited neighbors to the habitat.",
+        "atmosphere": "다소 어두움, 가벼운 분위기, 가끔 절박함",
+        "requirements": null,
+        "isHidden": true,
+        "level": 1,
+        "npcs": [
+          "Fish",
+          "Broke",
+          "MR_CALL"
+        ],
+        "tables": {
+          buyInLimit: 1,
+          amount: 2000, amount_fmt: '2K', amount_min_fmt: '1K', sb: 5, bb: 10, available: [
+            6
+          ], baseRake: 0.0, rakeCap: 0
+        },
+        "theme": {
+          "background": "radial-gradient(circle, #68655eff 0%, #3a3328ff 100%)",
+          "borderColor": "#f0d53fff",
+          "boxShadow": "0 0 20px rgba(185, 197, 9, 0.8)"
+        },
+        'bgMusic': [TRACK_ENUM.Kaazoom_DrivingHome, TRACK_ENUM.Nightscape]
       },
       {
         "id": "free_street_shop_with_max",
@@ -97,8 +99,7 @@ export const zones = [
         "tables": {
           buyInLimit: 1,
           amount: 1000, amount_fmt: '1K', amount_min_fmt: '500', sb: 5, bb: 10, available: [
-            6,
-            9
+            6
           ], baseRake: 0.00, rakeCap: 50
         },
         "theme": {
@@ -112,37 +113,11 @@ export const zones = [
   },
   {
     "id": "micro",
-    "name_ko": "Micro Stakes",
-    "name_en": "Micro Stakes",
+    "name": "Micro Stakes",
     "description_ko": "단순 오락거리를 위해 찾는 곳. 돈을 잃어도 타격이 적어 무모한 플레이가 빈번하지만, 가끔 절박한 플레이어도 존재.",
     "description_en": "A place visited for simple entertainment. Since losing money doesn't hurt much, reckless play is frequent, but occasionally desperate players also exist.",
     "locations": [
-      {
-        "id": "micro_warehouse_with_max",
-        "name_ko": "뒷골목 창고(맥스와 함께)",
-        "name_en": "Back Alley Warehouse(with Max)",
-        "imgSrc": imgMicroWarehouse,
-        "description_ko": "맥스와 함께 뒷골목 창고를 방문하였습니다.",
-        "description_en": "Visited the back alley warehouse with Max.",
-        "requirements": null,
-        "isHidden": true,
-        "firstClearRewards": "underground_bar_invite",
-        "level": 2,
-        "npcs": [
-          "Fish",
-          "Broke",
-        ],
-        guests: ['Max'],
-        "tables": {
-          amount: 2500, amount_fmt: '2.5K', amount_min_fmt: '1.25K', sb: 10, bb: 25, available: [6, 9], baseRake: 0.08, rakeCap: 125
-        },
-        "theme": {
-          "background": "radial-gradient(circle, #2a2a2a 0%, #0f0f0f 100%)",
-          "borderColor": "#8B4513",
-          "boxShadow": "0 0 20px rgba(139, 69, 19, 0.3)"
-        },
-        'bgMusic': [TRACK_ENUM.PartyInTheRuins, TRACK_ENUM.Futuristic]
-      },
+
       {
         "id": "micro_warehouse",
         "name_ko": "뒷골목 창고",
@@ -156,7 +131,7 @@ export const zones = [
         "npcs": [
           "Fish",
           "Broke",
-          "Gangster"
+          "MR_CALL"
         ],
         "tables": {
           amount: 2500, amount_fmt: '2.5K', amount_min_fmt: '1.25K', sb: 10, bb: 25, available: [6, 9], baseRake: 0.08, rakeCap: 125
@@ -168,6 +143,35 @@ export const zones = [
         },
         'bgMusic': [TRACK_ENUM.PartyInTheRuins, TRACK_ENUM.Futuristic]
       },
+
+      {
+        "id": "micro_warehouse_with_max",
+        "name_ko": "뒷골목 창고",
+        "name_en": "Back Alley Warehouse",
+        "imgSrc": imgMicroWarehouse,
+        "description_ko": "맥스와 함께 뒷골목 창고를 방문하였습니다.",
+        "description_en": "Visited the back alley warehouse with Max.",
+        "requirements": null,
+        "isHidden": true,
+        "firstClearRewards": "underground_bar_invite",
+        "level": 2,
+        "npcs": [
+          "Fish",
+          "Broke",
+        ],
+        guests: ['Max'],
+        "tables": {
+          buyInLimit: 1,
+          amount: 5000, amount_fmt: '5K', amount_min_fmt: '2.5K', sb: 10, bb: 25, available: [6], baseRake: 0.04, rakeCap: 125
+        },
+        "theme": {
+          "background": "radial-gradient(circle, #2a2a2a 0%, #0f0f0f 100%)",
+          "borderColor": "#8B4513",
+          "boxShadow": "0 0 20px rgba(139, 69, 19, 0.3)"
+        },
+        'bgMusic': [TRACK_ENUM.PartyInTheRuins, TRACK_ENUM.Futuristic]
+      },
+
       {
         "id": "micro_underground_bar",
         "name_ko": "지하 바",
@@ -196,8 +200,7 @@ export const zones = [
   },
   {
     "id": "low",
-    "name_ko": "Low Stakes",
-    "name_en": "Low Stakes",
+    "name": "Low Stakes",
     "description_ko": "본격적으로 포커를 업으로 삼기 시작하는 단계. 실력이 드러나며 다양한 직업군과 성향이 혼재.",
     "description_en": "The stage where you start taking poker seriously as a profession. Skills begin to show, and a mix of various professions and tendencies exists.",
     "locations": [
@@ -206,33 +209,32 @@ export const zones = [
         "name_ko": "네온 라운지",
         "name_en": "Neon Lounge",
         "imgSrc": imgLowNeonLounge,
-        "description_ko": "트렌드에 민감한 청년들이 퇴근 후 가볍게 한잔하며 즐기는 장소.",
-        "description_en": "A place where trend-sensitive youth enjoy a light drink after work.",
+        "description_ko": "칵테일 한 잔의 여유 속에서도 테이블 위에는 날카로운 전략이 오가는 신예들의 사교적 포커 롯지입니다.",
+        "description_en": "A social poker lodge for rising stars where sharp strategies unfold over a casual glass of cocktails.",
         "atmosphere": "세련됨, 차분함, 도시적",
         "requirements": null,
         "level": 4,
         "firstClearRewards": "club_membership",
         "npcs": [
           "Fish",
-          "MR_CALL",
           "Gambler",
           "Nit"
         ],
-        "tables": { amount: 10000, amount_fmt: '10K', amount_min_fmt: '5K', sb: 50, bb: 100, available: [6, 9], baseRake: 0.07, rakeCap: 500 },
+        "tables": { isMonitoring: true, amount: 10000, amount_fmt: '10K', amount_min_fmt: '5K', sb: 50, bb: 100, available: [6, 9], baseRake: 0.07, rakeCap: 500 },
         "theme": {
           "background": "radial-gradient(circle, #001a1a 0%, #000d0d 100%)",
           "borderColor": "#00f0ff",
           "boxShadow": "0 0 30px rgba(0, 240, 255, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.lnplusmusic_Reels, TRACK_ENUM.Dystopia, TRACK_ENUM.BeThere, TRACK_ENUM.Overnight]
+        'bgMusic': [TRACK_ENUM.lnplusmusic_Reels, TRACK_ENUM.Lnplusmusic_Beauty, TRACK_ENUM.BeThere, TRACK_ENUM.Overnight]
       },
       {
         "id": "low_underground_club_meet_max",
         "name_ko": "H.B.D 클럽",
         "name_en": "H.B.D Club",
-        "imgSrc": imgLowUndergroundClub,
-        "description_ko": "말로만 듣던 부자들이 VIP 룸에서 포커를 치고 있다.",
-        "description_en": "Playing poker with the rich guys you've only heard about.",
+        "imgSrc": imgLowUndergroundClubWithMax,
+        "description_ko": "돈만 많은 '호구' 부자들이 VIP 룸에 모여 판을 벌이고 있다.",
+        "description_en": "A bunch of rich fish are gathered in the VIP room, just waiting to be gutted.",
         "atmosphere": "시끄러움, 혼란스러움, 들뜸",
         "requirements": null,
         "firstClearRewards": "club_membership",
@@ -297,7 +299,7 @@ export const zones = [
           "Rich_Guy",
           "Gangster"
         ],
-        "tables": { amount: 50000, amount_fmt: '50K', amount_min_fmt: '25K', sb: 250, bb: 500, available: [6, 9], baseRake: 0.06, rakeCap: 5000 },
+        "tables": { isMonitoring: true, amount: 50000, amount_fmt: '50K', amount_min_fmt: '25K', sb: 250, bb: 500, available: [6, 9], baseRake: 0.06, rakeCap: 5000 },
         "theme": {
           "background": "radial-gradient(circle, #0f2e0f 0%, #051a05 100%)",
           "borderColor": "#2e8b57",
@@ -309,27 +311,26 @@ export const zones = [
   },
   {
     "id": "middle",
-    "name_ko": "Middle Stakes",
-    "name_en": "Middle Stakes",
+    "name": "Middle Stakes",
     "description_ko": "본격적인 승부사들의 영역. 생계를 걸거나 도약을 준비하는 이들이 모임.",
     "description_en": "The realm of true gamblers. A gathering place for those risking their livelihood or preparing for a leap forward.",
     "locations": [
       {
-        "id": "middle_kbt_base",
-        "name_ko": "KBT 본거지",
-        "name_en": "KBT Base",
-        "imgSrc": imgMiddleUndergroundCasino,
-        "description_ko": "KBT 조직의 본거지. '더 벙커'의 안쪽에 위치해 있다.",
-        "description_en": "The base of the KBT syndicate. Located deep inside 'The Bunker'.",
+        "id": "middle_kbt_vip_room",
+        "name_ko": "KBT VIP 룸",
+        "name_en": "KBT VIP Room",
+        "imgSrc": imgMiddleUndergroundCasinoVipRoom,
+        "description_ko": "KBT 조직의 VIP 룸. '더 벙커'의 안쪽에 위치해 있다.",
+        "description_en": "The VIP room of the KBT syndicate. Located deep inside 'The Bunker'.",
         "atmosphere": "긴장감, 위압감",
         "isHidden": true,
         "requirements": null,
-        "level": 5,
+        "level": 6,
         "npcs": [
           "KBT_Leader",
         ],
         "firstClearRewards": "the_bunker_key",
-        "tables": { buyInLimit: 1, amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6], baseRake: 0.00, rakeCap: 0, isAdvanced: true },
+        "tables": { isMonitoring: true, buyInLimit: 1, amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [2], baseRake: 0.00, rakeCap: 0, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #1c1c1c 0%, #000000 100%)",
           "borderColor": "#708090",
@@ -351,7 +352,7 @@ export const zones = [
           "Maniac",
           "Gangster",
         ],
-        "tables": { amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6, 9], baseRake: 0.08, rakeCap: 5000 },
+        "tables": { isMonitoring: true, amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6, 9], baseRake: 0.08, rakeCap: 5000 },
         "theme": {
           "background": "radial-gradient(circle, #1c1c1c 0%, #000000 100%)",
           "borderColor": "#708090",
@@ -361,13 +362,13 @@ export const zones = [
       },
       {
         "id": "middle_underground_casino_with_florence",
-        "name_ko": "더 벙커 (플로렌스와 함께)",
-        "name_en": "The Bunker (Florence with you)",
+        "name_ko": "더 벙커",
+        "name_en": "The Bunker",
         "imgSrc": imgMiddleUndergroundCasino,
-        "description_ko": "버려진 지하 벙커를 개조한 불법 도박장. KBT가 관리하고 있다.",
-        "description_en": "An illegal gambling den converted from an abandoned underground bunker. Managed by KBT.",
+        "description_ko": "버려진 지하 벙커를 개조한 불법 도박장. KBT가 관리하고 있다. (플로렌스가 함께 한다)",
+        "description_en": "An illegal gambling den converted from an abandoned underground bunker. Managed by KBT. (Florence is with you)",
         "atmosphere": "기괴함, 공포, 사이버펑크 호러",
-        "requirements": "the_bunker_key",
+        "requirements": null,
         "isHidden": true,
         "level": 5,
         "guests": ['florence'],
@@ -401,7 +402,7 @@ export const zones = [
           "Old_Lion"
           // "Shark"
         ],
-        "tables": { amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1250, bb: 2500, available: [6, 9], baseRake: 0.06, rakeCap: 25000, isAdvanced: true },
+        "tables": { isMonitoring: true, amount: 250000, amount_fmt: '250K', amount_min_fmt: '125K', sb: 1250, bb: 2500, available: [6, 9], baseRake: 0.06, rakeCap: 25000, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #001a33 0%, #000a14 100%)",
           "borderColor": "#ffd700",
@@ -424,7 +425,7 @@ export const zones = [
           "Quant_Pro",
           "Shark",
         ],
-        "tables": { amount: 500000, amount_fmt: '500K', amount_min_fmt: '250K', sb: 2500, bb: 5000, available: [6, 9], baseRake: 0.06, rakeCap: 50000, isAdvanced: true },
+        "tables": { isMonitoring: true, amount: 500000, amount_fmt: '500K', amount_min_fmt: '250K', sb: 2500, bb: 5000, available: [6, 9], baseRake: 0.06, rakeCap: 50000, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #1a2a3a 0%, #0d151d 100%)",
           "borderColor": "#4682b4",
@@ -436,8 +437,7 @@ export const zones = [
   },
   {
     "id": "high",
-    "name_ko": "High Stakes",
-    "name_en": "High Stakes",
+    "name": "High Stakes",
     "description_ko": "선택받은 소수만이 접근할 수 있는 영역. 승패는 권력의 이동을 의미.",
     "description_en": "A realm accessible only to a chosen few. Victory or defeat means a shift in power.",
     "locations": [
@@ -458,16 +458,16 @@ export const zones = [
           "Old_Lion",
           "Named_Pro",
         ],
-        "tables": { amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.05, rakeCap: 50000, isAdvanced: true },
+        "tables": { isMonitoring: true, amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.05, rakeCap: 50000, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #3d0000 0%, #1a0000 100%)",
           "borderColor": "#ff4d4d",
           "boxShadow": "0 0 40px rgba(255, 0, 0, 0.6)"
         },
-        'bgMusic': [TRACK_ENUM.Grainders2057, TRACK_ENUM.Dystopia, TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
+        'bgMusic': [TRACK_ENUM.Dystopia, TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
       },
       {
-        "id": "high_safe_house",
+        "id": "high_habitat",
         "name_ko": "안전가옥",
         "name_en": "Safe House",
         "imgSrc": null,
@@ -508,7 +508,7 @@ export const zones = [
           "The_Don",
           "Rich_Guy",
         ],
-        "tables": { amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.06, rakeCap: 500000, isAdvanced: true },
+        "tables": { isMonitoring: true, amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.06, rakeCap: 500000, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #1a1a1a 0%, #000000 100%)",
           "borderColor": "#ffd700",
@@ -531,6 +531,7 @@ export const zones = [
           "Shark"
         ],
         "tables": {
+          isMonitoring: true,
           amount: 20000000, amount_fmt: '20M', amount_min_fmt: '10M', sb: 50000, bb: 100000, available: [
             6
           ], baseRake: 0.0, rakeCap: 0
@@ -546,8 +547,7 @@ export const zones = [
   },
   {
     "id": "special",
-    "name_ko": "Special Tier (The Sanctuary)",
-    "name_en": "Special Tier (The Sanctuary)",
+    "name": "Special Tier",
     "description_ko": "지구에서 벗어난 공간. 운명을 건 승부.",
     "description_en": "A space outside of Earth. A game with destiny on the line.",
     "locations": [
@@ -565,7 +565,7 @@ export const zones = [
           // "Musk_V",
           "The_Whale"
         ],
-        "tables": { amount: 100000000, amount_fmt: '100M', amount_min_fmt: '50M', sb: 500000, bb: 1000000, available: [6, 9], baseRake: 0.03, rakeCap: 5000000, isAdvanced: false },
+        "tables": { isMonitoring: true, amount: 100000000, amount_fmt: '100M', amount_min_fmt: '50M', sb: 500000, bb: 1000000, available: [6, 9], baseRake: 0.03, rakeCap: 5000000, isAdvanced: false },
         "theme": {
           "background": "radial-gradient(circle, #000033 0%, #00001a 100%)",
           "borderColor": "#00ffff",

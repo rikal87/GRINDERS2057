@@ -257,7 +257,7 @@ export const recordPlayStatsSessionForCPU = (player, action, payload) => {
       sessionStats.threeBetCount++;
       break;
     case PLAY_RECORD_STATS_TYPE._4BET_OR_MORE:
-      sessionStats.pfrCount++; // Simplified for CPU for now
+      sessionStats.fourBetOrMoreCount++; // Simplified for CPU for now
       break;
     case PLAY_RECORD_STATS_TYPE.NET_WINNING:
       sessionStats.net_winning += payload.amount;
@@ -413,8 +413,8 @@ export const recordPlayStatsSessionForPlayer = (player, action, payload) => {
       totalStats.raise4bet_or_more++;
       break;
     case PLAY_RECORD_STATS_TYPE.BUST_ENEMY:
-      sessionStats.bust_enemy[payload.enemyClass || 'Unknown']++;
-      totalStats.bust_enemy[payload.enemyClass || 'Unknown']++;
+      sessionStats.bust_enemy[payload.enemyClass || 'fish']++;
+      totalStats.bust_enemy[payload.enemyClass || 'fish']++;
       break;
     // case PLAY_RECORD_STATS_TYPE.PAID_RAKE:
     //   sessionStats.paid_rake += amount;

@@ -12,7 +12,7 @@ export const CLASSES = {
 export const CLASSES_PARTNER = [
   {
     id: 'Max', name: 'Max', fullName: 'Max Houston', philosophy: 'LAG', vPIP: .3, AF: 3.5, WTSD: .29, W$SD: 0.53, chipMultiply: 1.5,
-    canContracts: [CONTRACT_TYPE.SHARE_BENEFIT, CONTRACT_TYPE.BANKRUPT_RESCUE],
+    canContracts: [CONTRACT_TYPE.BENEFIT_SHARE, CONTRACT_TYPE.BAILOUT],
     schedule: [
       { days: '월-토', hours: '13:00-23:00', status: 'GAMBLING' },
       { days: '일', hours: '종일', status: 'RESTING' },
@@ -28,25 +28,24 @@ export const CLASSES_PARTNER = [
     note_en: 'Your long-time friend from Texas. At the table, he breaks opponents\' composure with rough and unpredictable plays.',
   },
   {
-    id: 'Florence', name: 'Florence', fullName: 'Florence Quinn', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, W$SD: 0.57, chipMultiply: 1.5,
+    id: 'Florence', name: 'Florence', fullName: 'Florence Quinn', philosophy: 'TAG', vPIP: .25, AF: 3.5, WTSD: .27, W$SD: 0.57, chipMultiply: 1.5,
     age: 32,
     isAdvanced: false,
     isPartner: true,
-    canContracts: [CONTRACT_TYPE.SHARE_BENEFIT, CONTRACT_TYPE.COLLUSION],
+    canContracts: [CONTRACT_TYPE.BENEFIT_SHARE, CONTRACT_TYPE.COLLUSION],
     schedule: [
       { days: '수,목,금,토,일', hours: '17:00-24:00', status: 'GAMBLING' },
       { days: '수,금,일', hours: '00:00-03:00', status: 'GAMBLING' },
       { days: '월,화', hours: '종일', status: 'RESTING' }
     ],
-    initialBankroll: 73000, initialRelationship: 300,
-    // initialBankroll: 0, initialRelationship: 300,
+    initialBankroll: 73000, initialRelationship: 400,
     concept: '플레이어에게 적대적이지는 않습지만, 다소 차갑고 계산이 깔린듯한 비즈니스적인 말투를 꽤 자주 사용합니다. 하지만 가끔씩 귀여운 면모도 있습니다.',
     note_ko: '아름다움 뒤에 차가운 계산을 숨긴 라스베가스 출신의 베테랑 플레이어. H.B.D 클럽에서 처음 조우했으며, 언제나 정석적이고 견고한 타이트-어그레시브(TAG)의 표본을 보여줍니다.',
     note_en: 'A veteran player from Las Vegas who hides cold calculations behind her beauty. First encountered at the H.B.D Club, she exemplifies solid, textbook Tight-Aggressive (TAG) gameplay.',
 
   },
   {
-    id: 'Kate', name: 'Kate', fullName: 'Allen Kate', philosophy: 'Maniac', vPIP: .55, AF: 4.5, WTSD: .41, W$SD: 0.51, chipMultiply: 8,
+    id: 'Kate', name: 'Kate', fullName: 'Allen Kate', philosophy: 'Maniac', vPIP: .55, AF: 4, WTSD: .41, W$SD: 0.51, chipMultiply: 8,
     age: 41,
     isAdvanced: false,
     isPartner: true,
@@ -81,7 +80,7 @@ export const CLASSES_PARTNER = [
 
 export const CLASSES_ENEMY = [
   {
-    id: 'Max', name: 'Max(Mentor)', philosophy: 'LAG', vPIP: .3, AF: 3.5, WTSD: .29, W$SD: 0.53, chipMultiply: 1.5,
+    id: 'Max', name: 'Max(Mentor)', philosophy: 'LAG', vPIP: .3, AF: 4, WTSD: .29, W$SD: 0.53, chipMultiply: 1.5,
     canContracts: [],
     schedule: [],
     isAdvanced: false,
@@ -92,7 +91,7 @@ export const CLASSES_ENEMY = [
 
   },
   {
-    id: 'an_unknown_woman', name: 'An_Unknown_Woman', philosophy: 'TAG', vPIP: .24, AF: 3.5, WTSD: .27, W$SD: 0.53, chipMultiply: 4.32,
+    id: 'an_unknown_woman', name: 'An_Unknown_Woman', philosophy: 'TAG', vPIP: .24, AF: 3, WTSD: .27, W$SD: 0.53, chipMultiply: 4.32,
     schedule: [CONTRACT_TYPE.A_DATE_WITH_YOU],
     isAdvanced: true,
     isPartner: false,
@@ -122,7 +121,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'gambler',
-    name: 'Gambler', philosophy: 'LAG', vPIP: .45, AF: 3, WTSD: .4, chipMultiply: 1.2, isAdvanced: false,
+    name: 'Gambler', philosophy: 'LAG', vPIP: .45, AF: 2.5, WTSD: .4, chipMultiply: 1.2, isAdvanced: false,
     note_ko: '인생은 한 방, 아주 낮은 확률의 드로우만 보여도 리버까지 멈추지 않는 브레이크 고장난 도박꾼입니다.',
     note_en: 'Life is a gamble. He\'ll chase even the thinnest draw all the way to the river, never letting up on the bets',
 
@@ -136,17 +135,16 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'rich_guy',
-    name: 'Rich_Guy', philosophy: 'TAP', vPIP: .29, AF: 2.5, WTSD: .23, chipMultiply: 3, isAdvanced: false,
+    name: 'Rich_Guy', philosophy: 'TAP', vPIP: .29, AF: 1.5, WTSD: .23, chipMultiply: 3, isAdvanced: false,
     note_ko: '기업의 꽤 높은 분이거나 운 좋게 코인 대박이 터진 부자입니다. 테이블에 앉아있는 스릴을 즐기지만, 상황이 심각해지면 쉽게 접는 경향이 있습니다.',
     note_en: 'He is a high-ranking executive of a company or a rich man who got lucky with a crypto boom. He plays for the thrill of being at the table, but tends to fold when things get too intense.',
 
   },
   {
     id: 'gangster',
-    name: 'Gangster', philosophy: 'TAG', vPIP: .36, AF: 4, WTSD: .44, chipMultiply: 1.5, isAdvanced: false,
-    note_ko: '확실한 판에서만 무섭게 몰아붙이는 무법자입니다. 그의 베팅은 테이블 전체를 압박하는 폭력에 가깝습니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.',
-    note_en: 'He\'s an outlaw who strikes ruthlessly only when the odds are in his favor. His betting is akin to violence, suffocating the entire table. Be careful—when the cards don\'t go his way, you can see him itching to flip the table.',
-
+    name: 'Gangster', philosophy: 'LAG', vPIP: .32, AF: 4, WTSD: .44, chipMultiply: 1.5, isAdvanced: false,
+    note_ko: 'KBT 출신의 갱단 일원으로, 무섭게 몰아붙이는 플레이 스타일이 특징입니다. 그의 베팅은 테이블 전체를 압박하는 폭력에 가깝습니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.',
+    note_en: 'He\'s a member of the [KBT] gang, characterized by his intimidating and aggressive playstyle. His betting feels like violence, suffocating the entire table. Be careful—when the cards don\'t go his way, you can see him itching to flip the table.',
   },
   {
     id: 'nit',
@@ -157,14 +155,14 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'quant_pro',
-    name: 'Quant_Pro', philosophy: 'TAP', vPIP: .22, AF: 2, WTSD: .25, chipMultiply: 1.5, isAdvanced: false,
+    name: 'Quant_Pro', philosophy: 'TAG', vPIP: .22, AF: 2.5, WTSD: .25, chipMultiply: 1.5, isAdvanced: false,
     note_ko: '금융권 퀀트 출신이었으나, 지금은 포커에 미쳐버린 친구입니다. 감정에 휘둘리지 않고 철저히 데이터대로만 움직이는 인간 계산기입니다.',
     note_en: 'He was a quant in the finance industry, but now he\'s crazy about poker. He never tilts, making every move based on cold, hard probability and expected value.',
 
   },
   {
     id: 'the_don',
-    name: 'The_Don', philosophy: 'LAG', vPIP: .35, AF: 4.5, WTSD: .35, chipMultiply: 2, isAdvanced: true,
+    name: 'The_Don', philosophy: 'TAG', vPIP: .23, AF: 4, WTSD: .29, chipMultiply: 2.5, isAdvanced: true,
     note_ko: '포커를 "전쟁"으로 생각합니다. 상대가 기권할 때까지 돈과 위압감으로 밀어붙이며, 테이블 전체의 분위기를 공포로 몰아넣는 것을 즐깁니다.',
     note_en: 'He thinks of poker as a "war". He enjoys pushing his opponents with money and intimidation until they give up, filling the entire table with fear.',
 
@@ -185,14 +183,14 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'old_lion',
-    name: 'Old_Lion', philosophy: 'TAG', vPIP: .25, AF: 3, WTSD: .27, chipMultiply: 1.5, isAdvanced: true,
+    name: 'Old_Lion', philosophy: 'TAG', vPIP: .25, AF: 2.5, WTSD: .27, chipMultiply: 1.5, isAdvanced: true,
     note_ko: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.',
     note_en: 'His prime has passed, but he is still a sharp veteran. If he has entered the game, it means he has already laid all the traps, so don\'t mess with him carelessly.',
 
   },
   {
     id: 'shark',
-    name: 'Shark', philosophy: 'TAG', vPIP: .27, AF: 3.5, WTSD: .27, chipMultiply: 1.5, isAdvanced: true,
+    name: 'Shark', philosophy: 'TAG', vPIP: .27, AF: 3, WTSD: .27, chipMultiply: 1.5, isAdvanced: true,
     note_ko: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.',
     note_en: 'The most frightening thing is not his hand, but his patience.',
 
@@ -205,11 +203,11 @@ export const CLASSES_ENEMY = [
   },
 ];
 export const CLASSES_ENEMY_BOSS = [
-  { id: 'ivy_00', name: 'IVY_00', philosophy: 'TAG', vPIP: .27, AF: 3.5, WTSD: .27, chipMultiply: 2, isBoss: true, note: '균형잡힌, 그리고 전설적인 포커 플레이어입니다.' },
-  { id: 'd_neural', name: 'D_NEURAL', philosophy: 'LAG', vPIP: .34, AF: 2.7, WTSD: .26, chipMultiply: 2, isBoss: true, note: '유쾌하며 상대방의 핸드리딩 실력이 정말 좋습니다.' },
-  { id: 'd_wan_v2', name: 'D.W.A.N_V2', philosophy: 'LAG', vPIP: .33, AF: 4.2, WTSD: .30, chipMultiply: 2, isBoss: true, note: '매우 공격적인 프로 포커 플레이어입니다.' },
-  { id: 'jngl_man', name: 'JNGL_MAN', philosophy: 'TAG', vPIP: .30, AF: 3.3, WTSD: .31, chipMultiply: 2, isBoss: true, note: '헤즈업 전문 프로 포커 플레이어입니다.' },
-  { id: 'yh0_v1ral', name: 'YH0_V1RAL', philosophy: 'LAG', vPIP: .33, AF: 3.7, WTSD: .29, chipMultiply: 2, isBoss: true, note: '프랑스 출신 유명 포커 플레이어입니다.' },
+  { id: 'named_pro', name: 'IVY_00', philosophy: 'TAG', vPIP: .27, AF: 3.5, WTSD: .27, chipMultiply: 2, isBoss: true, note: '균형잡힌, 그리고 전설적인 포커 플레이어입니다.' },
+  { id: 'named_pro', name: 'D_NEURAL', philosophy: 'LAG', vPIP: .34, AF: 2.7, WTSD: .26, chipMultiply: 2, isBoss: true, note: '유쾌하며 상대방의 핸드리딩 실력이 정말 좋습니다.' },
+  { id: 'named_pro', name: 'D.W.A.N_V2', philosophy: 'LAG', vPIP: .33, AF: 4.2, WTSD: .30, chipMultiply: 2, isBoss: true, note: '매우 공격적인 프로 포커 플레이어입니다.' },
+  { id: 'named_pro', name: 'JNGL_MAN', philosophy: 'TAG', vPIP: .30, AF: 3.3, WTSD: .31, chipMultiply: 2, isBoss: true, note: '헤즈업 전문 프로 포커 플레이어입니다.' },
+  { id: 'named_pro', name: 'YH0_V1RAL', philosophy: 'LAG', vPIP: .33, AF: 3.7, WTSD: .29, chipMultiply: 2, isBoss: true, note: '프랑스 출신 유명 포커 플레이어입니다.' },
 ]
 
 export const PERSONALITIES = {

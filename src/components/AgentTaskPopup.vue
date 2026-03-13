@@ -31,50 +31,18 @@
                 <div class="lock-icon">🔒</div>
                 <p class="slogan" style="color:var(--neon-red)">LOCKED: REQUIREMENT_NOT_MET</p>
                 <p class="requirement" v-if="currentTaskDef.unlock">
-                  NEED: {{ currentTaskDef.unlock.type }}
+                  NEED: {{ getRecordStatsDesc(currentTaskDef.unlock.type) }}
                   <span v-if="currentTaskDef.unlock.id">[{{ currentTaskDef.unlock.id }}]</span>
-                  {{ currentTaskDef.unlock.count || currentTaskDef.unlock.amount || currentTaskDef.unlock.credit }}
+                </p>
+                <p class="requirement" v-if="currentTaskDef.unlock">
+                  <small>{{ getRecordStatsCurrentCount(currentTaskDef.unlock.type,
+                    currentTaskDef.unlock.id).toLocaleString() }}</small>
+                  <small> / </small>
+                  <small>{{ (currentTaskDef.unlock.count ||
+                    currentTaskDef.unlock.amount ||
+                    currentTaskDef.unlock.credit).toLocaleString() }}</small>
                 </p>
               </div>
-              <!-- <div class="features-box" v-if="isTaskUnlocked(currentTaskDef)">
-                <div class="label">EXECUTION_PARAMETERS</div>
-                <div class="stats-container" v-if="isTaskUnlocked(currentTaskDef)">
-                  <div class="stats-section">
-                    <div class="section-label">EXECUTION_PARAMETERS</div>
-                    <div class="stats-grid">
-                      <div class="stat-entry">
-                        <span class="label">COST:</span>
-                        <span class="val cyan">
-                          {{ currentTaskDef.cost }} LT
-                          <span v-if="currentTaskDef.type !== 'AGENT_WORK'">HR</span><span v-else> Per Active</span>
-                        </span>
-                      </div>
-                      <div class="stat-entry">
-                        <span class="label">TOTAL_LOST:</span> <span class="val red">0 CR</span>
-                      </div>
-                      <div class="stat-entry">
-                        <span class="label">PAID_RAKE:</span> <span class="val yellow">0 CR</span>
-                      </div>
-                      <div class="stat-entry">
-                        <span class="label">MAX_WIN_POT:</span> <span class="val white">0 CR</span>
-                      </div>
-                      <div class="stat-entry">
-                        <span class="label">MAX_LOSE_POT:</span> <span class="val white">0 CR</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <ul class="features">
-                  <li>COST: {{ currentTaskDef.cost }} LT <span v-if="currentTaskDef.type !== 'AGENT_WORK'">/
-                      HR</span><span v-else>/ ACTIVE</span></li>
-                  <li v-if="currentTaskDef.duration">DURATION: {{ formatMinutes(currentTaskDef.duration) }}</li>
-                  <li>COOLDOWN: {{ formatMinutes(currentTaskDef.cooldown) }}</li>
-                  <li v-if="currentProbBonus > 0 || currentTaskDef.probability" style="color:var(--neon-green)">
-                    SUCCESS_RATE: {{
-                      ((currentTaskDef.probability + currentProbBonus) * 100).toFixed(1) }}% / HR
-                  </li>
-                </ul>
-              </div> -->
               <div class="stats-container" v-if="isTaskUnlocked(currentTaskDef)">
                 <div class="stats-section">
                   <div class="section-label">EXECUTION_PARAMETERS</div>
@@ -129,14 +97,182 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { store } from '../logic/store';
-import { AI_TASK_DATA } from '../logic/aiAgentTaskData';
+import { store, getLanguage, getEnemyBustCount, getPlayStatsCount, getAgentTaskStat } from '../logic/store';
+import { AI_TASK_DATA, } from '../logic/aiAgentTaskData';
 import { isTaskUnlocked, startTask } from '../logic/aiAgentTaskSystem';
 import { audioManager } from '../logic/audioManager';
+import { TASK_STATS_TYPE } from '../logic/constants';
+import { PLAY_RECORD_STATS_TYPE, } from '../logic/playRecordStats';
+
+const PLAY_RECORD_STATS_TYPE_DESC = {
+  PAID_RAKE: {
+    'ko': '레이크 지불',
+    'en': 'Paid Rake'
+  },
+  HANDS_PLAYED: {
+    'ko': '핸드 수',
+    'en': 'Hands Played'
+  },
+  FACED_RAISE: {
+    'ko': '레이즈 당함',
+    'en': 'Faced Raise'
+  },
+  FACED_3BET: {
+    'ko': '3벳 당함',
+    'en': 'Faced 3Bet'
+  },
+  FACED_4BET_OR_MORE: {
+    'ko': '4벳 이상 당함',
+    'en': 'Faced 4Bet or More'
+  },
+  FOLDED_TO_RAISE: {
+    'ko': '레이즈에 폴드',
+    'en': 'Folded to Raise'
+  },
+  FOLDED_TO_3BET: {
+    'ko': '3벳에 폴드',
+    'en': 'Folded to 3Bet'
+  },
+  FOLDED_TO_4BET_OR_MORE: {
+    'ko': '4벳 이상에 폴드',
+    'en': 'Folded to 4Bet or More'
+  },
+  BET: {
+    'ko': '벳',
+    'en': 'Bet'
+  },
+  RAISE: {
+    'ko': '레이즈',
+    'en': 'Raise'
+  },
+  CALL: {
+    'ko': '콜',
+    'en': 'Call'
+  },
+  FOLD: {
+    'ko': '폴드',
+    'en': 'Fold'
+  },
+  CHECK: {
+    'ko': '체크',
+    'en': 'Check'
+  },
+  ALL_IN: {
+    'ko': '올인',
+    'en': 'All In'
+  },
+  _3BET: {
+    'ko': '3벳',
+    'en': '3Bet'
+  },
+  _4BET_OR_MORE: {
+    'ko': '4벳 이상',
+    'en': '4Bet or More'
+  },
+  SHOWDOWN: {
+    'ko': '쇼다운',
+    'en': 'Showdown'
+  },
+  WIN: {
+    'ko': '승리',
+    'en': 'Win'
+  },
+  LOSE: {
+    'ko': '패배',
+    'en': 'Lose'
+  },
+  BUST: {
+    'ko': '파산',
+    'en': 'Bankrupt'
+  },
+  VPIP: {
+    'ko': 'VPIP',
+    'en': 'VPIP'
+  },
+  PFR: {
+    'ko': 'PFR',
+    'en': 'PFR'
+  },
+  WTSD: {
+    'ko': 'WTSD',
+    'en': 'WTSD'
+  },
+  WSD: {
+    'ko': 'WSD',
+    'en': 'WSD'
+  },
+  W$SD: {
+    'ko': 'W$SD',
+    'en': 'W$SD'
+  },
+  MAX_LOSE_STREAK: {
+    'ko': '최대 연속 패배',
+    'en': 'Max Lose Streak'
+  },
+  MAX_WIN_STREAK: {
+    'ko': '최대 연속 승리',
+    'en': 'Max Win Streak'
+  },
+  MAX_LOSE_POT: {
+    'ko': '최대 패배 팟',
+    'en': 'Max Lose Pot'
+  },
+  MAX_WIN_POT: {
+    'ko': '최대 승리 팟',
+    'en': 'Max Win Pot'
+  },
+  MAX_LOSE_EQUITY: {
+    'ko': '최대 패배 에퀴티',
+    'en': 'Max Lose Equity'
+  },
+  MAX_WIN_EQUITY: {
+    'ko': '최대 승리 에퀴티',
+    'en': 'Max Win Equity'
+  },
+  BUST_ENEMY: {
+    'ko': '적 파산 횟수',
+    'en': 'Bust Enemy'
+  },
+  NET_SHARE: {
+    'ko': '파트너와의 수익 분배',
+    'en': 'Net Share to Partner'
+  },
+  NET_WINNING: {
+    'ko': '순수익',
+    'en': 'Net Winning'
+  },
+  COST_LT: {
+    'ko': '비용',
+    'en': 'Cost LT'
+  },
+  FACED_FLOP_BET: {
+    'ko': '플랍 벳 당함',
+    'en': 'Faced Flop Bet'
+  },
+  COST_LT_TOTAL: {
+    'ko': '총 LT 소모량',
+    'en': 'Total LT Spent'
+  },
+  COMPLETED_TASK_COUNT: {
+    'ko': '완료된 작업 수',
+    'en': 'Completed Task Count'
+  }
+}
+const getRecordStatsDesc = (type) => {
+  if (!type) return;
+  return PLAY_RECORD_STATS_TYPE_DESC[type.toUpperCase()][getLanguage()];
+}
+const getRecordStatsCurrentCount = (type, id) => {
+  switch (type) {
+    case TASK_STATS_TYPE.COST_LT_TOTAL:
+    case TASK_STATS_TYPE.COMPLETED_TASK_COUNT: return getAgentTaskStat(type) || 0;
+    case PLAY_RECORD_STATS_TYPE.BUST_ENEMY: return getEnemyBustCount(id) || 0;
+    default: return getPlayStatsCount(type) || 0;
+  }
+}
 const getBonusColor = (probBonus) => {
-  console.log(probBonus);
-  if (probBonus > 0.0) return 'var(--neon-green)';
-  else return '#fff';
+  if (!probBonus) return '#fff';
+  else if (probBonus > 0.0) return 'var(--neon-green)';
 }
 const props = defineProps({
   slotIdx: {
@@ -230,6 +366,9 @@ const canStartCurrentTask = computed(() => {
   if (!task) return false;
   if (!isTaskUnlocked(task)) return false;
 
+  // Check if already active or on cooldown
+  if (store.onWorkTasks.find(t => t.taskId === task.id)) return false;
+
   // Check LT
   if (store.ludusTokens < task.cost) return false;
 
@@ -243,6 +382,13 @@ const taskInitiateBtnText = computed(() => {
   const task = currentTaskDef.value;
   if (!task) return 'NO_TASK_SELECTED';
   if (!isTaskUnlocked(task)) return 'INITIATE';
+
+  const activeTask = store.onWorkTasks.find(t => t.taskId === task.id);
+  if (activeTask) {
+    if (activeTask.status === 'COOLDOWN') return 'ON_COOLDOWN';
+    if (activeTask.status === 'ACTIVE' || activeTask.status === 'WORKING') return 'IN_PROGRESS';
+    return 'UNAVAILABLE';
+  }
 
   if (task.tier > slotTierValue.value) return `LOW_TIER_TASKSLOT`;
 
@@ -304,6 +450,7 @@ onMounted(() => {
   margin-top: 10px;
   justify-content: center
 }
+
 .features li {
   color: var(--neon-cyan);
   text-align: left;

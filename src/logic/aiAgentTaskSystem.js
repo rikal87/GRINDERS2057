@@ -1,11 +1,10 @@
 
-import { store, getEffectiveMaxLT, getEnemyBustCount, getPlayStatsCount, gainBankroll, getAgentTaskStat, gainAgentTaskStat, getCurrentLT, gainLT, getCurrentBankroll, getAgent } from './store';
-import { sendMessage } from './messageSystem';
+import { store, getPlayStatsCount, gainBankroll, getAgentTaskStat, gainAgentTaskStat, getCurrentLT, gainLT, getCurrentBankroll, getAgent, getLocalizedText } from './store';
+import { sendMessage, MESSAGE_TYPE } from './messageSystem';
 import { AI_TASK_DATA, TASK_EFFECT_TYPE } from './aiAgentTaskData';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 import { zones } from './zone';
-import { TYPE_CHANGE_BANKROLL } from './constants.js'
-import { PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
+import { TYPE_CHANGE_BANKROLL, TASK_STATS_TYPE } from './constants.js'
 // Task Definitions
 // Logic to process tasks every game tick (e.g. hourly)
 // Actually we can process minutely, but probability is per hour.
@@ -28,23 +27,21 @@ export const checkSubscription = () => {
 
   if (plan && plan.cost > 0) {
     if (getCurrentBankroll() >= plan.cost) {
-      // Auto-renew for 30 days
+      // Auto-renew for 7 days
       gainBankroll(-plan.cost, TYPE_CHANGE_BANKROLL.AI_AGENT_SUBSCRIPTION);
-      // 30 days in ms = 30 * 24 * 60 * 60 * 1000
-      const duration = 30 * 24 * 60 * 60 * 1000;
+      // 7 days in ms = 7 * 24 * 60 * 60 * 1000
+      const duration = 7 * 24 * 60 * 60 * 1000;
       agent.subscriptionExpireAt = store.gameTime + duration;
 
-      sendMessage('SYSTEM', 'Subscription Renewed', `${modelId} [${planIdx}] has been auto-renewed for 30 days.`);
+      sendMessage(MESSAGE_TYPE.FINANCE, 'Subscription Renewed', `${modelId} [${planIdx}] has been auto-renewed for 7 days.`, [], 'System');
       return;
     } else {
       // Insufficient funds -> Fallback to Vanguard Free
-      sendMessage('SYSTEM', 'Subscription Expired', `Insufficient funds to renew ${modelId}. Systems downgraded to VANGUARD [FREE].`);
-
+      sendMessage(MESSAGE_TYPE.FINANCE, 'Subscription Expired', `Insufficient funds to renew ${modelId}. Systems downgraded to VANGUARD [FREE].`, [], 'System');
       agent.name = AI_AGENT_MODEL_ENUM.VANGUARD;
       agent.model = AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD];
       agent.price_plan_idx = 0;
       agent.subscriptionExpireAt = 0;
-
       // Handle task constraints
       validateTaskSlots();
     }
@@ -61,7 +58,7 @@ export const validateTaskSlots = () => {
 
   // If we have more tasks than slots, remove from the bottom (highest index)
   if (store.onWorkTasks.length > availableSlotsCount) {
-    sendMessage('SYSTEM', 'Task Slot Overflow', 'Agent downgrade caused task slots to minimize. Excess tasks have been purged.');
+    sendMessage(MESSAGE_TYPE.SYSTEM, 'Task Slot Overflow', 'Agent downgrade caused task slots to minimize. Excess tasks have been purged.', [], 'System', 24 * 60);
     store.onWorkTasks = store.onWorkTasks.slice(0, availableSlotsCount);
   }
 };
@@ -137,7 +134,7 @@ export const processAiTasks = () => {
 
           if (Math.random() < currentProb) {
             triggerTaskSuccess(taskState, taskDef);
-            store.onWorkTasks.splice(i, 1);
+            // DO NOT SPLICE here! The task must remain in onWorkTasks so its ACTIVE duration and COOLDOWN can be tracked.
           } else {
             taskState.failureCount = (taskState.failureCount || 0) + 1;
 
@@ -150,7 +147,7 @@ export const processAiTasks = () => {
             }
           }
         } else if (taskDef.cost > 0) {
-          sendMessage('SYSTEM', 'Task Paused', `Not enough LT to continue searching for ${taskDef.name}.`);
+          sendMessage(MESSAGE_TYPE.SYSTEM, 'Task Paused', `Not enough LT to continue searching for ${taskDef.name}.`, [], 'System', 24 * 60);
           store.onWorkTasks.splice(i, 1);
         }
       }
@@ -171,12 +168,18 @@ export const processAiTasks = () => {
             const bankrollEff = taskDef.effect?.find(e => e.type === 'add_bankroll');
             if (bankrollEff) {
               gainBankroll(bankrollEff.amount, TYPE_CHANGE_BANKROLL.AGENT_TASK);
-              sendMessage('SYSTEM', 'Shadow Work Profit', `[${taskDef.name}] Generated ${bankrollEff.amount} CR.`);
+              sendMessage(MESSAGE_TYPE.SYSTEM, 'Shadow Work Profit', `[${taskDef.name}] Generated ${bankrollEff.amount} CR.`, [], 'System', 24 * 60);
             }
           }
         } else {
-          sendMessage('SYSTEM', 'Process Terminated', `Not enough LT to sustain ${taskDef.name}. Process aborted.`);
-          store.onWorkTasks.splice(i, 1);
+          sendMessage(MESSAGE_TYPE.SYSTEM, 'Process Terminated', `Not enough LT to sustain ${taskDef.name}. Process aborted.`, [], 'System', 24 * 60);
+
+          if (taskDef.cooldown > 0) {
+            taskState.status = 'COOLDOWN';
+            taskState.cooldownEndTime = store.gameTime + (taskDef.cooldown * 60 * 1000) * (1 - (cooldownBonus || 0));
+          } else {
+            store.onWorkTasks.splice(i, 1);
+          }
           continue;
         }
       } else {
@@ -184,7 +187,7 @@ export const processAiTasks = () => {
         if (store.gameTime >= taskState.effectEndTime * (1 + durationBonus)) {
           taskState.status = 'COOLDOWN';
           taskState.cooldownEndTime = store.gameTime + (taskDef.cooldown * 60 * 1000) * (1 - (cooldownBonus || 0));
-          sendMessage('SYSTEM', 'Effect Expired', `${taskDef.name} effect has ended. Cooldown started.`);
+          sendMessage(MESSAGE_TYPE.SYSTEM, 'Effect Expired', `${taskDef.name} effect has ended. Cooldown started.`, [], 'System', 24 * 60);
 
           // Remove active boosts associated with this task
           store.activeBoosts = store.activeBoosts.filter(b => b.taskId !== taskState.taskId);
@@ -197,7 +200,7 @@ export const processAiTasks = () => {
     }
     else if (taskState.status === 'COOLDOWN') {
       if (store.gameTime >= taskState.cooldownEndTime) {
-        sendMessage('SYSTEM', 'Skill Ready', `${taskDef.name} is now available.`);
+        sendMessage(MESSAGE_TYPE.SYSTEM, 'Task Ready', `${taskDef.name} is now available.`, [], 'System', 24 * 60);
         store.onWorkTasks.splice(i, 1);
       }
     }
@@ -224,16 +227,9 @@ const triggerTaskSuccess = (taskState, taskDef) => {
   }
 
   if (taskDef.type === 'AGENT_WORK') {
-    sendMessage('SYSTEM', `Task Initialized: ${taskDef.name}`, `The process is now running. Consuming LT continuously.`);
+    sendMessage(MESSAGE_TYPE.SYSTEM, `Task Initialized: ${taskDef.name}`, `The process is now running. Consuming LT continuously.`, [], 'System', 24 * 60);
   } else {
-    sendMessage('SYSTEM', `Task Success: ${taskDef.name}`, `The task was successful! Effect active for ${taskDef.duration / 60} hours.`, actions);
-  }
-
-  // Specific Side Effects
-  if (taskDef.risk && taskDef.risk.type === 'SHARK_ATTRACTION') {
-    if (Math.random() < (taskDef.risk.chance || 0.1)) {
-      sendMessage('SYSTEM', 'Security Alert', `A Shark has noticed your rich prey hunt and might join the table.`);
-    }
+    sendMessage(MESSAGE_TYPE.SYSTEM, `Task Success: ${taskDef.name}`, `The task was successful! Effect active for ${taskDef.duration / 60} hours.`, actions, 'System', 24 * 60);
   }
 
   // Apply Buff Effects
@@ -252,7 +248,8 @@ const triggerTaskSuccess = (taskState, taskDef) => {
             const locObj = locations[Math.floor(Math.random() * locations.length)];
             boost.effect.targetLocationId = locObj.id;
             // Also notify user about which casino got the discount
-            sendMessage('SYSTEM', 'Rake Event Live!', `[${locObj.name}] is now hosting a ${100 - (eff.amount * 100)}% rake discount event for ${taskDef.duration / 24 / 60} days!`);
+            console.log(locObj, locObj.name_en, locObj.name_ko);
+            sendMessage(MESSAGE_TYPE.EVENT, 'Rake Event Live!', `[${getLocalizedText(locObj, 'name')}] is now hosting a ${100 - (eff.amount * 100)}% rake discount event for ${taskDef.duration / 24 / 60} days!`);
           }
         });
       }
@@ -266,12 +263,23 @@ const triggerTaskSuccess = (taskState, taskDef) => {
 const triggerRiskDetection = (index, effDef, taskName) => {
   const penalty = effDef.amount || 10000;
   // gainBankroll(-penalty, TYPE_CHANGE_BANKROLL.PAY_FINE)
-  sendMessage('SYSTEM', 'HACKING DETECTED!', `${taskName} has been terminated by security forces. Penalty: ${penalty.toLocaleString()} CR.`);
+  sendMessage(MESSAGE_TYPE.FINANCE, 'HACKING DETECTED!', `${taskName} has been terminated by security forces.`, [], 'System');
 
   if (index >= 0) {
     const taskState = store.onWorkTasks[index];
     store.activeBoosts = store.activeBoosts.filter(b => b.taskId !== taskState.taskId);
-    store.onWorkTasks.splice(index, 1);
+
+    const taskDef = AI_TASK_DATA.find(t => t.id === taskState.taskId);
+    if (taskDef && taskDef.cooldown > 0) {
+      const agent = store.aiAgent;
+      const planData = agent.model?.price_plan[agent.price_plan_idx];
+      const cooldownBonus = planData?.cooldown_bonus || 0;
+
+      taskState.status = 'COOLDOWN';
+      taskState.cooldownEndTime = store.gameTime + (taskDef.cooldown * 60 * 1000) * (1 - cooldownBonus);
+    } else {
+      store.onWorkTasks.splice(index, 1);
+    }
   }
 };
 
@@ -285,32 +293,16 @@ const canTaskFitInSlot = (taskTier, slotType) => {
 /**
  * isTaskUnlocked: Check if a task's unlock requirements have been met.
  */
-export const TASK_STATS_TYPE = {
-  COST_LT_TOTAL: 'cost_lt_total',
-  COMPLETED_TASK_COUNT: 'completed_task_count'
-}
+
 export const isTaskUnlocked = (taskDef) => {
   if (!taskDef.unlock) return true; // No requirement, implicitly unlocked
 
   const { type, count, id, amount, credit } = taskDef.unlock;
   switch (type) {
-    case PLAY_RECORD_STATS_TYPE.BUST_ENEMY:
-      return getEnemyBustCount(id.toLowerCase()) >= count;
-    case PLAY_RECORD_STATS_TYPE.HANDS_PLAYED:
-      return getPlayStatsCount(PLAY_RECORD_STATS_TYPE.PLAYED_HANDS) >= count;
-    case PLAY_RECORD_STATS_TYPE.PAID_RAKE:
-      return getPlayStatsCount(PLAY_RECORD_STATS_TYPE.PAID_RAKE) >= amount;
     case TASK_STATS_TYPE.COST_LT_TOTAL:
-      return getAgentTaskStat(TASK_STATS_TYPE.COST_LT_TOTAL) >= amount;
     case TASK_STATS_TYPE.COMPLETED_TASK_COUNT:
-      return getAgentTaskStat(TASK_STATS_TYPE.COMPLETED_TASK_COUNT) >= count;
-    case PLAY_RECORD_STATS_TYPE.MAX_WIN_POT:
-    case PLAY_RECORD_STATS_TYPE.MAX_WIN_EQUITY:
-    case PLAY_RECORD_STATS_TYPE.NET_WINNING:
-      return getPlayStatsCount(type) >= amount;
-    default:
-      console.warn(`Unknown unlock type: ${type}`);
-      return true;
+      return getAgentTaskStat(type) >= (amount || count);
+    default: return getPlayStatsCount(type) >= (amount || count);
   }
 };
 
@@ -320,7 +312,7 @@ export const startTask = (taskId) => {
 
   // Check if already active in any status
   if (store.onWorkTasks.find(t => t.taskId === taskId)) {
-    sendMessage('SYSTEM', 'Already Active', `${taskDef.name} is already running or in cooldown.`);
+    sendMessage(MESSAGE_TYPE.SYSTEM, 'Already Active', `${taskDef.name} is already running or in cooldown.`, [], 'System', 24 * 60);
     return false;
   }
 
@@ -346,14 +338,14 @@ export const startTask = (taskId) => {
   }
 
   if (foundSlotIdx === -1) {
-    sendMessage('SYSTEM', 'Memory Error', `No compatible free memory slot for Tier ${taskDef.tier} task.`);
+    sendMessage(MESSAGE_TYPE.SYSTEM, 'Memory Error', `No compatible free Task slot for Tier ${taskDef.tier} task.`, [], 'System', 24 * 60);
     return false;
   }
 
   // Handle Lump Sum Costs
   if (taskDef.isLumpSum) {
     if (store.ludusTokens < taskDef.cost) {
-      sendMessage('SYSTEM', 'Not Enough LT', `Required: ${taskDef.cost} LT`);
+      sendMessage(MESSAGE_TYPE.SYSTEM, 'Not Enough LT', `Required: ${taskDef.cost} LT`, [], 'System', 24 * 60);
       return false;
     }
     store.ludusTokens -= taskDef.cost;
@@ -361,7 +353,7 @@ export const startTask = (taskId) => {
     // Instant trigger
     const newTaskState = {
       taskId,
-      status: 'SEARCHING',
+      status: 'WORKING',
       startTime: store.gameTime,
       slotIndex: foundSlotIdx,
       failureCount: 0

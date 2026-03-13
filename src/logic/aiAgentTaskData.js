@@ -1,7 +1,7 @@
 
 import { store } from './store.js';
 import { PLAY_RECORD_STATS_TYPE } from './playRecordStats.js'
-import { TASK_STATS_TYPE } from './aiAgentTaskSystem.js'
+import { TASK_STATS_TYPE } from './constants.js'
 // Task Definitions
 export const TASK_EFFECT_TYPE = {
   XP_BOOST: 'xp_boost',
@@ -33,8 +33,8 @@ export const AI_TASK_DATA = [
     name_ko: 'Neighborhood Game',
     name_en: 'Neighborhood Game',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    desc_ko: '동네 호구들을 모아 레이크 없는 홈 게임을 엽니다.\n(레이크 0% / SB 5 / BB 10 / 기본 바이인 200BB)',
-    desc_en: 'Gather the neighborhood fish and open a rake-free home game.\n(0% Rake / SB 5 / BB 10 / Min Buy-in 200BB)',
+    desc_ko: '동네 호구들을 모아 레이크 없는 홈 게임을 엽니다.',
+    desc_en: 'Gather the neighborhood fish and open a rake-free home game.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     desc_detail_ko: '동네 지인들을 불러서 게임을 진행합니다. 수수료도 아끼고 친목도 다지는 유익한 (아마도?) 시간을 보낼 수 있습니다!',
     desc_detail_en: 'Host a game with your local acquaintances. You can save on fees and enjoy a productive (perhaps?) time socializing!',
@@ -44,7 +44,7 @@ export const AI_TASK_DATA = [
     duration: 4 * 60, // 4 hours in minutes after expired
     cooldown: 3 * 24 * 60,
     action: {
-      type: 'ACCEPT_INVITE', zone: 'free', location_id: 'free_safe_house', available: 6 // only 6max
+      type: 'ACCEPT_INVITE', zone: 'free', location_id: 'free_habitat', available: 6 // only 6max
     }, // for MessageSystem
   },
   {
@@ -85,7 +85,6 @@ export const AI_TASK_DATA = [
     duration: 60,
     cooldown: 0,
     effect: [{ type: TASK_EFFECT_TYPE.HUD_ACTIVE, amount: 1 }], //amount may be to use hud level?
-    unlock: { type: TASK_STATS_TYPE.COST_LT_TOTAL_TOTAL, amount: 5 }
   },
   {
     id: 'shadow_work',
@@ -108,7 +107,7 @@ export const AI_TASK_DATA = [
   },
   {
     id: 'shadow_work_2',
-    tier: 3,
+    tier: 2,
     type: 'AGENT_WORK',
     name_ko: "Sub-net Shadow Work Advanced",
     name_en: "Sub-net Shadow Work Advanced",
@@ -124,11 +123,11 @@ export const AI_TASK_DATA = [
     duration: 60,
     cooldown: 0,
     effect: [{ type: TASK_EFFECT_TYPE.ADD_BANKROLL, amount: 2500 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 100 }
+    unlock: { type: TASK_STATS_TYPE.COST_LT_TOTAL, amount: 1000 }
   },
   {
     id: 'shadow_work_3',
-    tier: 4,
+    tier: 3,
     type: 'AGENT_WORK',
     name_ko: "서브넷 섀도우 워크 (불법)",
     name_en: "Sub-net Shadow Work (Illegal)",
@@ -144,11 +143,11 @@ export const AI_TASK_DATA = [
     duration: 0,
     cooldown: 3 * 24 * 60,
     effect: [{ type: 'add_bankroll', amount: 10000 }, { type: 'penalty_amount', id: 'SECURITY_DETECTION', probability: 0.01, amount: 25000 }],
-    unlock: { type: TASK_STATS_TYPE.COST_LT_TOTAL, amount: 1000 }
+    unlock: { type: TASK_STATS_TYPE.COST_LT_TOTAL, amount: 5000 }
   },
   {
     id: 'shadow_work_4',
-    tier: 5,
+    tier: 4,
     type: 'AGENT_WORK',
     name_ko: "서브넷 하이재킹 (불법)",
     name_en: "Sub-net Hijacking (Illegal)",
@@ -169,7 +168,7 @@ export const AI_TASK_DATA = [
   {
     id: 'rake_discount_micro',
     tier: 1,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'Rake Discount [Micro]',
     name_en: 'Rake Discount [Micro]',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -179,7 +178,7 @@ export const AI_TASK_DATA = [
     desc_detail_ko: '레이크를 획기적으로 절약할 수 있는 카지노 이벤트 정보를 찾아냅니다!',
     desc_detail_en: 'Uncovers casino event info that dramatically reduces the rake you pay!',
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
-    cost: 3,
+    cost: 6,
     probability: 0.1,
     duration: 3 * 24 * 60, // 3 days
     cooldown: 0,
@@ -189,7 +188,7 @@ export const AI_TASK_DATA = [
   {
     id: 'fish_finder',
     tier: 2,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'Fish Finder',
     name_en: 'Fish Finder',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -202,14 +201,14 @@ export const AI_TASK_DATA = [
     cost: 5,
     probability: 0.1,
     duration: 4 * 60,
-    cooldown: 0,
+    cooldown: 12 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'fish', amount: 2 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'fish', count: 25 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'fish', count: 10 }
   },
   {
     id: 'rake_discount_low',
     tier: 2,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'Rake Discount [Low]',
     name_en: 'Rake Discount [Low]',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -219,8 +218,8 @@ export const AI_TASK_DATA = [
     desc_detail_ko: '하위 범죄 조직들의 구역 다툼 데이터를 분석했습니다. 가장 경비가 취약해진 카지노의 수수료망 우회 코드를 확보했습니다!',
     desc_detail_en: 'Analyzes territorial disputes of lower gangs, securing bypass codes for the casino networks with the weakest security at the moment!',
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
-    cost: 6,
-    probability: 0.1,
+    cost: 12,
+    probability: 0.05,
     duration: 3 * 24 * 60, // 3 days
     cooldown: 0,
     effect: [{ id: 'low', type: TASK_EFFECT_TYPE.RAKE_DISCOUNT_RND_MUL, amount: 0.5 }],
@@ -241,10 +240,10 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 6,
     probability: 0.1,
-    duration: 24 * 60,
-    cooldown: 0,
+    duration: 4 * 60,
+    cooldown: 12 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'mr_call', amount: 2 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'mr_call', count: 25 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'mr_call', count: 10 }
   },
   {
     id: 'broke_attractor',
@@ -261,10 +260,10 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 8,
     probability: 0.05,
-    duration: 24 * 60,
-    cooldown: 0,
+    duration: 4 * 60,
+    cooldown: 12 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'broke', amount: 2 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'broke', count: 25 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'broke', count: 10 }
   },
   {
     id: 'gambler_attractor',
@@ -281,10 +280,10 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 8,
     probability: 0.05,
-    duration: 24 * 60,
-    cooldown: 0,
+    duration: 4 * 60,
+    cooldown: 12 * 60,
     effect: [{ type: 'spawn_rate_mul', id: 'gambler', amount: 2 }],
-    unlock: { type: 'Bust_enemy', id: 'gambler', count: 25 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gambler', count: 10 }
   },
   {
     id: 'hand_review_2',
@@ -302,7 +301,7 @@ export const AI_TASK_DATA = [
     cost: 5,
     probability: 0.07,
     duration: 1 * 24 * 60,
-    cooldown: 0,
+    cooldown: 1 * 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.XP_BOOST, amount: 0.20 }],
     unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 1000 }
   },
@@ -312,19 +311,19 @@ export const AI_TASK_DATA = [
     name_ko: 'Rake Discount [Mid]',
     name_en: 'Rake Discount [Mid]',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    type: 'BOOST',
+    type: 'NETWORKING',
     desc_ko: `3일 동안 [미드 스테이크] 카지노 중 무작위 한 곳의 레이크가 50% 할인됩니다.`,
     desc_en: `For 3 days, applies a 50% rake discount to one random [Mid Stakes] casino.`,
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     desc_detail_ko: '수수료를 덜 떼가는 혜자 프로모션이 진행 중인 미드 스테이크 구장 정보를 수집합니다.',
     desc_detail_en: 'Collects info on mid-stakes venues currently running generous promotions with lower rake.',
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
-    cost: 12,
+    cost: 18,
     probability: 0.1,
     duration: 3 * 24 * 60, // 3 days
     cooldown: 0,
     effect: [{ id: 'mid', type: TASK_EFFECT_TYPE.RAKE_DISCOUNT_RND_MUL, amount: 0.5 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.PAID_RAKE, amount: 500000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.PAID_RAKE, amount: 100000 }
   },
   {
     id: 'rich_guy_hunter',
@@ -342,9 +341,9 @@ export const AI_TASK_DATA = [
     cost: 20,
     probability: 0.05,
     duration: 4 * 60,
-    cooldown: 0,
+    cooldown: 12 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'rich_guy', amount: 2 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 25 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 5 }
   },
   {
     id: 'maniac_attractor',
@@ -361,10 +360,10 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 8,
     probability: 0.05,
-    duration: 24 * 60,
-    cooldown: 0,
+    duration: 4 * 60,
+    cooldown: 12 * 60,
     effect: [{ type: 'spawn_rate_mul', id: 'maniac', amount: 3 }],
-    unlock: { type: 'Bust_enemy', id: 'maniac', count: 25 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 10 }
   },
   {
     id: 'hand_strategy_plan',
@@ -384,7 +383,7 @@ export const AI_TASK_DATA = [
     duration: 3 * 24 * 60,
     cooldown: 0,
     effect: [{ type: TASK_EFFECT_TYPE.XP_BOOST, amount: 0.3 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 100000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 10000 }
   },
   {
     id: 'kbt_leader_challenge',
@@ -393,20 +392,20 @@ export const AI_TASK_DATA = [
     name_ko: "KBT 리더와의 승부",
     name_en: "KBT Leader Challenge",
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    desc_ko: `KBT 기지(KBT Base)에서 열리는 특별 게임에 초대받았습니다.`,
-    desc_en: `You're invited to a special game held at the KBT Base.`,
+    desc_ko: `[THE_BUNKER] VIP 룸에서 열리는 특별 게임에 초대받았습니다.`,
+    desc_en: `You're invited to a special game held at the [THE_BUNKER] VIP room.`,
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    desc_detail_ko: 'KBT 조직에 당신의 악명이 닿았습니다. 이제 그들의 본거지로 찾아가 조직의 리더와 헤즈업 승부를 벌일 차례입니다.',
+    desc_detail_ko: 'KBT 조직에 당신의 악명이 닿았습니다. 이제 그들의 본거지로 찾아가 조직 리더와 헤즈업 승부를 벌일 차례입니다.',
     desc_detail_en: 'Your infamy has reached the KBT organization. It is time to head to their stronghold and face their leader in a heads-up match.',
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 10,
     probability: 0.6,
-    duration: 3 * 24 * 60,
+    duration: 24 * 60,
     cooldown: 3 * 24 * 60,
     action: {
       type: 'ACCEPT_INVITE', zone: 'middle', location_id: 'middle_kbt_base', available: 2 // only 2max
     },
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gangster', count: 0 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gangster', count: 50 }
   },
   {
     id: 'maniac_attractor_2',
@@ -423,10 +422,10 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 15,
     probability: 0.05,
-    duration: 24 * 60,
-    cooldown: 0,
+    duration: 4 * 60,
+    cooldown: 72 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'maniac', amount: 6 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 75 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 50 }
   },
   {
     id: 'fish_finder_2',
@@ -444,9 +443,9 @@ export const AI_TASK_DATA = [
     cost: 20,
     probability: 0.05,
     duration: 4 * 60,
-    cooldown: 0,
+    cooldown: 12 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'fish', amount: 4 }, { type: TASK_EFFECT_TYPE.SPAWN, id: 'Quant_Pro', amount: 1 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'fish', count: 125 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'fish', count: 50 }
   },
   {
     id: 'enhance_security',
@@ -464,9 +463,9 @@ export const AI_TASK_DATA = [
     cost: 30,
     probability: 0.05,
     duration: 24 * 60,
-    cooldown: 0,
+    cooldown: 72 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'gangster', amount: 0.5 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gangster', count: 125 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gangster', count: 50 }
   },
   {
     id: 'gambler_attractor_2',
@@ -484,9 +483,9 @@ export const AI_TASK_DATA = [
     cost: 15,
     probability: 0.05,
     duration: 24 * 60,
-    cooldown: 0,
+    cooldown: 72 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'gambler', amount: 4 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gambler', count: 125 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gambler', count: 50 }
   },
   {
     id: 'rich_guy_hunter_2',
@@ -506,7 +505,7 @@ export const AI_TASK_DATA = [
     duration: 24 * 60,
     cooldown: 3 * 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'rich_guy', amount: 3 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 75 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 25 }
   },
   {
     id: 'grinders_mindset',
@@ -526,7 +525,7 @@ export const AI_TASK_DATA = [
     duration: 1 * 24 * 60,
     cooldown: 0,
     effect: [{ type: TASK_EFFECT_TYPE.MAX_STAMINA_BOOST, amount: 25 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 250000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 25000 }
   },
   {
     id: 'maniac_attractor_3',
@@ -546,7 +545,7 @@ export const AI_TASK_DATA = [
     duration: 24 * 60,
     cooldown: 3 * 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'maniac', amount: 3 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 250 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 100 }
   },
 
   {
@@ -555,19 +554,19 @@ export const AI_TASK_DATA = [
     name_ko: 'Rake Discount [High]',
     name_en: 'Rake Discount [High]',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    type: 'BOOST',
+    type: 'NETWORKING',
     desc_ko: `3일 동안 [하이 스테이크] 카지노 중 무작위 한 곳의 레이크가 50% 할인됩니다.`,
     desc_en: `For 3 days, applies a 50% rake discount to one random [High Stakes] casino.`,
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     desc_detail_ko: 'VIP들만 아는 은밀한 카지노 프로모션 코드를 해킹하여 하이 스테이크 구간의 막대한 수수료를 깎아냅니다!',
     desc_detail_en: 'Hacked into a secret casino promotional code known only to VIPs, slicing away the massive fees in the high stakes rooms!',
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
-    cost: 15,
+    cost: 24,
     probability: 0.07,
     duration: 3 * 24 * 60, // 3 days
     cooldown: 0,
     effect: [{ id: 'high', type: TASK_EFFECT_TYPE.RAKE_DISCOUNT_RND_MUL, amount: 0.5 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.PAID_RAKE, amount: 5000000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.PAID_RAKE, amount: 1000000 }
   },
   {
     id: 'broke_hunter',
@@ -584,10 +583,10 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 40,
     probability: 0.1,
-    cooldown: 3 * 24 * 60,
     duration: 24 * 60,
+    cooldown: 72 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'broke', amount: 3 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'broke', count: 250 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'broke', count: 100 }
   },
   {
     id: 'heavy_security',
@@ -604,10 +603,10 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 30,
     probability: 0.05,
-    duration: 24 * 60,
+    duration: 4 * 60,
     cooldown: 3 * 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'gangster', amount: 0 }, { type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'the_don', amount: 0 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'the_don', count: 250 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'the_don', count: 25 }
   },
   {
     id: 'rich_guy_hunter_3',
@@ -624,10 +623,10 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 25,
     probability: 0.05,
-    duration: 24 * 60,
+    duration: 4 * 60,
     cooldown: 3 * 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'rich_guy', amount: 2 }, { type: TASK_EFFECT_TYPE.SPAWN, id: 'shark', amount: 1 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 250 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 75 }
   },
   {
     tier: 5,
@@ -643,8 +642,8 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 15,
     probability: 0.1,
-    duration: 3 * 24 * 60,
-    cooldown: 0,
+    duration: 4 * 60,
+    cooldown: 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'shark', amount: 1 }],
     unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'shark', count: 25 }
   },
@@ -663,13 +662,13 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 30,
     probability: 0.05,
-    duration: 4 * 60,
+    duration: 12 * 60,
     cooldown: 3 * 24 * 60,
     persona_pools: ['Shark'],
     action: {
-      type: 'ACCEPT_INVITE', zone: 'high', location_id: 'high_safe_house', available: 6 // only 6max
+      type: 'ACCEPT_INVITE', zone: 'high', location_id: 'high_habitat', available: 6 // only 6max
     },
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'shark', count: 125 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'shark', count: 100 }
   },
   {
     id: 'whale_hunter',
@@ -686,10 +685,10 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 40,
     probability: 0.03,
-    duration: 24 * 60,
-    cooldown: 3 * 24 * 60,
+    duration: 4 * 60,
+    cooldown: 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'whale', amount: 2 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'whale', count: 50 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'whale', count: 25 }
   },
   {
     id: 'house_always_wins',
@@ -726,8 +725,8 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 50,
     probability: 0.03,
-    cooldown: 14 * 24 * 60,
     duration: 4 * 24 * 60,
+    cooldown: 14 * 24 * 60,
     unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'name_pro', count: 50 },
     action: {
       type: TASK_ACTION_TYPE.ACCEPT_INVITE, zone: 'high', location_id: 'war_of_the_gods', available: 6 // only 6max
@@ -748,9 +747,9 @@ export const AI_TASK_DATA = [
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 30,
     probability: 0.1,
-    cooldown: 3 * 24 * 60,
     duration: 1 * 24 * 60,
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'name_pro', count: 250 },
+    cooldown: 3 * 24 * 60,
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'name_pro', count: 50 },
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'name_pro', amount: 1 }],
   },
   // For end game (Maybe useful..?)
@@ -771,7 +770,6 @@ export const AI_TASK_DATA = [
     probability: 0.02,
     duration: 24 * 60,
     cooldown: 7 * 24 * 60,
-    // unlock: { type: PLAY_RECORD_STATS_TYPE.MAX_WIN_POT, amount: 100000000 },
     action: {
       type: TASK_ACTION_TYPE.ACCEPT_INVITE, zone: 'high', location_id: 'special_orbit_lounge', available: 6 // only 6max
     },
