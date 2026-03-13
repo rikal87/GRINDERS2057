@@ -1292,3 +1292,9 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 .v5-msg-card .head .tutorial {
   color: var(--neon-green);
 }
+
+@media (max-width: 2559px) {
+  .qhd-only {
+    display: none !important;
+  }
+}

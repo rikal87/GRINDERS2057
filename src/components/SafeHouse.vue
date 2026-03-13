@@ -19,13 +19,12 @@
       <!-- LEFT COLUMN: STATUS & SETUP -->
       <section class="v5-side-col">
         <!-- Core Vitality -->
-        <div class=" v5-panel v5-core-vitality">
+        <div class="v5-panel v5-core-vitality">
           <div class="v5-panel-label">
             <span class="label">CORE_STATUS</span>
             <button class="stats-btn" @click="$emit('open-stats-modal')">STATS</button>
           </div>
           <div class="v5-panel-inner">
-
             <div class=" v5-stat-row">
               <div class="v5-stat-group">
                 <span class="label">BANKROLL</span>
@@ -46,26 +45,26 @@
               <div class="v5-progress-track">
                 <div class="v5-progress-fill" :style="{ width: xpPercent + '%' }"></div>
               </div>
-              <div class="v5-xp-text v5-stamina" :class="{ 'low-stamina': store.stamina < 25 }">
-                <span>STEMINA</span>
-                <span>{{ Math.floor(store.stamina) }} / {{ getEffectiveMaxStamina() }}</span>
+              <div class="v5-xp-text sleep-info">
+                <span>STEMINA: <span class="highlight">+{{ sleepDuration }} HR</span></span>
+                <span>{{ Math.floor(currentStaminaPercent) }} / {{ getEffectiveMaxStamina() }}</span>
               </div>
-              <div class="v5-progress-track">
+              <div class="v5-progress-track stamina-track">
+                <!-- Interactive Slider Overlay -->
+                <input type="range" class="v5-stamina-range" min="0.5" max="24.0" step="0.5"
+                  v-model.number="sleepDuration">
+                <!-- Current Stamina -->
                 <div class="v5-progress-fill"
-                  :style="{ width: (store.stamina / getEffectiveMaxStamina() * 100) + '%', backgroundColor: getStaminaColor }">
-                </div>
+                  :style="{ width: currentStaminaPercent + '%', backgroundColor: getStaminaColor }"></div>
+                <!-- Sleep Recovery Preview -->
+                <div class="v5-progress-fill preview" :style="{ width: targetStaminaPercent + '%' }"></div>
               </div>
             </div>
+            <div class="btn-container">
+              <button class="btn-cancel" @click="$emit('back')">LEAVE</button>
+              <button class="btn-accept" @click="$emit('sleep', sleepDuration)">SLEEP</button>
+            </div>
           </div>
-        </div>
-        <div class="sleep-timer-container">
-          <span class="label">INTERVAL</span>
-          <input id="sleep-timer" type="range" min="0.5" max="24.0" step="0.5" v-model.number="sleepDuration">
-          <span class="val highlight">{{ sleepDuration }} HR</span>
-        </div>
-        <div class="btn-container">
-          <button class="btn-cancel" @click="$emit('back')">LEAVE</button>
-          <button class="btn-accept" @click="$emit('sleep', sleepDuration)">SLEEP</button>
         </div>
         <!-- Program Setup -->
         <!-- Ai Agent Template -->
@@ -77,7 +76,7 @@
           <div class="v5-panel-inner">
             <div class="v5-neural-hero">
               <span class="v5-class-title">{{ store.aiAgent.name }}</span>
-              <p class="v5-class-desc">
+              <p class="v5-class-desc qhd-only">
                 {{ store.aiAgent.model?.slogan }}
               </p>
               <div class="v5-stat-row">
@@ -87,7 +86,7 @@
                     <small>LT</small></span>
                 </div>
               </div>
-              <div class="v5-status-badges">
+              <div class="v5-status-badges qhd-only">
                 <span class="v5-badge-mini" v-if="store.gameTime < store.aiAgent.subscriptionExpireAt">SYS_ACTIVE</span>
                 <span class="v5-badge-mini" v-else style="color:var(--neon-red)">SYS_EXPIRED</span>
                 <span class="v5-badge-mini">XK254015</span>
@@ -117,7 +116,6 @@
             </div>
           </div>
         </div>
-
       </section>
 
       <!-- CENTER COLUMN: Chip Protector / Partner / Crypto -->
@@ -216,7 +214,7 @@
                         <div class="net-worth-chart-container">
                           <svg viewBox="0 0 100 40" preserveAspectRatio="none" class="net-worth-sparkline">
                             <path :d="getNetWorthChartPath(partner)" fill="none" stroke="var(--neon-cyan)"
-                              stroke-width="1.5" />
+                              stroke-width="0.5" />
                           </svg>
                         </div>
                       </div>
@@ -593,6 +591,10 @@ const sellItem = (item) => {
 };
 
 
+const currentStaminaPercent = computed(() => (store.stamina / getEffectiveMaxStamina()) * 100);
+const targetStaminaValue = computed(() => Math.min(getEffectiveMaxStamina(), store.stamina + (sleepDuration.value * 10)));
+const targetStaminaPercent = computed(() => (targetStaminaValue.value / getEffectiveMaxStamina()) * 100);
+
 const getStaminaColor = computed(() => {
   const s = store.stamina;
   if (s > 50) return '#00f0ff';
@@ -631,4 +633,5 @@ const getNetWorthChartPath = (partner) => {
   }).join(" ");
 };
 </script>
+<style></style>
 <style scoped src="../styles/components/SafeHouse.css"></style>

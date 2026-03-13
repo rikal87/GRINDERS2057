@@ -109,7 +109,7 @@ onMounted(() => {
 }
 
 .city-skyline {
-  height: 100%;
+  flex: 1;
   position: relative;
   display: flex;
   justify-content: center;
@@ -118,6 +118,8 @@ onMounted(() => {
 
 
 .minimap-viewport {
+  display: flex;
+  flex: 1;
   width: 90%;
   height: 80%;
   max-width: 800px;
@@ -212,7 +214,6 @@ onMounted(() => {
 }
 
 .lobby-content {
-  flex: 1;
   padding: 2rem;
   z-index: 10;
 }

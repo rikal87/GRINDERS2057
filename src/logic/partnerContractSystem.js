@@ -59,10 +59,10 @@ export const CONTRACT_TYPE_DESC = {
     note_en: 'This action is illegal and may be detected. If caught, all your buy-ins will be confiscated.',
   },
   [CONTRACT_TYPE.BENEFIT_SHARE]: {
-    desc_ko: '파트너와 이익 공유 계약을 체결합니다. 이제 파트너와 플레이어가 게임을 통해 창출한 수익을 정산하며, 계약된 분배율에 따라 상호 이익을 나눕니다',
-    desc_en: 'Upon entering this contract, all game profits will be settled and distributed according to the agreed-upon split.',
-    note_ko: '수익 기여율 차이가 불균형하면, 관계가 변화할 수 있습니다.\n(이 계약은 동시에 1명의 파트너와만 맺을 수 있습니다.)',
-    note_en: 'Disparities in profit contribution may impact your relationship.\n(You can only maintain one active partnership contract at a time)',
+    desc_ko: '이제 파트너와 플레이어가 게임을 통해 창출한 수익을 정산하며, 계약된 분배율에 따라 상호 이익을 나눕니다',
+    desc_en: 'All game profits will be settled and distributed according to the agreed-upon split.',
+    note_ko: '수익 기여율 차이가 불균형하면 관계가 변화할 수 있습니다.\n(동시에 1명의 파트너와만 맺을 수 있습니다.)',
+    note_en: 'Disparities in profit contribution\nmay impact your relationship.\n(Only one contract can be active at a time.)',
   },
   [CONTRACT_TYPE.BAILOUT]: {
     desc_ko: '한쪽이 파산할 경우, 보유 뱅크롤의 30%를 긴급 지원합니다.',
