@@ -49,17 +49,19 @@ const confiscationMessage = computed(() => {
 const handleQuitApp = async () => {
   try {
     saveStore(); // Save before exiting
-    // Dynamically import Tauri only if we are in the Tauri environment
     if (window.__TAURI_INTERNALS__) {
-      const moduleName = '@tauri-apps/plugin-process';
-      const tau = await import(/* @vite-ignore */ moduleName);
-      await tau.exit(0);
+      const { exit } = await import('@tauri-apps/plugin-process');
+      await exit(0);
     } else {
       console.warn("Running in pure web mode. Cannot close the window automatically.");
       alert('브라우저에서는 게임을 닫을 수 없습니다.');
     }
   } catch (error) {
-    console.warn("Failed to exit properly", error);
+    console.error("Failed to exit properly", error);
+    // Fallback attempt if plugin import failed but we are in Tauri
+    if (window.__TAURI_INTERNALS__) {
+      window.close(); 
+    }
   }
 };
 
@@ -165,6 +167,27 @@ onMounted(() => {
   };
 
   initializeApp();
+
+  // Handle Autoplay policy: Resume AudioContext on first interaction
+  const resumeAudio = async () => {
+    try {
+      await audioManager.init();
+      if (audioManager.ctx && audioManager.ctx.state === 'suspended') {
+        await audioManager.ctx.resume();
+        console.info('AudioContext resumed via user interaction');
+      }
+      // Re-trigger music if it was supposed to be playing
+      if (currentView.value === 'intro' || currentView.value === 'lobby') {
+        audioManager.playTrackByZoneId(currentView.value === 'intro' ? 'main' : 'lobby');
+      }
+    } catch (e) {
+      console.warn('Failed to resume audio:', e);
+    }
+    window.removeEventListener('click', resumeAudio);
+    window.removeEventListener('keydown', resumeAudio);
+  };
+  window.addEventListener('click', resumeAudio);
+  window.addEventListener('keydown', resumeAudio);
 
   // Background Auto-Save (Fallback for non-poker events)
   setInterval(() => {

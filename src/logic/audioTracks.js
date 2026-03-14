@@ -49,6 +49,7 @@ export const TRACK_ENUM = {
   DustyDay: "DustyDay",
   Dystopia: "Dystopia",
   BeThere: "BeThere",
+  Kinetic: "Kinetic",
   Overnight: "Overnight",
   HearTheBass: "HearTheBass",
   NairobiVibes: "NairobiVibes",
@@ -181,7 +182,7 @@ export const TRACK_INFO = {
     "license": "",
     "file": BGM_NairobiVibes
   },
-  [TRACK_ENUM.BGM_Kinetic]: {
+  [TRACK_ENUM.Kinetic]: {
     "title": "Kinetic",
     "artist": "FSM Team & < e s c p >",
     "license": "CC BY 4.0 [https://www.escp.space]",

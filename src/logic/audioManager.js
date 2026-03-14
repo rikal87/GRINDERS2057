@@ -7,8 +7,10 @@ import { TRACK_ENUM, TRACK_INFO } from './audioTracks.js';
 const sfxModules = import.meta.glob('../assets/sfx/*.{mp3,wav}', { eager: true, import: 'default' });
 
 const DEFAULT_PLAYLIST = [
-  TRACK_INFO[TRACK_ENUM.NeonDreams, TRACK_ENUM.Dystopia, TRACK_ENUM.Lucid],
-];
+  TRACK_INFO[TRACK_ENUM.NeonDreams],
+  TRACK_INFO[TRACK_ENUM.Dystopia],
+  TRACK_INFO[TRACK_ENUM.Lucid],
+].filter(Boolean);
 export let playlist = DEFAULT_PLAYLIST;
 // export const playlist = Object.entries(trackModules).map(([path, url]) => {
 //   const fileName = path.split('/').pop().replace('.mp3', '');
@@ -46,6 +48,7 @@ class AudioManager {
     this.initialized = false;
     this.sfxBuffers = {};
     this.currentTrackInfo = ref({ title: 'SYSTEM_TRACK', artist: 'SYSTEM_TRACK', license: null });
+    this.loadLock = false; // Prevent concurrent track loading
   }
 
   async init() {
@@ -70,7 +73,10 @@ class AudioManager {
   }
 
   async loadTrack(index = 0, trackInfo = null) {
-    await this.init();
+    if (this.loadLock) return;
+    this.loadLock = true;
+    try {
+      await this.init();
 
     let track = null;
     let trackIndex = index;
@@ -129,8 +135,11 @@ class AudioManager {
       }
     }
 
-    if (this.isPlaying.value) {
-      this.source.start(0);
+      if (this.isPlaying.value) {
+        this.source.start(0);
+      }
+    } finally {
+      this.loadLock = false;
     }
   }
 
@@ -363,8 +372,17 @@ class AudioManager {
   }
 
   async playTrackByZoneId(zoneId) {
+    if (this.currentZoneId.value === zoneId && this.isPlaying.value) {
+      // Already playing this zone, just ensure context is resumed
+      if (this.ctx && this.ctx.state === 'suspended') {
+        await this.ctx.resume();
+      }
+      return;
+    }
+
     this.currentZoneId.value = zoneId;
-    console.info(zoneId)
+    console.log('Switching to zone:', zoneId);
+    
     // Find location config from zones
     let locationConfig = null;
     for (const zone of zones) {
@@ -375,9 +393,6 @@ class AudioManager {
       }
     }
 
-    // Default to main theme if no location config or no music defined (or fallback logic)
-    // If zoneId is 'main' or 'lobby', handle specially or ensure they are in zones?
-    // 'main' and 'lobby' are not in zones array usually as locations.
     let tracks = [];
     if (zoneId === 'main') tracks = [TRACK_ENUM.Grainders2057];
     else if (zoneId === 'lobby') tracks = [TRACK_ENUM.NeonDreams, TRACK_ENUM.Lucid];
@@ -387,26 +402,20 @@ class AudioManager {
 
     if (!tracks || tracks.length === 0) {
       console.warn(`No tracks found for zone: ${zoneId}`);
-      // Fallback
       tracks = [TRACK_ENUM.Grainders2057];
     }
 
-    // Create a new playlist for the current zone
     const newPlaylist = tracks.map(t => TRACK_INFO[t]).filter(t => t);
-
-    if (newPlaylist.length === 0) {
-      console.warn(`Track info not found for zone tracks`);
-      return;
-    }
+    if (newPlaylist.length === 0) return;
 
     const randomIdx = Math.floor(Math.random() * newPlaylist.length);
-
+    this.isPlaying.value = true;
+    
     await this.loadTrack(randomIdx, newPlaylist);
 
-    if (this.ctx.state === 'suspended') {
+    if (this.ctx && this.ctx.state === 'suspended') {
       await this.ctx.resume();
     }
-    this.isPlaying.value = true;
   }
 }
 
