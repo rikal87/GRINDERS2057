@@ -314,16 +314,16 @@ function getHeuristicFallback(player, engine) {
   }
 
   // Global adjustments
-  raiseEquityThreshold += (2 - AF) * (street === 'PREFLOP' ? 0.3 : 0.15);
+  raiseEquityThreshold += (2 - AF) * (street === 'PREFLOP' ? 0.2 : 0.1);
   let requiredEquityPenalty = 0;
   let raisePenalty = 0;
   if (street === 'PREFLOP') {
-    raisePenalty = Math.pow(1.15, raises) - 1; // Keep original curve for multi-raises
-    requiredEquityPenalty = Math.pow(1.1, raises) - 1;
+    raisePenalty = Math.pow(1.12, raises) - 1; // Keep original curve for multi-raises
+    requiredEquityPenalty = Math.pow(1.12, raises) - 1;
   }
   else {
-    raisePenalty = Math.pow(1.05, pfIntensity + raises) - 1; // Keep original curve for multi-raises
-    requiredEquityPenalty = Math.pow(1.05, pfIntensity + raises) - 1;
+    raisePenalty = Math.pow(1.06, pfIntensity + raises) - 1; // Keep original curve for multi-raises
+    requiredEquityPenalty = Math.pow(1.06, pfIntensity + raises) - 1;
   }
   raiseEquityThreshold += raisePenalty;
   requiredEquity += requiredEquityPenalty;

@@ -137,12 +137,12 @@ export class EventAdaptor {
       recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WTSD);
       if (r.isWinner) {
         recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, amount: r.player.totalWagered, equity: r.player.equity, rake: result.rake, isShowDown: true });
-        if (runoutInProgress) this.winAtShowdownWithAllIn({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board });
-        else this.winAtShowdown({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board });
+        if (runoutInProgress) this.winAtShowdownWithAllIn({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board, result });
+        else this.winAtShowdown({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board, result });
       } else {
         recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.LOSE, { pot: r.player.totalWagered, amount: r.amountWon, equity: r.player.equity, isShowDown: true });
-        if (runoutInProgress) this.loseAtShowdownWithAllIn({ player: r.player, amount: 0, pot, hand: r.hand, board });
-        else this.loseAtShowdown({ player: r.player, amount: 0, pot, hand: r.hand, board });
+        if (runoutInProgress) this.loseAtShowdownWithAllIn({ player: r.player, amount: 0, pot, hand: r.hand, board, result });
+        else this.loseAtShowdown({ player: r.player, amount: 0, pot, hand: r.hand, board, result });
       }
     });
   }
@@ -151,30 +151,30 @@ export class EventAdaptor {
       recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, amount: r.player.totalWagered, rake: result.rake, isShowDown: false });
       r.player.item?.effects?.forEach(e => {
         if (e.trigger.includes('winWithoutShowdown') || e.trigger.includes('win')) {
-          this.executeItemEffect(r.player, e, { amount: r.amountWon, pot: r.amountWon, hand: r.player.hand, board, isWin: true });
+          this.executeItemEffect(r.player, e, { amount: r.amountWon, pot: r.amountWon, hand: r.player.hand, board, isWin: true, result });
         }
       });
     });
   }
-  winAtShowdown({ player, amount, pot, hand, board }) {
+  winAtShowdown({ player, amount, pot, hand, board, result }) {
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('winAtShowdown') || e.trigger.includes('win')) {
-        this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: true });
+        this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: true, result });
       }
     });
   }
-  winAtShowdownWithAllIn({ player, amount, pot, hand, board }) {
+  winAtShowdownWithAllIn({ player, amount, pot, hand, board, result }) {
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('winAtShowdownWithAllIn') || e.trigger.includes('win')) {
-        this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: true });
+        this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: true, result });
       }
     });
   }
 
-  loseAtShowdownWithAllIn({ player, amount, pot, hand, board }) {
+  loseAtShowdownWithAllIn({ player, amount, pot, hand, board, result }) {
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('loseAtShowdownWithAllIn') || e.trigger.includes('lose')) {
-        this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: false });
+        this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: false, result });
       }
     });
   }
@@ -449,6 +449,7 @@ export class EventAdaptor {
         }
         break;
       case 'double_down': {
+        if (!context.result) return;
         const h = context.result.results.find(r => r.isMe)?.hand.rank;
         if (h) {
           const isStraight = h == 5 || h == 9;

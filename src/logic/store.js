@@ -14,12 +14,10 @@ const SAVE_KEY = 'cyberpoker_save_v1';
 
 const getDefaultState = () => ({
   bankroll: 20000,
-  // bankroll: 23589230,
   chips: 0, // Chips on table
-  // currentBB: 0,
   xp: 0,
   level: 1,
-  // level: 41,
+  // level: 30,
   selectedClass: 'GRINDER',
   ownedProtectors: [], // Array of materialized item objects
   equippedProtector: null, // item object or null
