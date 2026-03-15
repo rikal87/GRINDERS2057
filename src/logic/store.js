@@ -13,11 +13,12 @@ import { LOCATION_ID, PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js'
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const getDefaultState = () => ({
-  bankroll: 20000,
+  // bankroll: 20000,
+  bankroll: 2000000,
   chips: 0, // Chips on table
   xp: 0,
-  level: 1,
-  // level: 30,
+  // level: 1,
+  level: 30,
   selectedClass: 'GRINDER',
   ownedProtectors: [], // Array of materialized item objects
   equippedProtector: null, // item object or null
@@ -349,6 +350,7 @@ export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
   if (Number.isNaN(amount)) return;
   const intAmount = Math.ceil(amount);
   store.bankroll = Math.max(0, store.bankroll + intAmount);
+
   store.session_net_history.push({ amount: intAmount, type, timestamp: Date.now() });
   if (store.session_net_history.length > 200) store.session_net_history.shift();
 }
@@ -378,15 +380,7 @@ export const calculateSessionReport = () => {
   store.session_net_history = [];
   return detailes;
 };
-export const gameResult = (winBB) => {
-  if (winBB >= 100) return GAME_RESULT_CODE.WIN_BIG;
-  if (winBB >= 50) return GAME_RESULT_CODE.WIN_MEDIUM;
-  if (winBB >= 30) return GAME_RESULT_CODE.WIN_SMALL;
-  if (winBB <= -100) return GAME_RESULT_CODE.LOSE_BIG;
-  if (winBB <= -50) return GAME_RESULT_CODE.LOSE_MEDIUM;
-  if (winBB <= -30) return GAME_RESULT_CODE.LOSE_SMALL;
-  return GAME_RESULT_CODE.NEUTRAL;
-}
+
 export const checkPlayerBankrupt = () => {
   if (getCurrentBankroll() === 0) {
     const isTriggered = triggerBankruptRescueForPlayer();
@@ -394,48 +388,50 @@ export const checkPlayerBankrupt = () => {
   }
   return true;
 }
+export const getPlayStatsSession = () => {
+  return store.play_stats_session;
+}
 export const applySessionExit = (engine) => {
+  // const player = engine.players.find(p => p.isMe);
+  // const netWinnings = (player.chips - player.totalBuyIn);
+  // recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_WINNING, { amount: netWinnings })
+  // const winBB = netWinnings / engine.bb;
+  // // infarmy Calc
+  // let generatedInfamy = winBB * 0.2;
+  // let baseBoostInfamy = (engine.exitReservationRounds === -1 ? 1.0 : 0.5) + player.born_villain + player.infamy_boost;
+  // if (generatedInfamy > 0) {
+  //   gainInfamy(engine.locationId, generatedInfamy * baseBoostInfamy);
+  // } else gainInfamy(engine.locationId, generatedInfamy);
+  // // game result Calc
+  // const result = gameResult(winBB);
+  // store.play_stats_session.msgCode = result
+  // if (result === GAME_RESULT_CODE.WIN_BIG) gainClearReward(engine.locationId);
+  // if (result.indexOf('WIN') !== -1) {
+  //   gainClearedZoneCount(engine.locationId);
+  // }
+  // // mission result
+  // processMissionResult(player, result, engine);
+  // // gain xp and bankroll
+  // gainXP(player);
+  // gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING); // returned chips
 
-  const player = engine.players.find(p => p.isMe);
-  const netWinnings = (player.chips - player.totalBuyIn);
-  recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_WINNING, { amount: netWinnings })
-  const winBB = netWinnings / engine.bb;
-  // infarmy Calc
-  let generatedInfamy = winBB * 0.2;
-  let baseBoostInfamy = (engine.exitReservationRounds === -1 ? 1.0 : 0.5) + player.born_villain + player.infamy_boost;
-  if (generatedInfamy > 0) {
-    gainInfamy(engine.locationId, generatedInfamy * baseBoostInfamy);
-  } else gainInfamy(engine.locationId, generatedInfamy);
-  // game result Calc
-  const result = gameResult(winBB);
-  store.play_stats_session.msgCode = result
-  if (result === GAME_RESULT_CODE.WIN_BIG) gainClearReward(engine.locationId);
-  if (result.indexOf('WIN') !== -1) {
-    gainClearedZoneCount(engine.locationId);
-  }
-  // mission result
-  processMissionResult(player, result, engine);
-  // gain xp and bankroll
-  gainXP(player);
-  gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING); // returned chips
-
-  // share collusion
-  const partners = engine.players.filter(p => p.isPartner);
-  partners.forEach(partner => {
-    const partnerNetWinnings = partner.chips - partner.initialChips;
-    const share = shareCollusion(partner.id, netWinnings, partnerNetWinnings)
-    recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
-    // todo chips calculate to partner.bankroll
-  });
-  // share benefit
-  const share = shareBenefitForPartners(netWinnings);
-  recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
+  // // share collusion
+  // const partners = engine.players.filter(p => p.isPartner);
+  // partners.forEach(partner => {
+  //   const partnerNetWinnings = partner.chips - partner.initialChips;
+  //   const share = shareCollusion(partner.id, netWinnings, partnerNetWinnings)
+  //   recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
+  //   // todo chips calculate to partner.bankroll
+  // });
+  // // share benefit
+  // const share = shareBenefitForPartners(netWinnings);
+  // recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
 
   if (store.bankroll === 0) triggerBankruptRescueForPlayer();
-  saveStore();
+  // saveStore();
   // return t
 };
-const gainClearReward = (locationId) => {
+export const gainClearReward = (locationId) => {
   let reward = null;
   for (const tier of zones) {
     const loc = tier.locations.find(l => l.id === locationId);
@@ -453,7 +449,7 @@ const gainClearReward = (locationId) => {
     }
   }
 }
-const processMissionResult = (player, result, engine) => {
+export const processMissionResult = (player, result, engine) => {
   const locationId = engine.locationId;
   const inviteId = engine.inviteId;
 

@@ -141,10 +141,6 @@ export const EventData = [
   {
     id: EVENT_ID.UNLOCK_ZONE.UNDERGROUND_BAR_INVITE,
     scenario: '[언더그라운드 바] 잠금 해제',
-    timer: 0,
-    condition: () => {
-      return isUnlockedLocation('underground_bar_invite');
-    },
     func() {
       const title = store.settings.language === 'en' ? 'Reward for unlocking [Underground Bar]' : '[언더그라운드 바] 이용가능';
       const body = store.settings.language === 'en' ? "You can now access the [Underground Bar]." : '[지하 바]의 접근 권한이 해제되었습니다.';
@@ -156,10 +152,6 @@ export const EventData = [
   {
     id: EVENT_ID.UNLOCK_ZONE.CLUB_MEMBERSHIP,
     scenario: '[H.B.D 클럽] 잠금 해제',
-    timer: 0,
-    condition: () => {
-      return isUnlockedLocation('club_membership');
-    },
     func() {
       const title = store.settings.language === 'en' ? 'Reward for unlocking [H.B.D Club]' : '[H.B.D 클럽] 이용가능';
       const body = store.settings.language === 'en' ? "You can now access the [H.B.D Club]." : '[H.B.D 클럽]의 접근 권한이 해제되었습니다.';
@@ -170,10 +162,6 @@ export const EventData = [
   {
     id: EVENT_ID.UNLOCK_ZONE.THE_BUNKER_KEY,
     scenario: '[The Bunker] 잠금 해제',
-    timer: 0,
-    condition: () => {
-      return isUnlockedLocation('the_bunker_key');
-    },
     func() {
       const title = store.settings.language === 'en' ? 'Reward for unlocking [The Bunker]' : '[더 벙커] 이용가능';
       const body = store.settings.language === 'en' ? "You can now access the [The Bunker]." : '[더 벙커]의 접근 권한이 해제되었습니다.';
@@ -184,10 +172,6 @@ export const EventData = [
   {
     id: EVENT_ID.UNLOCK_ZONE.HOLDEM_HOUSE_MEMBERSHIP,
     scenario: '[홀덤 하우스] 잠금 해제',
-    timer: 0,
-    condition: () => {
-      return isUnlockedLocation('holdem_house_membership');
-    },
     func() {
       const title = store.settings.language === 'en' ? 'Reward for unlocking [Holdem House]' : '[홀덤 하우스] 이용가능';
       const body = store.settings.language === 'en' ? "You can now access the [Holdem House]." : '[홀덤 하우스]의 접근 권한이 해제되었습니다.';
@@ -198,10 +182,6 @@ export const EventData = [
   {
     id: EVENT_ID.UNLOCK_ZONE.ROYAL_ROOM_INVITE,
     scenario: '[로열 프라이빗 카드룸] 잠금 해제',
-    timer: 0,
-    condition: () => {
-      return isUnlockedLocation('royal_room_invite');
-    },
     func() {
       const title = store.settings.language === 'en' ? 'Reward for unlocking [Royal Private Cardroom]' : '[로열 프라이빗 카드룸] 이용가능';
       const body = store.settings.language === 'en' ? "You can now access the [Royal Private Cardroom]." : '[로열 프라이빗 카드룸]의 접근 권한이 해제되었습니다.';
@@ -394,6 +374,12 @@ export const processEvents = () => {
     triggeredEvents.forEach(pending => {
       const eventDef = EventData.find(e => e.id === pending.id);
       if (eventDef) {
+        // [FIX] Prevent re-triggering completed non-repeatable events
+        if (!eventDef.repeatable && store.completedEvents.includes(pending.id)) {
+          console.info(`[EVENT] Skipping already completed '${pending.id}'`);
+          return;
+        }
+
         console.info(`[EVENT] Triggering '${pending.id}'`);
         eventDef.func(pending.payload); // 대기열에서 조건 달성 즉시 실행
         if (!eventDef.repeatable) {

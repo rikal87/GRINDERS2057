@@ -578,7 +578,7 @@ export const PERSONALITIES = {
     [CHAT_TRIGGERS.FOLD]: ["Fold.", "Trash.", "Not playing that.", "Waiting.", "Discipline."],
     [CHAT_TRIGGERS.BET]: ["Value.", "Bet.", "Strong.", "Pay me.", "Betting."],
     [CHAT_TRIGGERS.RAISE]: ["I have it.", "Raise.", "Top range.", "Big hand.", "Monster."],
-    [CHAT_TRIGGERS.CALL]: ["Set mining.", "Odds.", "Call.", "Drawing.", "One time."],
+    [CHAT_TRIGGERS.CALL]: ["Odds.", "Call.", "Drawing.", "One time."],
     [CHAT_TRIGGERS.CHECK]: ["Check.", "Pot control.", "Checking.", "Safety.", "Pass."],
     [CHAT_TRIGGERS.ELIMINATED_SELF]: ["Impossible.", "Setup.", "Rigged.", "Unfortunate.", "Sigh."],
     [CHAT_TRIGGERS.ELIMINATED_ENEMY]: ["Punted.", "Standard.", "Played bad.", "Gg.", "Nice."]

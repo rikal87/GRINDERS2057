@@ -6,16 +6,26 @@ import { audioManager } from './audioManager.js';
 import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
 import { getPartner, getJoinedPartners } from './partnerSystem.js';
-import { gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion, getCurrentSuspicion, getCurrentInfamy } from './store.js';
+import { shareBenefitForPartners, shareCollusion } from './partnerContractSystem.js';
+import { getPlayStatsSession, gainInfamy, gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion, getCurrentSuspicion, getCurrentInfamy, gainXP, gainClearedZoneCount, gainClearReward, processMissionResult } from './store.js';
 import { LOCATION_ID, CONTRACT_TYPE, CHAT_TRIGGERS, TYPE_CHANGE_BANKROLL } from './constants.js'
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
 import { zones } from './zone.js';
-import { recordPlayStatsSession, PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
-
+import { GAME_RESULT_CODE, PLAY_RECORD_STATS_TYPE, recordPlayStatsSession } from './playRecordStats';
+export const gameResult = (winBB) => {
+  if (winBB >= 100) return GAME_RESULT_CODE.WIN_BIG;
+  if (winBB >= 50) return GAME_RESULT_CODE.WIN_MEDIUM;
+  if (winBB >= 30) return GAME_RESULT_CODE.WIN_SMALL;
+  if (winBB <= -100) return GAME_RESULT_CODE.LOSE_BIG;
+  if (winBB <= -50) return GAME_RESULT_CODE.LOSE_MEDIUM;
+  if (winBB <= -30) return GAME_RESULT_CODE.LOSE_SMALL;
+  return GAME_RESULT_CODE.NEUTRAL;
+}
 const eventAdaptor = new EventAdaptor();
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 export class GameEngine {
   constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isAdvanced = false, locationId = 'micro_street_shop', locationLV = 1, buyInLimit = 999999, isMonitoring = false, inviteId = null) {
+    this.exited = false;
     this.locationId = locationId;
     this.tableSize = tableSize;
     this.sb = sb;
@@ -69,12 +79,20 @@ export class GameEngine {
 
   initializePlayers(humanClass, size) {
     const players = [];
+
+    // [FIX] Calculate buy-in multiplier BEFORE object initialization to avoid NaN
+    const item = store.equippedProtector;
+    const baseMultiplier = 1;
+    const itemBonus = (item && item.effects) ? item.effects.reduce((sum, e) => (e.id === 'buy_in_multiply') ? sum + e.value : sum, 0) : 0;
+    const buyInMultiply = baseMultiplier + itemBonus;
+
     const YOU = {
       id: 'player',
       name: 'YOU',
       class: CLASSES[humanClass],
       hand: [],
-      chips: Math.floor(this.buyIn * this.buyInMultiply), // Will be validated against bankroll in constructor or UI
+      chips: Math.floor(this.buyIn * buyInMultiply), // Will be validated against bankroll in constructor or UI
+      initialChips: Math.floor(this.buyIn * buyInMultiply),
       currentBet: 0,
       totalWagered: 0,
       isFolded: false,
@@ -199,7 +217,7 @@ export class GameEngine {
         if (template) {
           enemiesToPlace.push({ ...template });
           setTimeout(() => {
-            chatAI(template, CHAT_TRIGGERS.GAME_START);
+            chatAI(template, CHAT_TRIGGERS.GAME_START, "", 0, this);
           }, 2000);
         } else {
           console.warn(`[GAME] Companion persona '${guestName}' not found in CLASSES.`);
@@ -341,6 +359,7 @@ export class GameEngine {
       isBoss: villan.isBoss || false,
       item: null,
       maxTimeBank: 15,
+      showHoleCards: false,
       timeBankRemaining: 15,
       stats: {
         handsPlayed: 0,
@@ -361,7 +380,7 @@ export class GameEngine {
       },
     };
 
-    if (Math.random() < 0.25) chatAI(aiPlayer, CHAT_TRIGGERS.GAME_START)
+    if (Math.random() < 0.25) chatAI(aiPlayer, CHAT_TRIGGERS.GAME_START, "", 0, this)
     return aiPlayer;
   }
 
@@ -378,6 +397,7 @@ export class GameEngine {
     return this.createAIPlayerFromTemplate(villanTemplate, customId);
   }
   async startNewHand() {
+    if (this.exited) return;
     audioManager.disableTensionMode();
     this.deck = createDeck();
     this.board = [];
@@ -402,6 +422,7 @@ export class GameEngine {
       p.totalWagered = 0;
       p.isBlind = false; // Reset blind status
       p.isJoinPot = false; // Reset VPIP tracker
+      p.showHoleCards = false; // reset show hole cards
       if (!p.isEliminated) recordPlayStatsSession(p, PLAY_RECORD_STATS_TYPE.HANDS_PLAYED);
     });
     this.calculationInProgress = false;
@@ -509,6 +530,11 @@ export class GameEngine {
   async handlePlayerAction(player, action) {
     if (this.runoutInProgress) return; // Block actions during runout
     if (this.state === 'IDLE') return;
+
+    // [FIX] Capture state BEFORE action for correct dialogue triggers
+    const callAmtBefore = this.potManager.currentRoundBet - player.currentBet;
+    const isInitialRaise = (this.currentStreetRaises === 0);
+
     // console.info('handlePlayerAction', player.name, action)
     // [PROFILING] Faced Flop Bet
     if (this.state === 'FLOP' && this.potManager.currentRoundBet > 0) {
@@ -525,7 +551,7 @@ export class GameEngine {
     }
     // this.mentor
     if (action.type === 'fold') {
-      if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.FOLD_FOR_PLAYER)
+      if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.FOLD_FOR_PLAYER, "", 0, this)
       player.isFolded = true;
 
       eventAdaptor.fold({ player, amount: player.totalWagered, pot: this.pot, board: this.board, street: this.state, players: this.players });
@@ -537,11 +563,11 @@ export class GameEngine {
       if (diff > 0) {
         action.type = 'call';
         audioManager.playSFX('puti-n-chip');
-        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CALL_FOR_PLAYER);
+        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CALL_FOR_PLAYER, "", 0, this);
       } else {
         action.type = 'check';
         audioManager.playSFX('check');
-        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CHECK_FOR_PLAYER);
+        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CHECK_FOR_PLAYER, "", 0, this);
       }
 
     } else if (action.type === 'raise' || action.type === 'bet' || action.type === 'all_in') {
@@ -555,11 +581,11 @@ export class GameEngine {
           // Compare the diff to the pot before the bet to get a sense of size
           const potRatio = diff / (this.pot > 0 ? this.pot : this.bb);
           if (potRatio <= 0.30) {
-            chatAI(this.mentor, CHAT_TRIGGERS.RAISE_SMALL_FOR_PLAYER);
+            chatAI(this.mentor, CHAT_TRIGGERS.RAISE_SMALL_FOR_PLAYER, "", 0, this);
           } else if (potRatio >= 0.7) {
-            chatAI(this.mentor, CHAT_TRIGGERS.RAISE_BIG_FOR_PLAYER);
+            chatAI(this.mentor, CHAT_TRIGGERS.RAISE_BIG_FOR_PLAYER, "", 0, this);
           } else {
-            chatAI(this.mentor, CHAT_TRIGGERS.RAISE_MEDIUM_FOR_PLAYER);
+            chatAI(this.mentor, CHAT_TRIGGERS.RAISE_MEDIUM_FOR_PLAYER, "", 0, this);
           }
         }
       }
@@ -585,7 +611,16 @@ export class GameEngine {
         this.aggressor = null;
       }
     }
-    player.lastDialogue = action.dialogue || action.type.toLocaleUpperCase() + '.';
+
+    // [REQ] Handle BET vs RAISE and CALL vs CHECK for default lastDialogue
+    let displayAction = action.type.toLocaleUpperCase();
+    if (displayAction === 'CALL' && callAmtBefore === 0) {
+      displayAction = 'CHECK';
+    } else if (displayAction === 'RAISE' && this.state !== 'PREFLOP' && isInitialRaise) {
+      displayAction = 'BET';
+    }
+
+    player.lastDialogue = action.dialogue || displayAction + '.';
     player.lastThought = action.insight;
     if (player.dialogueTimeoutId) {
       clearTimeout(player.dialogueTimeoutId);
@@ -779,7 +814,7 @@ export class GameEngine {
       const aiChoppers = this.players.filter(p => !p.isHuman && !p.isFolded && winners.some(w => w.id === p.id));
       if (aiChoppers.length > 0) {
         const chopper = aiChoppers[Math.floor(Math.random() * aiChoppers.length)];
-        chatAI(chopper, CHAT_TRIGGERS.CHOP);
+        chatAI(chopper, CHAT_TRIGGERS.CHOP, "", 0, this);
       }
     } else {
       // AI Bragging if they won
@@ -788,7 +823,7 @@ export class GameEngine {
         const primaryAiWinner = this.players.find(p => p.id === aiWinners[0].id);
         if (primaryAiWinner) {
           const isHuge = this.pot > (this.bb * 40);
-          if (this.street !== 'PREFLOP' && Math.random() < 0.3) chatAI(primaryAiWinner, isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL);
+          if (this.street !== 'PREFLOP' && Math.random() < 0.3) chatAI(primaryAiWinner, isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL, "", 0, this);
         }
       }
 
@@ -799,7 +834,7 @@ export class GameEngine {
         if (losers.length > 0 && Math.random() < 0.5) {
           const complainer = losers[Math.floor(Math.random() * losers.length)];
           const isHuge = this.pot > (this.bb * 40);
-          if (this.street !== 'PREFLOP') chatAI(complainer, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL);
+          if (this.street !== 'PREFLOP') chatAI(complainer, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL, "", 0, this);
 
           // [FIX] Infamy and suspicion system
           if (this.infamy >= 80) {
@@ -813,7 +848,6 @@ export class GameEngine {
     }
 
     if (meResult && meResult.isWinner) {
-      eventAdaptor.gainXP({ player: me });
       gainXPEstimate(me, meResult.amountWon, this.bb, this.isAdvanced, this.locationLV);
     }
 
@@ -823,14 +857,14 @@ export class GameEngine {
       if (netProfit > 0) {
         // Player Profited
         const isHugeWin = netProfit > (this.bb * 20);
-        if (Math.random() < 0.5 && this.street !== 'PREFLOP') chatAI(this.mentor, isHugeWin ? CHAT_TRIGGERS.WIN_HUGE_FOR_PLAYER : CHAT_TRIGGERS.WIN_SMALL_FOR_PLAYER);
+        if (Math.random() < 0.5 && this.street !== 'PREFLOP') chatAI(this.mentor, isHugeWin ? CHAT_TRIGGERS.WIN_HUGE_FOR_PLAYER : CHAT_TRIGGERS.WIN_SMALL_FOR_PLAYER, "", 0, this);
       } else if (netProfit < 0) {
         // Player Lost Money (either lost entirely, or chop/side pot refund was less than wagered)
         const isHugeLoss = me.totalWagered > (this.bb * 20);
-        if (Math.random() < 0.5 && this.street !== 'PREFLOP') chatAI(this.mentor, isHugeLoss ? CHAT_TRIGGERS.LOSE_HUGE_FOR_PLAYER : CHAT_TRIGGERS.LOSE_SMALL_FOR_PLAYER);
+        if (Math.random() < 0.5 && this.street !== 'PREFLOP') chatAI(this.mentor, isHugeLoss ? CHAT_TRIGGERS.LOSE_HUGE_FOR_PLAYER : CHAT_TRIGGERS.LOSE_SMALL_FOR_PLAYER, "", 0, this);
       } else {
         // Even break (Chop)
-        if (Math.random() < 0.5) chatAI(this.mentor, CHAT_TRIGGERS.CHOP);
+        if (Math.random() < 0.5) chatAI(this.mentor, CHAT_TRIGGERS.CHOP, "", 0, this);
       }
     }
     const bestWinner = this.players.find(p => p.id === result.winnerId);
@@ -842,8 +876,8 @@ export class GameEngine {
     this.players.forEach(p => {
       p.voluntarilyInteracted = false;
     });
-
-    eventAdaptor.roundEnd(this.players, 'ROUND_END');
+    // this.street = 'ROUND_END';
+    eventAdaptor.roundEnd({ players: this.players, bestWinner, street: 'ROUND_END' });
     const sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000
     await sleep(sleepTime)
     saveStore();
@@ -916,7 +950,7 @@ export class GameEngine {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('trigger-confiscation'));
     }
-    await sleep(5000);
+    await sleep(6000);
     audioManager.play();
   }
 
@@ -973,6 +1007,7 @@ export class GameEngine {
     return false;
   }
   exitGame() {
+    this.exited = true;
     eventAdaptor.playerLeaveTable(this.players[0], this.locationId, this.players, this.inviteId);
     this.cleanup();
   }
@@ -1085,6 +1120,43 @@ export class GameEngine {
     }
 
     if (typeof window !== 'undefined') {
+      const player = this.players.find(p => p.isMe);
+      const netWinnings = (player.chips - player.totalBuyIn);
+      recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_WINNING, { amount: netWinnings })
+      const winBB = netWinnings / this.bb;
+      // infarmy Calc
+      let generatedInfamy = winBB * 0.2;
+      let baseBoostInfamy = (this.exitReservationRounds === -1 ? 1.0 : 0.5) + player.born_villain + player.infamy_boost;
+      if (generatedInfamy > 0) {
+        gainInfamy(this.locationId, generatedInfamy * baseBoostInfamy);
+      } else gainInfamy(this.locationId, generatedInfamy);
+      // game result Calc
+      const result = gameResult(winBB);
+      store.play_stats_session.msgCode = result
+      if (result === GAME_RESULT_CODE.WIN_BIG) gainClearReward(this.locationId);
+      if (result.indexOf('WIN') !== -1) {
+        gainClearedZoneCount(this.locationId);
+      }
+      // mission result
+      processMissionResult(player, result, this);
+      // gain xp and bankroll
+      const gainedXP = gainXP(player);
+      gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING); // returned chips
+
+      eventAdaptor.cashout(player, { gainedXP, netWinnings, stats: getPlayStatsSession() });
+
+      // share collusion
+      const partners = this.players.filter(p => p.isPartner);
+      partners.forEach(partner => {
+        const partnerNetWinnings = partner.chips - partner.initialChips;
+        const share = shareCollusion(partner.id, netWinnings, partnerNetWinnings)
+        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
+        // todo chips calculate to partner.bankroll
+      });
+      // share benefit
+      const share = shareBenefitForPartners(netWinnings);
+      recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
+      saveStore();
       window.dispatchEvent(new CustomEvent('trigger-cashout', { detail: { isForceExit } }));
     } else console.warn('[GAME] cashOut failed');
   }

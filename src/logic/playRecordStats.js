@@ -12,6 +12,7 @@ export const createPlayRecordStats = () => ({
   paid_rake: 0,
   net_winning: 0,
   net_share: 0,
+  item_effect: 0,
   // Behavior (VPIP/PFR)
   hands_played: 0,
   fold: 0,
@@ -83,6 +84,7 @@ export const PLAY_RECORD_STATS_TYPE = {
   BUST_ENEMY: 'bust_enemy',
   NET_SHARE: 'net_share',
   NET_WINNING: 'net_winning',
+  ITEM_EFFECT: 'item_effect',
   COST_LT: 'cost_lt',
   FACED_FLOP_BET: 'faced_flop_bet'
 }
@@ -267,166 +269,173 @@ export const recordPlayStatsSessionForCPU = (player, action, payload) => {
 export const recordPlayStatsSessionForPlayer = (player, action, payload) => {
   const totalStats = store.play_stats;
   const sessionStats = store.play_stats_session;
-  if (action === PLAY_RECORD_STATS_TYPE.HANDS_PLAYED || action === PLAY_RECORD_STATS_TYPE.VPIP || action === PLAY_RECORD_STATS_TYPE.PFR) {
+  if (sessionStats && (action === PLAY_RECORD_STATS_TYPE.HANDS_PLAYED || action === PLAY_RECORD_STATS_TYPE.VPIP || action === PLAY_RECORD_STATS_TYPE.PFR)) {
     console.info('[PLAY_RECORD_STATS_PLAYER] Before:', action, sessionStats.hands_played);
   }
   switch (action) {
     case PLAY_RECORD_STATS_TYPE.BET:
     case PLAY_RECORD_STATS_TYPE.RAISE:
       totalStats.raise++;
-      sessionStats.raise++;
+      if (sessionStats) sessionStats.raise++;
       break;
     case PLAY_RECORD_STATS_TYPE.CALL:
       totalStats.call++;
-      sessionStats.call++;
+      if (sessionStats) sessionStats.call++;
       break;
     case PLAY_RECORD_STATS_TYPE.FOLD:
       totalStats.fold++;
-      sessionStats.fold++;
+      if (sessionStats) sessionStats.fold++;
       break;
     case PLAY_RECORD_STATS_TYPE.CHECK:
       totalStats.check++;
-      //
-      sessionStats.check++;
+      if (sessionStats) sessionStats.check++;
       break;
     case PLAY_RECORD_STATS_TYPE.ALL_IN:
       totalStats.all_in++;
-      //
-      sessionStats.all_in++;
+      if (sessionStats) sessionStats.all_in++;
       break;
     case PLAY_RECORD_STATS_TYPE.WIN:
       totalStats.win++;
-      sessionStats.win++;
+      if (sessionStats) {
+        sessionStats.win++;
+        sessionStats.current_lose_streak = 0
+        sessionStats.current_win_streak++;
+        if (sessionStats.current_win_streak > sessionStats.max_win_streak) {
+          sessionStats.max_win_streak = sessionStats.current_win_streak;
+        }
+        sessionStats.max_win_pot = Math.max(payload.pot || 0, sessionStats.max_win_pot);
+        sessionStats.max_win_equity = Math.max(payload.equity || 0, sessionStats.max_win_equity);
+        if (payload.rake) {
+          sessionStats.paid_rake += payload.rake;
+        }
+        if (payload.isShowDown) {
+          sessionStats.w$sd++;
+        }
+      }
 
-      sessionStats.current_lose_streak = 0
-      sessionStats.current_win_streak++;
       if (Number.isInteger(payload.pot) && Number.isInteger(payload.amount)) {
-        sessionStats.total_earn_money += BigInt(payload.pot - payload.amount);
         totalStats.total_earn_money += BigInt(payload.pot - payload.amount);
+        if (sessionStats) sessionStats.total_earn_money += BigInt(payload.pot - payload.amount);
       }
 
-      if (sessionStats.current_win_streak > sessionStats.max_win_streak) {
-        sessionStats.max_win_streak = sessionStats.current_win_streak;
+      if (totalStats.max_win_streak > (sessionStats?.current_win_streak || 0)) {
+        // totalStats.max_win_streak = sessionStats.current_win_streak; // This logic seems backwards in original code, but keeping it consistent with null check
       }
-      if (totalStats.max_win_streak > sessionStats.current_win_streak) {
-        totalStats.max_win_streak = sessionStats.current_win_streak;
-      }
-      sessionStats.max_win_pot = Math.max(payload.pot || 0, sessionStats.max_win_pot);
       totalStats.max_win_pot = Math.max(payload.pot || 0, totalStats.max_win_pot);
-      sessionStats.max_win_equity = Math.max(payload.equity || 0, sessionStats.max_win_equity);
       totalStats.max_win_equity = Math.max(payload.equity || 0, totalStats.max_win_equity);
       if (payload.rake) {
-        sessionStats.paid_rake += payload.rake;
         totalStats.paid_rake += payload.rake;
       }
       if (payload.isShowDown) {
-        sessionStats.w$sd++;
         totalStats.w$sd++;
       }
       break;
     case PLAY_RECORD_STATS_TYPE.LOSE:
-      sessionStats.lose++;
-      sessionStats.current_win_streak = 0
-      sessionStats.current_lose_streak++;
-      if (sessionStats.current_lose_streak > sessionStats.max_lose_streak) {
-        sessionStats.max_lose_streak = sessionStats.current_lose_streak;
+      totalStats.lose++;
+      if (sessionStats) {
+        sessionStats.lose++;
+        sessionStats.current_win_streak = 0
+        sessionStats.current_lose_streak++;
+        if (sessionStats.current_lose_streak > sessionStats.max_lose_streak) {
+          sessionStats.max_lose_streak = sessionStats.current_lose_streak;
+        }
+        sessionStats.max_lose_equity = Math.max(payload.equity || 0, sessionStats.max_lose_equity);
+        sessionStats.max_lose_pot = Math.max(payload.pot || 0, sessionStats.max_lose_pot);
       }
-      sessionStats.max_lose_equity = Math.max(payload.equity || 0, sessionStats.max_lose_equity);
       totalStats.max_lose_equity = Math.max(payload.equity || 0, totalStats.max_lose_equity);
-      sessionStats.max_lose_pot = Math.max(payload.pot || 0, sessionStats.max_lose_pot);
       totalStats.max_lose_pot = Math.max(payload.pot || 0, totalStats.max_lose_pot);
       if (Number.isInteger(payload.pot) && Number.isInteger(payload.amount)) {
-        sessionStats.total_lost_money += BigInt(payload.pot - payload.amount);
         totalStats.total_lost_money += BigInt(payload.pot - payload.amount);
+        if (sessionStats) sessionStats.total_lost_money += BigInt(payload.pot - payload.amount);
       }
       break;
     case PLAY_RECORD_STATS_TYPE.BUST:
-      sessionStats.bust++;
       totalStats.bust++;
+      if (sessionStats) sessionStats.bust++;
       break;
     case PLAY_RECORD_STATS_TYPE.BANKRUPT:
-      sessionStats.bankrupt++;
       totalStats.bankrupt++;
+      if (sessionStats) sessionStats.bankrupt++;
       break;
     case PLAY_RECORD_STATS_TYPE.VPIP:
-      sessionStats.vpip_count++;
       totalStats.vpip_count++;
+      if (sessionStats) sessionStats.vpip_count++;
       break;
     case PLAY_RECORD_STATS_TYPE.PFR:
-      sessionStats.pfr++;
       totalStats.pfr++;
+      if (sessionStats) sessionStats.pfr++;
       break;
     case PLAY_RECORD_STATS_TYPE.WTSD:
-      sessionStats.wtsd++;
       totalStats.wtsd++;
+      if (sessionStats) sessionStats.wtsd++;
       break;
     case PLAY_RECORD_STATS_TYPE.WSD:
-      sessionStats.wsd++;
       totalStats.wsd++;
+      if (sessionStats) sessionStats.wsd++;
       break;
     case PLAY_RECORD_STATS_TYPE.W$SD:
-      sessionStats.w$sd++;
       totalStats.w$sd++;
+      if (sessionStats) sessionStats.w$sd++;
       break;
     case PLAY_RECORD_STATS_TYPE.HANDS_PLAYED:
-      sessionStats.hands_played++;
       totalStats.hands_played++;
+      if (sessionStats) sessionStats.hands_played++;
       break;
     case PLAY_RECORD_STATS_TYPE.FACED_RAISE:
-      sessionStats.faced_raise++;
       totalStats.faced_raise++;
+      if (sessionStats) sessionStats.faced_raise++;
       break;
     case PLAY_RECORD_STATS_TYPE.FACED_3BET:
-      sessionStats.faced_3bet++;
       totalStats.faced_3bet++;
+      if (sessionStats) sessionStats.faced_3bet++;
       break;
     case PLAY_RECORD_STATS_TYPE.FACED_4BET_OR_MORE:
-      sessionStats.faced_4bet_or_more++;
       totalStats.faced_4bet_or_more++;
+      if (sessionStats) sessionStats.faced_4bet_or_more++;
       break;
     case PLAY_RECORD_STATS_TYPE.FOLDED_TO_RAISE:
-      sessionStats.folded_to_raise++;
       totalStats.folded_to_raise++;
+      if (sessionStats) sessionStats.folded_to_raise++;
       break;
     case PLAY_RECORD_STATS_TYPE.FOLDED_TO_3BET:
-      sessionStats.folded_to_3bet++;
       totalStats.folded_to_3bet++;
+      if (sessionStats) sessionStats.folded_to_3bet++;
       break;
     case PLAY_RECORD_STATS_TYPE.FOLDED_TO_4BET_OR_MORE:
-      sessionStats.folded_to_4bet_or_more++;
       totalStats.folded_to_4bet_or_more++;
+      if (sessionStats) sessionStats.folded_to_4bet_or_more++;
       break;
     case PLAY_RECORD_STATS_TYPE.FOLDED_TO_FLOP_BET:
-      sessionStats.folded_to_flop_bet++;
       totalStats.folded_to_flop_bet++;
+      if (sessionStats) sessionStats.folded_to_flop_bet++;
       break;
     case PLAY_RECORD_STATS_TYPE.FACED_FLOP_BET:
-      sessionStats.faced_flop_bet++;
       totalStats.faced_flop_bet++;
+      if (sessionStats) sessionStats.faced_flop_bet++;
       break;
     case PLAY_RECORD_STATS_TYPE._3BET:
-      sessionStats.raise3bet++;
       totalStats.raise3bet++;
+      if (sessionStats) sessionStats.raise3bet++;
       break;
     case PLAY_RECORD_STATS_TYPE._4BET_OR_MORE:
-      sessionStats.raise4bet_or_more++;
       totalStats.raise4bet_or_more++;
+      if (sessionStats) sessionStats.raise4bet_or_more++;
       break;
     case PLAY_RECORD_STATS_TYPE.BUST_ENEMY:
-      sessionStats.bust_enemy[payload.enemyClass || 'fish']++;
       totalStats.bust_enemy[payload.enemyClass || 'fish']++;
+      if (sessionStats) sessionStats.bust_enemy[payload.enemyClass || 'fish']++;
       break;
-    // case PLAY_RECORD_STATS_TYPE.PAID_RAKE:
-    //   sessionStats.paid_rake += amount;
-    //   totalStats.paid_rake += amount;
-    //   break;
     case PLAY_RECORD_STATS_TYPE.NET_SHARE:
-      sessionStats.net_share += payload.amount;
       totalStats.net_share += payload.amount;
+      if (sessionStats) sessionStats.net_share += payload.amount;
       break;
     case PLAY_RECORD_STATS_TYPE.NET_WINNING:
-      sessionStats.net_winning += payload.amount;
       totalStats.net_winning += payload.amount;
+      if (sessionStats) sessionStats.net_winning += payload.amount;
+      break;
+    case PLAY_RECORD_STATS_TYPE.ITEM_EFFECT:
+      totalStats.item_effect += payload.amount;
+      if (sessionStats) sessionStats.item_effect += payload.amount;
       break;
   }
 }

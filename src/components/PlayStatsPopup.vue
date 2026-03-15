@@ -23,6 +23,9 @@
                 <div class="stat-entry"><span class="label">NET_SHARE(Partner):</span> <span class="val"
                     :class="animatedStats.net_share >= 0 ? 'green' : 'red'">{{
                       Math.floor(animatedStats.net_share).toLocaleString() }} CR</span></div>
+                <div class="stat-entry"><span class="label">ITEM_EFFECT:</span> <span class="val"
+                    :class="animatedStats.item_effect >= 0 ? 'green' : 'red'">{{
+                      Math.floor(animatedStats.item_effect).toLocaleString() }} CR</span></div>
               </div>
             </div>
           </Transition>
@@ -112,7 +115,8 @@ const animatedStats = ref({
   bankruptcy_count: 0,
   max_win_streak: 0,
   max_lose_streak: 0,
-  max_lose_equity: 0
+  max_lose_equity: 0,
+  item_effect: 0
 });
 
 const animateValue = (key, endValue, duration) => {
@@ -153,6 +157,7 @@ watch(() => props.show, (newVal) => {
       animateValue('max_win_pot', currentStats.value.max_win_pot || 0, 1000);
       animateValue('max_lose_pot', currentStats.value.max_lose_pot || 0, 1000);
       animateValue('net_share', currentStats.value.net_share || 0, 1000);
+      if (currentStats.value.item_effect) animateValue('item_effect', currentStats.value.item_effect || 0, 1000);
     }, 300);
 
     setTimeout(() => {
@@ -206,12 +211,14 @@ const wsdTarget = computed(() => {
 
 const handleClose = () => {
   audioManager.playSFX('ui-click');
-  if (audioManager.currentZoneId.value) {
-    if (isSession.value) {
-      store.play_stats_session = null;
-      audioManager.playTrackByZoneId(audioManager.currentZoneId.value);
+  store.play_stats_session = null;
+  setTimeout(() => {
+    if (audioManager.currentZoneId.value) {
+      if (isSession.value) {
+        audioManager.playTrackByZoneId(audioManager.currentZoneId.value);
+      }
     }
-  }
+  }, 5000)
   emit('close');
 };
 </script>

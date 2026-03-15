@@ -344,16 +344,15 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '💰',
-    id: 'pot_bonus',
-    name_ko: '보너스 배당',
-    name_en: 'Pot Bonus',
+    id: 'session_profit_bonus',
+    name_ko: '세션 수익 보너스',
+    name_en: 'Session Profit Bonus',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Common',
-    maxCooldown: 10,
     cooldown: 0,
-    trigger: ['win'],
+    trigger: ['cashout'],
     editable: false,
-    get desc() { return store.settings.language === 'en' ? `Deposits ${Math.floor(this.value * 100)}% of your pot share into your bankroll on win (Cooldown: ${this.maxCooldown} rounds)` : `승리 시 본인 지분의 ${Math.floor(this.value * 100)}% 만큼 뱅크롤로 입금 (쿨타임: ${this.maxCooldown} 라운드)`; },
+    get desc() { return store.settings.language === 'en' ? `Session end: +${Math.floor(this.value * 100)}% of your total profit` : `세션 종료후 최종 수익 +${Math.floor(this.value * 100)}%`; },
     value: .05,
     isStackable: true
   },
@@ -367,7 +366,7 @@ export const ITEM_EFFECT_DATA = [
     cooldown: 0,
     trigger: ['showdownLoseWithAllIn', 'winAtShowdownWithAllIn'],
     editable: false,
-    get desc() { return store.settings.language === 'en' ? `Refunds CR equal to ${Math.floor(this.value * 100)}% of your equity if you lose an All-In Showdown with >75% equity.` : `올인 쇼다운 시점 승률이 75% 이상일때, 패배시 승률의 ${Math.floor(this.value * 100)}% 만큼 CR 보전`; },
+    get desc() { return store.settings.language === 'en' ? `Refunds CR equal to ${Math.floor(this.value * 100)}% of your equity if you lose an All-In Showdown with >70% equity.` : `올인 쇼다운 시점 승률이 70% 이상일때, 패배시 승률의 ${Math.floor(this.value * 100)}% 만큼 CR 보전`; },
     value: .3,
     isStackable: true
   },
@@ -379,9 +378,9 @@ export const ITEM_EFFECT_DATA = [
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Rare',
     cooldown: 0,
-    trigger: ['gainXP'],
+    trigger: ['cashout'],
     editable: false,
-    get desc() { return store.settings.language === 'en' ? `Adds CR equivalent to ${Math.floor(this.value * 100)}% of the XP you gain to your bankroll.` : `획득한 경험치의 ${Math.floor(this.value * 100)}% 만큼의 CR이 뱅크롤에 추가됩니다.`; },
+    get desc() { return store.settings.language === 'en' ? `End of session: Earn bonus bankroll equal to ${Math.floor(this.value * 100)}% of the XP gained.` : `세션 종료후 얻은 경험치의 ${Math.floor(this.value * 100)}% 만큼 추가 뱅크롤 획득`; },
     value: 1,
     isStackable: true
   },
@@ -623,10 +622,11 @@ export const ITEM_EFFECT_DATA = [
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Uncommon',
     cooldown: 0,
+    maxCooldown: 60,
     editable: false,
-    trigger: ['loseAtShowdown'],
-    get desc() { return store.settings.language === 'en' ? `If you lose a Showdown with a Full House+, grants +${Math.floor(this.value * 100)}% XP bonus on your next win.` : `쇼다운에서 풀하우스 이상의 족보로 패배시, 다음 승리 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: 5,
+    trigger: ['loseAtShowdown', 'loseAtShowdownWithAllIn'],
+    get desc() { return store.settings.language === 'en' ? `If you lose a Showdown with a Two Pair or better, grants ${this.value} stamina.` : `쇼다운에서 투페어 이상으로 패배시, 스테미너 ${this.value} 회복`; },
+    value: 50,
     isStackable: true
   },
   {
@@ -655,8 +655,8 @@ export const ITEM_EFFECT_DATA = [
     trigger: ['winAtShowdown', 'winAtShowdownWithAllIn', 'lose'],
     get desc() {
       return store.settings.language === 'en' ?
-        `Each defeat grants a +${this.value * 100}% XP bonus for your next Showdown victory. (Current stack: ${this.stackPerValue}%. This effect stacks and resets upon winning.)` :
-        `패배할 때마다 다음 쇼다운 승리시 경험치 보너스 +${this.value * 100}% (현재 누적량: ${this.stackPerValue}%. 이 효과는 누적되며, 승리할때 초기화.)`;
+        `Each defeat grants a +${this.value * 100}% XP bonus for your next Showdown victory. (Current stack: ${Math.floor(this.stackPerValue)}%. This effect stacks and resets upon winning.)` :
+        `패배할 때마다 다음 쇼다운 승리시 경험치 보너스 +${this.value * 100}% (현재 누적량: ${Math.floor(this.stackPerValue)}%. 이 효과는 누적되며, 승리할때 초기화.)`;
     },
     value: .2,
     stack: 0,
@@ -675,7 +675,7 @@ export const ITEM_EFFECT_DATA = [
     editable: false,
     trigger: ['loseAtShowdown', 'loseAtShowdownWithAllIn'],
     get desc() { return store.settings.language === 'en' ? `Restores +${this.value} Stamina upon losing a Showdown.` : `쇼다운 패배 시 스테미나 +${this.value}`; },
-    value: 5,
+    value: 10,
     isStackable: true
   },
   {
@@ -747,8 +747,8 @@ export const ITEM_EFFECT_DATA = [
     trigger: ['win', 'lose'],
     get desc() {
       return store.settings.language === 'en' ?
-        `Grants +${this.value * 100}% XP bonus per win. (Current total: +${this.stackPerValue}%. This effect accumulates with wins and resets upon losing a Showdown.)` :
-        `승리할때 마다 경험치 보너스 +${this.value * 100}% (현재 누적량: +${this.stackPerValue}%. 이 효과는 승리할때 마다 누적되며, 쇼다운 패배시 초기화.)`;
+        `Grants +${this.value * 100}% XP bonus per win. (Current total: +${Math.floor(this.stackPerValue)}%. This effect accumulates with wins and resets upon losing a Showdown.)` :
+        `승리할때 마다 경험치 보너스 +${this.value * 100}% (현재 누적량: +${Math.floor(this.stackPerValue)}%. 이 효과는 승리할때 마다 누적되며, 쇼다운 패배시 초기화.)`;
     },
     value: .03,
     stack: 0,
@@ -867,26 +867,39 @@ export const ITEM_EFFECT_DATA = [
     name_ko: '블러프를 보여줘!',
     name_en: 'Show me your bluff!',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    rarity: 'Unique',
+    rarity: 'Common',
     cooldown: 0,
     maxCooldown: 20,
-    trigger: ['fold'],
-    get desc() { return store.settings.language === 'en' ? `When you make the fold at the [River], the winner reveals their hand with a ${this.value * 100}% probability.(Cooldown: ${this.maxCooldown} rounds)` : `당신이 리버에서 폴드하면 승자의 핸드를 ${this.value * 100}% 확률로 볼 수 있습니다.(쿨타임: ${this.maxCooldown} 라운드)`; },
+    trigger: ['round_end'],
+    get desc() { return store.settings.language === 'en' ? `At the end of a round, there's a ${this.value * 100}% chance to expose the winner's hand. (Cooldown: ${this.maxCooldown} rounds)` : `라운드 종료 시 ${this.value * 100}% 확률로 최종 승자의 핸드를 강제로 공개합니다. (재사용 대기시간: ${this.maxCooldown} 라운드)`; },
     value: 0.25,
   },
   {
-    icon: '🚬',
-    id: 'last_regret',
-    name_ko: '마지막 미련',
-    name_en: 'Last Regret',
+    icon: '🗠',
+    id: 'stonk',
+    name_ko: '주쉭',
+    name_en: 'Stonk',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    rarity: 'Unique',
+    rarity: 'Uncommon',
     cooldown: 0,
-    maxCooldown: 10,
-    trigger: ['fold'],
-    get desc() { return store.settings.language === 'en' ? `When you make the fold at the [Turn], you can see the [River] card.(Cooldown: ${this.maxCooldown} rounds)` : `당신이 [턴]에서 폴드하면 [리버]에 깔릴 카드를 볼 수 있습니다.(쿨타임: ${this.maxCooldown} 라운드)`; },
-    value: 1,
+    trigger: ['cashout'],
+    get desc() { return store.settings.language === 'en' ? `At the end of the session, your profit swings by +-1~${100 * this.value}%. Your W$SD(Showdown win rate) becomes the direct probability of a positive outcome.` : `세션 종료 시 최종 수익에 +-1~${100 * this.value}%의 변동폭이 생깁니다. 세션 중 달성한 W$SD(쇼다운 승률) 수치가 '수익 증가'의 확률이 됩니다.`; },
+    value: .25,
+    isStackable: true
   },
+  {
+    icon: '🎰',
+    id: 'badbeat_jackpot',
+    name_ko: '배드빗 잭팟',
+    name_en: 'Badbeat Jackpot',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Epic',
+    cooldown: 0,
+    trigger: ['loseAtShowdown', 'loseAtShowdownWithAllIn'],
+    get desc() { return store.settings.language === 'en' ? `If you lose at showdown with a Full House or better, you receive a jackpot worth ${this.value}x your current buy-in.` : `풀 하우스 이상 족보로 패배시 바이인의 ${this.value}배를 뱅크롤로 즉시 보상받습니다.` },
+    value: 7,
+    isStackable: true
+  }
 ];
 
 export const getItemEffect = (id) => {

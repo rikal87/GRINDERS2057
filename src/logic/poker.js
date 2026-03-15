@@ -427,7 +427,7 @@ const scoreFiveCards = (cards) => {
     const minFlushVal = 5 * Math.pow(15, 4) + 3 * Math.pow(15, 3) + 2 * Math.pow(15, 2) + 1 * Math.pow(15, 1) + 0 * Math.pow(15, 0);
     score = Math.floor(((flushVal - minFlushVal) / (maxFlushVal - minFlushVal)) * 100);
     score = Math.max(0, Math.min(100, score));
-    name = `Flush (${getRankName(ranks[0])} High, Score: ${score})`;
+    name = `${getRankName(ranks[0])} High Flush`;
   } else if (isStraight) {
     rank = 5;
     const highCard = isWheel ? 3 : ranks[0];

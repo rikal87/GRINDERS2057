@@ -13,7 +13,8 @@
     <Transition name="fold-cards">
       <div v-if="!p.isFolded" :class="{ 'cards': true, 'is-human': p.isHuman }">
         <!-- Human shows cards, others hidden until showdown -->
-        <Card v-for="(c, i) in p.hand" :key="i" :code="c" :hidden="!p.isHuman && engine.state !== 'SHOWDOWN'" />
+        <Card v-for="(c, i) in p.hand" :key="i" :code="c"
+          :hidden="!p.isHuman && engine.state !== 'SHOWDOWN' && !p.showHoleCards" />
       </div>
     </Transition>
     <Transition name="fade">

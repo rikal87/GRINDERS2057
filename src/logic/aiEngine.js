@@ -7,8 +7,17 @@ import { CHAT_TRIGGERS } from './constants.js'
  * AI Decision Engine (LLM Integrated)
  * Now delegates Prompt Construction & Schema to LLMService.
  */
-export const chatAI = (player, trigger = CHAT_TRIGGERS.FOLD_WEAK, insight = "", duration = 0) => {
-  const safeTrigger = trigger || 'FOLD'; // Fallback if undefined
+export const chatAI = (player, trigger = CHAT_TRIGGERS.FOLD_WEAK, insight = "", duration = 0, engine = null) => {
+  let safeTrigger = trigger || 'FOLD'; // Fallback if undefined
+
+  // [REQ] Treat CALL with 0 callAmt as CHECK
+  if (safeTrigger.toUpperCase() === CHAT_TRIGGERS.CALL && engine) {
+    const callAmt = engine.currentRoundBet - player.currentBet;
+    if (callAmt === 0) {
+      safeTrigger = CHAT_TRIGGERS.CHECK;
+    }
+  }
+
   const msg = getAIChatDialogue(safeTrigger.toUpperCase(), player.name.toUpperCase());
   console.log(`[AI_CHAT] ${player.name} ${safeTrigger.toUpperCase()}: ${msg}`);
 
@@ -67,7 +76,19 @@ export const getAIAction = (player, engine) => {
     action.amount = player.chips + player.currentBet;
     action.type = 'all_in';
   }
-  if (Math.random() < 0.25) action.dialogue = getAIChatDialogue(action.type, player.name, action.insight);
+  if (Math.random() < 0.25) {
+    let dialogueTrigger = action.type.toUpperCase();
+    if (dialogueTrigger === 'CALL') {
+      const callAmt = engine.currentRoundBet - player.currentBet;
+      if (callAmt === 0) dialogueTrigger = 'CHECK';
+    } else if (dialogueTrigger === 'RAISE') {
+      const street = (engine.state || '').toUpperCase();
+      if (street !== 'PREFLOP' && engine.currentStreetRaises === 0) {
+        dialogueTrigger = 'BET';
+      }
+    }
+    action.dialogue = getAIChatDialogue(dialogueTrigger, player.name, action.insight);
+  }
   if (engine.state === 'PREFLOP') action.delay /= 2; // if preflop, faster decision
   return action;
 };
@@ -92,18 +113,18 @@ function getHeuristicFallback(player, engine) {
   const playerIdx = engine.players.findIndex(p => p.id === player.id);
   const dealerIdx = engine.dealerIndex;
   const playerCount = engine.players.length;
-  const startingStack = player.chips + player.totalWagered;
+  // const startingStack = player.chips + player.totalWagered;
   const existAggressor = !!engine.aggressor;
   const isAggressor = engine.aggressor === player.id;
   // Base Bluff Frequency based on Aggression Factor
   // Scales down SHARPLY with raises to prevent suicide bluffs in high-depth spots (3-bet/4-bet+)
-  let bluffFreq = Math.max(0.1, (AF - 2) * 0.08 + 0.1);
+  let bluffFreq = Math.max(0.0, (AF - 2) * 0.06 + 0.06);
   bluffFreq *= (1 / (raises + 1));
   // if (street === 'RIVER') bluffFreq *= 0.5; // River bluffs are most expensive
   if (street === 'PREFLOP') bluffFreq *= 0.1; // Pre Flop bluffs are less effective
   const boardTexture = analyzeBoardTexture([...engine.board]);
-  if (boardTexture === 'DRY') bluffFreq *= 0.3;
-  if (boardTexture === 'WET') bluffFreq *= 1.5;
+  if (boardTexture === 'DRY' && street === 'RIVER') bluffFreq *= 0.3;
+  if (boardTexture === 'WET' && street === 'RIVER') bluffFreq *= 1.5;
 
   const boardRanks = engine.board.map(getRankVal).sort((a, b) => b - a);
   const isBoardPaired = boardRanks.some((r, i) => r === boardRanks[i + 1]);

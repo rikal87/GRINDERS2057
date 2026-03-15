@@ -3,8 +3,9 @@ import { store, gainBankroll, gainLT } from './store.js';
 import { evaluateHand } from './poker.js';
 import { recoverStamina } from './staminaSystem.js';
 import { scheduleEvent, EVENT_ID } from './eventSystem.js';
-import { PARTNER_ID } from './constants.js';
+import { PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js';
 import { recordPlayStatsSession, PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
+
 
 // const cleanupInvites = (locationId) => {
 //   store.messages = store.messages.filter(m => {
@@ -30,6 +31,13 @@ export class EventAdaptor {
       });
     });
   }
+  cashout(player, { netWinnings, gainedXP, stats }) {
+    player.item?.effects?.forEach(e => {
+      if (e.trigger.includes('cashout')) {
+        this.executeItemEffect(player, e, { netWinnings, gainedXP, stats });
+      }
+    });
+  }
   preflopStart() {
     console.info('preflopStart');
   }
@@ -39,12 +47,12 @@ export class EventAdaptor {
   endStreet(street) {
     console.info('endStreet', street);
   }
-  roundEnd(players, street) {
+  roundEnd({ players, street, bestWinner }) {
     console.info('roundEnd');
     players.forEach(p => {
       p.item?.effects?.forEach(e => {
         if (e.trigger.includes('round_end')) {
-          this.executeItemEffect(p, e, { street });
+          this.executeItemEffect(p, e, { street, bestWinner });
         }
         if (e.cooldown > 0) e.cooldown--;
       });
@@ -156,6 +164,13 @@ export class EventAdaptor {
       });
     });
   }
+  loseAtShowdown({ player, amount, pot, board, result }) {
+    player.item?.effects?.forEach(e => {
+      if (e.trigger.includes('loseAtShowdown') || e.trigger.includes('lose')) {
+        this.executeItemEffect(player, e, { amount, pot, equity: player.equity, hand, board, isWin: false, result });
+      }
+    });
+  }
   winAtShowdown({ player, amount, pot, hand, board, result }) {
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('winAtShowdown') || e.trigger.includes('win')) {
@@ -224,11 +239,9 @@ export class EventAdaptor {
     if (player.isMe) {
       store.play_stats.bankruptcy_count++;
     }
-    let rescueFund = player.level * 2000;
-    gainBankroll(rescueFund);
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('bankrupt')) {
-        this.executeItemEffect(player, e, { amount: rescueFund });
+        this.executeItemEffect(player, e, {});
       }
     });
 
@@ -278,26 +291,36 @@ export class EventAdaptor {
     }
     switch (effect.id) {
       case 'show_me_your_bluff':
-        // to-do: 어케 만들지
-        const playerCount = context.players.filter(p => !p.isFold).length;
-        if (context.street === 'RIVER' && playerCount === 1) {
-          if (Math.random() < effect.value) {
+        const existBestWinner = context.bestWinner;
+        if (existBestWinner) {
+          if (!existBestWinner.isMe && Math.random() < effect.value) {
             console.log('[EFFECT] Show Me Bluff ACTIVATED!');
-            // player.seeingHoleCards = true;
+            existBestWinner.showHoleCards = true;
             effect.cooldown = effect.maxCooldown;
           }
         }
         break;
-      case 'last_regret':
-        // to-do 어케만들지
-        if (context.street === 'TURN') {
-          const playerCount = context.players.filter(p => !p.isFold).length; // 6명이로 나오던데?
-          console.log('playerCount', playerCount);
-          if (playerCount === 1) {
-            console.log('[EFFECT] Last Regret ACTIVATED!');
-            // context.engine.dealRiver();
-            effect.cooldown = effect.maxCooldown;
+      case 'stonk': {
+        const stats = context.stats;
+        if (stats && stats.hands_played > 0 && context.netWinnings > 0) {
+          const volatility = Math.random() * effect.value + 0.01;
+          const bonus = Math.floor(context.netWinnings * volatility);
+          if (Math.random() <= (stats.w$sd / stats.wtsd) * 100) {
+            gainBankroll(bonus, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
+            recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: bonus })
+          } else {
+            gainBankroll(-bonus, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
+            recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: -bonus })
           }
+          break;
+        }
+      }
+      case 'badbeat_jackpot':
+        // to-do 어케만들지
+        if (!context.isWin) {
+          const bonus = Math.floor(player.initialChips * effect.value);
+          gainBankroll(bonus, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
+          recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: bonus })
         }
         break;
       case 'cooldown_reduction':
@@ -308,7 +331,8 @@ export class EventAdaptor {
         });
         break;
       case 'emergency_fund':
-        gainBankroll(effect.valueCalc);
+        gainBankroll(effect.valueCalc, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
+        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: effect.valueCalc })
         effect.cooldown = effect.maxCooldown;
         break;
       case 'smoke_break':
@@ -381,19 +405,20 @@ export class EventAdaptor {
         player.chips += discount;
         break;
       // --- Showdown / End Hand Effects ---
-      case 'pot_bonus':
-        // Trigger: 'win'
-        const bonus = Math.ceil(player.totalWagered * effect.value.value);
-        // player.chips += bonus;
-        gainBankroll(bonus);
-        effect.cooldown = effect.maxCooldown;
+      case 'session_profit_bonus':
+        // Trigger: 'cashout'
+        if (context.netWinnings > 0) {
+          const bonus = Math.ceil(context.netWinnings * (effect.value || 0));
+          gainBankroll(bonus, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
+          recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: bonus })
+        }
         break;
 
       case 'allin_insurance':
         // Trigger: 'allin_lose'
         const equity = context.equity || 0;
-        if (!context.isWin && equity <= 75) {
-          const recovery = Math.ceil((player.totalWagered || 0) * (equity / 100) * effect.value.value);
+        if (!context.isWin && equity <= 70) {
+          const recovery = Math.ceil((player.totalWagered || 0) * (equity / 100) * effect.value);
           if (recovery > 0) {
             player.chips += recovery;
           }
@@ -418,8 +443,10 @@ export class EventAdaptor {
         // implement in pot manager
         break;
       case 'golden_touch': {
-        const chipBonus = effect.value * context.amount;
-        gainBankroll(chipBonus);
+        // Trigger: 'end_session'
+        const bonus = effect.value * context.gainedXP;
+        gainBankroll(bonus, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
+        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: bonus })
         break;
       }
       case 'xp_boost':
@@ -436,9 +463,10 @@ export class EventAdaptor {
         }
         break;
       case 'cooler':
-        const isCooler = context.result ? context.result.results.find(r => r.id === 'player').hand.rank >= 7 : false;
+        const isCooler = context.result ? context.result.results.find(r => r.id === 'player').hand.rank >= 3 : false;
         if (isCooler) {
-          player.tempXPBonus += effect.value
+          recoverStamina(effect.value);
+          effect.cooldown = effect.maxCooldown;
         }
         break;
       case 'outkicked':
@@ -565,7 +593,10 @@ export class EventAdaptor {
           effect.cooldown = effect.maxCooldown;
           player.equity = 100.0;
           console.info('quantum_luck', qBonus);
-          if (qBonus > 0) gainBankroll(qBonus);
+          if (qBonus > 0) {
+            gainBankroll(qBonus, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
+            recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: qBonus })
+          }
         };
         break;
       default:

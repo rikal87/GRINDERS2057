@@ -1,3 +1,5 @@
+@import '../../assets/fonts/pretendard-std.css';
+
 @font-face {
   font-family: 'Orbitron';
   src: url('../../assets/fonts/Orbitron-VariableFont_wght.ttf') format('truetype');
@@ -12,12 +14,13 @@
   font-style: normal;
 }
 
-@font-face {
-  font-family: 'DoHyeon-Regular';
-  src: url('../../assets/fonts/DoHyeon-Regular.ttf') format('truetype');
+/* @font-face {
+  font-family: 'Pretendard Std';
+  src: url('../../assets/fonts/Pretendard Std.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
-}
+} */
+
 
 :root {
   --card-bg: rgba(10, 20, 28, 0.8);
@@ -47,7 +50,7 @@
   --neon-orange: #ff5100;
   /* Alias for magenta or distinct red if needed */
 
-  font-family: 'Share Tech Mono', 'DoHyeon-Regular', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Std', monospace;
   line-height: 1.6;
   font-weight: 400;
 
@@ -70,7 +73,7 @@ h4,
 h5,
 h6,
 .logo {
-  font-family: 'Orbitron', 'Share Tech Mono', 'DoHyeon-Regular', monospace;
+  font-family: 'Orbitron', 'Share Tech Mono', 'Pretendard Std', monospace;
 }
 html,
 body,
@@ -1176,7 +1179,7 @@ footer {
   width: max-content;
   max-width: 250px;
   text-align: left;
-  font-family: 'Share Tech Mono', 'DoHyeon-Regular', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Std', monospace;
 }
 
 [data-tooltip]:hover::after {

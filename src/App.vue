@@ -60,7 +60,7 @@ const handleQuitApp = async () => {
     console.error("Failed to exit properly", error);
     // Fallback attempt if plugin import failed but we are in Tauri
     if (window.__TAURI_INTERNALS__) {
-      window.close(); 
+      window.close();
     }
   }
 };
@@ -305,7 +305,7 @@ const handleAction = async (payload) => {
       }
       break;
     case 'cashout':
-      console.info('cashout')
+      currentView.value = 'lobby';
       showConfiscationOverlay.value = false;
       showInvestigationOverlay.value = false;
       showInvestigationResultOverlay.value = false;
@@ -315,7 +315,6 @@ const handleAction = async (payload) => {
       audioManager.playSFX('clear-table')
       if (engine.value) {
         applySessionExit(engine.value);
-        currentView.value = 'lobby';
         showStatsModal.value = true;
         engine.value.exitGame();
         engine.value = null;
