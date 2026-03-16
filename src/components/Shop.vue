@@ -213,7 +213,7 @@ const buyItem = (item, idx) => {
       // Actually, access keys probably shouldn't clutter the inventory if they are just passive unlocks.
       // But let's add them to inventory for now so user sees what they bought, 
       // AND add to unlockedLocations for logic.
-      store.ownedProtectors.push(item);
+      store.ownedItems.push(item);
     }
     audioManager.playSFX('coin-throw');
     store.shop.items.splice(idx, 1);

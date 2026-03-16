@@ -5,8 +5,8 @@ import { store } from '../store.js';
 // Minimal mock for store if needed
 store.bankroll = 10000;
 store.level = 1;
-store.equippedProtector = null;
-store.ownedProtectors = [];
+store.equippedItem = null;
+store.ownedItems = [];
 
 console.log("--- Starting Turn Skip Verification Test ---");
 

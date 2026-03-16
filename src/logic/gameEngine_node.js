@@ -76,7 +76,7 @@ export class GameEngine {
       isMe: true,
       gainedXp: 0,
       effectCooldowns: {},
-      item: store.equippedProtector,
+      item: store.equippedItem,
       tempXPBonus: 0.0,
       stats: {
         handsPlayed: 0,

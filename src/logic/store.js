@@ -1,9 +1,9 @@
 import { reactive } from 'vue';
-import { createPlayRecordStats, GAME_RESULT_CODE, PLAY_RECORD_STATS_TYPE, recordPlayStatsSession } from './playRecordStats';
+import { createPlayRecordStats, GAME_RESULT_CODE } from './playRecordStats';
+import { hydrateStoreItems } from './items.js';
 import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 import { initializePartners, triggerBankruptRescueForPlayer, gainRelationship } from './partnerSystem';
-import { shareBenefitForPartners, shareCollusion } from './partnerContractSystem'
 import { TASK_STATS_TYPE } from './constants.js';
 import { setLanguageGetter } from './persona.js';
 import { deleteMessage } from './messageSystem';
@@ -13,21 +13,22 @@ import { LOCATION_ID, PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js'
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const getDefaultState = () => ({
-  // bankroll: 20000,
-  bankroll: 2000000,
+  bankroll: 20000,
+  // bankroll: 2000000,
   chips: 0, // Chips on table
   xp: 0,
-  // level: 1,
-  level: 30,
+  level: 1,
+  // level: 30,
   selectedClass: 'GRINDER',
-  ownedProtectors: [], // Array of materialized item objects
-  equippedProtector: null, // item object or null
+  ownedItems: [], // Array of materialized item objects
+  equippedItem: null, // item object or null
   equippedSkills: [null, null, null], // 3 Slots
   activeBoosts: [], // [{ taskId, effect: {} }]
   selectedPortrait: 'p1',
   boostRegenLT: 0,
   completedEvents: [],
   pendingEvents: [],
+  unlockAchievements: [],
   latest_pay_income_base_amount: 0,
   isActiveHud: false,
   status_zone: {
@@ -111,6 +112,18 @@ const getDefaultState = () => ({
 const RENT_BILL_MAX_MISS = 3;
 const INCOME_TAX_MAX_MISS = 3;
 const FINE_MAX_MISS = 3;
+export const getUnlockAchievements = () => {
+  return store.unlockAchievements;
+}
+export const setUnlockAchievements = (achievements) => {
+  store.unlockAchievements = achievements;
+}
+export const addUnlockAchievement = (achievementId) => {
+  if (!store.unlockAchievements.includes(achievementId)) store.unlockAchievements.push(achievementId);
+}
+export const removeUnlockAchievement = (achievementId) => {
+  store.unlockAchievements = store.unlockAchievements.filter(id => id !== achievementId);
+}
 export const MISSED_PAYMENT_TYPE = {
   RENT_BILL: 'rent_bill',
   INCOME_TAX: 'income_tax',
@@ -133,9 +146,9 @@ export const getTotalIncomeTaxCalculated = () => {
   let progressive_income_tax = 0.1;
   if (amount >= 100000) progressive_income_tax += 0.05;
   if (amount >= 500000) progressive_income_tax += 0.1;
-  if (amount >= 1000000) progressive_income_tax += 0.15;
-  if (amount >= 5000000) progressive_income_tax += 0.2;
-  if (amount >= 10000000) progressive_income_tax += 0.25;
+  if (amount >= 1000000) progressive_income_tax += 0.2;
+  if (amount >= 5000000) progressive_income_tax += 0.3;
+  if (amount >= 10000000) progressive_income_tax += 0.5;
   return Math.ceil(amount * progressive_income_tax);
 }
 export const isUnlockedLocation = (locationId) => {
@@ -186,7 +199,7 @@ export const getEffectiveMaxLT = () => {
   const agent = store.aiAgent;
   const planIdx = agent.price_plan_idx;
   const baseMax = agent.model?.price_plan[planIdx]?.maxLt || 100;
-  const bonus = store.equippedProtector?.effects?.reduce((sum, e) => (e.id === 'lt_max_plus') ? sum + e.value : sum, 0) || 0;
+  const bonus = store.equippedItem?.effects?.reduce((sum, e) => (e.id === 'lt_max_plus') ? sum + e.value : sum, 0) || 0;
   return baseMax + bonus;
 }
 export const getAgent = () => {
@@ -308,6 +321,7 @@ export const initStore = async () => {
         parsed.play_stats_session = { ...defaultState.play_stats_session };
       }
       Object.assign(store, { ...defaultState, ...parsed, hasSave: true });
+      hydrateStoreItems();
     } else {
       // store.partners = initializePartners();
     }
@@ -388,8 +402,11 @@ export const checkPlayerBankrupt = () => {
   }
   return true;
 }
-export const getPlayStatsSession = () => {
+export const getListPlayStatsSession = () => {
   return store.play_stats_session;
+}
+export const getPlayStatsSession = (type) => {
+  return store.play_stats_session[type];
 }
 export const applySessionExit = (engine) => {
   // const player = engine.players.find(p => p.isMe);

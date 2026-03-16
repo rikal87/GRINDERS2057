@@ -130,8 +130,8 @@
           <div class="v5-item-container">
             <!-- Chip Protector View -->
             <template v-if="mainTab === 'hardware'">
-              <div v-if="store.ownedProtectors.length > 0" class="items-grid">
-                <div v-for="item in store.ownedProtectors" :key="item.instanceId" class="item-card"
+              <div v-if="store.ownedItems.length > 0" class="items-grid">
+                <div v-for="item in store.ownedItems" :key="item.instanceId" class="item-card"
                   @click="equipItem(item.instanceId)">
                   <div class="card-header">
                     <span class="tier-tag" :class="'tier-' + item.tier">{{ item.tier }}</span>
@@ -149,7 +149,7 @@
                       </div>
                     </div>
                     <div
-                      :class="{ 'equipped-overlay': true, 'isEquipped': store.equippedProtector?.instanceId === item.instanceId }">
+                      :class="{ 'equipped-overlay': true, 'isEquipped': store.equippedItem?.instanceId === item.instanceId }">
                       <span>EQUIP</span>
                     </div>
                   </div>
@@ -560,9 +560,9 @@ const cancelTask = (idx) => {
 
 const xpPercent = computed(() => Math.min((store.xp / getNextLevelThreshold()) * 100, 100));
 const equipItem = (instanceId) => {
-  const item = store.ownedProtectors.find(p => p.instanceId === instanceId);
+  const item = store.ownedItems.find(p => p.instanceId === instanceId);
   if (item) {
-    store.equippedProtector = item;
+    store.equippedItem = item;
     // audioManager.playSFX('click');
     audioManager.playSFX('ui-click');
   }
@@ -584,10 +584,10 @@ const triggerMessageAction = (msgId, idx) => {
 
 const sellItem = (item) => {
   gainBankroll(item.price * 0.25, TYPE_CHANGE_BANKROLL.SELL_ITEM)
-  const idx = store.ownedProtectors.findIndex(p => p.instanceId === item.instanceId);
-  if (idx !== -1) store.ownedProtectors.splice(idx, 1);
+  const idx = store.ownedItems.findIndex(p => p.instanceId === item.instanceId);
+  if (idx !== -1) store.ownedItems.splice(idx, 1);
   audioManager.playSFX('coin-throw');
-  if (store.equippedProtector?.instanceId === item.instanceId) store.equippedProtector = null;
+  if (store.equippedItem?.instanceId === item.instanceId) store.equippedItem = null;
 };
 
 

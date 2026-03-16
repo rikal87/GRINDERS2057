@@ -1,4 +1,5 @@
 import { evaluateHand } from './poker.js';
+import { ITEM_EFFECT_ID } from './itemsEffect.js';
 
 export class PotManager {
   constructor(rake = 0.05, rakeCap = 50) {
@@ -29,15 +30,29 @@ export class PotManager {
   }
   // apply rake only if flop is dealt
   resolveShowdown(players, board, isNoFlopNoDrop = false) {
-    // 1. Identify all players involved (not folded)
+    // 1. Identify uncalled bets (portion of highest wager exceeding second highest)
+    const sortedByWager = [...players].sort((a, b) => (b.totalWagered || 0) - (a.totalWagered || 0));
+    if (sortedByWager.length > 1 && (sortedByWager[0].totalWagered || 0) > (sortedByWager[1].totalWagered || 0)) {
+      const topWager = sortedByWager[0].totalWagered || 0;
+      const secondWager = sortedByWager[1].totalWagered || 0;
+      const uncalled = topWager - secondWager;
+      const player = sortedByWager[0];
+
+      console.log(`[PotManager] Returning uncalled bet: ${uncalled} to Player ${player.id}`);
+      player.chips += uncalled;
+      player.totalWagered -= uncalled;
+      this.pot -= uncalled; // Keep internal tracker consistent
+    }
+
+    // 2. Identify all players involved (not folded)
     let activePlayers = players.filter(p => !p.isFolded);
 
-    // 2. Evaluate hands for everyone
+    // 3. Evaluate hands for everyone
     activePlayers.forEach(p => {
       p.handRank = evaluateHand([...p.hand, ...board]);
     });
 
-    // 3. Create pots container
+    // 4. Create pots container
     // Structure: { amount: number, eligiblePlayers: object[] }
     let pots = [];
 
@@ -66,16 +81,20 @@ export class PotManager {
       }
     }
 
-    // 4. Resolve each pot
+    // 5. Resolve each pot
     let winnings = {};
+    let playerRakeSaved = {}; // [NEW]
     let contestedWins = {};
     let detailedPots = []; // [NEW] For sequential UI visualization
     players.forEach(p => {
       winnings[p.id] = 0;
+      playerRakeSaved[p.id] = 0; // [NEW]
       contestedWins[p.id] = 0;
     });
     // Track total rake collected for display/stats?
     let totalRakeCollected = 0;
+    let totalRakeSaved = 0; // [NEW] Track rake saved by items
+    let remainingRakeCap = this.rakeCap;
 
     pots.forEach((pot, index) => {
       if (pot.amount <= 0) return;
@@ -114,14 +133,14 @@ export class PotManager {
       }
       console.groupEnd();
 
-      // Rake Calculation
-      let roughRake = isNoFlopNoDrop ? 0 : Math.min(pot.amount * this.rake, this.rakeCap);
+      // Rake Calculation (Global per-hand cap)
+      let theoreticalRake = isNoFlopNoDrop ? 0 : Math.min(pot.amount * this.rake, remainingRakeCap);
 
       // Apply Rake Reduction (if winner has item)
       let maxReduction = 0;
       winners.forEach(w => {
         if (w.item && w.item.effects) {
-          const reductionEffect = w.item.effects.reduce((sum, e) => (e.effect && e.effect.type === 'rake_reduction') ? sum + e.effect.value : sum, 0);
+          const reductionEffect = w.item.effects.reduce((sum, e) => (e.effect && e.effect.id === ITEM_EFFECT_ID.RAKE_REDUCTION) ? sum + e.effect.value : sum, 0);
           // apply reduction to strongest effect
           maxReduction = Math.max(maxReduction, reductionEffect)
         }
@@ -130,8 +149,12 @@ export class PotManager {
       // Cap reduction at 100%
       if (maxReduction > 1) maxReduction = 1;
 
-      let finalRake = Math.floor(roughRake * (1 - maxReduction));
+      let finalRake = Math.floor(theoreticalRake * (1 - maxReduction));
+      let rakeSaved = theoreticalRake - finalRake;
+
       totalRakeCollected += finalRake;
+      totalRakeSaved += rakeSaved;
+      remainingRakeCap = Math.max(0, remainingRakeCap - finalRake);
 
       let distributable = Math.floor(pot.amount - finalRake); // [FIX] Ensure distributable is integer
 
@@ -164,12 +187,15 @@ export class PotManager {
         amount: distributable,
         winners: winners.map(w => w.id),
         winningHand: winners[0].handRank,
-        isContested: isContested
+        isContested: isContested,
+        rakeCollected: finalRake,
+        rakeSaved: rakeSaved
       };
       detailedPots.push(potDetail);
 
       winners.forEach(w => {
         winnings[w.id] += share;
+        playerRakeSaved[w.id] += Math.floor(rakeSaved / winners.length); // [NEW]
         if (isContested) {
           contestedWins[w.id] += share;
         }
@@ -179,6 +205,7 @@ export class PotManager {
       let remainder = distributable % winners.length;
       if (remainder > 0) {
         winnings[winners[0].id] += remainder;
+        playerRakeSaved[winners[0].id] += (rakeSaved % winners.length); // [NEW]
         if (isContested) {
           contestedWins[winners[0].id] += remainder;
         }
@@ -267,10 +294,12 @@ export class PotManager {
         hand: p.handRank,
         isMe: p.isMe,
         isWinner: contestedWins[p.id] > 0 || activePlayers.length === 1, // Mark as winner if they won a contested pot or are the last player standing
-        amountWon: winnings[p.id] //  해당 플레이어가 쇼다운 결과로 돌려받는(승리 또는 무승부/사이드팟으로 얻는) 칩의 양입니다. 완전히 패배했다면 0이 됩니다. (간혹 여러 명이 올인하여 사이드팟을 먹었다면 0이 아닌 일부 금액을 돌려받을 수 있습니다.)
+        amountWon: winnings[p.id],
+        rakeSaved: playerRakeSaved[p.id] // [NEW]
       })),
       winnerId: bestWinner ? bestWinner.id : null,
       rake: totalRakeCollected,
+      rakeSaved: totalRakeSaved, // [NEW] Return total rake saved
       detailedPots: detailedPots // [NEW] Return detailed pots
     };
   }

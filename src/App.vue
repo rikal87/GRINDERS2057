@@ -253,11 +253,11 @@ const handleJoinTable = async (payload) => {
   // const finalBuyInLimit = buyInLimit !== undefined ? buyInLimit : 999999;
   engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isAdvanced, locationId, locationLV, buyInLimit, isMonitoring, inviteId);
 
-  const equipped = store.ownedProtectors.find(p => (p.instanceId || p.id) === store.equippedProtector);
+  const equipped = store.ownedItems.find(p => (p.instanceId || p.id) === store.equippedItem);
   if (equipped) {
-    engine.value.players[0].equippedProtector = equipped.id;
-    engine.value.players[0].equippedProtectorIcon = equipped.icon;
-    engine.value.players[0].equippedProtectorInstance = equipped;
+    engine.value.players[0].equippedItem = equipped.id;
+    engine.value.players[0].equippedItemIcon = equipped.icon;
+    engine.value.players[0].equippedItemInstance = equipped;
   }
   currentView.value = 'table';
   await engine.value.startNewHand();

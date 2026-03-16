@@ -1,56 +1,7 @@
 import { store } from './store'
-
-export const createPlayRecordStats = () => ({
-  bust_enemy: {
-    'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
-    'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'The_Don': 0,
-    'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
-    'Max': 0, 'Florence': 0
-  },
-  // Economy
-  cost_lt: 0,
-  paid_rake: 0,
-  net_winning: 0,
-  net_share: 0,
-  item_effect: 0,
-  // Behavior (VPIP/PFR)
-  hands_played: 0,
-  fold: 0,
-  check: 0,
-  call: 0,
-  raise: 0,
-  all_in: 0,
-  wtsd: 0, // Went To Showdown
-  w$sd: 0, // Won $ at Showdown
-  pfr: 0, // Pre-Flop Raise
-  c_bet_count: 0,
-  fold_to_3bet: 0,
-  fold_to_4bet_or_more: 0,
-  donk_bet_count: 0,
-  raise3bet: 0,
-  raise4bet_or_more: 0,
-  vpip_count: 0,
-  faced_flop_bet: 0,
-  folded_to_flop_bet: 0,
-  // Luck & Probability
-  showdown_win: 0,
-  all_in_win: 0,
-  win_without_showdown: 0,
-  // Records
-  max_win_pot: 0,
-  max_lose_pot: 0,
-  total_earn_money: 0n,
-  total_lost_money: 0n,
-  current_lose_streak: 0,
-  current_win_streak: 0,
-  max_win_streak: 0,
-  max_lose_streak: 0,
-  max_lose_equity: 0.0,
-  min_win_equity: 0.0,
-  max_pot: 0,
-});
 export const PLAY_RECORD_STATS_TYPE = {
   PAID_RAKE: 'paid_rake',
+  RAKE_SAVED: 'rake_saved',
   HANDS_PLAYED: 'hands_played',
   FACED_RAISE: 'faced_raise',
   FACED_3BET: 'faced_3bet',
@@ -72,6 +23,14 @@ export const PLAY_RECORD_STATS_TYPE = {
   BUST: 'bankrupt',
   VPIP: 'vpip',
   PFR: 'pfr',
+  C_BET_COUNT: 'c_bet_count',
+  FOLD_TO_3BET: 'fold_to_3bet',
+  FOLD_TO_4BET_OR_MORE: 'fold_to_4bet_or_more',
+  DONK_BET_COUNT: 'donk_bet_count',
+  RAISE3BET: 'raise3bet',
+  RAISE4BET_OR_MORE: 'raise4bet_or_more',
+  VPIP_COUNT: 'vpip_count',
+  FOLDED_TO_FLOP_BET: 'folded_to_flop_bet',
   WTSD: 'wtsd',
   WSD: 'wsd',
   W$SD: 'w$sd',
@@ -86,8 +45,70 @@ export const PLAY_RECORD_STATS_TYPE = {
   NET_WINNING: 'net_winning',
   ITEM_EFFECT: 'item_effect',
   COST_LT: 'cost_lt',
-  FACED_FLOP_BET: 'faced_flop_bet'
+  FACED_FLOP_BET: 'faced_flop_bet',
+  WIN_WITH_ONE_PAIR: 'win_with_one_pair',
+  WIN_WITH_TWO_PAIR: 'win_with_two_pair',
+  WIN_WITH_THREE_OF_A_KIND: 'win_with_three_of_a_kind',
+  WIN_WITH_STRAIGHT: 'win_with_straight',
+  WIN_WITH_FLUSH: 'win_with_flush',
+  WIN_WITH_FULL_HOUSE: 'win_with_full_house',
+  WIN_WITH_FOUR_OF_A_KIND: 'win_with_four_of_a_kind',
+  WIN_WITH_STRAIGHT_FLUSH: 'win_with_straight_flush',
+  WIN_WITH_ROYAL_FLUSH: 'win_with_royal_flush',
+  SHOWDOWN_WIN: 'showdown_win',
+  ALL_IN_WIN: 'all_in_win',
+  WIN_WITHOUT_SHOWDOWN: 'win_without_showdown',
+  MIN_WIN_EQUITY: 'min_win_equity',
+  TOTAL_EARN_MONEY: 'total_earn_money',
+  TOTAL_LOST_MONEY: 'total_lost_money',
 }
+export const createPlayRecordStats = () => ({
+  [PLAY_RECORD_STATS_TYPE.BUST_ENEMY]: {
+    'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
+    'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'The_Don': 0,
+    'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
+    'Max': 0, 'Florence': 0
+  },
+  // Economy
+  [PLAY_RECORD_STATS_TYPE.COST_LT]: 0,
+  [PLAY_RECORD_STATS_TYPE.PAID_RAKE]: 0,
+  [PLAY_RECORD_STATS_TYPE.RAKE_SAVED]: 0,
+  [PLAY_RECORD_STATS_TYPE.NET_WINNING]: 0,
+  [PLAY_RECORD_STATS_TYPE.NET_SHARE]: 0,
+  [PLAY_RECORD_STATS_TYPE.ITEM_EFFECT]: 0,
+  [PLAY_RECORD_STATS_TYPE.TOTAL_EARN_MONEY]: 0n,
+  [PLAY_RECORD_STATS_TYPE.TOTAL_LOST_MONEY]: 0n,
+  // Behavior (VPIP/PFR)
+  [PLAY_RECORD_STATS_TYPE.HANDS_PLAYED]: 0,
+  [PLAY_RECORD_STATS_TYPE.FOLD]: 0,
+  [PLAY_RECORD_STATS_TYPE.CHECK]: 0,
+  [PLAY_RECORD_STATS_TYPE.CALL]: 0,
+  [PLAY_RECORD_STATS_TYPE.RAISE]: 0,
+  [PLAY_RECORD_STATS_TYPE.ALL_IN]: 0,
+  [PLAY_RECORD_STATS_TYPE.WTSD]: 0, // Went To Showdown
+  [PLAY_RECORD_STATS_TYPE.W$SD]: 0, // Won $ at Showdown
+  [PLAY_RECORD_STATS_TYPE.PFR]: 0, // Pre-Flop Raise
+  [PLAY_RECORD_STATS_TYPE.C_BET_COUNT]: 0,
+  [PLAY_RECORD_STATS_TYPE.FOLD_TO_3BET]: 0,
+  [PLAY_RECORD_STATS_TYPE.FOLD_TO_4BET_OR_MORE]: 0,
+  [PLAY_RECORD_STATS_TYPE.DONK_BET_COUNT]: 0,
+  [PLAY_RECORD_STATS_TYPE.RAISE3BET]: 0,
+  [PLAY_RECORD_STATS_TYPE.RAISE4BET_OR_MORE]: 0,
+  [PLAY_RECORD_STATS_TYPE.VPIP_COUNT]: 0,
+  [PLAY_RECORD_STATS_TYPE.FACED_FLOP_BET]: 0,
+  [PLAY_RECORD_STATS_TYPE.FOLDED_TO_FLOP_BET]: 0,
+  [PLAY_RECORD_STATS_TYPE.SHOWDOWN_WIN]: 0,
+  [PLAY_RECORD_STATS_TYPE.ALL_IN_WIN]: 0,
+  [PLAY_RECORD_STATS_TYPE.WIN_WITHOUT_SHOWDOWN]: 0,
+  [PLAY_RECORD_STATS_TYPE.MAX_WIN_POT]: 0,
+  [PLAY_RECORD_STATS_TYPE.MAX_LOSE_POT]: 0,
+  // Luck & Probability
+  [PLAY_RECORD_STATS_TYPE.MAX_WIN_STREAK]: 0,
+  [PLAY_RECORD_STATS_TYPE.MAX_LOSE_STREAK]: 0,
+  [PLAY_RECORD_STATS_TYPE.MAX_LOSE_EQUITY]: 0.0,
+  [PLAY_RECORD_STATS_TYPE.MIN_WIN_EQUITY]: 0.0,
+});
+
 export const GAME_RESULT_CODE = {
   WIN_BIG: 'WIN_BIG',
   WIN_MEDIUM: 'WIN_MEDIUM',
@@ -192,6 +213,9 @@ export const recordPlayStatsSessionForCPU = (player, action, payload) => {
       sessionStats.max_win_equity = Math.max(payload.equity || 0, sessionStats.max_win_equity);
       if (payload.rake) {
         sessionStats.paid_rake += payload.rake;
+      }
+      if (payload.rakeSaved) {
+        sessionStats.rake_saved += payload.rakeSaved;
       }
       if (payload.isShowDown) {
         sessionStats.w$sd++;
@@ -308,14 +332,17 @@ export const recordPlayStatsSessionForPlayer = (player, action, payload) => {
         if (payload.rake) {
           sessionStats.paid_rake += payload.rake;
         }
+        if (payload.rakeSaved) {
+          sessionStats.rake_saved += payload.rakeSaved;
+        }
         if (payload.isShowDown) {
           sessionStats.w$sd++;
         }
       }
 
       if (Number.isInteger(payload.pot) && Number.isInteger(payload.amount)) {
-        totalStats.total_earn_money += BigInt(payload.pot - payload.amount);
-        if (sessionStats) sessionStats.total_earn_money += BigInt(payload.pot - payload.amount);
+        totalStats[PLAY_RECORD_STATS_TYPE.TOTAL_EARN_MONEY] += BigInt(payload.pot - payload.amount);
+        if (sessionStats) sessionStats[PLAY_RECORD_STATS_TYPE.TOTAL_EARN_MONEY] += BigInt(payload.pot - payload.amount);
       }
 
       if (totalStats.max_win_streak > (sessionStats?.current_win_streak || 0)) {
@@ -325,6 +352,9 @@ export const recordPlayStatsSessionForPlayer = (player, action, payload) => {
       totalStats.max_win_equity = Math.max(payload.equity || 0, totalStats.max_win_equity);
       if (payload.rake) {
         totalStats.paid_rake += payload.rake;
+      }
+      if (payload.rakeSaved) {
+        totalStats.rake_saved += payload.rakeSaved;
       }
       if (payload.isShowDown) {
         totalStats.w$sd++;
@@ -345,8 +375,8 @@ export const recordPlayStatsSessionForPlayer = (player, action, payload) => {
       totalStats.max_lose_equity = Math.max(payload.equity || 0, totalStats.max_lose_equity);
       totalStats.max_lose_pot = Math.max(payload.pot || 0, totalStats.max_lose_pot);
       if (Number.isInteger(payload.pot) && Number.isInteger(payload.amount)) {
-        totalStats.total_lost_money += BigInt(payload.pot - payload.amount);
-        if (sessionStats) sessionStats.total_lost_money += BigInt(payload.pot - payload.amount);
+        totalStats[PLAY_RECORD_STATS_TYPE.TOTAL_LOST_MONEY] += BigInt(payload.pot - payload.amount);
+        if (sessionStats) sessionStats[PLAY_RECORD_STATS_TYPE.TOTAL_LOST_MONEY] += BigInt(payload.pot - payload.amount);
       }
       break;
     case PLAY_RECORD_STATS_TYPE.BUST:

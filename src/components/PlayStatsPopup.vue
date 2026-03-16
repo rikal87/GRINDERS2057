@@ -65,6 +65,9 @@
               </div>
             </div>
           </Transition>
+          <Transition name="slide-fade">
+            <!--UNLOCK NEW ITEM LAYOUT-->
+          </Transition>
         </div>
         <div class="modal-actions" style="margin-top:20px">
           <button @click="handleClose" :disabled="isProcessing" class="btn cyan">CLOSE_REPORT</button>

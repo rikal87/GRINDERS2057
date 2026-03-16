@@ -1,8 +1,72 @@
 import { store } from './store.js';
+
+export const ITEM_EFFECT_ID = {
+  OLIVE_BRANCH: 'olive_branch',
+  STEMINA_REGEN: 'stemina_regen',
+  DOPAMINE_ADDICTION: 'dopamine_addiction',
+  UNDERGROUND_BAR_INVITE: 'underground_bar_invite',
+  ORBIT_TOUR: 'orbit_tour',
+  CLUB_MEMBERSHIP: 'club_membership',
+  BLACK_CONSUMER: 'black_consumer',
+  THE_BUNKER_KEY: 'the_bunker_key',
+  HOLDEM_HOUSE_MEMBERSHIP: 'holdem_house_membership',
+  ROYAL_ROOM_INVITE: 'royal_room_invite',
+  XP_BOOST: 'xp_boost',
+  SHOWDOWN_LOSE_REFUND: 'showdown_lose_refund',
+  LT_RECOVERY: 'lt_recovery',
+  TIME_BANK_PLUS: 'time_bank_plus',
+  CHIP_ROUNDING: 'chip_rounding',
+  EMERGENCY_FUND: 'emergency_fund',
+  RAKE_REDUCTION: 'rake_reduction',
+  LT_REGEN_PLUS: 'lt_regen_plus',
+  BUY_IN_MULTIPLY: 'buy_in_multiply',
+  BLIND_DISCOUNT: 'blind_discount',
+  SMOKE_BREAK: 'smoke_break',
+  LOYALTY_CARD: 'loyalty_card',
+  SESSION_PROFIT_BONUS: 'session_profit_bonus',
+  ALLIN_INSURANCE: 'allin_insurance',
+  GOLDEN_TOUCH: 'golden_touch',
+  QUANTUM_LUCK: 'quantum_luck',
+  DIAMOND_COLLECTOR: 'diamond_collector',
+  HEART_COLLECTOR: 'heart_collector',
+  SPADE_COLLECTOR: 'spade_collector',
+  CLUB_COLLECTOR: 'club_collector',
+  LUCKY_7_COLLECTOR: 'lucky_7_collector',
+  OMEN: 'omen',
+  FLUSH_MASTER: 'flush_master',
+  FULL_HOUSE_MASTER: 'full_house_master',
+  STRAIGHT_FLUSH_MASTER: 'straight_flush_master',
+  FOUR_OF_A_KIND_MASTER: 'four_of_a_kind_master',
+  ROYAL_FLUSH_MASTER: 'royal_flush_master',
+  BLACKJACK_MASTER: 'blackjack_master',
+  PAIR_MASTER: 'pair_master',
+  SETS_MASTER: 'sets_master',
+  COOLER: 'cooler',
+  OUTKICKED: 'outkicked',
+  FAILURE_IS_MOTHER_OF_SUCCESS: 'failure_is_mother_of_success',
+  TILT_RECOVERY: 'tilt_recovery',
+  DOUBLE_DOWN: 'double_down',
+  GHOST_BET: 'ghost_bet',
+  JOY_OF_VITALITY: 'joy_of_vitality',
+  LAST_STAND: 'last_stand',
+  WINNER_MASTER: 'winner_master',
+  COOLDOWN_REDUCTION: 'cooldown_reduction',
+  QUANTUM_FOLD: 'quantum_fold',
+  SYNAPSE_READING: 'synapse_reading',
+  BORN_VILLAIN: 'born_villain',
+  INFAMY_BOOST: 'infamy_boost',
+  TACTICAL_MINDSET: 'tactical_mindset',
+  GOOD_INFLUENCE: 'good_influence',
+  SHOW_ME_YOUR_BLUFF: 'show_me_your_bluff',
+  STONK: 'stonk',
+  BADBEAT_JACKPOT: 'badbeat_jackpot',
+  BOMB_POT: 'bomb_pot',
+  RND: 'rnd'
+};
 export const ITEM_EFFECT_DATA = [
   {
     icon: '🌿',
-    id: 'olive_branch',
+    id: ITEM_EFFECT_ID.OLIVE_BRANCH,
     name_ko: '화해의 나뭇가지',
     name_en: 'Olive Branch',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -22,7 +86,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '☕',
-    id: 'stemina_regen',
+    id: ITEM_EFFECT_ID.STEMINA_REGEN,
     name_ko: '스태미나 회복',
     name_en: 'Stamina Regen',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -37,7 +101,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '💊',
-    id: 'dopamine_addiction',
+    id: ITEM_EFFECT_ID.DOPAMINE_ADDICTION,
     name_ko: '도파민 중독',
     name_en: 'Dopamine Addiction',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -52,7 +116,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '📒',
-    id: 'underground_bar_invite',
+    id: ITEM_EFFECT_ID.UNDERGROUND_BAR_INVITE,
     name_ko: '입장 권한',
     name_en: 'Entry Pass',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -67,7 +131,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🚀',
-    id: 'orbit_tour',
+    id: ITEM_EFFECT_ID.ORBIT_TOUR,
     name_ko: '입장 권한',
     name_en: 'Entry Pass',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -82,7 +146,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🆔',
-    id: 'club_membership',
+    id: ITEM_EFFECT_ID.CLUB_MEMBERSHIP,
     name_ko: '입장 권한',
     name_en: 'Entry Pass',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -97,7 +161,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🤑',
-    id: 'black_consumer',
+    id: ITEM_EFFECT_ID.BLACK_CONSUMER,
     name_ko: '블랙 컨슈머',
     name_en: 'Black Consumer',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -113,7 +177,7 @@ export const ITEM_EFFECT_DATA = [
 
   {
     icon: '🔑',
-    id: 'the_bunker_key',
+    id: ITEM_EFFECT_ID.THE_BUNKER_KEY,
     name_ko: '입장 권한',
     name_en: 'Entry Pass',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -128,7 +192,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '⚜️',
-    id: 'holdem_house_membership',
+    id: ITEM_EFFECT_ID.HOLDEM_HOUSE_MEMBERSHIP,
     name_ko: '입장 권한',
     name_en: 'Entry Pass',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -143,7 +207,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🔱',
-    id: 'royal_room_invite',
+    id: ITEM_EFFECT_ID.ROYAL_ROOM_INVITE,
     name_ko: '입장 권한',
     name_en: 'Entry Pass',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -158,7 +222,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '⚡',
-    id: 'xp_boost',
+    id: ITEM_EFFECT_ID.XP_BOOST,
     name_ko: '경험치 부스트',
     name_en: 'XP Boost',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -174,7 +238,7 @@ export const ITEM_EFFECT_DATA = [
 
   {
     icon: '🪬',
-    id: 'showdown_lose_refund',
+    id: ITEM_EFFECT_ID.SHOWDOWN_LOSE_REFUND,
     name_ko: '손실 보존',
     name_en: 'Loss Preservation',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -189,7 +253,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🔋',
-    id: 'lt_recovery',
+    id: ITEM_EFFECT_ID.LT_RECOVERY,
     name_ko: 'LT 회복',
     name_en: 'LT Recovery',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -203,7 +267,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '⏱️',
-    id: 'time_bank_plus',
+    id: ITEM_EFFECT_ID.TIME_BANK_PLUS,
     name_ko: '타임 뱅크 추가',
     name_en: 'Time Bank Expansion',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -217,7 +281,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '👛',
-    id: 'chip_rounding',
+    id: ITEM_EFFECT_ID.CHIP_ROUNDING,
     name_ko: '잔돈 모으기',
     name_en: 'Spare Change',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -232,7 +296,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '💵',
-    id: 'emergency_fund',
+    id: ITEM_EFFECT_ID.EMERGENCY_FUND,
     name_ko: '비상 자금',
     name_en: 'Emergency Fund',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -254,7 +318,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '✂️',
-    id: 'rake_reduction',
+    id: ITEM_EFFECT_ID.RAKE_REDUCTION,
     name_ko: '수수료 감면',
     name_en: 'Rake Reduction',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -268,7 +332,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '✨',
-    id: 'lt_regen_plus',
+    id: ITEM_EFFECT_ID.LT_REGEN_PLUS,
     name_ko: 'LT 회복량 증가',
     name_en: 'Enhanced LT Regen',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -283,7 +347,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '⛃',
-    id: 'buy_in_multiply',
+    id: ITEM_EFFECT_ID.BUY_IN_MULTIPLY,
     name_ko: '바이인 배수',
     name_en: 'Buy-In Multiplier',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -297,7 +361,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '⛁',
-    id: 'blind_discount',
+    id: ITEM_EFFECT_ID.BLIND_DISCOUNT,
     name_ko: '블라인드 할인',
     name_en: 'Blind Discount',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -311,7 +375,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🚬',
-    id: 'smoke_break',
+    id: ITEM_EFFECT_ID.SMOKE_BREAK,
     name_ko: '담배 한 대',
     name_en: 'Smoke Break',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -330,7 +394,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '💳',
-    id: 'loyalty_card',
+    id: ITEM_EFFECT_ID.LOYALTY_CARD,
     name_ko: '단골 우대',
     name_en: 'Loyalty Card',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -344,7 +408,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '💰',
-    id: 'session_profit_bonus',
+    id: ITEM_EFFECT_ID.SESSION_PROFIT_BONUS,
     name_ko: '세션 수익 보너스',
     name_en: 'Session Profit Bonus',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -358,7 +422,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🪽',
-    id: 'allin_insurance',
+    id: ITEM_EFFECT_ID.ALLIN_INSURANCE,
     name_ko: '인슈어런스',
     name_en: 'Insurance',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -372,7 +436,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🖐️',
-    id: 'golden_touch',
+    id: ITEM_EFFECT_ID.GOLDEN_TOUCH,
     name_ko: '마이더스의 손',
     name_en: 'Midas Touch',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -386,7 +450,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🍀',
-    id: 'quantum_luck',
+    id: ITEM_EFFECT_ID.QUANTUM_LUCK,
     name_ko: '양자 행운',
     name_en: 'Quantum Luck',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -401,7 +465,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '♦️',
-    id: 'diamond_collector',
+    id: ITEM_EFFECT_ID.DIAMOND_COLLECTOR,
     name_ko: '다이아 수집가',
     name_en: 'Diamond Collector',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -417,7 +481,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '♥️',
-    id: 'heart_collector',
+    id: ITEM_EFFECT_ID.HEART_COLLECTOR,
     name_ko: '하트 수집가',
     name_en: 'Heart Collector',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -433,7 +497,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '♠️',
-    id: 'spade_collector',
+    id: ITEM_EFFECT_ID.SPADE_COLLECTOR,
     name_ko: '스페이드 수집가',
     name_en: 'Spade Collector',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -449,7 +513,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '♣️',
-    id: 'club_collector',
+    id: ITEM_EFFECT_ID.CLUB_COLLECTOR,
     name_ko: '클럽 수집가',
     name_en: 'Club Collector',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -465,7 +529,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '7️⃣',
-    id: 'lucky_7_collector',
+    id: ITEM_EFFECT_ID.LUCKY_7_COLLECTOR,
     name_ko: '럭키 7 수집가',
     name_en: 'Lucky 7 Collector',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -481,7 +545,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '6️⃣',
-    id: 'omen',
+    id: ITEM_EFFECT_ID.OMEN,
     name_ko: '징조',
     name_en: 'The Omen',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -497,7 +561,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🚽',
-    id: 'flush_master',
+    id: ITEM_EFFECT_ID.FLUSH_MASTER,
     name_ko: '플러시 전문가',
     name_en: 'Flush Master',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -511,7 +575,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🏠',
-    id: 'full_house_master',
+    id: ITEM_EFFECT_ID.FULL_HOUSE_MASTER,
     name_ko: '풀 옵션 펜트하우스',
     name_en: 'Full Option Penthouse',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -526,7 +590,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🌊',
-    id: 'straight_flush_master',
+    id: ITEM_EFFECT_ID.STRAIGHT_FLUSH_MASTER,
     name_ko: '스트레이트 플러시 전문가',
     name_en: 'Straight Flush Master',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -541,7 +605,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '4️⃣',
-    id: 'four_of_a_kind_master',
+    id: ITEM_EFFECT_ID.FOUR_OF_A_KIND_MASTER,
     name_ko: '포카드 전문가',
     name_en: 'Quads Master',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -556,7 +620,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '👑',
-    id: 'royal_flush_master',
+    id: ITEM_EFFECT_ID.ROYAL_FLUSH_MASTER,
     name_ko: '왕의 물내림',
     name_en: 'Royal Execution',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -571,7 +635,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '♠',
-    id: 'blackjack_master',
+    id: ITEM_EFFECT_ID.BLACKJACK_MASTER,
     name_ko: '블랙잭 전문가',
     name_en: 'Blackjack Master',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -586,7 +650,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '👯',
-    id: 'pair_master',
+    id: ITEM_EFFECT_ID.PAIR_MASTER,
     name_ko: '페어 전문가',
     name_en: 'Pair Master',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -601,7 +665,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '👨‍👨‍👦',
-    id: 'sets_master',
+    id: ITEM_EFFECT_ID.SETS_MASTER,
     name_ko: '세트 메뉴',
     name_en: 'Combo Menu',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -616,7 +680,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🥶',
-    id: 'cooler',
+    id: ITEM_EFFECT_ID.COOLER,
     name_ko: '쿨러',
     name_en: 'Cooler',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -631,7 +695,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🛼',
-    id: 'outkicked',
+    id: ITEM_EFFECT_ID.OUTKICKED,
     name_ko: '아, 킥커 차이..',
     name_en: 'Outkicked...',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -645,7 +709,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '📉',
-    id: 'failure_is_mother_of_success',
+    id: ITEM_EFFECT_ID.FAILURE_IS_MOTHER_OF_SUCCESS,
     name_ko: '실패는 성공의 어머니',
     name_en: 'Failure is the Mother of Success',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -665,7 +729,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🤯',
-    id: 'tilt_recovery',
+    id: ITEM_EFFECT_ID.TILT_RECOVERY,
     name_ko: '틸트 회복',
     name_en: 'Tilt Recovery',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -680,7 +744,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🎲',
-    id: 'double_down',
+    id: ITEM_EFFECT_ID.DOUBLE_DOWN,
     name_ko: '더블 다운',
     name_en: 'Double Down',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -694,7 +758,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🎴',
-    id: 'ghost_bet',
+    id: ITEM_EFFECT_ID.GHOST_BET,
     name_ko: '유령 배팅',
     name_en: 'Ghost Bet',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -708,7 +772,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '😃',
-    id: 'joy_of_vitality',
+    id: ITEM_EFFECT_ID.JOY_OF_VITALITY,
     name_ko: '승리의 활력',
     name_en: 'Joy of Vitality',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -722,7 +786,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🚨',
-    id: 'last_stand',
+    id: ITEM_EFFECT_ID.LAST_STAND,
     name_ko: '배수의 진',
     name_en: 'Last Stand',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -737,7 +801,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🏆',
-    id: 'winner_master',
+    id: ITEM_EFFECT_ID.WINNER_MASTER,
     name_ko: '연승 마스터',
     name_en: 'Streak Master',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -757,7 +821,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '⏳',
-    id: 'cooldown_reduction',
+    id: ITEM_EFFECT_ID.COOLDOWN_REDUCTION,
     name_ko: '쿨타임 감소',
     name_en: 'Cooldown Reduction',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -775,7 +839,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '⚛️',
-    id: 'quantum_fold',
+    id: ITEM_EFFECT_ID.QUANTUM_FOLD,
     name_ko: '양자 폴드',
     name_en: 'Quantum Fold',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -790,7 +854,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🧠',
-    id: 'synapse_reading',
+    id: ITEM_EFFECT_ID.SYNAPSE_READING,
     name_ko: '시냅스 리딩',
     name_en: 'Synapse Reading',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -806,7 +870,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '👹',
-    id: 'born_villain',
+    id: ITEM_EFFECT_ID.BORN_VILLAIN,
     name_ko: '타고난 악당',
     name_en: 'Born Villain',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -820,7 +884,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '😈',
-    id: 'infamy_boost',
+    id: ITEM_EFFECT_ID.INFAMY_BOOST,
     name_ko: '악명 부스트',
     name_en: 'Infamy Boost',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -834,7 +898,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🪖',
-    id: 'tactical_mindset',
+    id: ITEM_EFFECT_ID.TACTICAL_MINDSET,
     name_ko: '전술적 사고',
     name_en: 'Tactical Mindset',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -849,7 +913,7 @@ export const ITEM_EFFECT_DATA = [
   // to-do
   {
     icon: '😇',
-    id: 'good_influence',
+    id: ITEM_EFFECT_ID.GOOD_INFLUENCE,
     name_ko: '선한 영향력',
     name_en: 'Good Influence',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -863,7 +927,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🧐',
-    id: 'show_me_your_bluff',
+    id: ITEM_EFFECT_ID.SHOW_ME_YOUR_BLUFF,
     name_ko: '블러프를 보여줘!',
     name_en: 'Show me your bluff!',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -876,7 +940,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🗠',
-    id: 'stonk',
+    id: ITEM_EFFECT_ID.STONK,
     name_ko: '주쉭',
     name_en: 'Stonk',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -889,7 +953,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '🎰',
-    id: 'badbeat_jackpot',
+    id: ITEM_EFFECT_ID.BADBEAT_JACKPOT,
     name_ko: '배드빗 잭팟',
     name_en: 'Badbeat Jackpot',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -898,6 +962,42 @@ export const ITEM_EFFECT_DATA = [
     trigger: ['loseAtShowdown', 'loseAtShowdownWithAllIn'],
     get desc() { return store.settings.language === 'en' ? `If you lose at showdown with a Full House or better, you receive a jackpot worth ${this.value}x your current buy-in.` : `풀 하우스 이상 족보로 패배시 바이인의 ${this.value}배를 뱅크롤로 즉시 보상받습니다.` },
     value: 7,
+    isStackable: true
+  },
+  {
+    icon: '💣',
+    id: ITEM_EFFECT_ID.BOMB_POT,
+    name_ko: '봄 팟',
+    name_en: 'Bomb Pot',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Unique',
+    cooldown: 0,
+    maxCooldown: 30,
+    trigger: ['round_start'],
+    get desc() {
+      return store.settings.language === 'en' ?
+        `All players pay a ${this.value}BB ante and skip to the flop. (Cooldown: ${this.maxCooldown} rounds)`
+        : `라운드 시작 시 모든 플레이어가 ${this.value}BB 엔티를 지불하며, 프리플랍 없이 즉시 플랍으로 진입합니다. (쿨타임: ${this.maxCooldown} 라운드)`
+    },
+    value: 2,
+    isStackable: true
+  },
+  {
+    icon: '❔',
+    id: ITEM_EFFECT_ID.RND,
+    name_ko: '랜덤',
+    name_en: 'Random',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    rarity: 'Unique',
+    cooldown: 0,
+    maxCooldown: 30,
+    trigger: [],
+    get desc() {
+      return store.settings.language === 'en' ?
+        `Random effect.`
+        : `무작위 효과.`
+    },
+    value: 1,
     isStackable: true
   }
 ];

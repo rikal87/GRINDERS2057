@@ -12,7 +12,7 @@ audioManager.setFilter = () => { };
 
 // Mock store
 store.bankroll = 10000;
-store.equippedProtector = { effects: [] };
+store.equippedItem = { effects: [] };
 
 async function testTimeBank() {
   console.log('--- Starting Timebank Verification ---');

@@ -5,6 +5,7 @@ import { recoverStamina } from './staminaSystem.js';
 import { scheduleEvent, EVENT_ID } from './eventSystem.js';
 import { PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js';
 import { recordPlayStatsSession, PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
+import { ITEM_EFFECT_ID } from './itemsEffect.js';
 
 
 // const cleanupInvites = (locationId) => {
@@ -144,7 +145,7 @@ export class EventAdaptor {
     result.results.forEach(r => {
       recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WTSD);
       if (r.isWinner) {
-        recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, amount: r.player.totalWagered, equity: r.player.equity, rake: result.rake, isShowDown: true });
+        recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, amount: r.player.totalWagered, equity: r.player.equity, rake: result.rake, rakeSaved: r.rakeSaved, isShowDown: true });
         if (runoutInProgress) this.winAtShowdownWithAllIn({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board, result });
         else this.winAtShowdown({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board, result });
       } else {
@@ -156,7 +157,7 @@ export class EventAdaptor {
   }
   winAtWithoutShowdown({ result, amount, pot, board }) {
     result.results.forEach(r => {
-      recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, amount: r.player.totalWagered, rake: result.rake, isShowDown: false });
+      recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, amount: r.player.totalWagered, rake: result.rake, rakeSaved: r.rakeSaved, isShowDown: false });
       r.player.item?.effects?.forEach(e => {
         if (e.trigger.includes('winWithoutShowdown') || e.trigger.includes('win')) {
           this.executeItemEffect(r.player, e, { amount: r.amountWon, pot: r.amountWon, hand: r.player.hand, board, isWin: true, result });
@@ -290,7 +291,7 @@ export class EventAdaptor {
       return;
     }
     switch (effect.id) {
-      case 'show_me_your_bluff':
+      case ITEM_EFFECT_ID.SHOW_ME_YOUR_BLUFF:
         const existBestWinner = context.bestWinner;
         if (existBestWinner) {
           if (!existBestWinner.isMe && Math.random() < effect.value) {
@@ -300,7 +301,7 @@ export class EventAdaptor {
           }
         }
         break;
-      case 'stonk': {
+      case ITEM_EFFECT_ID.STONK: {
         const stats = context.stats;
         if (stats && stats.hands_played > 0 && context.netWinnings > 0) {
           const volatility = Math.random() * effect.value + 0.01;
@@ -315,7 +316,7 @@ export class EventAdaptor {
           break;
         }
       }
-      case 'badbeat_jackpot':
+      case ITEM_EFFECT_ID.BADBEAT_JACKPOT:
         // to-do 어케만들지
         if (!context.isWin) {
           const bonus = Math.floor(player.initialChips * effect.value);
@@ -323,54 +324,54 @@ export class EventAdaptor {
           recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: bonus })
         }
         break;
-      case 'cooldown_reduction':
+      case ITEM_EFFECT_ID.COOLDOWN_REDUCTION:
         player.item?.effects?.forEach(e => {
-          if (e.id !== 'cooldown_reduction') {
+          if (e.id !== ITEM_EFFECT_ID.COOLDOWN_REDUCTION) {
             e.cooldown = Math.max(0, e.cooldown - effect.value);
           }
         });
         break;
-      case 'emergency_fund':
+      case ITEM_EFFECT_ID.EMERGENCY_FUND:
         gainBankroll(effect.valueCalc, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
         recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: effect.valueCalc })
         effect.cooldown = effect.maxCooldown;
         break;
-      case 'smoke_break':
+      case ITEM_EFFECT_ID.SMOKE_BREAK:
         recoverStamina(effect.value);
         gainLT(-effect.value);
         effect.cooldown = effect.maxCooldown;
         break;
-      case 'lt_recovery':
+      case ITEM_EFFECT_ID.LT_RECOVERY:
         gainLT(effect.value);
         break;
-      case 'stemina_regen':
+      case ITEM_EFFECT_ID.STEMINA_REGEN:
         recoverStamina(effect.value);
         effect.cooldown = effect.maxCooldown;
         break;
-      case 'dopamine_addiction':
+      case ITEM_EFFECT_ID.DOPAMINE_ADDICTION:
         recoverStamina(effect.value);
         effect.cooldown = effect.maxCooldown;
         break;
-      case 'last_stand':
+      case ITEM_EFFECT_ID.LAST_STAND:
         if (player.chips <= context.bb * 25) {
           gainLT(effect.value)
         }
         break;
-      case 'lt_regen_plus':
+      case ITEM_EFFECT_ID.LT_REGEN_PLUS:
         gainLT(effect.value)
         effect.cooldown = effect.maxCooldown;
         break;
-      case 'joy_of_vitality':
+      case ITEM_EFFECT_ID.JOY_OF_VITALITY:
         if (context.isWin) {
           recoverStamina(effect.value);
         }
         break;
-      case 'tilt_recovery':
+      case ITEM_EFFECT_ID.TILT_RECOVERY:
         if (!context.isWin) {
           recoverStamina(effect.value);
         }
         break;
-      case 'synapse_reading':
+      case ITEM_EFFECT_ID.SYNAPSE_READING:
         if (!effect.isActivated) {
           console.log('[EFFECT] Synapse Reading ACTIVATED!');
           effect.isActivated = true;
@@ -380,7 +381,7 @@ export class EventAdaptor {
           effect.cooldown = effect.maxCooldown;
         }
         break;
-      case 'ghost_bet':
+      case ITEM_EFFECT_ID.GHOST_BET:
         // Trigger: 'bet'
         if (context.amount > 0 && Math.random() < effect.value) {
           const refund = context.amount;
@@ -389,7 +390,7 @@ export class EventAdaptor {
           console.log(`[ITEM EFFECT] Bet Refund triggered! +${refund}`);
         }
         break;
-      case 'pre_flop_fold_refund':
+      case ITEM_EFFECT_ID.PRE_FLOP_FOLD_REFUND:
         // Trigger: 'fold'
         if (this.state === 'PREFLOP') {
           const refundAmount = Math.ceil(player.totalWagered * effect.value);
@@ -399,13 +400,13 @@ export class EventAdaptor {
           }
         }
         break;
-      case 'blind_discount':
+      case ITEM_EFFECT_ID.BLIND_DISCOUNT:
         // Trigger: 'blind_pay'
         const discount = Math.ceil(context.amount * effect.value);
         player.chips += discount;
         break;
       // --- Showdown / End Hand Effects ---
-      case 'session_profit_bonus':
+      case ITEM_EFFECT_ID.SESSION_PROFIT_BONUS:
         // Trigger: 'cashout'
         if (context.netWinnings > 0) {
           const bonus = Math.ceil(context.netWinnings * (effect.value || 0));
@@ -414,7 +415,7 @@ export class EventAdaptor {
         }
         break;
 
-      case 'allin_insurance':
+      case ITEM_EFFECT_ID.ALLIN_INSURANCE:
         // Trigger: 'allin_lose'
         const equity = context.equity || 0;
         if (!context.isWin && equity <= 70) {
@@ -425,7 +426,7 @@ export class EventAdaptor {
           effect.cooldown = effect.maxCooldown;
         }
         break;
-      case 'showdown_lose_refund':
+      case ITEM_EFFECT_ID.SHOWDOWN_LOSE_REFUND:
         // Trigger: 'showdown_lose'
         const wagered = player.totalWagered || 0;
         const refundShowdown = Math.ceil(wagered * effect.value);
@@ -433,26 +434,26 @@ export class EventAdaptor {
         player.chips += refundShowdown;
         effect.cooldown = effect.maxCooldown;
         break;
-      case 'chip_rounding':
+      case ITEM_EFFECT_ID.CHIP_ROUNDING:
         const unit = Math.pow(100, effect.value);
         player.chips = Math.ceil(player.chips / unit) * unit;
         effect.cooldown = effect.maxCooldown;
         break;
-      case 'rake_reduction':
+      case ITEM_EFFECT_ID.RAKE_REDUCTION:
         // Trigger: 'win' or 'showdown_win'
         // implement in pot manager
         break;
-      case 'golden_touch': {
+      case ITEM_EFFECT_ID.GOLDEN_TOUCH: {
         // Trigger: 'end_session'
         const bonus = effect.value * context.gainedXP;
         gainBankroll(bonus, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
         recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: bonus })
         break;
       }
-      case 'xp_boost':
+      case ITEM_EFFECT_ID.XP_BOOST:
         player.tempXPBonus += effect.value;
         break;
-      case 'pair_master':
+      case ITEM_EFFECT_ID.PAIR_MASTER:
         // Trigger: 'win'
         const t = [...player.hand, ...(context.board || [])];
         const maid = evaluateHand(t);
@@ -462,21 +463,21 @@ export class EventAdaptor {
           if (isPair) player.tempXPBonus += effect.value;
         }
         break;
-      case 'cooler':
+      case ITEM_EFFECT_ID.COOLER:
         const isCooler = context.result ? context.result.results.find(r => r.id === 'player').hand.rank >= 3 : false;
         if (isCooler) {
           recoverStamina(effect.value);
           effect.cooldown = effect.maxCooldown;
         }
         break;
-      case 'outkicked':
+      case ITEM_EFFECT_ID.OUTKICKED:
         const winnerHandName = context.result ? context.result.results.find(r => r.id === context.result.winnerId).hand.name : '';
         const playerHandName = context.result ? context.result.results.find(r => r.id === 'player').hand.name : '';
         if (winnerHandName === playerHandName) {
           player.tempXPBonus += effect.value
         }
         break;
-      case 'double_down': {
+      case ITEM_EFFECT_ID.DOUBLE_DOWN: {
         if (!context.result) return;
         const h = context.result.results.find(r => r.isMe)?.hand.rank;
         if (h) {
@@ -484,36 +485,36 @@ export class EventAdaptor {
           if (isStraight) player.tempXPBonus += effect.value;
         }
       } break;
-      case 'flush_master': {
+      case ITEM_EFFECT_ID.FLUSH_MASTER: {
         const isFlush = context.result ? context.result.results.find(r => r.isMe)?.hand.rank == 6 : false;
         if (isFlush) player.tempXPBonus += effect.value;
       } break;
-      case 'full_house_master': {
+      case ITEM_EFFECT_ID.FULL_HOUSE_MASTER: {
         const isFullHouse = context.result ? context.result.results.find(r => r.isMe)?.hand.rank == 7 : false;
         if (isFullHouse) player.tempXPBonus += effect.value;
       } break;
-      case 'straight_flush_master': {
+      case ITEM_EFFECT_ID.STRAIGHT_FLUSH_MASTER: {
         const isStraightFlush = context.result ? context.result.results.find(r => r.isMe)?.hand.rank == 9 : false;
         if (isStraightFlush) player.tempXPBonus += effect.value;
       } break;
-      case 'four_of_a_kind_master': {
+      case ITEM_EFFECT_ID.FOUR_OF_A_KIND_MASTER: {
         const isFourOfAKind = context.result ? context.result.results.find(r => r.isMe)?.hand.rank == 8 : false;
         if (isFourOfAKind) player.tempXPBonus += effect.value;
       } break;
-      case 'royal_flush_master': {
+      case ITEM_EFFECT_ID.ROYAL_FLUSH_MASTER: {
         const isRoyalFlush = context.result ? context.result.results.find(r => r.isMe)?.hand.rank == 10 : false;
         if (isRoyalFlush) player.tempXPBonus += effect.value;
       } break;
-      case 'blackjack_master': {
+      case ITEM_EFFECT_ID.BLACKJACK_MASTER: {
         // ['Ah', 'Jc']
         const isBlackjack = player.hand.includes('A') && player.hand.includes('J')
         if (isBlackjack) player.tempXPBonus += effect.value;
       } break;
-      case 'sets_master': {
+      case ITEM_EFFECT_ID.SETS_MASTER: {
         const isSets = context.result ? context.result.results.find(r => r.isMe)?.hand.rank == 4 : false;
         if (isSets) player.tempXPBonus += effect.value;
       } break;
-      case 'failure_is_mother_of_success': {
+      case ITEM_EFFECT_ID.FAILURE_IS_MOTHER_OF_SUCCESS: {
         // [FIX] effect is the flattened item object now
         if (context.isWin) {
           effect.stack = 0; // Reset stack on win
@@ -523,7 +524,7 @@ export class EventAdaptor {
         }
         break;
       }
-      case 'winner_master': {
+      case ITEM_EFFECT_ID.WINNER_MASTER: {
         // [FIX] effect is the flattened item object
         if (context.isWin) {
           effect.stack = (effect.stack || 0) + 1; // Increment stack on win
@@ -534,14 +535,14 @@ export class EventAdaptor {
         break;
       }
 
-      case 'diamond_collector':
-      case 'heart_collector':
-      case 'spade_collector':
-      case 'club_collector':
+      case ITEM_EFFECT_ID.DIAMOND_COLLECTOR:
+      case ITEM_EFFECT_ID.HEART_COLLECTOR:
+      case ITEM_EFFECT_ID.SPADE_COLLECTOR:
+      case ITEM_EFFECT_ID.CLUB_COLLECTOR:
         // Trigger: 'win'
         const suitMap = {
-          'diamond_collector': 'd', 'heart_collector': 'h',
-          'spade_collector': 's', 'club_collector': 'c'
+          [ITEM_EFFECT_ID.DIAMOND_COLLECTOR]: 'd', [ITEM_EFFECT_ID.HEART_COLLECTOR]: 'h',
+          [ITEM_EFFECT_ID.SPADE_COLLECTOR]: 's', [ITEM_EFFECT_ID.CLUB_COLLECTOR]: 'c'
         };
         const targetSuit = suitMap[effect.id];
         let count = 0;
@@ -554,7 +555,7 @@ export class EventAdaptor {
         effect.cooldown = effect.maxCooldown;
         break;
 
-      case 'lucky_7_collector':
+      case ITEM_EFFECT_ID.LUCKY_7_COLLECTOR:
         // Trigger: 'win'
         let count7 = 0;
         [...player.hand, ...(context.board || [])].forEach(c => { if (c && c.rank === '7') count7++; });
@@ -565,7 +566,7 @@ export class EventAdaptor {
         effect.cooldown = effect.maxCooldown;
         break;
 
-      case 'omen':
+      case ITEM_EFFECT_ID.OMEN:
         // Trigger: 'lose'
         let count6 = 0;
         [...player.hand, ...(context.board || [])].forEach(c => { if (c && c.rank === '6') count6++; });
@@ -580,13 +581,13 @@ export class EventAdaptor {
       //   player.recoverRam(effect.value);
       //   this.notifyEffect(effect, `Stole ${effect.value} RAM`);
       //   break;
-      case 'quantum_fold':
+      case ITEM_EFFECT_ID.QUANTUM_FOLD:
         if (context.street === 'PREFLOP') {
           player.chips += Math.ceil((player.totalWagered || 0) * effect.value);
           effect.cooldown = effect.maxCooldown;
         }
         break;
-      case 'quantum_luck':
+      case ITEM_EFFECT_ID.QUANTUM_LUCK:
         console.info('quantum_luck context', context.isWin, context.equity);
         if (context.isWin && context.equity < 50) {
           const qBonus = Math.floor((player.totalWagered || 0) * (50.0 - context.equity || 50.0) * effect.value);

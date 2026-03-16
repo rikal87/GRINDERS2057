@@ -7,7 +7,7 @@
     <div class="dealer-btn" v-if="engine.dealerIndex === idx">D</div>
     <!-- <div class="chip-stack"> -->
     <div v-if="p.currentBet > 0" class="chip-stack">
-      <span class="bet-amount">{{ formatUnit(p.currentBet) }}</span>
+      <ChipStack :amount="p.currentBet" :bb="engine.bb" labelPosition="bottom" />
     </div>
 
     <Transition name="fold-cards">
@@ -66,7 +66,7 @@
       <div class="balance">
         <!-- [MOVED] Protector Badge -->
         <span class="chips">
-          {{ formatUnit(p.chips) }}
+          {{ formatUnit(showShowdown ? visualChips[p.id] : p.chips) }}
         </span>
       </div>
       <!-- RAM Bar for Human -->
@@ -87,10 +87,10 @@
     <!-- Pot Display (Center) -->
     <div class="center-area">
       <div class="pot-display">
-        <b class="neon-text glitch-small">{{ currentPotName || 'POT' }}:
-          <ChipDisplay :value="showShowdown ? visualTotalPot : engine.pot"
-            :bb="engine.buyIn ? (engine.buyIn / 100) : engine.bb" />
-        </b>
+        <b class="neon-text glitch-small">{{ currentPotName || 'POT' }}</b>
+        <ChipStack :amount="showShowdown ? visualTotalPot : engine.pot"
+          :bb="engine.buyIn ? (engine.buyIn / 100) : engine.bb" :showLabel="true" labelPosition="bottom"
+          :collecting="isPotCollecting" :winnerSeat="activePotWinnerSeat" />
       </div>
       <div class="board-cards">
         <Card v-for="(c, i) in engine.board" :key="i" :code="c" />
@@ -138,6 +138,7 @@
 import { computed, ref, watch, onMounted } from 'vue';
 import Card from './Card.vue';
 import ChipDisplay from './ChipDisplay.vue';
+import ChipStack from './ChipStack.vue';
 import { zones } from '../logic/zone.js';
 const props = defineProps({
   engine: Object
@@ -168,7 +169,9 @@ let showdownTimer = null;
 // Auto-hide showdown after 3 seconds
 // Auto-hide showdown after 3 seconds
 // Modified for Sequential Side Pot Animation
-const activePotWinner = ref(null); // Player ID of current pot winner
+const activePotWinner = ref(null); // Player IDs of current pot winners
+const activePotWinnerSeat = ref(''); // Seat class of a primary winner
+const isPotCollecting = ref(false); 
 const visualTotalPot = ref(0);
 const currentPotName = ref('');
 const visualChips = ref({}); // [NEW] For chip sync animation
@@ -183,66 +186,58 @@ watch(() => props.engine.showdownResults, async (newResults) => {
   if (newResults) {
     showShowdown.value = true;
     activePotWinner.value = null;
+    activePotWinnerSeat.value = '';
+    isPotCollecting.value = false;
 
-    // Initialize Visual Chips (Start = End - Won)
-    // This makes the chips start "low" and animate up as pots are awarded.
+    // Initialize Visual Chips
     props.engine.players.forEach(p => {
-      // Find if this player won anything
       const result = newResults.results.find(r => r.id === p.id);
       const won = result ? result.amountWon : 0;
-      // Current engine chips are already final. So subtract won amount to get "before win" state.
       visualChips.value[p.id] = p.chips - won;
     });
 
-    // Initialize Visual Pot from total pot (or calculate from detailedPots)
-    // If detailedPots exists, we animate.
     if (newResults.detailedPots && newResults.detailedPots.length > 0) {
-      // Use natural order: Main Pot first (Index 0), then Side Pots
       const potsToAnimate = [...newResults.detailedPots];
-
-      // Calculate total starting visually
       visualTotalPot.value = potsToAnimate.reduce((sum, p) => sum + p.amount, 0);
 
       for (const pot of potsToAnimate) {
-        // 1. Announce Pot
         currentPotName.value = pot.name;
-        activePotWinner.value = pot.winners; // Array of IDs
-        // props.engine.state === 'SHOWDOWN';
-        // 2. Wait for visual emphasis
-        await new Promise(r => setTimeout(r, 2000));
+        activePotWinner.value = pot.winners;
+        
+        // Find winner seat class for animation direction
+        const firstWinnerIdx = props.engine.players.findIndex(p => p.id === pot.winners[0]);
+        if (firstWinnerIdx !== -1) {
+          activePotWinnerSeat.value = getSeatClass(firstWinnerIdx);
+        }
 
-        // 3. Deduct amount from visual pot (simulate distribution)
+        await new Promise(r => setTimeout(r, 1500));
+
+        // Start Collection Animation
+        isPotCollecting.value = true;
         visualTotalPot.value -= pot.amount;
         audioManager.playSFX('chip-ship-it');
-        // [NEW] Distribute chips to winners visually
-        const share = Math.floor(pot.amount / pot.winners.length); // Simplified share
+
+        const share = Math.floor(pot.amount / pot.winners.length);
         pot.winners.forEach(winnerId => {
           if (visualChips.value[winnerId] !== undefined) {
             visualChips.value[winnerId] += share;
           }
         });
 
-        // 4. Brief pause before next
-        await new Promise(r => setTimeout(r, 2000));
+        // Wait for chips to fly away before resetting pot name/winner highlights
+        await new Promise(r => setTimeout(r, 1800));
+        isPotCollecting.value = false;
+        activePotWinnerSeat.value = '';
       }
 
-      // End of sequence
       activePotWinner.value = null;
       currentPotName.value = '';
     }
 
-    // Fallback or After Animation: Show final winner state if desired?
-    // Actually, maybe just keep the main winner highlighted or duplicate the final state.
-    // Let's keep the final winner highlighted for a bit.
-
     if (showdownTimer) clearTimeout(showdownTimer);
     showShowdown.value = false;
-    // Reset visual pot to engine pot (likely 0 for next hand)
     visualTotalPot.value = props.engine.pot;
-    visualChips.value = {}; // Reset visual chips
-    // showdownTimer = setTimeout(() => {
-
-    // }, 2000); // Give a bit more time after animation
+    visualChips.value = {};
   } else {
     showShowdown.value = false;
   }

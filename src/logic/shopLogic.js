@@ -1,5 +1,5 @@
 import { store, gainBankroll } from './store.js';
-import { ITEM_DATA, materializeItem } from './items.js';
+import { ITEM_DATA, relinkItem } from './items.js';
 import { TYPE_CHANGE_BANKROLL } from "./constants.js";
 export const REFRESH_INTERVAL_MS = 12 * 60 * 60 * 1000; // 12 hours in game time
 
@@ -47,8 +47,8 @@ export const generateShopItems = (level) => {
   const maxTier = Math.min(6, Math.floor(level / 5)); // Cap at level 6 tier logic
 
   let shadyDealBonus = 0;
-  if (store.equippedProtector) {
-    shadyDealBonus = store.equippedProtector.effects.filter(effect => effect.id === 'loyalty_card').reduce((sum, effect) => sum + effect.value, 0);
+  if (store.equippedItem) {
+    shadyDealBonus = store.equippedItem.effects.filter(effect => effect.id === 'loyalty_card').reduce((sum, effect) => sum + effect.value, 0);
   }
   // console.info('store.shadyDealBonus', shadyDealBonus)
   const count = 2 + (Math.round(Math.random() * shadyDealBonus)) // Fixed 5(max) slots for better UI layout
@@ -76,7 +76,7 @@ export const generateShopItems = (level) => {
     const index = pool.findIndex(p => p.id === pickedItem.id);
     if (index > -1) pool.splice(index, 1);
 
-    const itemInstance = materializeItem(pickedItem);
+    const itemInstance = relinkItem(pickedItem);
 
     // 3rd after shady deal slot has a chance for "Special Offer"
     if (Math.random() < (shadyDealRateBonus)) {

@@ -7,7 +7,7 @@ import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
 import { getPartner, getJoinedPartners } from './partnerSystem.js';
 import { shareBenefitForPartners, shareCollusion } from './partnerContractSystem.js';
-import { getPlayStatsSession, gainInfamy, gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion, getCurrentSuspicion, getCurrentInfamy, gainXP, gainClearedZoneCount, gainClearReward, processMissionResult } from './store.js';
+import { getListPlayStatsSession, gainInfamy, gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion, getCurrentSuspicion, getCurrentInfamy, gainXP, gainClearedZoneCount, gainClearReward, processMissionResult } from './store.js';
 import { LOCATION_ID, CONTRACT_TYPE, CHAT_TRIGGERS, TYPE_CHANGE_BANKROLL } from './constants.js'
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
 import { zones } from './zone.js';
@@ -81,7 +81,7 @@ export class GameEngine {
     const players = [];
 
     // [FIX] Calculate buy-in multiplier BEFORE object initialization to avoid NaN
-    const item = store.equippedProtector;
+    const item = store.equippedItem;
     const baseMultiplier = 1;
     const itemBonus = (item && item.effects) ? item.effects.reduce((sum, e) => (e.id === 'buy_in_multiply') ? sum + e.value : sum, 0) : 0;
     const buyInMultiply = baseMultiplier + itemBonus;
@@ -101,7 +101,7 @@ export class GameEngine {
       // buyInMultiply: 1, // [FIX] Default multiplier for human
       gainedXp: 0,
       effectCooldowns: {},
-      item: store.equippedProtector,
+      item: store.equippedItem,
       tempXPBonus: 0.0,
       buyInLimit: this.buyInLimit,
       totalBuyIn: 0,
@@ -1143,7 +1143,7 @@ export class GameEngine {
       const gainedXP = gainXP(player);
       gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING); // returned chips
 
-      eventAdaptor.cashout(player, { gainedXP, netWinnings, stats: getPlayStatsSession() });
+      eventAdaptor.cashout(player, { gainedXP, netWinnings, stats: getListPlayStatsSession() });
 
       // share collusion
       const partners = this.players.filter(p => p.isPartner);
