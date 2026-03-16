@@ -8,12 +8,18 @@ import { recordPlayStatsSession, PLAY_RECORD_STATS_TYPE } from './playRecordStat
 import { ITEM_EFFECT_ID } from './itemsEffect.js';
 
 
-// const cleanupInvites = (locationId) => {
-//   store.messages = store.messages.filter(m => {
-//     // Keep message if it has no actions OR its action is not ACCEPT_INVITE for this location
-//     return !m.actions?.some(a => a.actionType === 'ACCEPT_INVITE' && a.payload?.location_id === locationId);
-//   });
-// };
+const HAND_RANK_TO_STAT = {
+  1: PLAY_RECORD_STATS_TYPE.WIN_WITH_HIGH_CARD,
+  2: PLAY_RECORD_STATS_TYPE.WIN_WITH_ONE_PAIR,
+  3: PLAY_RECORD_STATS_TYPE.WIN_WITH_TWO_PAIR,
+  4: PLAY_RECORD_STATS_TYPE.WIN_WITH_THREE_OF_A_KIND,
+  5: PLAY_RECORD_STATS_TYPE.WIN_WITH_STRAIGHT,
+  6: PLAY_RECORD_STATS_TYPE.WIN_WITH_FLUSH,
+  7: PLAY_RECORD_STATS_TYPE.WIN_WITH_FULL_HOUSE,
+  8: PLAY_RECORD_STATS_TYPE.WIN_WITH_FOUR_OF_A_KIND,
+  9: PLAY_RECORD_STATS_TYPE.WIN_WITH_STRAIGHT_FLUSH,
+  10: PLAY_RECORD_STATS_TYPE.WIN_WITH_ROYAL_FLUSH,
+};
 
 export class EventAdaptor {
   updateEquippedEffects() {
@@ -76,8 +82,7 @@ export class EventAdaptor {
   }
 
   playerBankrupt(player, bestWinner, locationId, inviteId) {
-    console.info('playerBankrupt', player.name);
-    recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.BANKRUPT);
+    recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.BUST);
     player.item?.effects?.forEach(e => {
       if (e.trigger.includes('bankrupt')) {
         this.executeItemEffect(player, e, {});
@@ -144,13 +149,27 @@ export class EventAdaptor {
   showdown({ result, amount, pot, runoutInProgress, board }) {
     result.results.forEach(r => {
       recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WTSD);
+      if (r.player.chips === 0) recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.ALL_IN);
       if (r.isWinner) {
         recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.WIN, { pot: r.amountWon, amount: r.player.totalWagered, equity: r.player.equity, rake: result.rake, rakeSaved: r.rakeSaved, isShowDown: true });
-        if (runoutInProgress) this.winAtShowdownWithAllIn({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board, result });
+
+        // 족보별 승리 기록
+        if (r.hand) {
+          const handStat = HAND_RANK_TO_STAT[r.hand.rank];
+          if (handStat) {
+            recordPlayStatsSession(r.player, handStat);
+          }
+        }
+
+        if (r.player.chips === 0) {
+          this.winAtShowdownWithAllIn({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board, result });
+        }
         else this.winAtShowdown({ player: r.player, amount: r.amountWon, pot, hand: r.hand, board, result });
       } else {
         recordPlayStatsSession(r.player, PLAY_RECORD_STATS_TYPE.LOSE, { pot: r.player.totalWagered, amount: r.amountWon, equity: r.player.equity, isShowDown: true });
-        if (runoutInProgress) this.loseAtShowdownWithAllIn({ player: r.player, amount: 0, pot, hand: r.hand, board, result });
+        if (r.player.chips === 0) {
+          this.loseAtShowdownWithAllIn({ player: r.player, amount: 0, pot, hand: r.hand, board, result });
+        }
         else this.loseAtShowdown({ player: r.player, amount: 0, pot, hand: r.hand, board, result });
       }
     });
@@ -316,6 +335,14 @@ export class EventAdaptor {
           break;
         }
       }
+      case ITEM_EFFECT_ID.ROYAL_FLUSH_MASTER: {
+        const isRoyalFlush = context.result ? context.result.results.find(r => r.isMe)?.hand.rank == 10 : false;
+        if (isRoyalFlush && !context.isWin) {
+          const bonus = Math.floor(player.initialChips * effect.value);
+          gainBankroll(bonus, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
+          recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: bonus })
+        }
+      } break;
       case ITEM_EFFECT_ID.BADBEAT_JACKPOT:
         // to-do 어케만들지
         if (!context.isWin) {
@@ -344,7 +371,7 @@ export class EventAdaptor {
       case ITEM_EFFECT_ID.LT_RECOVERY:
         gainLT(effect.value);
         break;
-      case ITEM_EFFECT_ID.STEMINA_REGEN:
+      case ITEM_EFFECT_ID.STAMINA_REGEN:
         recoverStamina(effect.value);
         effect.cooldown = effect.maxCooldown;
         break;
@@ -501,10 +528,7 @@ export class EventAdaptor {
         const isFourOfAKind = context.result ? context.result.results.find(r => r.isMe)?.hand.rank == 8 : false;
         if (isFourOfAKind) player.tempXPBonus += effect.value;
       } break;
-      case ITEM_EFFECT_ID.ROYAL_FLUSH_MASTER: {
-        const isRoyalFlush = context.result ? context.result.results.find(r => r.isMe)?.hand.rank == 10 : false;
-        if (isRoyalFlush) player.tempXPBonus += effect.value;
-      } break;
+
       case ITEM_EFFECT_ID.BLACKJACK_MASTER: {
         // ['Ah', 'Jc']
         const isBlackjack = player.hand.includes('A') && player.hand.includes('J')

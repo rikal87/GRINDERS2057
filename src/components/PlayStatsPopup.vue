@@ -66,7 +66,18 @@
             </div>
           </Transition>
           <Transition name="slide-fade">
-            <!--UNLOCK NEW ITEM LAYOUT-->
+            <div class="stats-section unlock-section" v-if="showUnlocks && newlyUnlockedItems.length > 0">
+              <div class="section-label">NEWLY_UNLOCKED_ITEMS</div>
+              <TransitionGroup name="pop-in" tag="div" class="unlock-grid">
+                <div v-for="item in displayedItems" :key="item.id" class="unlock-card" :data-tooltip="item.name">
+                  <span class="unlock-icon">{{ item.icon }}</span>
+                  <!-- <span class="unlock-name">{{ item.name }}</span> -->
+                </div>
+              </TransitionGroup>
+              <div v-if="newlyUnlockedItems.length > 5" class="unlock-more">
+                {{ getNewItemMsg(newlyUnlockedItems) }}
+              </div>
+            </div>
           </Transition>
         </div>
         <div class="modal-actions" style="margin-top:20px">
@@ -79,19 +90,27 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue';
-import { store } from '../logic/store';
+import { store, getUnlockAchievements, getLanguage } from '../logic/store';
 import { pickRandomMessage } from '../logic/playRecordStats';
 import { audioManager } from '../logic/audioManager';
+import { checkCompleteAchievement, checkUnlockItem } from '../logic/achievementManager';
 
 const props = defineProps({
   show: Boolean
 });
-
+const NEW_ITEM_MSG = {
+  ko: '신규 아이템',
+  en: 'NEW ITEMS'
+}
+const getNewItemMsg = (items) => {
+  const msgObj = NEW_ITEM_MSG[getLanguage()]
+  return `+${items.length - 5} ${msgObj}`;
+}
 const emit = defineEmits(['close']);
 const getMsg = (msgCode) => {
   const msgObj = pickRandomMessage(msgCode);
   if (!msgObj) return '';
-  return store.settings.language === 'ko' ? msgObj.ko : msgObj.en;
+  return msgObj[getLanguage()];
 }
 const isSession = computed(() => !!store.play_stats_session);
 const sessionStats = computed(() => store.play_stats_session || {});
@@ -100,8 +119,11 @@ const currentStats = computed(() => isSession.value ? sessionStats.value : store
 const showEcon = ref(false);
 const showBehav = ref(false);
 const showLuck = ref(false);
+const showUnlocks = ref(false);
 const showMsg = ref(false);
 const isProcessing = ref(true);
+const newlyUnlockedItems = ref([]);
+const displayedItems = ref([]);
 const animatedStats = ref({
   net_winning: 0,
   net_share: 0,
@@ -145,12 +167,19 @@ const animateValue = (key, endValue, duration) => {
 };
 watch(() => props.show, (newVal) => {
   if (newVal) {
+    // Capture achievements before running check
+    const previouslyUnlocked = [...getUnlockAchievements()];
+    checkCompleteAchievement();
+    newlyUnlockedItems.value = checkUnlockItem(previouslyUnlocked);
+
     // Reset states
     showEcon.value = false;
     showBehav.value = false;
     showLuck.value = false;
+    showUnlocks.value = false;
     showMsg.value = false;
     isProcessing.value = true;
+    displayedItems.value = [];
     Object.keys(animatedStats.value).forEach(k => animatedStats.value[k] = 0);
     // Sequence animations
     setTimeout(() => {
@@ -178,8 +207,22 @@ watch(() => props.show, (newVal) => {
       animateValue('max_win_streak', currentStats.value.max_win_streak || 0, 1000);
       animateValue('max_lose_streak', currentStats.value.max_lose_streak || 0, 1000);
       animateValue('max_lose_equity', currentStats.value.max_lose_equity || 0, 1000);
-      if (!currentStats.value.msgCode) isProcessing.value = false;
     }, 2300);
+
+    setTimeout(() => {
+      if (newlyUnlockedItems.value.length > 0) {
+        showUnlocks.value = true;
+        const itemsToReveal = newlyUnlockedItems.value.slice(0, 5);
+        itemsToReveal.forEach((item, index) => {
+          setTimeout(() => {
+            displayedItems.value.push(item);
+            audioManager.playSFX('ui-click-soft');
+          }, index * 200);
+        });
+      }
+      if (!currentStats.value.msgCode) isProcessing.value = false;
+    }, 3500);
+
     if (currentStats.value.msgCode) {
       setTimeout(() => {
         audioManager.playSFX('swoosh');
@@ -194,7 +237,7 @@ watch(() => props.show, (newVal) => {
 // Targets for HUD Metrics
 const vpipTarget = computed(() => {
   if (!currentStats.value.hands_played) return 0;
-  return ((currentStats.value.vpip_count / currentStats.value.hands_played) * 100).toFixed(1);
+  return ((currentStats.value.vpip / currentStats.value.hands_played) * 100).toFixed(1);
 });
 
 const pfrTarget = computed(() => {
@@ -215,13 +258,13 @@ const wsdTarget = computed(() => {
 const handleClose = () => {
   audioManager.playSFX('ui-click');
   store.play_stats_session = null;
-  setTimeout(() => {
-    if (audioManager.currentZoneId.value) {
-      if (isSession.value) {
-        audioManager.playTrackByZoneId(audioManager.currentZoneId.value);
-      }
-    }
-  }, 5000)
+  // setTimeout(() => {
+  //   if (audioManager.currentZoneId.value) {
+  //     if (isSession.value) {
+  //       audioManager.playTrackByZoneId(audioManager.currentZoneId.value);
+  //     }
+  //   }
+  // }, 5000)
   emit('close');
 };
 </script>
@@ -231,6 +274,48 @@ const handleClose = () => {
 
 .v5-modal-overlay {
   z-index: 1000;
+}
+.unlock-section .section-label {
+  color: var(--neon-yellow, #ffd700);
+}
+.unlock-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.unlock-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 6px;
+  background: rgba(255, 215, 0, 0.08);
+  font-size: 0.75rem;
+  min-width: 60px;
+}
+/* Tooltip alignment fix for leftmost items */
+.unlock-card[data-tooltip]::after {
+  left: 0;
+  transform: none;
+}
+.unlock-card[data-tooltip]:hover::after {
+  transform: translateY(-5px);
+}
+.unlock-icon {
+  font-size: 1.5rem;
+}
+.unlock-name {
+  color: var(--neon-yellow, #ffd700);
+  text-align: center;
+  font-size: 0.7rem;
+}
+.unlock-more {
+  margin-top: 8px;
+  color: rgba(255, 215, 0, 0.7);
+  font-size: 0.75rem;
 }
 
 .summary-section {

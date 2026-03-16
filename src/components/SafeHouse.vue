@@ -46,7 +46,7 @@
                 <div class="v5-progress-fill" :style="{ width: xpPercent + '%' }"></div>
               </div>
               <div class="v5-xp-text sleep-info">
-                <span>STEMINA: <span class="highlight">+{{ sleepDuration }} HR</span></span>
+                <span>STAMINA: <span class="highlight">+{{ sleepDuration }} HR</span></span>
                 <span>{{ Math.floor(currentStaminaPercent) }} / {{ getEffectiveMaxStamina() }}</span>
               </div>
               <div class="v5-progress-track stamina-track">
@@ -338,7 +338,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-          }} UNREAD]</small>
+              }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">

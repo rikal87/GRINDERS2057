@@ -1,5 +1,5 @@
 import { reactive } from 'vue';
-import { createPlayRecordStats, GAME_RESULT_CODE } from './playRecordStats';
+import { createPlayRecordStats, GAME_RESULT_CODE, recordPlayStatsSessionForPlayer, PLAY_RECORD_STATS_TYPE } from './playRecordStats';
 import { hydrateStoreItems } from './items.js';
 import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
@@ -253,6 +253,7 @@ export const gainSuspicion = (locationId, amount) => {
   const suspicion = Math.ceil(Math.max(0, store.status_zone[locationId].suspicion + Math.min(100, amount)));
   store.status_zone[locationId].suspicion = suspicion;
   if (suspicion >= 100) store.status_zone[locationId].isBlacklisted = true;
+  recordPlayStatsSessionForPlayer(PLAY_RECORD_STATS_TYPE.TOTAL_GAIN_SUSPICION, { amount });
 }
 export const isBlacklisted = (locationId) => {
   if (!store.status_zone[locationId]) return false;
@@ -270,6 +271,7 @@ export const gainInfamy = (locationId, amount) => {
   if (!store.status_zone[locationId]) store.status_zone[locationId] = { suspicion: 0, infamy: 0, isBlacklisted: false };
   const infamy = Math.ceil(Math.max(0, store.status_zone[locationId].infamy + Math.min(100, amount)));
   store.status_zone[locationId].infamy = infamy;
+  recordPlayStatsSessionForPlayer(PLAY_RECORD_STATS_TYPE.TOTAL_GAIN_INFAMY, { amount });
 }
 export const getCurrentInfamy = (locationId) => {
   if (!store.status_zone[locationId]) return 0;
@@ -367,6 +369,7 @@ export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
 
   store.session_net_history.push({ amount: intAmount, type, timestamp: Date.now() });
   if (store.session_net_history.length > 200) store.session_net_history.shift();
+  recordPlayStatsSessionForPlayer(type, { amount });
 }
 
 export const saveStore = async () => {
@@ -402,51 +405,20 @@ export const checkPlayerBankrupt = () => {
   }
   return true;
 }
+export const getPlayStats = (type) => {
+  return store.play_stats?.[type];
+}
+export const getListPlayStats = () => {
+  return store.play_stats;
+}
 export const getListPlayStatsSession = () => {
   return store.play_stats_session;
 }
 export const getPlayStatsSession = (type) => {
-  return store.play_stats_session[type];
+  return store.play_stats_session?.[type];
 }
 export const applySessionExit = (engine) => {
-  // const player = engine.players.find(p => p.isMe);
-  // const netWinnings = (player.chips - player.totalBuyIn);
-  // recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_WINNING, { amount: netWinnings })
-  // const winBB = netWinnings / engine.bb;
-  // // infarmy Calc
-  // let generatedInfamy = winBB * 0.2;
-  // let baseBoostInfamy = (engine.exitReservationRounds === -1 ? 1.0 : 0.5) + player.born_villain + player.infamy_boost;
-  // if (generatedInfamy > 0) {
-  //   gainInfamy(engine.locationId, generatedInfamy * baseBoostInfamy);
-  // } else gainInfamy(engine.locationId, generatedInfamy);
-  // // game result Calc
-  // const result = gameResult(winBB);
-  // store.play_stats_session.msgCode = result
-  // if (result === GAME_RESULT_CODE.WIN_BIG) gainClearReward(engine.locationId);
-  // if (result.indexOf('WIN') !== -1) {
-  //   gainClearedZoneCount(engine.locationId);
-  // }
-  // // mission result
-  // processMissionResult(player, result, engine);
-  // // gain xp and bankroll
-  // gainXP(player);
-  // gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING); // returned chips
-
-  // // share collusion
-  // const partners = engine.players.filter(p => p.isPartner);
-  // partners.forEach(partner => {
-  //   const partnerNetWinnings = partner.chips - partner.initialChips;
-  //   const share = shareCollusion(partner.id, netWinnings, partnerNetWinnings)
-  //   recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
-  //   // todo chips calculate to partner.bankroll
-  // });
-  // // share benefit
-  // const share = shareBenefitForPartners(netWinnings);
-  // recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
-
   if (store.bankroll === 0) triggerBankruptRescueForPlayer();
-  // saveStore();
-  // return t
 };
 export const gainClearReward = (locationId) => {
   let reward = null;

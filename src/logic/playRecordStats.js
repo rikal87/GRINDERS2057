@@ -1,5 +1,7 @@
 import { store } from './store'
+import { TYPE_CHANGE_BANKROLL } from './constants'
 export const PLAY_RECORD_STATS_TYPE = {
+  ...TYPE_CHANGE_BANKROLL,
   PAID_RAKE: 'paid_rake',
   RAKE_SAVED: 'rake_saved',
   HANDS_PLAYED: 'hands_played',
@@ -9,6 +11,7 @@ export const PLAY_RECORD_STATS_TYPE = {
   FOLDED_TO_RAISE: 'folded_to_raise',
   FOLDED_TO_3BET: 'folded_to_3bet',
   FOLDED_TO_4BET_OR_MORE: 'folded_to_4bet_or_more',
+  PAID_BLIND_COUNT: 'paid_blind_count',
   BET: 'bet',
   RAISE: 'raise',
   CALL: 'call',
@@ -20,7 +23,7 @@ export const PLAY_RECORD_STATS_TYPE = {
   SHOWDOWN: 'showdown',
   WIN: 'win',
   LOSE: 'lose',
-  BUST: 'bankrupt',
+  BUST: 'bust',
   VPIP: 'vpip',
   PFR: 'pfr',
   C_BET_COUNT: 'c_bet_count',
@@ -29,7 +32,6 @@ export const PLAY_RECORD_STATS_TYPE = {
   DONK_BET_COUNT: 'donk_bet_count',
   RAISE3BET: 'raise3bet',
   RAISE4BET_OR_MORE: 'raise4bet_or_more',
-  VPIP_COUNT: 'vpip_count',
   FOLDED_TO_FLOP_BET: 'folded_to_flop_bet',
   WTSD: 'wtsd',
   WSD: 'wsd',
@@ -46,6 +48,7 @@ export const PLAY_RECORD_STATS_TYPE = {
   ITEM_EFFECT: 'item_effect',
   COST_LT: 'cost_lt',
   FACED_FLOP_BET: 'faced_flop_bet',
+  WIN_WITH_HIGH_CARD: 'win_with_high_card',
   WIN_WITH_ONE_PAIR: 'win_with_one_pair',
   WIN_WITH_TWO_PAIR: 'win_with_two_pair',
   WIN_WITH_THREE_OF_A_KIND: 'win_with_three_of_a_kind',
@@ -55,59 +58,46 @@ export const PLAY_RECORD_STATS_TYPE = {
   WIN_WITH_FOUR_OF_A_KIND: 'win_with_four_of_a_kind',
   WIN_WITH_STRAIGHT_FLUSH: 'win_with_straight_flush',
   WIN_WITH_ROYAL_FLUSH: 'win_with_royal_flush',
+  DEALT_HANDS_DIAMOND: 'dealt_hands_diamond',
+  DEALT_HANDS_CLUB: 'dealt_hands_club',
+  DEALT_HANDS_HEART: 'dealt_hands_heart',
+  DEALT_HANDS_SPADE: 'dealt_hands_spade',
   SHOWDOWN_WIN: 'showdown_win',
   ALL_IN_WIN: 'all_in_win',
   WIN_WITHOUT_SHOWDOWN: 'win_without_showdown',
   MIN_WIN_EQUITY: 'min_win_equity',
   TOTAL_EARN_MONEY: 'total_earn_money',
   TOTAL_LOST_MONEY: 'total_lost_money',
+  TOTAL_GAIN_INFAMY: 'total_gain_infamy',
+  TOTAL_GAIN_SUSPICION: 'total_gain_suspicion',
+  STAMINA_CONSUMED: 'stamina_consumed',
 }
-export const createPlayRecordStats = () => ({
+
+// Exception types that can't default to 0 (BigInt, float, Object)
+const STAT_OVERRIDES = {
+  // BigInt - 누적 총액 (정수 초과 가능)
+  [PLAY_RECORD_STATS_TYPE.TOTAL_EARN_MONEY]: 0n,
+  [PLAY_RECORD_STATS_TYPE.TOTAL_LOST_MONEY]: 0n,
+  // Float - equity %
+  [PLAY_RECORD_STATS_TYPE.MAX_LOSE_EQUITY]: 0.0,
+  [PLAY_RECORD_STATS_TYPE.MIN_WIN_EQUITY]: 0.0,
+  // Object - 적 유형별 bust 카운트
   [PLAY_RECORD_STATS_TYPE.BUST_ENEMY]: {
     'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
     'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'The_Don': 0,
     'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
     'Max': 0, 'Florence': 0
   },
-  // Economy
-  [PLAY_RECORD_STATS_TYPE.COST_LT]: 0,
-  [PLAY_RECORD_STATS_TYPE.PAID_RAKE]: 0,
-  [PLAY_RECORD_STATS_TYPE.RAKE_SAVED]: 0,
-  [PLAY_RECORD_STATS_TYPE.NET_WINNING]: 0,
-  [PLAY_RECORD_STATS_TYPE.NET_SHARE]: 0,
-  [PLAY_RECORD_STATS_TYPE.ITEM_EFFECT]: 0,
-  [PLAY_RECORD_STATS_TYPE.TOTAL_EARN_MONEY]: 0n,
-  [PLAY_RECORD_STATS_TYPE.TOTAL_LOST_MONEY]: 0n,
-  // Behavior (VPIP/PFR)
-  [PLAY_RECORD_STATS_TYPE.HANDS_PLAYED]: 0,
-  [PLAY_RECORD_STATS_TYPE.FOLD]: 0,
-  [PLAY_RECORD_STATS_TYPE.CHECK]: 0,
-  [PLAY_RECORD_STATS_TYPE.CALL]: 0,
-  [PLAY_RECORD_STATS_TYPE.RAISE]: 0,
-  [PLAY_RECORD_STATS_TYPE.ALL_IN]: 0,
-  [PLAY_RECORD_STATS_TYPE.WTSD]: 0, // Went To Showdown
-  [PLAY_RECORD_STATS_TYPE.W$SD]: 0, // Won $ at Showdown
-  [PLAY_RECORD_STATS_TYPE.PFR]: 0, // Pre-Flop Raise
-  [PLAY_RECORD_STATS_TYPE.C_BET_COUNT]: 0,
-  [PLAY_RECORD_STATS_TYPE.FOLD_TO_3BET]: 0,
-  [PLAY_RECORD_STATS_TYPE.FOLD_TO_4BET_OR_MORE]: 0,
-  [PLAY_RECORD_STATS_TYPE.DONK_BET_COUNT]: 0,
-  [PLAY_RECORD_STATS_TYPE.RAISE3BET]: 0,
-  [PLAY_RECORD_STATS_TYPE.RAISE4BET_OR_MORE]: 0,
-  [PLAY_RECORD_STATS_TYPE.VPIP_COUNT]: 0,
-  [PLAY_RECORD_STATS_TYPE.FACED_FLOP_BET]: 0,
-  [PLAY_RECORD_STATS_TYPE.FOLDED_TO_FLOP_BET]: 0,
-  [PLAY_RECORD_STATS_TYPE.SHOWDOWN_WIN]: 0,
-  [PLAY_RECORD_STATS_TYPE.ALL_IN_WIN]: 0,
-  [PLAY_RECORD_STATS_TYPE.WIN_WITHOUT_SHOWDOWN]: 0,
-  [PLAY_RECORD_STATS_TYPE.MAX_WIN_POT]: 0,
-  [PLAY_RECORD_STATS_TYPE.MAX_LOSE_POT]: 0,
-  // Luck & Probability
-  [PLAY_RECORD_STATS_TYPE.MAX_WIN_STREAK]: 0,
-  [PLAY_RECORD_STATS_TYPE.MAX_LOSE_STREAK]: 0,
-  [PLAY_RECORD_STATS_TYPE.MAX_LOSE_EQUITY]: 0.0,
-  [PLAY_RECORD_STATS_TYPE.MIN_WIN_EQUITY]: 0.0,
-});
+};
+
+// Auto-generate stats object: all enum values → 0, then override exceptions
+// Adding a new PLAY_RECORD_STATS_TYPE entry requires no changes here unless
+// it needs a non-zero or non-integer initial value.
+export const createPlayRecordStats = () => Object.assign(
+  Object.fromEntries(Object.values(PLAY_RECORD_STATS_TYPE).map(k => [k, 0])),
+  STAT_OVERRIDES
+);
+
 
 export const GAME_RESULT_CODE = {
   WIN_BIG: 'WIN_BIG',
@@ -178,7 +168,7 @@ export const PLAY_RECORD_STATS_MSG_TEXTS = {
 }
 
 export const recordPlayStatsSession = (player, action, payload = {}) => {
-  if (player.isMe) recordPlayStatsSessionForPlayer(player, action, payload)
+  if (player.isMe) recordPlayStatsSessionForPlayer(action, payload)
   else recordPlayStatsSessionForCPU(player, action, payload);
 }
 export const recordPlayStatsSessionForCPU = (player, action, payload) => {
@@ -290,34 +280,18 @@ export const recordPlayStatsSessionForCPU = (player, action, payload) => {
       break;
   }
 }
-export const recordPlayStatsSessionForPlayer = (player, action, payload) => {
+/**
+ * Records a play stat for the player character.
+ * Simple counter actions (++/+=amount) are handled by the default fallback.
+ * Complex actions (WIN, LOSE, BUST_ENEMY) with extra state logic have explicit cases.
+ */
+export const recordPlayStatsSessionForPlayer = (action, payload) => {
   const totalStats = store.play_stats;
   const sessionStats = store.play_stats_session;
-  if (sessionStats && (action === PLAY_RECORD_STATS_TYPE.HANDS_PLAYED || action === PLAY_RECORD_STATS_TYPE.VPIP || action === PLAY_RECORD_STATS_TYPE.PFR)) {
-    console.info('[PLAY_RECORD_STATS_PLAYER] Before:', action, sessionStats.hands_played);
-  }
   switch (action) {
+    // BET is an alias for RAISE (both count as aggressive actions)
     case PLAY_RECORD_STATS_TYPE.BET:
-    case PLAY_RECORD_STATS_TYPE.RAISE:
-      totalStats.raise++;
-      if (sessionStats) sessionStats.raise++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.CALL:
-      totalStats.call++;
-      if (sessionStats) sessionStats.call++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.FOLD:
-      totalStats.fold++;
-      if (sessionStats) sessionStats.fold++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.CHECK:
-      totalStats.check++;
-      if (sessionStats) sessionStats.check++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.ALL_IN:
-      totalStats.all_in++;
-      if (sessionStats) sessionStats.all_in++;
-      break;
+      return recordPlayStatsSessionForPlayer(player, PLAY_RECORD_STATS_TYPE.RAISE, payload);
     case PLAY_RECORD_STATS_TYPE.WIN:
       totalStats.win++;
       if (sessionStats) {
@@ -379,93 +353,22 @@ export const recordPlayStatsSessionForPlayer = (player, action, payload) => {
         if (sessionStats) sessionStats[PLAY_RECORD_STATS_TYPE.TOTAL_LOST_MONEY] += BigInt(payload.pot - payload.amount);
       }
       break;
-    case PLAY_RECORD_STATS_TYPE.BUST:
-      totalStats.bust++;
-      if (sessionStats) sessionStats.bust++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.BANKRUPT:
-      totalStats.bankrupt++;
-      if (sessionStats) sessionStats.bankrupt++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.VPIP:
-      totalStats.vpip_count++;
-      if (sessionStats) sessionStats.vpip_count++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.PFR:
-      totalStats.pfr++;
-      if (sessionStats) sessionStats.pfr++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.WTSD:
-      totalStats.wtsd++;
-      if (sessionStats) sessionStats.wtsd++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.WSD:
-      totalStats.wsd++;
-      if (sessionStats) sessionStats.wsd++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.W$SD:
-      totalStats.w$sd++;
-      if (sessionStats) sessionStats.w$sd++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.HANDS_PLAYED:
-      totalStats.hands_played++;
-      if (sessionStats) sessionStats.hands_played++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.FACED_RAISE:
-      totalStats.faced_raise++;
-      if (sessionStats) sessionStats.faced_raise++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.FACED_3BET:
-      totalStats.faced_3bet++;
-      if (sessionStats) sessionStats.faced_3bet++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.FACED_4BET_OR_MORE:
-      totalStats.faced_4bet_or_more++;
-      if (sessionStats) sessionStats.faced_4bet_or_more++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.FOLDED_TO_RAISE:
-      totalStats.folded_to_raise++;
-      if (sessionStats) sessionStats.folded_to_raise++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.FOLDED_TO_3BET:
-      totalStats.folded_to_3bet++;
-      if (sessionStats) sessionStats.folded_to_3bet++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.FOLDED_TO_4BET_OR_MORE:
-      totalStats.folded_to_4bet_or_more++;
-      if (sessionStats) sessionStats.folded_to_4bet_or_more++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.FOLDED_TO_FLOP_BET:
-      totalStats.folded_to_flop_bet++;
-      if (sessionStats) sessionStats.folded_to_flop_bet++;
-      break;
-    case PLAY_RECORD_STATS_TYPE.FACED_FLOP_BET:
-      totalStats.faced_flop_bet++;
-      if (sessionStats) sessionStats.faced_flop_bet++;
-      break;
-    case PLAY_RECORD_STATS_TYPE._3BET:
-      totalStats.raise3bet++;
-      if (sessionStats) sessionStats.raise3bet++;
-      break;
-    case PLAY_RECORD_STATS_TYPE._4BET_OR_MORE:
-      totalStats.raise4bet_or_more++;
-      if (sessionStats) sessionStats.raise4bet_or_more++;
-      break;
     case PLAY_RECORD_STATS_TYPE.BUST_ENEMY:
       totalStats.bust_enemy[payload.enemyClass || 'fish']++;
       if (sessionStats) sessionStats.bust_enemy[payload.enemyClass || 'fish']++;
       break;
-    case PLAY_RECORD_STATS_TYPE.NET_SHARE:
-      totalStats.net_share += payload.amount;
-      if (sessionStats) sessionStats.net_share += payload.amount;
-      break;
-    case PLAY_RECORD_STATS_TYPE.NET_WINNING:
-      totalStats.net_winning += payload.amount;
-      if (sessionStats) sessionStats.net_winning += payload.amount;
-      break;
-    case PLAY_RECORD_STATS_TYPE.ITEM_EFFECT:
-      totalStats.item_effect += payload.amount;
-      if (sessionStats) sessionStats.item_effect += payload.amount;
-      break;
+    default: {
+      // Generic handler for all simple numeric increments/additions
+      // Covers: RAISE, CALL, FOLD, CHECK, ALL_IN, BUST, BANKRUPT, VPIP, PFR,
+      //         WTSD, WSD, W$SD, HANDS_PLAYED, NET_SHARE, NET_WINNING, ITEM_EFFECT,
+      //         FACED_RAISE, FACED_3BET, RAISE3BET, etc.
+      const amount = payload?.amount ?? 1;
+      if (action in totalStats && typeof totalStats[action] === 'number') {
+        totalStats[action] += amount;
+      }
+      if (sessionStats && action in sessionStats && typeof sessionStats[action] === 'number') {
+        sessionStats[action] += amount;
+      }
+    }
   }
 }

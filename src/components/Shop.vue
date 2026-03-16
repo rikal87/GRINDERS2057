@@ -42,7 +42,7 @@
         </div>
 
         <div class="control-actions">
-
+          <button class="btn-catalog" @click="openCatalog">📋 ITEM_CATALOG</button>
           <button class="btn-leave" @click="$emit('back')">LEAVE</button>
         </div>
       </aside>
@@ -110,6 +110,10 @@ defineEmits(['back']);
 const nextRefreshIn = ref(0);
 const dealerMessage = ref('');
 let timer = null;
+
+const openCatalog = () => {
+  window.dispatchEvent(new CustomEvent('open-item-catalog'));
+};
 
 const DEALER_QUOTES = {
   enter: [
@@ -568,7 +572,7 @@ const handleManualRefresh = () => {
 
 .eff-name {
   color: var(--neon-cyan);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   /* font-weight: bold; */
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -632,5 +636,26 @@ const handleManualRefresh = () => {
 }
 .merch-panel::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.btn-catalog {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(0, 240, 255, 0.05);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  border-radius: 6px;
+  color: rgba(0, 240, 255, 0.8);
+  font-size: 0.75rem;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+  font-family: inherit;
+}
+.btn-catalog:hover {
+  background: rgba(0, 240, 255, 0.12);
+  border-color: rgba(0, 240, 255, 0.6);
+  color: var(--neon-cyan, #00f0ff);
+  box-shadow: 0 0 8px rgba(0, 240, 255, 0.2);
 }
 </style>

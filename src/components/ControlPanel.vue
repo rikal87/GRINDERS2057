@@ -77,7 +77,7 @@
       <!-- Permanent Stamina Display (Always Visible) -->
       <div class="permanent-hud">
         <div class="hud-stat" :class="{ 'low-stamina': store.stamina < 25 }">
-          <span class="label">STEMINA:</span>
+          <span class="label">STAMINA:</span>
           <span class="value" :style="{ color: getStaminaColor }">{{ Math.floor(store.stamina) }} / {{
             getEffectiveMaxStamina() }}</span>
         </div>

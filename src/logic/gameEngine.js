@@ -424,7 +424,22 @@ export class GameEngine {
       p.isJoinPot = false; // Reset VPIP tracker
       p.showHoleCards = false; // reset show hole cards
       if (!p.isEliminated) recordPlayStatsSession(p, PLAY_RECORD_STATS_TYPE.HANDS_PLAYED);
+      if (p.isMe) {
+        const suitToStat = {
+          'h': PLAY_RECORD_STATS_TYPE.DEALT_HANDS_HEART,
+          'c': PLAY_RECORD_STATS_TYPE.DEALT_HANDS_CLUB,
+          'd': PLAY_RECORD_STATS_TYPE.DEALT_HANDS_DIAMOND,
+          's': PLAY_RECORD_STATS_TYPE.DEALT_HANDS_SPADE
+        };
+        p.hand.forEach((h) => {
+          const suit = h.slice(-1);
+          if (suitToStat[suit]) {
+            recordPlayStatsSession(p, suitToStat[suit]);
+          }
+        });
+      }
     });
+
     this.calculationInProgress = false;
     // Check Trigger: PREFLOP start (or Round Start)
     // this.checkSkillTriggers('round_start');
@@ -503,13 +518,15 @@ export class GameEngine {
     const previousRoundBet = this.potManager.currentRoundBet;
     const raised = this.potManager.placeBet(player, amount);
     this.pot = this.potManager.pot; // [FIX] Sync reactive pot immediately
-    if (!isBlind && amount > 0) {
-      player.voluntarilyInteracted = true;
-    }
+    if (isBlind) recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.PAY_BLIND);
 
     // Check if player's action is mathematically a raise or a call based on the pot/bet
     // If not a blind, and the amount placed raises the current round bet, it's a raise
     if (!isBlind) {
+      if (amount > 0) {
+        player.voluntarilyInteracted = true;
+        // player.totalWagered += amount;
+      }
       const isAllIn = player.chips === 0;
       const amountIncreased = this.potManager.currentRoundBet - previousRoundBet;
 
@@ -987,7 +1004,6 @@ export class GameEngine {
           this.winnerId = bestWinner ? bestWinner.id : 'cpu';
           // this.state = 'IDLE';
         }
-
         eventAdaptor.playerBankrupt(p, bestWinner, this.locationId, this.inviteId);
       }
     });

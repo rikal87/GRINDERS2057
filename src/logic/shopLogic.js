@@ -1,6 +1,7 @@
-import { store, gainBankroll } from './store.js';
+import { store, gainBankroll, getUnlockAchievements } from './store.js';
 import { ITEM_DATA, relinkItem } from './items.js';
 import { TYPE_CHANGE_BANKROLL } from "./constants.js";
+import { isItemUnlocked } from './achievementManager.js';
 export const REFRESH_INTERVAL_MS = 12 * 60 * 60 * 1000; // 12 hours in game time
 
 export const getRefreshCost = () => {
@@ -14,11 +15,6 @@ export const canManualRefresh = () => {
 // Higher tiers get weight penalty from refreshments
 // Weighted Random Selection
 const selectWeightedItem = (pool, manualRefreshCount) => {
-  // Base chance for higher tiers increases with manual refresh
-  // Cap bonus at 25 (refreshes * 5)
-  // const bonus = Math.min(25, manualRefreshCount * 0.05);
-
-  // Calculate weights
   const weightedPool = pool.map(item => {
     let weight = 100;
     const tierNum = parseInt(item.tier.replace('T', ''));
@@ -50,20 +46,25 @@ export const generateShopItems = (level) => {
   if (store.equippedItem) {
     shadyDealBonus = store.equippedItem.effects.filter(effect => effect.id === 'loyalty_card').reduce((sum, effect) => sum + effect.value, 0);
   }
-  // console.info('store.shadyDealBonus', shadyDealBonus)
-  const count = 2 + (Math.round(Math.random() * shadyDealBonus)) // Fixed 5(max) slots for better UI layout
+  const count = 2 + (Math.round(Math.random() * shadyDealBonus))
 
   // Tiers mapping
   const tierMap = {
     'T1': 1, 'T2': 2, 'T3': 3, 'T4': 4, 'T5': 5, 'T6': 6
   };
 
-  // Filter items by tier and access key status
+  // Get current unlocked achievements for lock checking
+  const unlockedAchievements = getUnlockAchievements();
+
+  // Filter items by tier, access key status, and achievement lock status
   const availableItems = ITEM_DATA.filter(item => {
     if (item.isAccessKey && store.unlockedLocations?.includes(item.id)) {
       return false;
     }
-    return tierMap[item.tier] <= maxTier + 1; // Allow slightly higher tier potential
+    if (!isItemUnlocked(item, unlockedAchievements)) {
+      return false; // Item requires an achievement not yet earned
+    }
+    return tierMap[item.tier] <= maxTier + 1;
   });
 
   const selected = [];
@@ -97,7 +98,7 @@ export const refreshShop = (isManual = false) => {
   if (isManual) {
     const cost = getRefreshCost();
     if (store.bankroll < cost) return false;
-    gainBankroll(-cost, TYPE_CHANGE_BANKROLL.OTHER)
+    gainBankroll(-cost, TYPE_CHANGE_BANKROLL.BRIBE_DEALER)
     store.shop.manualRefreshCount++;
   } else {
     store.shop.manualRefreshCount = Math.max(0, store.shop.manualRefreshCount - 1);

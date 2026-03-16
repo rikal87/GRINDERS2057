@@ -2,7 +2,7 @@ import { store } from './store.js';
 
 export const ITEM_EFFECT_ID = {
   OLIVE_BRANCH: 'olive_branch',
-  STEMINA_REGEN: 'stemina_regen',
+  STAMINA_REGEN: 'stamina_regen',
   DOPAMINE_ADDICTION: 'dopamine_addiction',
   UNDERGROUND_BAR_INVITE: 'underground_bar_invite',
   ORBIT_TOUR: 'orbit_tour',
@@ -86,7 +86,7 @@ export const ITEM_EFFECT_DATA = [
   },
   {
     icon: '☕',
-    id: ITEM_EFFECT_ID.STEMINA_REGEN,
+    id: ITEM_EFFECT_ID.STAMINA_REGEN,
     name_ko: '스태미나 회복',
     name_en: 'Stamina Regen',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -235,7 +235,6 @@ export const ITEM_EFFECT_DATA = [
     value: .1,
     isStackable: true
   },
-
   {
     icon: '🪬',
     id: ITEM_EFFECT_ID.SHOWDOWN_LOSE_REFUND,
@@ -629,8 +628,8 @@ export const ITEM_EFFECT_DATA = [
     editable: false,
     unique: true,
     trigger: ['win'],
-    get desc() { return store.settings.language === 'en' ? `Grants +${Math.floor(this.value * 100)}% XP bonus when winning with a Royal Flush.` : `로열 플러시로 승리시 경험치 보너스 +${Math.floor(this.value * 100)}%`; },
-    value: 100,
+    get desc() { return store.settings.language === 'en' ? `Royal Flush win grants ${this.value}x your buy-in.` : `로열 플러시로 승리시 바이인의 ${this.value}배를 뱅크롤로 즉시 보상받습니다.` },
+    value: 1000,
     isStackable: true
   },
   {
@@ -874,12 +873,12 @@ export const ITEM_EFFECT_DATA = [
     name_ko: '타고난 악당',
     name_en: 'Born Villain',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    rarity: 'Rare',
+    rarity: 'Unique',
     maxCooldown: 0,
     cooldown: 0,
     trigger: [],
     get desc() { return store.settings.language === 'en' ? `Infamy gained +${this.value * 100}%. Suspicion gained or lose -${this.value * 25}%` : `악명 획득량 +${this.value * 100}%, 의심 획득/감소량 +${this.value * 25}%`; },
-    value: 1,
+    value: 2,
     isStackable: true
   },
   {
@@ -888,7 +887,7 @@ export const ITEM_EFFECT_DATA = [
     name_ko: '악명 부스트',
     name_en: 'Infamy Boost',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    rarity: 'Epic',
+    rarity: 'Uncommon',
     maxCooldown: 0,
     cooldown: 0,
     trigger: [],
@@ -941,8 +940,8 @@ export const ITEM_EFFECT_DATA = [
   {
     icon: '🗠',
     id: ITEM_EFFECT_ID.STONK,
-    name_ko: '주쉭',
-    name_en: 'Stonk',
+    name_ko: '유동성 자산',
+    name_en: 'Liquidity Asset',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Uncommon',
     cooldown: 0,

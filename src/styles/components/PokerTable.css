@@ -377,7 +377,7 @@
   transform: translateX(-50%);
 }
 .max6.seat-0 .chip-stack {
-  top: -30%;
+  bottom: 105%;
 }
 /* Hero */
 .max6.seat-1 {

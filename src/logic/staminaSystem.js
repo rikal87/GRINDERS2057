@@ -1,26 +1,26 @@
 import { store, getEffectiveMaxStamina } from './store';
 import { audioManager } from './audioManager';
-
+import { recordPlayStatsSessionForPlayer, PLAY_RECORD_STATS_TYPE } from './playRecordStats';
 const DEPOSITION_RATE_IDLE = 2 / 60; // 2 per hour = 2/60 per minute
 const DEPOSITION_RATE_TABLE = 4 / 60; // 4 per hour = 4/60 per minute
 
 export const consumeStamina = (isAtTable = false) => {
   const rate = isAtTable ? DEPOSITION_RATE_TABLE : DEPOSITION_RATE_IDLE;
   // We assume this is called every game minute
+  const amount = Math.max(0, store.stamina - rate);
   store.stamina = Math.max(0, store.stamina - rate);
+  recordPlayStatsSessionForPlayer(PLAY_RECORD_STATS_TYPE.STAMINA_CONSUMED, { amount });
 };
 
 export const recoverStamina = (amount) => {
   store.stamina = Math.min(getEffectiveMaxStamina(), store.stamina + amount);
 };
 
-
-
 export const performSleep = (advanceTimeFunc, hours = 0) => {
   const maxStaminaVal = getEffectiveMaxStamina();
   // Recovery: 10 stamina per hour
   const staminaToRecover = hours * 10;
-  
+
   store.stamina = Math.min(maxStaminaVal, store.stamina + staminaToRecover);
 
   // Advance time

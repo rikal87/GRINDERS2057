@@ -18,6 +18,7 @@ import AiAgentPopup from './components/AiAgentPopup.vue';
 import SkillSelectorModal from './components/SkillSelectorModal.vue';
 import PlayStatsPopup from './components/PlayStatsPopup.vue';
 import TableSearchPopup from './components/TableSearchPopup.vue';
+import ItemCatalogPopup from './components/ItemCatalogPopup.vue';
 import { audioManager } from './logic/audioManager';
 import { performSleep } from './logic/staminaSystem';
 import { checkAutoRefresh } from './logic/shopLogic';
@@ -77,6 +78,7 @@ const selectedTaskSlotIdx = ref(-1);
 const showAgentModal = ref(false);
 const showSkillSelector = ref(false);
 const showStatsModal = ref(false);
+const showCatalog = ref(false);
 const activeSlotIdx = ref(null);
 const activeSlotType = ref(null);
 
@@ -151,6 +153,9 @@ onMounted(() => {
       showInvestigationResultOverlay.value = true;
       showInvestigationOverlay.value = false;
     }
+  });
+  window.addEventListener('open-item-catalog', () => {
+    showCatalog.value = true;
   });
 
   // Global shop refresh check every 10 seconds
@@ -605,6 +610,9 @@ watch(currentView, (newView) => {
 
     <!-- Play Stats Modal -->
     <PlayStatsPopup :show="showStatsModal" @close="showStatsModal = false" />
+
+    <!-- Item Catalog Modal -->
+    <ItemCatalogPopup :show="showCatalog" @close="showCatalog = false" />
 
     <!-- SLEEP REPORT MODAL -->
     <Transition name="fade">

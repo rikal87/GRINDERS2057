@@ -195,7 +195,7 @@ export const ITEM_DATA = [
     desc_ko: '진짜 커피콩으로 만들었진 않지만 카페인 함량과 맛은 비슷합니다.',
     desc_en: 'Not made with real coffee beans, but the caffeine content and taste are similar.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [(ITEM_EFFECT_ID.STEMINA_REGEN)]
+    effects: [(ITEM_EFFECT_ID.STAMINA_REGEN)]
   },
 
   {
@@ -880,7 +880,7 @@ export const ITEM_DATA = [
     desc_ko: '부채질로 한번으로 느긋함과 우아함 두가지를 동시에 잡습니다.',
     desc_en: 'With a single sweep of the fan, you capture both relaxation and elegance.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [(ITEM_EFFECT_ID.STEMINA_REGEN), (ITEM_EFFECT_ID.STEMINA_REGEN)]
+    effects: [(ITEM_EFFECT_ID.STAMINA_REGEN), (ITEM_EFFECT_ID.STAMINA_REGEN)]
   },
   {
     id: ITEM_ID.MASK_OF_JOY_AND_DESPAIR,
@@ -1071,6 +1071,20 @@ export const ITEM_DATA = [
 
   // --- T5 items (Rare + 2 Random, 125000 - 250000 CR) ---
   {
+    id: ITEM_ID.ATOMIC_CLOCK_STABILIZER,
+    name_ko: '원자시계 안정기',
+    name_en: 'Atomic Clock Stabilizer',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    icon: '⌛',
+    class: 'Item',
+    tier: 'T5',
+    price: 125000,
+    desc_ko: '우주의 시간을 기준으로 연산을 동기화하여 시스템의 안정을 돕습니다.',
+    desc_en: 'Helps stabilize the system by synchronizing calculations based on cosmic time.',
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    effects: [(ITEM_EFFECT_ID.LT_REGEN_PLUS), (ITEM_EFFECT_ID.LT_REGEN_PLUS), (ITEM_EFFECT_ID.TIME_BANK_PLUS)]
+  },
+  {
     id: ITEM_ID.BLIND_MAKER,
     name_ko: '장님 제조기',
     name_en: 'Blind Maker',
@@ -1120,7 +1134,7 @@ export const ITEM_DATA = [
     icon: '📿',
     class: 'Item',
     tier: 'T5',
-    price: 220000,
+    price: 200000,
     desc_ko: '이걸 쥐고 있다고 해서 무조건 성인이 되는 건 아닙니다. 그저 죄를 지을 때 죄책감을 덜어줄 도구가 하나 늘었을 뿐이죠.',
     desc_en: 'Holding this doesn\'t make you a saint. It just gives you something to squeeze while you\'re breaking all ten commandments.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
@@ -1134,11 +1148,25 @@ export const ITEM_DATA = [
     icon: '🗼',
     class: 'Item',
     tier: 'T5',
-    price: 232000,
+    price: 175000,
     desc_ko: '과거 파리의 상징이자 랜드마크"였"습니다. 이제는 초거대 기업의 고출력 송신 안테나로 쓰이고 있습니다.',
     desc_en: '"Was" the symbol and landmark of Paris in the past. Now it\'s used as a high-powered transmission antenna by a megacorp.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [(ITEM_EFFECT_ID.LAST_STAND), (ITEM_EFFECT_ID.LAST_STAND), (ITEM_EFFECT_ID.LAST_STAND)]
+  },
+  {
+    id: ITEM_ID.SUBPRIME_MORTGAGE,
+    name_ko: '서브 프라임 모기지',
+    name_en: 'Sub Prime Mortgage',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    icon: '🏚️',
+    class: 'Item',
+    tier: 'T5',
+    price: 275000,
+    desc_ko: '모두가 폭탄을 돌리고 있지만, 뭐, 나만 아니면 되겠죠? 안 그래요?',
+    desc_en: 'Everyone\'s playing hot potato with a live grenade. But hey, as long as it\'s not me, right?',
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    effects: [ITEM_EFFECT_ID.STONK, ITEM_EFFECT_ID.STONK, ITEM_EFFECT_ID.STONK]
   },
   {
     id: ITEM_ID.CRYO_MINT_DISPENSER,
@@ -1152,7 +1180,7 @@ export const ITEM_DATA = [
     desc_ko: '극도의 시원함으로 잠이 확 깹니다.',
     desc_en: 'The extreme coolness wakes you up instantly.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [(ITEM_EFFECT_ID.STEMINA_REGEN), (ITEM_EFFECT_ID.STEMINA_REGEN), (ITEM_EFFECT_ID.STEMINA_REGEN)]
+    effects: [(ITEM_EFFECT_ID.STAMINA_REGEN), (ITEM_EFFECT_ID.STAMINA_REGEN), (ITEM_EFFECT_ID.STAMINA_REGEN)]
   },
   {
     id: ITEM_ID.STATUE_OF_LIBERTY,
@@ -1194,7 +1222,7 @@ export const ITEM_DATA = [
     desc_ko: '요즘은 볼 수 없는 돛이 달린 여가용 요트, 느긋함을 느낄 수 있습니다.',
     desc_en: 'A leisure yacht with a sail wrapped in nostalgia, you can feel the relaxation.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [(ITEM_EFFECT_ID.FOUR_OF_A_KIND_MASTER), (ITEM_EFFECT_ID.STEMINA_REGEN), (ITEM_EFFECT_ID.TIME_BANK_PLUS)]
+    effects: [(ITEM_EFFECT_ID.FOUR_OF_A_KIND_MASTER), (ITEM_EFFECT_ID.STAMINA_REGEN), (ITEM_EFFECT_ID.TIME_BANK_PLUS)]
   },
   {
     id: ITEM_ID.KHAMSA,
@@ -1337,20 +1365,7 @@ export const ITEM_DATA = [
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [(ITEM_EFFECT_ID.QUANTUM_FOLD), (ITEM_EFFECT_ID.QUANTUM_FOLD), (ITEM_EFFECT_ID.QUANTUM_FOLD)]
   },
-  {
-    id: ITEM_ID.ATOMIC_CLOCK_STABILIZER,
-    name_ko: '원자시계 안정기',
-    name_en: 'Atomic Clock Stabilizer',
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    icon: '⌛',
-    class: 'Item',
-    tier: 'T5',
-    price: 175000,
-    desc_ko: '우주의 시간을 기준으로 연산을 동기화하여 시스템의 안정을 돕습니다.',
-    desc_en: 'Helps stabilize the system by synchronizing calculations based on cosmic time.',
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [(ITEM_EFFECT_ID.LT_REGEN_PLUS), (ITEM_EFFECT_ID.LT_REGEN_PLUS), (ITEM_EFFECT_ID.TIME_BANK_PLUS)]
-  },
+
   {
     id: ITEM_ID.REINCARNATION_PROTOCOL,
     name_ko: '환생 프로토콜',
@@ -1437,20 +1452,6 @@ export const ITEM_DATA = [
     effects: [(ITEM_EFFECT_ID.FULL_HOUSE_MASTER), ITEM_EFFECT_ID.RND, ITEM_EFFECT_ID.RND]
   },
   {
-    id: ITEM_ID.CASINO_INSIDER_NEMESIS,
-    name_ko: '카지노 관계자의 천적',
-    name_en: 'Nemesis of Casino Insiders',
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    icon: '👹',
-    class: 'Item',
-    tier: 'T5',
-    price: 225000,
-    desc_ko: '카지노 관계자들은 그의 이름만 들어도 치가 떨립니다.',
-    desc_en: 'Casino insiders tremble at the mere mention of his name.',
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [(ITEM_EFFECT_ID.BORN_VILLAIN), (ITEM_EFFECT_ID.BORN_VILLAIN), (ITEM_EFFECT_ID.BORN_VILLAIN)]
-  },
-  {
     id: ITEM_ID.GUARDIAN_ANGEL_PROGRAM,
     name_ko: '수호천사 데몬',
     name_en: 'Guardian Angel Program',
@@ -1465,6 +1466,20 @@ export const ITEM_DATA = [
     effects: [(ITEM_EFFECT_ID.ALLIN_INSURANCE), (ITEM_EFFECT_ID.ALLIN_INSURANCE), (ITEM_EFFECT_ID.ALLIN_INSURANCE)]
   },
   // --- T6 items (Unique or effect 4 slots, 300000+ CR) ---
+  {
+    id: ITEM_ID.CASINO_INSIDER_NEMESIS,
+    name_ko: '천적',
+    name_en: 'Nemesis',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    icon: '👹',
+    class: 'Item',
+    tier: 'T6',
+    price: 325000,
+    desc_ko: '카지노 관계자와 다른 플레이어들은 그의 이름만 들어도 치가 떨립니다.',
+    desc_en: 'Casino insiders and other players tremble at the mere mention of his name.',
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    effects: [ITEM_EFFECT_ID.BORN_VILLAIN]
+  },
   {
     id: ITEM_ID.CARD_OF_THE_CARD_SHARK,
     name_ko: '타짜의 화투',
@@ -1530,7 +1545,7 @@ export const ITEM_DATA = [
     class: 'Item',
     tier: 'T6',
     price: 225000,
-    desc_ko: '자, 굴려 봅시다.',
+    desc_ko: '자, 돌려 봅시다.',
     desc_en: 'LET\'S GO GAMBLING.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [(ITEM_EFFECT_ID.OMEN), (ITEM_EFFECT_ID.LUCKY_7_COLLECTOR), (ITEM_EFFECT_ID.DOPAMINE_ADDICTION), (ITEM_EFFECT_ID.DOPAMINE_ADDICTION)]
@@ -1667,7 +1682,28 @@ export const relinkItem = (itemData) => {
     });
   }
 
-  instance.effects = resolvedEffects;
+  // 4. Consolidate stackable effects
+  const mergedEffects = [];
+  const stackableMap = new Map();
+
+  resolvedEffects.forEach(eff => {
+    if (eff.isStackable) {
+      if (stackableMap.has(eff.id)) {
+        const existing = stackableMap.get(eff.id);
+        // Sum values if both exist
+        if (typeof eff.value === 'number' && typeof existing.value === 'number') {
+          existing.value += eff.value;
+        }
+      } else {
+        stackableMap.set(eff.id, eff);
+        mergedEffects.push(eff);
+      }
+    } else {
+      mergedEffects.push(eff);
+    }
+  });
+
+  instance.effects = mergedEffects;
 
   // 4. Ensure instanceId exists
   if (!instance.instanceId) {

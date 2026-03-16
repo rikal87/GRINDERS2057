@@ -1,26 +1,23 @@
 <template>
-  <div class="chip-stack-container" 
-    :class="[
-      { 'has-label': showLabel },
-      collecting ? 'collecting' : '',
-      collecting && winnerSeat ? getCollectionClass() : ''
-    ]"
-  >
+  <div class="chip-stack-container" :class="[
+    { 'has-label': showLabel },
+    collecting ? 'collecting' : '',
+    collecting && winnerSeat ? getCollectionClass() : ''
+  ]">
     <div class="stacks-container">
       <div v-for="(stack, sIndex) in groupedStacks" :key="sIndex" class="stack-column">
         <div class="stack-visual">
           <TransitionGroup name="chip-drop">
-            <div v-for="(chip, cIndex) in stack" :key="chip.id" class="chip-wrapper" :style="getChipStyle(cIndex, stack.length, sIndex)">
+            <div v-for="(chip, cIndex) in stack" :key="chip.id" class="chip-wrapper"
+              :style="getChipStyle(cIndex, stack.length, sIndex)">
               <PokerChip :value="chip.value" />
             </div>
           </TransitionGroup>
         </div>
       </div>
     </div>
-    <div v-if="showLabel && labelPosition === 'bottom'" 
-      class="stack-label bottom"
-      :class="{ 'collecting': collecting && amount === 0 }"
-    >
+    <div v-if="showLabel && labelPosition === 'bottom'" class="stack-label bottom"
+      :class="{ 'collecting': collecting && amount === 0 }">
       {{ formattedAmount }}
     </div>
   </div>
@@ -123,7 +120,7 @@ const formattedAmount = computed(() => {
   const val = props.amount;
   if (val >= 1000000) return (val / 1000000).toFixed(val % 1000000 === 0 ? 0 : 1).replace('.0', '') + 'M';
   if (val >= 1000) return (val / 1000).toFixed(val % 1000 === 0 ? 0 : 1).replace('.0', '') + 'K';
-  return val.toLocaleString();
+  return `${val.toLocaleString()} CR`;
 });
 
 const getChipStyle = (index, stackTotal, sIndex) => {
@@ -188,7 +185,7 @@ const getCollectionClass = () => {
 }
 
 .stack-label {
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--neon-yellow);
   text-shadow: 0 0 5px rgba(0, 0, 0, 0.8), 0 0 2px var(--neon-yellow);
@@ -228,17 +225,17 @@ const getCollectionClass = () => {
 }
 
 /* Directional fly-away */
-.collecting-to-bottom .chip-drop-leave-to { 
-  transform: translateY(calc(var(--stack-y) + 200px)) scale(0.2); 
+.collecting-to-bottom .chip-drop-leave-to {
+  transform: translateY(calc(var(--stack-y) + 200px)) scale(0.2);
 }
-.collecting-to-top .chip-drop-leave-to { 
-  transform: translateY(calc(var(--stack-y) - 200px)) scale(0.2); 
+.collecting-to-top .chip-drop-leave-to {
+  transform: translateY(calc(var(--stack-y) - 200px)) scale(0.2);
 }
-.collecting-to-left .chip-drop-leave-to { 
-  transform: translate(-300px, calc(var(--stack-y) - 100px)) scale(0.1); 
+.collecting-to-left .chip-drop-leave-to {
+  transform: translate(-300px, calc(var(--stack-y) - 100px)) scale(0.1);
 }
-.collecting-to-right .chip-drop-leave-to { 
-  transform: translate(300px, calc(var(--stack-y) - 100px)) scale(0.1); 
+.collecting-to-right .chip-drop-leave-to {
+  transform: translate(300px, calc(var(--stack-y) - 100px)) scale(0.1);
 }
 
 .chip-drop-move {

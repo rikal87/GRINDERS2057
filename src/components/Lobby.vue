@@ -62,10 +62,10 @@ const emit = defineEmits(['view', 'openSearch']);
 const currentMapKey = ref('DEFAULT');
 const mapPositions = {
   DEFAULT: { pos: '50% 50%', name: 'FINDING_LOCATION...' },
-  CASINO: { pos: '1% 90%', name: 'CASINO_STRIP' },
-  HABITAT: { pos: '53% 54%', name: 'HABITAT' },
-  BLACK_MARKET: { pos: '100% 0%', name: 'KBT_UNDERGROUND' },
-  EXCHANGE: { pos: '17% 10%', name: 'FINANCIAL_SECTOR' }
+  CASINO: { pos: '5% 100%', name: 'CASINO_STRIP' },
+  HABITAT: { pos: '95% 80%', name: 'HABITAT' },
+  BLACK_MARKET: { pos: '100% 20%', name: 'BLACK MARKET' },
+  EXCHANGE: { pos: '0% 40%', name: 'FINANCIAL_SECTOR' }
 };
 
 const mapPosition = computed(() => mapPositions[currentMapKey.value].pos);
@@ -138,7 +138,7 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: url('../assets/image/minimap.v4.png');
+  background-image: url('../assets/image/minimap.v5.png');
   /* background-size: 200% 200%; */
   transition: background-position 1.2s cubic-bezier(0.23, 1, 0.32, 1);
   opacity: 0.75;
