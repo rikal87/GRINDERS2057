@@ -288,6 +288,7 @@ export const checkLevelUp = (xp) => {
     store.xp = 0;
     store.level++;
     console.log(`[XP] Level Up!`);
+    recordPlayStatsSessionForPlayer(PLAY_RECORD_STATS_TYPE.LEVEL_REACHED, { amount: 1 });
     checkLevelUp(xp);
   }
 }

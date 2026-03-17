@@ -4,11 +4,11 @@
       <div class="catalog-modal">
         <div class="catalog-header">
           <h2 class="glitch-text" data-text="ITEM_CATALOG">ITEM_CATALOG</h2>
-          <button class="btn-close" @click="$emit('close')">✕</button>
+          <button class="btn-cancel" @click="$emit('close')">CLOSE</button>
         </div>
         <div class="catalog-body">
           <div v-for="tier in tiers" :key="tier" class="tier-section">
-            <div class="tier-label">{{ tier }}</div>
+            <h3 class="tier-label" :class="`${tier}`">{{ tier }}</h3>
             <div class="items-grid">
               <div v-for="item in getItemsByTier(tier)" :key="item.id" class="item-card"
                 :class="{ locked: !isUnlocked(item), unlocked: isUnlocked(item) }"
@@ -43,17 +43,19 @@
 <script setup>
 import { computed, reactive } from 'vue';
 import { ITEM_DATA } from '../logic/items';
-import { isItemUnlocked, UNLOCK_RULES } from '../logic/achievementManager';
-import { getUnlockAchievements } from '../logic/store';
+import { isItemUnlocked, UNLOCK_RULES, ACHIEVEMENT_DESC } from '../logic/achievementManager';
+import { getLanguage, getUnlockAchievements } from '../logic/store';
+import { PLAY_RECORD_STATS_DESC } from '../logic/playRecordStats';
 
 const props = defineProps({ show: Boolean });
+const emit = defineEmits(['close']);
 
 const tiers = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'];
 
 const unlockedAchievements = computed(() => getUnlockAchievements());
 
 const getItemsByTier = (tier) =>
-  ITEM_DATA.filter(item => item.tier === tier && !item.isAccessKey);
+  ITEM_DATA.filter(item => item.tier === tier);
 
 const isUnlocked = (item) =>
   isItemUnlocked(item, unlockedAchievements.value);
@@ -95,8 +97,8 @@ const getLockRequirements = (item) => {
     const rules = effectToRuleMap.value[effectId] || [];
     const neededRule = rules.find(r => r.maxAllowEffectCount >= count && !currentUnlocked.includes(r.id));
     if (neededRule) {
-      requirements.push(`필요 업적: ${neededRule.id}`);
-      requirements.push(`(${neededRule.type}: ${neededRule.value} 필요)`);
+      requirements.push(`[${ACHIEVEMENT_DESC[neededRule.id][getLanguage()]}]`);
+      requirements.push(`${PLAY_RECORD_STATS_DESC[neededRule.type][getLanguage()]}: ${neededRule.value.toLocaleString()}`);
     }
   }
   return requirements;
@@ -126,17 +128,18 @@ const hideTooltip = () => {
 <style scoped>
 .v5-modal-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1100;
+  z-index: 100;
 }
 .catalog-modal {
+  border: 2px solid var(--neon-cyan);
   background: rgba(10, 15, 25, 0.97);
-  border: 1px solid rgba(0, 240, 255, 0.25);
-  border-radius: 12px;
+  padding: 2rem;
+  /* border-radius: 12px; */
   width: min(90vw, 780px);
   max-height: 80vh;
   display: flex;
@@ -172,13 +175,19 @@ const hideTooltip = () => {
   overflow-y: auto;
   padding: 16px 20px;
   display: flex;
+  overflow-x: hidden;
   flex-direction: column;
   gap: 16px;
+  padding: 16px 0px 16px 16px;
+}
+.catalog-body::-webkit-scrollbar {
+  width: 3px;
+}
+.catalog-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 240, 255, 0.2);
 }
 .tier-label {
-  font-size: 0.7rem;
   letter-spacing: 2px;
-  color: rgba(0, 240, 255, 0.5);
   margin-bottom: 8px;
   border-bottom: 1px solid rgba(0, 240, 255, 0.1);
   padding-bottom: 4px;
@@ -265,5 +274,26 @@ const hideTooltip = () => {
   color: rgba(200, 180, 150, 0.8);
   line-height: 1.4;
   white-space: normal;
+}
+.T1 {
+  color: #fff;
+}
+.T2 {
+  color: #39ff14;
+}
+.T3 {
+  color: #00ffcc;
+}
+.T4 {
+  color: #ffd700;
+  text-shadow: 0 0 5px #ffd700;
+}
+.T5 {
+  color: #bf00ff;
+  text-shadow: 0 0 8px #bf00ff;
+}
+.T6 {
+  color: #ff003c;
+  text-shadow: 0 0 10px #ff003c;
 }
 </style>

@@ -311,15 +311,16 @@ function getHeuristicFallback(player, engine) {
     // OPENER or C_BETTER
     raiseEquityThreshold = 0.5; // Standard buffer for leading
     if (strategy === "C_BETTER") {
-      if (street === 'FLOP') raiseEquityThreshold -= 0.15;
+      if (street === 'FLOP') raiseEquityThreshold -= 0.2;
       else if (['TURN', 'RIVER'].includes(street) && callAmt === 0) bluffFreq *= (1.5 - (streetsLeft * 0.5));
     }
-    if (estimatedEquity <= 0.5 && estimatedEquity >= 0.4) {
-      raiseEquityThreshold += Math.random() * 0.1 + 0.1
-    }
     // [MOD] Preflop Opener: Buff aggression for strong hands
-    if (street === 'PREFLOP' && strategy === 'OPENER') {
-      if (estimatedEquity >= 0.6) raiseEquityThreshold -= 0.1;
+    if (strategy === 'OPENER') {
+      raiseEquityThreshold -= 0.15;
+    }
+    if (street !== 'FLOP' && estimatedEquity <= 0.5 && estimatedEquity >= 0.4) { // pot control we have show down value
+      raiseEquityThreshold += Math.random() * 0.1 + 0.1
+      bluffFreq *= 0.5;
     }
     insight += ` [Strategy: ${strategy}]`;
   }

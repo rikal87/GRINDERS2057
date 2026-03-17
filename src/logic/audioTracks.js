@@ -2,7 +2,7 @@ import BGM_Placebo from '../assets/music/FiloStarquez_Placebo.mp3';
 import BGM_Solitude from '../assets/music/FiloStarquez_Solitude.mp3';
 import BGM_RemoteLocation from '../assets/music/FiloStarquez_RemoteLocation.mp3';
 import BGM_Grainders2057 from '../assets/music/Grainders2057.mp3';
-import BGM_NeonDreams from '../assets/music/epshy_NeonDreams.mp3';
+// import BGM_NeonDreams from '../assets/music/epshy_NeonDreams.mp3';
 import BGM_VelvetShadows from '../assets/music/MellowFields_VelvetShadows.ogg';
 import BGM_DreamVector from '../assets/music/MellowFields_DreamVector.ogg';
 import BGM_JourneyToTitan from '../assets/music/WBA_JourneyToTitan.mp3';
@@ -15,8 +15,6 @@ import BGM_BeThere from '../assets/music/tubebackr_BeThere.mp3';
 // import BGM_DuskHorizonBy from '../assets/music/fsm-team-escp-dusk-horizon.mp3';
 import BGM_Kinetic from '../assets/music/fsm-team-escp-kinetics.mp3';
 import BGM_Overnight from '../assets/music/Qlowdy_Overnight.mp3';
-import BGM_HearTheBass from '../assets/music/Infraction_HearTheBass.ogg';
-import BGM_NairobiVibes from '../assets/music/Infraction_NairobiVibes.ogg';
 import BGM_Amsleybeats_DeepVibes from '../assets/music/Amsleybeats_DeepVibes.mp3'
 import BGM_Rockot_ArgonGroove from '../assets/music/Rockot_ArgonGroove.mp3'
 import BGM_Rockot_Futuristic from '../assets/music/Rockot_Futuristic.mp3'
@@ -33,6 +31,13 @@ import BGM_TheMountain_Technologies from '../assets/music/TheMountain_Technologi
 import BGM_Alexgrohl_OneStepAHead from '../assets/music/Alexgrohl_OneStepAHead.mp3'
 import BGM_Alexgrohl_Synthwave from '../assets/music/Alexgrohl_Synthwave.mp3'
 
+import BGM_EvgenyBardyuzha_PasswordInfinity from '../assets/music/EvgenyBardyuzha_PasswordInfinity.mp3'
+import BGM_Joyinsound_NeonHongKong from '../assets/music/Joyinsound_NeonHongKong.mp3'
+import BGM_Rockot_TrafficHouse from '../assets/music/Rockot_TrafficHouse.mp3'
+import BGM_Rockot_Bargur from '../assets/music/Rockot_Bargur.mp3'
+import BGM_Tvari_SeoulArcade from '../assets/music/Tvari_SeoulArcade.mp3'
+import BGM_Penguinmusic_Mellow from '../assets/music/Penguinmusic_Mellow.mp3'
+import BGM_u_98o9hlkn7r_Cyberpunk from '../assets/music/u98o9hlkn7r_Cyberpunk.mp3'
 // Dusk Horizon by | escp | https://www.escp.space https://escp-music.bandcamp.com
 export const TRACK_ENUM = {
   Placebo: "Placebo",
@@ -64,15 +69,49 @@ export const TRACK_ENUM = {
   Lnplusmusic_Technology: "Lnplusmusic_Technology",
   Lnplusmusic_Background: "Lnplusmusic_Background",
   Penguinmusic_FutureDesign: "Penguinmusic_FutureDesign",
+  Penguinmusic_Mellow: "Penguinmusic_Mellow",
   TheMountain_Technologies: "TheMountain_Technologies",
   Alexgrohl_OneStepAHead: "Alexgrohl_OneStepAHead",
   Alexgrohl_Synthwave: "Alexgrohl_Synthwave",
   Amsleybeats_DeepVibes: "Amsleybeats_DeepVibes",
-
-
+  EvgenyBardyuzha_PasswordInfinity: "EvgenyBardyuzha_PasswordInfinity",
+  Joyinsound_NeonHongKong: "Joyinsound_NeonHongKong",
+  Rockot_TrafficHouse: "Rockot_TrafficHouse",
+  Rockot_Bargur: "Rockot_Bargur",
+  Tvari_SeoulArcade: "Tvari_SeoulArcade",
 };
 //  Karl Casey @ White Bat Audio"
 export const TRACK_INFO = {
+  [TRACK_ENUM.EvgenyBardyuzha_PasswordInfinity]: {
+    "title": "Password Infinity",
+    "artist": "Evgeny Bardyuzha",
+    "license": "",
+    "file": BGM_EvgenyBardyuzha_PasswordInfinity
+  },
+  [TRACK_ENUM.Joyinsound_NeonHongKong]: {
+    "title": "Neon Hong-Kong",
+    "artist": "Joyinsound",
+    "license": "",
+    "file": BGM_Joyinsound_NeonHongKong
+  },
+  [TRACK_ENUM.Rockot_TrafficHouse]: {
+    "title": "Traffic House",
+    "artist": "Rockot",
+    "license": "",
+    "file": BGM_Rockot_TrafficHouse
+  },
+  [TRACK_ENUM.Rockot_Bargur]: {
+    "title": "Bargur",
+    "artist": "Rockot",
+    "license": "",
+    "file": BGM_Rockot_Bargur
+  },
+  [TRACK_ENUM.Tvari_SeoulArcade]: {
+    "title": "Seoul Arcade",
+    "artist": "Tvari",
+    "license": "",
+    "file": BGM_Tvari_SeoulArcade
+  },
   [TRACK_ENUM.Lnplusmusic_Technology]: {
     "title": "Technology",
     "artist": "Lnplusmusic",
@@ -134,6 +173,12 @@ export const TRACK_INFO = {
     "license": "",
     "file": BGM_Penguinmusic_FutureDesign
   },
+  [TRACK_ENUM.Penguinmusic_Mellow]: {
+    "title": "Mellow",
+    "artist": "Penguinmusic",
+    "license": "",
+    "file": BGM_Penguinmusic_Mellow
+  },
   [TRACK_ENUM.TheMountain_Technologies]: {
     "title": "Technologies",
     "artist": "The Mountain",
@@ -170,18 +215,18 @@ export const TRACK_INFO = {
     "license": "",
     "file": BGM_Overnight
   },
-  [TRACK_ENUM.HearTheBass]: {
-    "title": "Hear The Bass",
-    "artist": "Infraction",
-    "license": "",
-    "file": BGM_HearTheBass
-  },
-  [TRACK_ENUM.NairobiVibes]: {
-    "title": "Nairobi Vibes",
-    "artist": "Infraction",
-    "license": "",
-    "file": BGM_NairobiVibes
-  },
+  // [TRACK_ENUM.HearTheBass]: {
+  //   "title": "Hear The Bass",
+  //   "artist": "Infraction",
+  //   "license": "",
+  //   "file": BGM_HearTheBass
+  // },
+  // [TRACK_ENUM.NairobiVibes]: {
+  //   "title": "Nairobi Vibes",
+  //   "artist": "Infraction",
+  //   "license": "",
+  //   "file": BGM_NairobiVibes
+  // },
   [TRACK_ENUM.Kinetic]: {
     "title": "Kinetic",
     "artist": "FSM Team & < e s c p >",
@@ -260,12 +305,12 @@ export const TRACK_INFO = {
     "license": "",
     "file": BGM_Grainders2057,
   },
-  [TRACK_ENUM.NeonDreams]: {
-    "title": "Neon Dreams",
-    "artist": "epshy",
-    "license": "-",
-    "file": BGM_NeonDreams,
-  },
+  // [TRACK_ENUM.NeonDreams]: {
+  //   "title": "Neon Dreams",
+  //   "artist": "epshy",
+  //   "license": "-",
+  //   "file": BGM_NeonDreams,
+  // },
   [TRACK_ENUM.VelvetShadows]: {
     "title": "Velvet Shadows",
     "artist": "Mellow Fields",

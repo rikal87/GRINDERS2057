@@ -480,7 +480,7 @@ watch(currentView, (newView) => {
             <div class="row">
               <div class="status-group">
                 <span class="status-value">{{ formatGameDate(store.gameTime) }} ({{ formatGameDayOfWeek(store.gameTime)
-                  }})</span>
+                }})</span>
                 <span class="status-divider"></span>
                 <span class="status-value">{{ formatGameTime(store.gameTime) }}</span>
               </div>
@@ -492,7 +492,7 @@ watch(currentView, (newView) => {
         <!-- Intro View(main-menu) -->
         <Intro v-else-if="currentView === 'intro'" @start="handleStart" @calibrate="toggleSettings"
           @quit="handleQuitApp" />
-        <section class="game-container" :style="{ filter: `blur(${staminaBlur}px)` }">
+        <section v-else class="game-container" :style="{ filter: `blur(${staminaBlur}px)` }">
           <!-- Lobby View -->
           <Lobby v-if="currentView === 'lobby'" @join="handleJoinTable" @view="handleView"
             @openSearch="searchPopupRef?.open()" />
@@ -541,6 +541,7 @@ watch(currentView, (newView) => {
       </div>
     </Transition>
     <!-- Settings Overlay -->
+
     <Transition name="fade" mode="out-in">
       <div v-if="isSettingsOpen" class="overlay settings-overlay">
         <div class="terminal-msg">

@@ -6,11 +6,7 @@ import { TRACK_ENUM, TRACK_INFO } from './audioTracks.js';
 // const trackModules = import.meta.glob('../assets/music/*.mp3', { eager: true, import: 'default' });
 const sfxModules = import.meta.glob('../assets/sfx/*.{mp3,wav}', { eager: true, import: 'default' });
 
-const DEFAULT_PLAYLIST = [
-  TRACK_INFO[TRACK_ENUM.NeonDreams],
-  TRACK_INFO[TRACK_ENUM.Dystopia],
-  TRACK_INFO[TRACK_ENUM.Lucid],
-].filter(Boolean);
+const DEFAULT_PLAYLIST = [TRACK_ENUM.Lucid];
 export let playlist = DEFAULT_PLAYLIST;
 // export const playlist = Object.entries(trackModules).map(([path, url]) => {
 //   const fileName = path.split('/').pop().replace('.mp3', '');
@@ -78,62 +74,62 @@ class AudioManager {
     try {
       await this.init();
 
-    let track = null;
-    let trackIndex = index;
+      let track = null;
+      let trackIndex = index;
 
-    // Handle different call signatures
-    if (typeof index === 'number') {
-      // Only index passed (likely for DEFAULT_PLAYLIST)
-      if (trackInfo) {
-        playlist = trackInfo;
+      // Handle different call signatures
+      if (typeof index === 'number') {
+        // Only index passed (likely for DEFAULT_PLAYLIST)
+        if (trackInfo) {
+          playlist = trackInfo;
+        }
+        track = playlist[index];
+        trackIndex = index;
+      } else if (typeof index === 'string' && TRACK_INFO[index]) {
+        // Enum key passed
+        track = TRACK_INFO[index];
       }
-      track = playlist[index];
-      trackIndex = index;
-    } else if (typeof index === 'string' && TRACK_INFO[index]) {
-      // Enum key passed
-      track = TRACK_INFO[index];
-    }
 
-    if (!track) {
-      console.warn('AudioManager: Could not resolve track', trackInfo, index);
-      return;
-    }
-
-    console.log('Loading track:', track.title, 'at index:', trackIndex);
-
-    // Stop previous source if exists
-    if (this.source) {
-      this.source.onended = null; // Prevent trigger when manually changing tracks
-      try { this.source.stop(); } catch (e) { }
-      this.source.disconnect();
-    }
-
-    const response = await fetch(track.file);
-    const arrayBuffer = await response.arrayBuffer();
-    const audioBuffer = await this.ctx.decodeAudioData(arrayBuffer);
-
-    this.currentTrackInfo.value = track;
-    this.source = this.ctx.createBufferSource();
-    this.source.buffer = audioBuffer;
-    this.source.playbackRate.value = this.playbackRate.value;
-    this.source.loop = false;
-    this.source.onended = () => {
-      if (this.isPlaying.value) {
-        this.next();
+      if (!track) {
+        console.warn('AudioManager: Could not resolve track', trackInfo, index);
+        return;
       }
-    };
-    this.source.connect(this.filter);
 
-    // Update currentTrackIndex only if it's a valid number
-    if (typeof trackIndex === 'number') {
-      this.currentTrackIndex.value = trackIndex;
-    } else {
-      // Try to find index in current playlist to keep navigation working
-      const foundIdx = playlist.findIndex(t => t.file === track.file);
-      if (foundIdx !== -1) {
-        this.currentTrackIndex.value = foundIdx;
+      console.log('Loading track:', track.title, 'at index:', trackIndex);
+
+      // Stop previous source if exists
+      if (this.source) {
+        this.source.onended = null; // Prevent trigger when manually changing tracks
+        try { this.source.stop(); } catch (e) { }
+        this.source.disconnect();
       }
-    }
+
+      const response = await fetch(track.file);
+      const arrayBuffer = await response.arrayBuffer();
+      const audioBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+
+      this.currentTrackInfo.value = track;
+      this.source = this.ctx.createBufferSource();
+      this.source.buffer = audioBuffer;
+      this.source.playbackRate.value = this.playbackRate.value;
+      this.source.loop = false;
+      this.source.onended = () => {
+        if (this.isPlaying.value) {
+          this.next();
+        }
+      };
+      this.source.connect(this.filter);
+
+      // Update currentTrackIndex only if it's a valid number
+      if (typeof trackIndex === 'number') {
+        this.currentTrackIndex.value = trackIndex;
+      } else {
+        // Try to find index in current playlist to keep navigation working
+        const foundIdx = playlist.findIndex(t => t.file === track.file);
+        if (foundIdx !== -1) {
+          this.currentTrackIndex.value = foundIdx;
+        }
+      }
 
       if (this.isPlaying.value) {
         this.source.start(0);
@@ -382,7 +378,7 @@ class AudioManager {
 
     this.currentZoneId.value = zoneId;
     console.log('Switching to zone:', zoneId);
-    
+
     // Find location config from zones
     let locationConfig = null;
     for (const zone of zones) {
@@ -395,7 +391,7 @@ class AudioManager {
 
     let tracks = [];
     if (zoneId === 'main') tracks = [TRACK_ENUM.Grainders2057];
-    else if (zoneId === 'lobby') tracks = [TRACK_ENUM.NeonDreams, TRACK_ENUM.Lucid];
+    else if (zoneId === 'lobby') tracks = DEFAULT_PLAYLIST;
     else if (locationConfig && locationConfig.bgMusic) {
       tracks = locationConfig.bgMusic;
     }
@@ -410,7 +406,7 @@ class AudioManager {
 
     const randomIdx = Math.floor(Math.random() * newPlaylist.length);
     this.isPlaying.value = true;
-    
+
     await this.loadTrack(randomIdx, newPlaylist);
 
     if (this.ctx && this.ctx.state === 'suspended') {

@@ -190,11 +190,13 @@ export const zones = [
           amount: 5000, amount_fmt: '5K', amount_min_fmt: '2.5K', sb: 25, bb: 50, available: [6, 9], baseRake: 0.06, rakeCap: 250
         },
         "theme": {
-          "background": "radial-gradient(circle, #1a0b2e 0%, #0d001a 100%)",
-          "borderColor": "#9d00ff",
-          "boxShadow": "0 0 25px rgba(157, 0, 255, 0.4)"
+          "background": "radial-gradient(circle, #3d0000 0%, #1a0000 100%)",
+          "borderColor": "#ff4d4d",
+          "boxShadow": "0 0 40px rgba(255, 0, 0, 0.6)"
         },
-        'bgMusic': [TRACK_ENUM.MalibuMoon, TRACK_ENUM.Lnplusmusic_LatinTrap]
+
+
+        'bgMusic': [TRACK_ENUM.MalibuMoon, TRACK_ENUM.Lnplusmusic_LatinTrap, TRACK_ENUM.Lnplusmusic_Background]
       }
     ]
   },
@@ -216,17 +218,17 @@ export const zones = [
         "level": 4,
         "firstClearRewards": "club_membership",
         "npcs": [
-          "Fish",
           "Gambler",
-          "Nit"
+          "Nit",
+          "Rich_Guy"
         ],
         "tables": { isMonitoring: true, amount: 10000, amount_fmt: '10K', amount_min_fmt: '5K', sb: 50, bb: 100, available: [6, 9], baseRake: 0.07, rakeCap: 500 },
         "theme": {
-          "background": "radial-gradient(circle, #001a1a 0%, #000d0d 100%)",
-          "borderColor": "#00f0ff",
-          "boxShadow": "0 0 30px rgba(0, 240, 255, 0.5)"
+          "background": "radial-gradient(circle, #1a0b2e 0%, #0d001a 100%)",
+          "borderColor": "#9d00ff",
+          "boxShadow": "0 0 25px rgba(157, 0, 255, 0.4)"
         },
-        'bgMusic': [TRACK_ENUM.lnplusmusic_Reels, TRACK_ENUM.Lnplusmusic_Beauty, TRACK_ENUM.BeThere, TRACK_ENUM.Overnight]
+        'bgMusic': [TRACK_ENUM.BeThere, TRACK_ENUM.Overnight, TRACK_ENUM.Lnplusmusic_Beauty, TRACK_ENUM.Joyinsound_NeonHongKong, TRACK_ENUM.Tvari_SeoulArcade]
       },
       {
         "id": "low_underground_club_meet_max",
@@ -253,7 +255,7 @@ export const zones = [
           "borderColor": "#ff0080",
           "boxShadow": "0 0 30px rgba(255, 0, 128, 0.6)"
         },
-        'bgMusic': [TRACK_ENUM.HearTheBass]
+        'bgMusic': [TRACK_ENUM.Rockot_TrafficHouse]
       },
       {
         "id": "low_underground_club",
@@ -277,7 +279,7 @@ export const zones = [
           "borderColor": "#ff0080",
           "boxShadow": "0 0 30px rgba(255, 0, 128, 0.6)"
         },
-        'bgMusic': [TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
+        'bgMusic': [TRACK_ENUM.Rockot_TrafficHouse, TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
       },
       {
         "id": "low_old_casino",
@@ -336,7 +338,7 @@ export const zones = [
           "borderColor": "#708090",
           "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.ArgonGroove]
+        'bgMusic': [TRACK_ENUM.ArgonGroove, TRACK_ENUM.Rockot_Bargur]
       },
       {
         "id": "middle_underground_casino",
@@ -358,7 +360,7 @@ export const zones = [
           "borderColor": "#708090",
           "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.JourneyToTitan, TRACK_ENUM.ArgonGroove]
+        'bgMusic': [TRACK_ENUM.JourneyToTitan, TRACK_ENUM.ArgonGroove, TRACK_ENUM.Rockot_Bargur]
       },
       {
         "id": "middle_underground_casino_with_florence",
@@ -431,7 +433,7 @@ export const zones = [
           "borderColor": "#4682b4",
           "boxShadow": "0 0 25px rgba(70, 130, 180, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.Alexgrohl_OneStepAHead, TRACK_ENUM.Alexgrohl_Synthwave]
+        'bgMusic': [TRACK_ENUM.Alexgrohl_OneStepAHead, TRACK_ENUM.Alexgrohl_Synthwave, TRACK_ENUM.DeepVibe]
       },
     ]
   },
@@ -460,11 +462,11 @@ export const zones = [
         ],
         "tables": { isMonitoring: true, amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.05, rakeCap: 50000, isAdvanced: true },
         "theme": {
-          "background": "radial-gradient(circle, #3d0000 0%, #1a0000 100%)",
-          "borderColor": "#ff4d4d",
-          "boxShadow": "0 0 40px rgba(255, 0, 0, 0.6)"
+          "background": "radial-gradient(circle, #0f1a3a 0%, #050510 100%)",
+          "borderColor": "#d4af37",
+          "boxShadow": "0 0 40px rgba(212, 175, 55, 0.4), inset 0 0 20px rgba(0, 0, 0, 0.6)"
         },
-        'bgMusic': [TRACK_ENUM.Dystopia, TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
+        'bgMusic': [TRACK_ENUM.Alexgrohl_OneStepAHead, TRACK_ENUM.DreamVector, TRACK_ENUM.EvgenyBardyuzha_PasswordInfinity]
       },
       {
         "id": "high_habitat",
@@ -510,11 +512,11 @@ export const zones = [
         ],
         "tables": { isMonitoring: true, amount: 5000000, amount_fmt: '5M', amount_min_fmt: '2.5M', sb: 25000, bb: 50000, available: [6, 9], baseRake: 0.06, rakeCap: 500000, isAdvanced: true },
         "theme": {
-          "background": "radial-gradient(circle, #1a1a1a 0%, #000000 100%)",
-          "borderColor": "#ffd700",
-          "boxShadow": "0 0 50px rgba(255, 215, 0, 0.7)"
+          "background": "radial-gradient(circle, #002233 0%, #000d1a 100%)",
+          "borderColor": "#ffcc00",
+          "boxShadow": "0 0 45px rgba(0, 191, 255, 0.5), inset 0 0 15px rgba(255, 204, 0, 0.3)"
         },
-        'bgMusic': [TRACK_ENUM.Placebo, TRACK_ENUM.DustyDay, TRACK_ENUM.Dystopia, TRACK_ENUM.BeThere]
+        'bgMusic': [TRACK_ENUM.EvgenyBardyuzha_PasswordInfinity, TRACK_ENUM.Penguinmusic_FutureDesign, TRACK_ENUM.Penguinmusic_Mellow]
       },
       {
         "id": "war_of_the_gods",

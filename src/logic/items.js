@@ -1578,22 +1578,22 @@ export const ITEM_DATA = [
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     effects: [(ITEM_EFFECT_ID.ROYAL_FLUSH_MASTER), ITEM_EFFECT_ID.RND, ITEM_EFFECT_ID.RND, ITEM_EFFECT_ID.RND]
   },
-  {
-    id: ITEM_ID.ORBIT_LOUNGE_NETWORK_HACKING,
-    name_ko: '오르빗 라운지 네트워크 해킹',
-    name_en: 'Orbit Lounge Network Hacking',
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    icon: '🚀',
-    class: 'Item',
-    tier: 'T7',
-    price: 9999999,
-    isConsumable: true,
-    isAccessKey: true,
-    desc_ko: '화성 갈끄니깐~~~!',
-    desc_en: 'We\'re going to Mars~~~!',
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    effects: [(ITEM_EFFECT_ID.ORBIT_TOUR)]
-  },
+  // {
+  //   id: ITEM_ID.ORBIT_LOUNGE_NETWORK_HACKING,
+  //   name_ko: '오르빗 라운지 네트워크 해킹',
+  //   name_en: 'Orbit Lounge Network Hacking',
+  //   get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+  //   icon: '🚀',
+  //   class: 'Item',
+  //   tier: 'T7',
+  //   price: 9999999,
+  //   isConsumable: true,
+  //   isAccessKey: true,
+  //   desc_ko: '화성 갈끄니깐~~~!',
+  //   desc_en: 'We\'re going to Mars~~~!',
+  //   get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+  //   effects: [(ITEM_EFFECT_ID.ORBIT_TOUR)]
+  // },
 ];
 
 export const getItemById = (id) => {

@@ -685,7 +685,6 @@ aside.inbox-panel {
   color: #555;
   text-align: center;
   margin-top: 10px;
-  font-style: italic;
 }
 
 /* HUD Mini-Display */

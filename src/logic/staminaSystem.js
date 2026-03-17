@@ -5,11 +5,11 @@ const DEPOSITION_RATE_IDLE = 2 / 60; // 2 per hour = 2/60 per minute
 const DEPOSITION_RATE_TABLE = 4 / 60; // 4 per hour = 4/60 per minute
 
 export const consumeStamina = (isAtTable = false) => {
+  if (store.stamina <= 0) return;
   const rate = isAtTable ? DEPOSITION_RATE_TABLE : DEPOSITION_RATE_IDLE;
-  // We assume this is called every game minute
-  const amount = Math.max(0, store.stamina - rate);
+  const consumed = Math.min(store.stamina, rate);
   store.stamina = Math.max(0, store.stamina - rate);
-  recordPlayStatsSessionForPlayer(PLAY_RECORD_STATS_TYPE.STAMINA_CONSUMED, { amount });
+  recordPlayStatsSessionForPlayer(PLAY_RECORD_STATS_TYPE.STAMINA_CONSUMED, { amount: consumed });
 };
 
 export const recoverStamina = (amount) => {

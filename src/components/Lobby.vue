@@ -1,74 +1,59 @@
 <template>
   <div class="lobby-container">
     <div class="city-skyline">
-      <!-- Interactive Minimap Viewport -->
       <div class="minimap-viewport">
-        <div class="minimap-scanner"></div>
-        <div class="minimap-image" :style="{ backgroundPosition: mapPosition }"></div>
+        <!-- Single canvas: draws map image + digital rain stream together -->
+        <canvas ref="mapCanvas" class="map-canvas"></canvas>
         <div class="minimap-overlay">
           <div :class="['location-tag', { 'typing': isAnimating }]">{{ currentMapLocationName }}</div>
           <div :class="['crosshair', { 'targeting': isAnimating }]"></div>
         </div>
       </div>
-
-      <!-- Vector city silhouettes (now background behind map) -->
-      <div class="building-silhouette">
-      </div>
-    </div>
-    <div class="lobby-content">
-      <div class="user-header">
-        <div class="chip-balance">
-          <span class="label">CREDITS_AVAILABLE</span>
-          <span class="value">{{ getCurrentBankroll().toLocaleString() }} CR</span>
-        </div>
-      </div>
-      <div class="menu-grid">
-        <div class="grid-item" @click="$emit('openSearch')" @mouseenter="setMapLocation('CASINO')">
-          <div class="icon">F</div>
-          <div class="label">TABLE_SEARCH</div>
-          <div class="desc">CASINO_DISTRICT</div>
-        </div>
-        <div class="grid-item" @click="$emit('view', 'home')" @mouseenter="setMapLocation('HABITAT')">
-          <div class="icon">H</div>
-          <div class="label">HABITAT</div>
-          <div class="desc">RESIDENTIAL_ZONE</div>
-        </div>
-        <div class="grid-item" @click="$emit('view', 'shop')" @mouseenter="setMapLocation('BLACK_MARKET')">
-          <div class="icon">S</div>
-          <div class="label">BLACK_MARKET</div>
-          <div class="desc">UNRESTRICTED_ZONE</div>
-        </div>
-        <!-- TODO: Need a Crypto Trade rebuild -->
-        <!-- @click="$emit('view', 'crypto')" -->
-        <div class="grid-item disabled" disabled="disabled" @mouseenter="setMapLocation('EXCHANGE')">
-          <div class="icon">C</div>
-          <div class="label">CRYPTO_NEXUS</div>
-          <div class="desc">FINANCIAL_DISTRICT</div>
+      <div class="lobby-content">
+        <div class="menu-grid">
+          <div class="grid-item" @click="$emit('openSearch')" @mouseenter="setMapLocation('CASINO')">
+            <div class="icon">F</div>
+            <div class="label">TABLE_SEARCH</div>
+            <div class="desc">CASINO_DISTRICT</div>
+          </div>
+          <div class="grid-item" @click="$emit('view', 'home')" @mouseenter="setMapLocation('HABITAT')">
+            <div class="icon">H</div>
+            <div class="label">HABITAT</div>
+            <div class="desc">RESIDENTIAL_ZONE</div>
+          </div>
+          <div class="grid-item" @click="$emit('view', 'shop')" @mouseenter="setMapLocation('BLACK_MARKET')">
+            <div class="icon">S</div>
+            <div class="label">BLACK_MARKET</div>
+            <div class="desc">UNRESTRICTED_ZONE</div>
+          </div>
+          <div class="grid-item disabled" disabled="disabled" @mouseenter="setMapLocation('EXCHANGE')">
+            <div class="icon">C</div>
+            <div class="label">CRYPTO_NEXUS</div>
+            <div class="desc">FINANCIAL_DISTRICT</div>
+          </div>
         </div>
       </div>
     </div>
-
-
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { getCurrentBankroll, store } from '../logic/store.js';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { audioManager } from '../logic/audioManager.js';
+import minimapSrc from '../assets/image/minimap.v5.webp';
 
 const emit = defineEmits(['view', 'openSearch']);
 
 const currentMapKey = ref('DEFAULT');
+// Positions as x/y percentages (same semantics as CSS background-position)
 const mapPositions = {
-  DEFAULT: { pos: '50% 50%', name: 'FINDING_LOCATION...' },
-  CASINO: { pos: '5% 100%', name: 'CASINO_STRIP' },
-  HABITAT: { pos: '95% 80%', name: 'HABITAT' },
-  BLACK_MARKET: { pos: '100% 20%', name: 'BLACK MARKET' },
-  EXCHANGE: { pos: '0% 40%', name: 'FINANCIAL_SECTOR' }
+  DEFAULT: { x: 50, y: 50, name: 'FINDING_LOCATION...' },
+  CASINO: { x: 5, y: 100, name: 'CASINO_STRIP' },
+  HABITAT: { x: 95, y: 80, name: 'HABITAT' },
+  BLACK_MARKET: { x: 100, y: 20, name: 'BLACK MARKET' },
+  EXCHANGE: { x: 0, y: 50, name: 'FINANCIAL_SECTOR' },
 };
 
-const mapPosition = computed(() => mapPositions[currentMapKey.value].pos);
 const currentMapLocationName = computed(() => mapPositions[currentMapKey.value].name);
 
 const setMapLocation = (key) => {
@@ -78,31 +63,153 @@ const setMapLocation = (key) => {
   }
 };
 
-// Animation Trigger Logic
 const isAnimating = ref(false);
 const triggerAnimation = () => {
   if (isAnimating.value) return;
-  audioManager.playSFX('keyboard-type')
+  audioManager.playSFX('keyboard-type');
   isAnimating.value = true;
-  setTimeout(() => {
-    isAnimating.value = false;
-  }, 1500);
+  setTimeout(() => { isAnimating.value = false; }, 1500);
 };
 
-// Initial trigger
+// --- Unified Canvas ---
+const mapCanvas = ref(null);
+let animId = null;
+
+function startCanvas(canvas) {
+  const ctx = canvas.getContext('2d');
+
+  // Load minimap image
+  const img = new Image();
+  img.src = minimapSrc;
+  let imgLoaded = false;
+  img.onload = () => { imgLoaded = true; initDrops(); };
+
+  // Lerped pan position (0–100 percent)
+  let curX = 50, curY = 50;
+  const LERP = 0.04; // ≈ 1.2s settle at 60fps
+  let offX = 0, offY = 0; // current pan offset — shared with drawRain
+
+  // Rain config
+  const LINE_WIDTH = 1;
+  const COL_SPACING = 20;
+  const SPEED_MIN = 1, SPEED_MAX = 4.5;
+  const LEN_MIN = 220, LEN_MAX = 320;
+
+  let w, h, drops;
+
+  function initDrops() {
+    // Drops are placed in IMAGE (world) space across the full image width
+    const imgW = imgLoaded ? img.naturalWidth : 2048;
+    const imgH = imgLoaded ? img.naturalHeight : 2048;
+    const totalCols = Math.floor(imgW / COL_SPACING);
+    drops = Array.from({ length: totalCols }, (_, i) => ({
+      imgX: i * COL_SPACING + COL_SPACING / 2,     // world-space x
+      // start spread across the full image height, not just bottom
+      y: Math.random() * imgH,
+      speed: SPEED_MIN + Math.random() * (SPEED_MAX - SPEED_MIN),
+      len: LEN_MIN + Math.random() * (LEN_MAX - LEN_MIN),
+      opacity: 0.15 + Math.random() * 0.35,
+    }));
+  }
+
+  function init() {
+    w = canvas.width = canvas.offsetWidth;
+    h = canvas.height = canvas.offsetHeight;
+    initDrops();
+  }
+
+  function drawMap() {
+    if (!imgLoaded) { ctx.fillStyle = '#111'; ctx.fillRect(0, 0, w, h); return; }
+    // Lerp toward the active target
+    const tgt = mapPositions[currentMapKey.value];
+    curX += (tgt.x - curX) * LERP;
+    curY += (tgt.y - curY) * LERP;
+    // CSS background-position % semantics: offset = (container - image) * pct
+    offX = (w - img.naturalWidth) * (curX / 100);
+    offY = (h - img.naturalHeight) * (curY / 100);
+    ctx.save();
+    ctx.globalAlpha = 0.72;
+    ctx.drawImage(img, offX, offY);
+    ctx.restore();
+  }
+
+  function drawRain() {
+    // 'screen' blend: streams glow brightest on the cyan city wireframe
+    ctx.globalCompositeOperation = 'screen';
+    const imgH = imgLoaded ? img.naturalHeight : 2048;
+    drops.forEach((drop) => {
+      // Convert world (image) coordinates → screen coordinates
+      const screenX = drop.imgX + offX;
+      // Cull: skip if this column is off-screen (with a small margin)
+      if (screenX < -10 || screenX > w + 10) {
+        drop.y -= drop.speed; // still advance time
+        if (drop.y + drop.len < -offY) {
+          drop.y = imgH - offY + drop.len * Math.random();
+          drop.speed = SPEED_MIN + Math.random() * (SPEED_MAX - SPEED_MIN);
+          drop.len = LEN_MIN + Math.random() * (LEN_MAX - LEN_MIN);
+          drop.opacity = 0.15 + Math.random() * 0.35;
+        }
+        return;
+      }
+      // Map world-y → screen-y (streams rise from the map surface upward)
+      const screenTop = drop.y + offY;
+      const screenBottom = screenTop + drop.len;
+      if (screenBottom > 0 && screenTop < h) {
+        const grad = ctx.createLinearGradient(screenX, screenTop, screenX, screenBottom);
+        grad.addColorStop(0, `rgba(0,240,255,${drop.opacity})`);
+        grad.addColorStop(0.5, `rgba(0,240,255,${drop.opacity * 0.7})`);
+        grad.addColorStop(1, `rgba(0,240,255,0)`);
+        ctx.beginPath();
+        ctx.moveTo(screenX, Math.max(0, screenTop));
+        ctx.lineTo(screenX, Math.min(h, screenBottom));
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = LINE_WIDTH;
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = '#00f0ff';
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
+      drop.y -= drop.speed; // move upward in world space
+      // Reset: once stream rises fully above the visible world area
+      if (drop.y + drop.len < -offY) {
+        drop.y = imgH - offY + drop.len * Math.random();
+        drop.speed = SPEED_MIN + Math.random() * (SPEED_MAX - SPEED_MIN);
+        drop.len = LEN_MIN + Math.random() * (LEN_MAX - LEN_MIN);
+        drop.opacity = 0.15 + Math.random() * 0.35;
+      }
+    });
+    ctx.globalCompositeOperation = 'source-over';
+  }
+
+  function frame() {
+    ctx.clearRect(0, 0, w, h);
+    drawMap();
+    drawRain();
+    animId = requestAnimationFrame(frame);
+  }
+
+  const ro = new ResizeObserver(() => init());
+  ro.observe(canvas);
+  init();
+  frame();
+  return ro;
+}
+
 onMounted(() => {
   triggerAnimation();
   audioManager.playTrackByZoneId('lobby');
+  if (mapCanvas.value) {
+    const ro = startCanvas(mapCanvas.value);
+    onUnmounted(() => { cancelAnimationFrame(animId); ro.disconnect(); });
+  }
 });
 </script>
 
 <style scoped>
 .lobby-container {
-  /* height: 100vh; */
-  margin: auto;
   flex-grow: 1;
-  /* background: linear-gradient(to bottom, #0d1218 0%, #050a0e 100%); */
   display: flex;
+  max-height: 85vh;
   flex-direction: column;
   position: relative;
   overflow: hidden;
@@ -110,55 +217,24 @@ onMounted(() => {
 
 .city-skyline {
   flex: 1;
-  position: relative;
   display: flex;
-  justify-content: center;
-  align-items: center;
 }
-
 
 .minimap-viewport {
   display: flex;
   flex: 1;
-  width: 90%;
-  height: 80%;
-  max-width: 800px;
-  background: #000;
-  border: 1px solid var(--neon-cyan);
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
-  position: relative;
-  overflow: hidden;
-  z-index: 2;
-  /* clip-path: polygon(0 0, 95% 0, 100% 15%, 100% 100%, 5% 100%, 0 85%); */
+  background: #333;
 }
 
-.minimap-image {
-  position: absolute;
-  top: 0;
-  left: 0;
+.map-canvas {
+  display: block;
+  flex: 1;
   width: 100%;
   height: 100%;
-  background-image: url('../assets/image/minimap.v5.png');
-  /* background-size: 200% 200%; */
-  transition: background-position 1.2s cubic-bezier(0.23, 1, 0.32, 1);
-  opacity: 0.75;
-}
-
-.minimap-scanner {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom,
-      transparent 50%,
-      rgba(207, 255, 35, 0.05) 50%,
-      rgba(251, 255, 5, 0.05) 51%,
-      transparent 51%);
-  background-size: 100% 4px;
-  z-index: 3;
+  z-index: 1;
   pointer-events: none;
 }
+
 
 .minimap-overlay {
   position: absolute;
@@ -166,7 +242,7 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 4;
+  z-index: 1;
   pointer-events: none;
 }
 
@@ -174,7 +250,6 @@ onMounted(() => {
   position: absolute;
   bottom: 10px;
   right: 15px;
-
   font-size: 0.9rem;
   color: var(--neon-cyan);
   background: rgba(0, 0, 0, 0.85);
@@ -190,8 +265,8 @@ onMounted(() => {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
   color: #f8ef00;
   border: 4px solid rgba(248, 239, 0, 0.5);
   transform: translate(-50%, -50%);
@@ -214,21 +289,28 @@ onMounted(() => {
 }
 
 .lobby-content {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  bottom: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
   padding: 2rem;
-  z-index: 10;
+  z-index: 1;
 }
 
 .user-header {
   margin-bottom: 3rem;
   border-bottom: 1px solid var(--glass-border);
   padding-bottom: 1rem;
+  text-align: center;
 }
 
 .chip-balance .label {
   display: block;
   font-size: 0.7rem;
   color: var(--neon-cyan);
-  margin-bottom: 5px;
+  /* margin-bottom: 5px; */
 }
 
 .chip-balance .value {
@@ -257,7 +339,7 @@ onMounted(() => {
 }
 
 .grid-item {
-  background: rgba(0, 240, 255, 0.05);
+  background: rgba(0, 0, 0, 0.55);
   border: 1px solid var(--glass-border);
   padding: 1.5rem;
   display: flex;
@@ -267,12 +349,12 @@ onMounted(() => {
   transition: all 0.3s;
   position: relative;
   overflow: hidden;
+  width: 10rem;
+  backdrop-filter: blur(2px);
 }
 
 .grid-item:hover {
-  background: rgba(0, 240, 255, 0.1);
-  border-color: var(--neon-cyan);
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
+  border-color: var(--neon-magenta);
 }
 
 .grid-item .icon {
@@ -343,19 +425,6 @@ onMounted(() => {
 .btn-confirm:disabled {
   background: #333;
   cursor: not-allowed;
-}
-
-
-
-.city-ground::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--neon-cyan);
-  box-shadow: 0 0 10px var(--neon-cyan);
 }
 
 /* --- Minimap Animations --- */

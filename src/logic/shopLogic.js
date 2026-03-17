@@ -39,19 +39,12 @@ const selectWeightedItem = (pool, manualRefreshCount) => {
   return pool[0]; // Fallback
 };
 
-export const generateShopItems = (level) => {
-  const maxTier = Math.min(6, Math.floor(level / 5)); // Cap at level 6 tier logic
-
+export const generateShopItems = () => {
   let shadyDealBonus = 0;
   if (store.equippedItem) {
     shadyDealBonus = store.equippedItem.effects.filter(effect => effect.id === 'loyalty_card').reduce((sum, effect) => sum + effect.value, 0);
   }
   const count = 2 + (Math.round(Math.random() * shadyDealBonus))
-
-  // Tiers mapping
-  const tierMap = {
-    'T1': 1, 'T2': 2, 'T3': 3, 'T4': 4, 'T5': 5, 'T6': 6
-  };
 
   // Get current unlocked achievements for lock checking
   const unlockedAchievements = getUnlockAchievements();
@@ -64,7 +57,7 @@ export const generateShopItems = (level) => {
     if (!isItemUnlocked(item, unlockedAchievements)) {
       return false; // Item requires an achievement not yet earned
     }
-    return tierMap[item.tier] <= maxTier + 1;
+    return true;
   });
 
   const selected = [];
@@ -104,7 +97,7 @@ export const refreshShop = (isManual = false) => {
     store.shop.manualRefreshCount = Math.max(0, store.shop.manualRefreshCount - 1);
   }
 
-  store.shop.items = generateShopItems(store.level);
+  store.shop.items = generateShopItems();
   store.shop.lastRefreshTime = store.gameTime;
   return true;
 };

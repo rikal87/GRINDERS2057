@@ -127,6 +127,9 @@ body,
 }
 .game-container {
   /* height: 100vh; */
+  filter: blur(0px);
+  height: 100%;
+  justify-content: center;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -165,7 +168,6 @@ h1 {
   margin-bottom: 0.5em;
   color: var(--neon-yellow);
   text-shadow: 0 0 10px rgba(248, 239, 0, 0.3);
-  font-style: italic;
 }
 
 a {
@@ -984,8 +986,7 @@ footer {
   gap: 20px;
   margin: 20px 0;
   max-height: 60vh;
-  overflow-x: visible;
-  overflow-y: auto;
+  overflow: hidden;
   padding-right: 10px;
 }
 
@@ -1147,7 +1148,7 @@ footer {
 .search-options {
   margin: 1rem 0;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   /* right align the size selector */
 }
 
@@ -1299,5 +1300,15 @@ input[type="range"]:disabled::-webkit-slider-thumb {
 @media (max-width: 2559px) {
   .qhd-only {
     display: none !important;
+  }
+}
+@keyframes pulse {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.1);
   }
 }

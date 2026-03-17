@@ -58,14 +58,3 @@
   opacity: 0;
   transform: translate(-50%, -20px);
 }
-
-@keyframes pulse {
-  from {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-}

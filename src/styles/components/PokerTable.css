@@ -122,6 +122,7 @@
   font-size: 0.65rem;
   border-radius: 4px;
   position: relative;
+  z-index: -1;
   /* Ensure gauge is positioned relative to this */
   /* overflow: hidden; */
   /* Clip the gauge */
@@ -309,61 +310,64 @@
   left: 50%;
   transform: translateX(-50%);
 }
+.max9.seat-0 .chip-stack {
+  bottom: 105%;
+}
 .max9.seat-1 {
   left: 20%;
   bottom: 0;
 }
 .max9.seat-1 .chip-stack {
-  top: -20%;
+  bottom: 105%;
 }
 .max9.seat-2 {
   left: 5%;
   bottom: 25%;
 }
 .max9.seat-2 .chip-stack {
-  top: -20%;
+  bottom: 105%;
 }
 .max9.seat-3 {
   left: 5%;
   top: 20%;
 }
 .max9.seat-3 .chip-stack {
-  top: -30%;
+  bottom: -60%;
 }
 .max9.seat-4 {
   left: 25%;
   top: 0%;
 }
 .max9.seat-4 .chip-stack {
-  top: -20%;
+  bottom: -60%;
 }
 .max9.seat-5 {
   top: 0%;
   right: 25%;
 }
 .max9.seat-5 .chip-stack {
-  top: -20%;
+  bottom: -60%;
 }
 .max9.seat-6 {
   right: 5%;
   top: 20%;
 }
 .max9.seat-6 .chip-stack {
-  top: -20%;
+  bottom: -60%;
 }
 .max9.seat-7 {
   right: 5%;
   bottom: 25%;
 }
 .max9.seat-7 .chip-stack {
-  top: -20%;
+  bottom: 105%;
 }
 .max9.seat-8 {
   right: 20%;
   bottom: 0;
 }
 .max9.seat-8 .chip-stack {
-  top: -20%;
+  bottom: 105%;
 }
 /* Bottom-Right */
 
@@ -371,6 +375,7 @@
 .chip-stack {
   position: absolute;
 }
+/* Hero */
 .max6.seat-0 {
   bottom: 0;
   left: 50%;
@@ -379,10 +384,9 @@
 .max6.seat-0 .chip-stack {
   bottom: 105%;
 }
-/* Hero */
 .max6.seat-1 {
   bottom: 20%;
-  left: 0%;
+  left: 10%;
 }
 .max6.seat-1 .chip-stack {
   top: 105%;
@@ -390,8 +394,8 @@
 }
 /* Mid-Left */
 .max6.seat-2 {
-  top: 20%;
-  left: 0%;
+  top: 10%;
+  left: 10%;
 }
 .max6.seat-2 .chip-stack {
   /* top: 25%; */
@@ -399,17 +403,17 @@
 }
 /* Top-Left */
 .max6.seat-3 {
-  top: 0%;
-  left: 35%;
-  /* transform: translateX(-50%); */
+  top: -5%;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .max6.seat-3 .chip-stack {
   top: 105%;
 }
 /* Top-Center */
 .max6.seat-4 {
-  top: 20%;
-  right: 0%;
+  top: 10%;
+  right: 10%;
 }
 .max6.seat-4 .chip-stack {
   top: 105%;
@@ -417,7 +421,7 @@
 /* Top-Right */
 .max6.seat-5 {
   bottom: 20%;
-  right: 0%;
+  right: 10%;
 }
 .max6.seat-5 .chip-stack {
   top: 105%;
@@ -435,29 +439,7 @@
 }
 /* Mid-Right */
 
-@media (min-width: 1400px) {
-  .max6.seat-1 {
-    left: 8%;
-    bottom: 15%;
-  }
-  .max6.seat-2 {
-    left: 8%;
-    top: 15%;
-  }
-  .max6.seat-3 {
-    left: 50%;
-    top: -5%;
-    transform: translateX(-50%);
-  }
-  .max6.seat-4 {
-    right: 8%;
-    top: 15%;
-  }
-  .max6.seat-5 {
-    right: 8%;
-    bottom: 15%;
-  }
-}
+
 
 /* --- Mobile Portrait Optimizations (412x915) --- */
 @media (max-width: 450px) {

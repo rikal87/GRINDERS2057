@@ -2,6 +2,7 @@ import { store } from './store'
 import { TYPE_CHANGE_BANKROLL } from './constants'
 export const PLAY_RECORD_STATS_TYPE = {
   ...TYPE_CHANGE_BANKROLL,
+  LEVEL_REACHED: 'level_reached',
   PAID_RAKE: 'paid_rake',
   RAKE_SAVED: 'rake_saved',
   HANDS_PLAYED: 'hands_played',
@@ -72,7 +73,103 @@ export const PLAY_RECORD_STATS_TYPE = {
   TOTAL_GAIN_SUSPICION: 'total_gain_suspicion',
   STAMINA_CONSUMED: 'stamina_consumed',
 }
+export const PLAY_RECORD_STATS_DESC = {
+  // Bankroll Types (from TYPE_CHANGE_BANKROLL)
+  [PLAY_RECORD_STATS_TYPE.GAMBLING]: { ko: '겜블링 수익', en: 'Gambling Profit' },
+  [PLAY_RECORD_STATS_TYPE.CRYPTO_TRADE]: { ko: '암호화폐 거래', en: 'Crypto Trade' },
+  [PLAY_RECORD_STATS_TYPE.RECEIVE]: { ko: '자금 수령', en: 'Funds Received' },
+  [PLAY_RECORD_STATS_TYPE.PAY_RENT]: { ko: '임대료 지불', en: 'Rent Payment' },
+  [PLAY_RECORD_STATS_TYPE.PAY_INCOME_TAX]: { ko: '소득세 납부', en: 'Income Tax' },
+  [PLAY_RECORD_STATS_TYPE.PAY_FINE]: { ko: '벌금 납부', en: 'Fine Payment' },
+  [PLAY_RECORD_STATS_TYPE.DEBT_REPAYMENT]: { ko: '채무 상환', en: 'Debt Repayment' },
+  [PLAY_RECORD_STATS_TYPE.TRANSFER]: { ko: '자금 이체', en: 'Funds Transfer' },
+  [PLAY_RECORD_STATS_TYPE.BUY_ITEM]: { ko: '아이템 구매', en: 'Item Purchase' },
+  [PLAY_RECORD_STATS_TYPE.SELL_ITEM]: { ko: '아이템 판매', en: 'Item Sale' },
+  [PLAY_RECORD_STATS_TYPE.AI_AGENT_SUBSCRIPTION]: { ko: 'AI 에이전트 구독', en: 'AI Agent Subscription' },
+  [PLAY_RECORD_STATS_TYPE.AGENT_TASK]: { ko: '에이전트 태스크', en: 'Agent Task' },
+  [PLAY_RECORD_STATS_TYPE.PARTNER_BENEFIT]: { ko: '파트너와 수익배분', en: 'Partner Benefit Share' },
+  [PLAY_RECORD_STATS_TYPE.OTHER]: { ko: '기타 지출/수입', en: 'Other Expense/Income' },
+  [PLAY_RECORD_STATS_TYPE.ITEM_EFFECT]: { ko: '아이템 효과', en: 'Item Effect' },
+  [PLAY_RECORD_STATS_TYPE.BRIBE_DEALER]: { ko: '딜러에게 뇌물', en: 'Dealer Bribe' },
+  [PLAY_RECORD_STATS_TYPE.CONTRACT]: { ko: '계약 수익/손실', en: 'Contract Profit/Loss' },
 
+  // Gameplay Metrics
+  [PLAY_RECORD_STATS_TYPE.LEVEL_REACHED]: { ko: '도달 레벨', en: 'Level Reached' },
+  [PLAY_RECORD_STATS_TYPE.PAID_RAKE]: { ko: '지불한 레이크', en: 'Paid Rake' },
+  [PLAY_RECORD_STATS_TYPE.RAKE_SAVED]: { ko: '절약한 레이크', en: 'Rake Saved' },
+  [PLAY_RECORD_STATS_TYPE.HANDS_PLAYED]: { ko: '플레이한 핸드 수', en: 'Hands Played' },
+  [PLAY_RECORD_STATS_TYPE.FACED_RAISE]: { ko: '레이즈에 직면', en: 'Faced Raise' },
+  [PLAY_RECORD_STATS_TYPE.FACED_3BET]: { ko: '3-Bet에 직면', en: 'Faced 3-Bet' },
+  [PLAY_RECORD_STATS_TYPE.FACED_4BET_OR_MORE]: { ko: '4-Bet+에 직면', en: 'Faced 4-Bet+' },
+  [PLAY_RECORD_STATS_TYPE.FOLDED_TO_RAISE]: { ko: '레이즈에 폴드', en: 'Folded to Raise' },
+  [PLAY_RECORD_STATS_TYPE.FOLDED_TO_3BET]: { ko: '3-Bet에 폴드', en: 'Folded to 3-Bet' },
+  [PLAY_RECORD_STATS_TYPE.FOLDED_TO_4BET_OR_MORE]: { ko: '4-Bet+에 폴드', en: 'Folded to 4-Bet+' },
+  [PLAY_RECORD_STATS_TYPE.PAID_BLIND_COUNT]: { ko: '지불한 블라인드 횟수', en: 'Paid Blind Count' },
+  [PLAY_RECORD_STATS_TYPE.BET]: { ko: '베트 횟수', en: 'Bet Count' },
+  [PLAY_RECORD_STATS_TYPE.RAISE]: { ko: '레이즈 횟수', en: 'Raise Count' },
+  [PLAY_RECORD_STATS_TYPE.CALL]: { ko: '콜 횟수', en: 'Call Count' },
+  [PLAY_RECORD_STATS_TYPE.FOLD]: { ko: '폴드 횟수', en: 'Fold Count' },
+  [PLAY_RECORD_STATS_TYPE.CHECK]: { ko: '체크 횟수', en: 'Check Count' },
+  [PLAY_RECORD_STATS_TYPE.ALL_IN]: { ko: '올인 횟수', en: 'All-in Count' },
+  [PLAY_RECORD_STATS_TYPE._3BET]: { ko: '3-Bet 횟수', en: '3-Bet Count' },
+  [PLAY_RECORD_STATS_TYPE._4BET_OR_MORE]: { ko: '4-Bet+ 횟수', en: '4-Bet+ Count' },
+  [PLAY_RECORD_STATS_TYPE.SHOWDOWN]: { ko: '쇼다운 진출', en: 'Showdown' },
+  [PLAY_RECORD_STATS_TYPE.WIN]: { ko: '승리 횟수', en: 'Wins' },
+  [PLAY_RECORD_STATS_TYPE.LOSE]: { ko: '패배 횟수', en: 'Losses' },
+  [PLAY_RECORD_STATS_TYPE.BUST]: { ko: '파산 횟수', en: 'Bust Count' },
+  [PLAY_RECORD_STATS_TYPE.VPIP]: { ko: 'VPIP', en: 'VPIP' },
+  [PLAY_RECORD_STATS_TYPE.PFR]: { ko: 'PFR', en: 'PFR' },
+  [PLAY_RECORD_STATS_TYPE.C_BET_COUNT]: { ko: 'C-Bet 횟수', en: 'C-Bet Count' },
+  [PLAY_RECORD_STATS_TYPE.FOLD_TO_3BET]: { ko: '3-Bet에 폴드', en: 'Fold to 3-Bet' },
+  [PLAY_RECORD_STATS_TYPE.FOLD_TO_4BET_OR_MORE]: { ko: '4-Bet+에 폴드', en: 'Fold to 4-Bet+' },
+  [PLAY_RECORD_STATS_TYPE.DONK_BET_COUNT]: { ko: '동크 뱃 횟수', en: 'Donk Bet Count' },
+  [PLAY_RECORD_STATS_TYPE.RAISE3BET]: { ko: '3-Bet 레이즈', en: 'Raise 3-Bet' },
+  [PLAY_RECORD_STATS_TYPE.RAISE4BET_OR_MORE]: { ko: '4-Bet+ 레이즈', en: 'Raise 4-Bet+' },
+  [PLAY_RECORD_STATS_TYPE.FOLDED_TO_FLOP_BET]: { ko: '플랍 뱃에 폴드', en: 'Fold to Flop Bet' },
+  [PLAY_RECORD_STATS_TYPE.WTSD]: { ko: 'WTSD', en: 'WTSD' },
+  [PLAY_RECORD_STATS_TYPE.WSD]: { ko: 'WSD', en: 'WSD' },
+  [PLAY_RECORD_STATS_TYPE.W$SD]: { ko: 'W$SD', en: 'W$SD' },
+  [PLAY_RECORD_STATS_TYPE.MAX_LOSE_STREAK]: { ko: '최대 연패', en: 'Max Lose Streak' },
+  [PLAY_RECORD_STATS_TYPE.MAX_WIN_STREAK]: { ko: '최대 연승', en: 'Max Win Streak' },
+  [PLAY_RECORD_STATS_TYPE.MAX_LOSE_POT]: { ko: '최대 손실 팟', en: 'Max Lose Pot' },
+  [PLAY_RECORD_STATS_TYPE.MAX_WIN_POT]: { ko: '최대 수익 팟', en: 'Max Win Pot' },
+  [PLAY_RECORD_STATS_TYPE.MAX_LOSE_EQUITY]: { ko: '최악의 배드비트', en: 'Max Lose Equity' },
+  [PLAY_RECORD_STATS_TYPE.MAX_WIN_EQUITY]: { ko: '최대 승리 에퀴티', en: 'Max Win Equity' },
+  [PLAY_RECORD_STATS_TYPE.BUST_ENEMY]: { ko: '제거한 라이벌', en: 'Total Rivals Busted' },
+  [PLAY_RECORD_STATS_TYPE.NET_SHARE]: { ko: '수익 배분', en: 'Net Share' },
+  [PLAY_RECORD_STATS_TYPE.NET_WINNING]: { ko: '최종 순이익', en: 'Net Winning' },
+  [PLAY_RECORD_STATS_TYPE.COST_LT]: { ko: '소모한 LT', en: 'Cost LT' },
+  [PLAY_RECORD_STATS_TYPE.FACED_FLOP_BET]: { ko: '플랍 C-Bet에 직면', en: 'Faced Flop C-Bet' },
+
+  // Winning Hands
+  [PLAY_RECORD_STATS_TYPE.WIN_WITH_HIGH_CARD]: { ko: '하이카드로 승리', en: 'High Card Wins' },
+  [PLAY_RECORD_STATS_TYPE.WIN_WITH_ONE_PAIR]: { ko: '원페어로 승리', en: 'One Pair Wins' },
+  [PLAY_RECORD_STATS_TYPE.WIN_WITH_TWO_PAIR]: { ko: '투페어로 승리', en: 'Two Pair Wins' },
+  [PLAY_RECORD_STATS_TYPE.WIN_WITH_THREE_OF_A_KIND]: { ko: '트리플로 승리', en: 'Three Of A Kind Wins' },
+  [PLAY_RECORD_STATS_TYPE.WIN_WITH_STRAIGHT]: { ko: '스트레이트로 승리', en: 'Straight Wins' },
+  [PLAY_RECORD_STATS_TYPE.WIN_WITH_FLUSH]: { ko: '플러시로 승리', en: 'Flush Wins' },
+  [PLAY_RECORD_STATS_TYPE.WIN_WITH_FULL_HOUSE]: { ko: '풀하우스로 승리', en: 'Full House Wins' },
+  [PLAY_RECORD_STATS_TYPE.WIN_WITH_FOUR_OF_A_KIND]: { ko: '포카드로 승리', en: 'Four Of A Kind Wins' },
+  [PLAY_RECORD_STATS_TYPE.WIN_WITH_STRAIGHT_FLUSH]: { ko: '스트레이트 플러시로 승리', en: 'Straight Flush Wins' },
+  [PLAY_RECORD_STATS_TYPE.WIN_WITH_ROYAL_FLUSH]: { ko: '로열 플러시로 승리', en: 'Royal Flush Wins' },
+
+  // Dealt Card Suits
+  [PLAY_RECORD_STATS_TYPE.DEALT_HANDS_DIAMOND]: { ko: '다이아몬드 핸드 수', en: 'Diamond Hands Dealt' },
+  [PLAY_RECORD_STATS_TYPE.DEALT_HANDS_CLUB]: { ko: '클럽 핸드 수', en: 'Club Hands Dealt' },
+  [PLAY_RECORD_STATS_TYPE.DEALT_HANDS_HEART]: { ko: '하트 핸드 수', en: 'Heart Hands Dealt' },
+  [PLAY_RECORD_STATS_TYPE.DEALT_HANDS_SPADE]: { ko: '스페이드 핸드 수', en: 'Spade Hands Dealt' },
+
+  // Performance Summaries
+  [PLAY_RECORD_STATS_TYPE.SHOWDOWN_WIN]: { ko: '쇼다운 승리', en: 'Showdown Wins' },
+  [PLAY_RECORD_STATS_TYPE.ALL_IN_WIN]: { ko: '올인 승리', en: 'All-in Wins' },
+  [PLAY_RECORD_STATS_TYPE.WIN_WITHOUT_SHOWDOWN]: { ko: '쇼다운 없이 승리', en: 'Wins Without Showdown' },
+  [PLAY_RECORD_STATS_TYPE.MIN_WIN_EQUITY]: { ko: '최소 승리 에퀴티', en: 'Min Win Equity' },
+  [PLAY_RECORD_STATS_TYPE.TOTAL_EARN_MONEY]: { ko: '총 수익 금', en: 'Total Earned Money' },
+  [PLAY_RECORD_STATS_TYPE.TOTAL_LOST_MONEY]: { ko: '총 손실 금', en: 'Total Lost Money' },
+  [PLAY_RECORD_STATS_TYPE.TOTAL_GAIN_INFAMY]: { ko: '획득한 악명', en: 'Total Infamy Gained' },
+  [PLAY_RECORD_STATS_TYPE.TOTAL_GAIN_SUSPICION]: { ko: '획득한 의심도', en: 'Total Suspicion Gained' },
+  [PLAY_RECORD_STATS_TYPE.STAMINA_CONSUMED]: { ko: '소모한 스태미나', en: 'Stamina Consumed' },
+}
 // Exception types that can't default to 0 (BigInt, float, Object)
 const STAT_OVERRIDES = {
   // BigInt - 누적 총액 (정수 초과 가능)
@@ -88,6 +185,7 @@ const STAT_OVERRIDES = {
     'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
     'Max': 0, 'Florence': 0
   },
+  [PLAY_RECORD_STATS_TYPE.LEVEL_REACHED]: 1,
 };
 
 // Auto-generate stats object: all enum values → 0, then override exceptions

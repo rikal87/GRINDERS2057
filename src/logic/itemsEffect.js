@@ -261,7 +261,7 @@ export const ITEM_EFFECT_DATA = [
     trigger: ['winAtShowdown', 'winAtShowdownWithAllIn'],
     editable: false,
     get desc() { return store.settings.language === 'en' ? `Restores +${this.value} LT win at Showdown` : `쇼다운 승리시 LT +${this.value}`; },
-    value: 2,
+    value: 5,
     isStackable: true
   },
   {

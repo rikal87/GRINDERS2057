@@ -329,7 +329,7 @@ const confirmJoin = () => {
 .location-display {
   flex: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 0.75fr 1fr;
   grid-template-rows: auto 1fr;
   gap: 1.5rem;
   background-size: cover;
@@ -357,17 +357,17 @@ const confirmJoin = () => {
   font-size: 1.8rem;
   color: #fff;
   margin: 0.2rem 0;
-  text-shadow: 0 0 5px rgba(0, 240, 255, 0.3);
+  text-shadow: 0 0 2px #000;
 }
 
 .location-subname {
   font-size: 0.8rem;
   color: #888;
-  font-style: italic;
 }
 
 .location-info {
-  display: flex;
+  display: inline-flex;
+  align-self: flex-end;
   flex-direction: column;
   gap: 1rem;
   background: rgba(0, 0, 0, 0.75);
@@ -404,7 +404,9 @@ const confirmJoin = () => {
 .tags {
   display: flex;
   flex-wrap: wrap;
+  min-height: 4vh;
   gap: 5px;
+  align-content: center;
 }
 
 .npc-tag {

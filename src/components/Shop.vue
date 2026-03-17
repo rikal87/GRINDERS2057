@@ -42,7 +42,7 @@
         </div>
 
         <div class="control-actions">
-          <button class="btn-catalog" @click="openCatalog">📋 ITEM_CATALOG</button>
+          <button class="btn-catalog" @click="openCatalog">ITEM_CATALOG</button>
           <button class="btn-leave" @click="$emit('back')">LEAVE</button>
         </div>
       </aside>
@@ -380,7 +380,6 @@ const handleManualRefresh = () => {
   font-size: 0.9rem;
   line-height: 1.4;
   margin: 0;
-  font-style: italic;
 }
 
 .player-wallet {
