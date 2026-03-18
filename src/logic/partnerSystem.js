@@ -22,6 +22,12 @@ export const getRelationship = (partnerId = null) => {
   if (!partner) return null;
   return partner.relationship;
 }
+export const isJoinedPartner = (partnerId = null) => {
+  if (!partnerId) return false;
+  const partner = getPartners().find((p) => p.id === partnerId);
+  if (!partner) return false;
+  return partner.isJoined;
+}
 export const joinPartner = (partnerId = null) => {
   if (!partnerId) return;
   const partner = getPartners().find(p => p.id === partnerId);

@@ -1,13 +1,11 @@
 // for first player
 import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_RESOLVE_TYPE } from "./messageSystem.js";
 import { store, registerCompletedEvent, getLanguage, getCurrentBankroll } from "./store.js";
-import { gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
+import { gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner, isJoinedPartner } from "./partnerSystem.js";
 import { scheduleEvent } from "./eventSystem.js";
 import { recoverStamina } from "./staminaSystem.js";
-import { getBustEnemyCount, getClearedZoneCount } from "./store.js";
 import { isEventCompleted } from "./eventSystem.js";
 import { PARTNER_ID, LOCATION_ID, ENEMY_ID } from './constants.js'
-import { get } from "idb-keyval";
 /**
  * @typedef {Object} MaxEvents
  * @property {string} YOU_GET_SOME_SLEEP
@@ -55,6 +53,16 @@ import { get } from "idb-keyval";
  * @property {string} MAIN_STORY_1_5_MEET_AT_CLUB_DONE
  * @property {string} MAIN_STORY_1_6_MEET_AT_CLUB_DONE
  * @property {string} MAIN_STORY_1_7_MEET_AT_CLUB_DONE
+ * @property {string} MAIN_STORY_3_0_INTRODUCE_BIG_DADDY
+ * @property {string} MAIN_STORY_3_1_CHALLENGE_KBT_LEADER
+ * @property {string} PRE_BUILD_UP_RUMOR_BIG_DADDY
+ * @property {string} PRE_BUILD_UP_KBT_BROKER_MEET
+ * @property {string} PRE_BUILD_UP_MAX_EXCITED_1
+ * @property {string} PRE_BUILD_UP_MAX_EXCITED_2
+ * @property {string} MAIN_STORY_3_2_CHALLENGE_KBT_ACCEPT
+ * @property {string} MAIN_STORY_3_2_CHALLENGE_KBT_REFUSE
+ * @property {string} MAIN_STORY_3_2_BIG_DADDY_WIN
+ * @property {string} MAIN_STORY_3_2_BIG_DADDY_LOSE
  * @property {string} BAILOUT_FOR_PLAYER
  * @property {string} ELIMINATED
  * @property {string} PLAYER_LEAVE
@@ -892,6 +900,111 @@ export const EventData = [
     func() {
       registerCompletedEvent(EVENT_MAX.TUTORIAL_DONE);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_MAX.PRE_BUILD_UP_RUMOR_BIG_DADDY,
+    title_ko: '흉흉한 소문',
+    title_en: 'Disturbing Rumor',
+    body_ko: '이봐 친구, 최근 KBT 조직이 뒷골목 판돈을 다 쓸어 담고 있다더군. 그 조직 보스가 "Big Daddy"라는데... 지난밤에 하이롤러 하나를 뼈까지 발라먹었다는 소문이야.',
+    body_en: 'Hey friend, heard the KBT org is sweeping up all the back-alley pots lately. Rumor is their boss, "Big Daddy", picked a high-roller clean to the bone last night.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    timer: 1,
+    condition() { return getCurrentBankroll() >= 200000 && isJoinedPartner(PARTNER_ID.MAX); },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_MAX.PRE_BUILD_UP_MAX_EXCITED_1,
+    title_ko: '야, 파트너! 길거리 소식 들었어!',
+    title_en: 'Hey Partner! Heard the rumors on the street!',
+    body_ko: '망할, 길거리에 쫙 퍼진 재미난 소문을 이제야 들었네! 그 KGB 앞잡이 놈이 너한테 VIP 매치 제안을 했다며?! 이런 엄청난 얘길 왜 나한테 바로 안 한 거야! ',
+    body_en: 'Damn it, I just heard the interesting rumors spreading on the street! That KGB lackey really offered you a VIP match?! Why didn\'t you tell me immediately!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition() { return isJoinedPartner(PARTNER_ID.MAX); },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+      scheduleEvent(EVENT_MAX.PRE_BUILD_UP_MAX_EXCITED_2, 15);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_MAX.PRE_BUILD_UP_MAX_EXCITED_2,
+    title_ko: '와 썅! 대박 기회다!',
+    title_en: 'Holy shit! Jackpot opportunity!',
+    body_ko: '드디어 KBT 보스 대가리를 직접 딸 절호의 기회잖아! 당장 50만 모아서 그 판에 치고 들어가자고. 그 녀석들에게 텍사스 마초의 매운맛을 제대로 보여주는 거야!',
+    body_en: ' This is our golden chance to take the KBT boss\'s head directly! Let\'s scrap 500k together and crash that table. We\'re gonna show \'em the true spicy taste of a Texas macho!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_3_2_CHALLENGE_KBT_ACCEPT,
+    title_ko: '직접 보여주고 와라!',
+    title_en: 'Show them how it\'s done!',
+    body_ko: '그래야 내 텍사스 콤비지! 직접 텍사스 스타일을 보여주고 와라! 저 미치광이의 칩을 바닥까지 긁어모아오라고!',
+    body_en: 'That\'s my Texas partner! Go show \'em the Texas style! Scrape every last chip off that maniac\'s table!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition() { return isJoinedPartner(PARTNER_ID.MAX); },
+    func() {
+      gainRelationship(PARTNER_ID.MAX, 50);
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_3_2_CHALLENGE_KBT_REFUSE,
+    title_ko: '아 시시하네',
+    title_en: 'Ah, how boring.',
+    body_ko: '야 이 쫄보 자식아! 뭐 이런 식으로 남자가 그릇이 작냐? 눈앞의 엄청난 기회를 걷어차다니 진짜 실망이다.',
+    body_en: 'You coward! How small is your bowl, man? Kicking away a massive opportunity right in front of you... truly disappointing.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition() { return isJoinedPartner(PARTNER_ID.MAX); },
+    func() {
+      gainRelationship(PARTNER_ID.MAX, -200);
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_3_2_BIG_DADDY_WIN,
+    scenario: 'Big Daddy와의 매치 종료 시 맥스의 반응(승리)',
+    title_ko: '우리가 전설을 썼어!',
+    title_en: 'We wrote a legend!',
+    body_ko: '와하하! 네가 진짜 KBT 리더의 대가리를 박살낼 줄이야! 길거리 놈들이 텍사스 콤비 이름만 들어도 벌벌 떨고 있다고. 오늘 밤은 내가 쏜다! 승축 파티를 즐기자고 파트너!',
+    body_en: 'Hahaha! I can\'t believe you actually smashed the KBT leader\'s head! The street punks are trembling just hearing about the Texas duo. Drinks are on me tonight! Let\'s enjoy a victory party, partner!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition() { return isJoinedPartner(PARTNER_ID.MAX); },
+    func() {
+      gainRelationship(PARTNER_ID.MAX, 100);
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_3_2_BIG_DADDY_LOSE,
+    scenario: 'Big Daddy와의 매치 종료 시 맥스의 반응(패배)',
+    title_ko: '괜찮아, 파트너?!',
+    title_en: 'Are you okay, partner?!',
+    body_ko: '썅, 그 영감탱이가 그렇게 끔찍한 독종일 줄은 몰랐네. 완전히 다 털린 거 아니지? 아직 목숨이 붙어있으면 다음을 기약하면 돼! 이 텍사스 남자가 네 뒤를 봐주고 있잖아. 툭툭 털고 다시 시작하자고!',
+    body_en: 'Damn, I didn\'t know that old man was such a terrifying beast. You didn\'t lose absolutely everything, right? If you\'re still breathing, there is always a next time! This Texas man has your back. Dust it off and let\'s start again!',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition() { return isJoinedPartner(PARTNER_ID.MAX); },
+    func() {
+      gainRelationship(PARTNER_ID.MAX, 50);
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
     },
     repeatable: false
   }

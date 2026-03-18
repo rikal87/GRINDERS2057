@@ -169,10 +169,10 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'kbt_leader',
-    name: 'KBT_Leader', philosophy: 'LAG', vPIP: .75, AF: 4, WTSD: .31, chipMultiply: 3.5, isAdvanced: true,
-    note_ko: 'KBT 조직의 리더이자 헤즈업 경기의 실력자입니다. 그와의 1:1 경기에서 승리할 수 있을까요?',
-    note_en: 'He is the leader of the KBT organization and a skilled player in heads-up matches. Can you defeat him in a 1:1 game?',
-
+    name: 'Big_Daddy', philosophy: 'LAG', vPIP: .75, AF: 4, WTSD: .31, chipMultiply: 1.5, isAdvanced: true,
+    concept: '영화 라운더스 KGB의 테디의 오마주 캐릭터입니다.',
+    note_ko: 'KBT 조직의 리더이자 헤즈업 경기의 실력자입니다.',
+    note_en: 'He is the leader of the KBT organization and a skilled player in heads-up matches.',
   },
   {
     id: 'the_whale',
@@ -964,7 +964,7 @@ export const PERSONALITIES = {
       "Pathetic."
     ]
   },
-  KBT_LEADER: {
+  BIG_DADDY: {
     [CHAT_TRIGGERS.GAME_START]: [
       "Welcome to my base. Have an oreo.",
       "Mister... let's play cards.",
@@ -1012,15 +1012,16 @@ export const PERSONALITIES = {
     ],
     [CHAT_TRIGGERS.BET]: [
       "I splash the pot.",
-      "Let's make it interesting.",
+      "Let's make this interesting.",
+      "My base, my rules. I bet.",
+      "Time to bleed."
     ],
     [CHAT_TRIGGERS.RAISE]: [
-      "Taking your time, huh?",
-      "I raise. Don't be scared.",
-      "Putting max pressure.",
-      "Are we playing cards or what?!",
-      "I splash the pot.",
-      "Let's make it interesting.",
+      "I raise. Can you handle the pressure?",
+      "Very aggressive. I like it. Raise.",
+      "Don't be scared now. I raise.",
+      "Let's see if you have the guts to call.",
+      "You think you can bully me in my own base?"
     ],
     [CHAT_TRIGGERS.CALL]: [
       "I vant him to think that I am pondering a call... but I call.",

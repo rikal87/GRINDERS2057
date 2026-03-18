@@ -103,7 +103,7 @@
         </div>
       </div>
       <!-- [CASHOUT], [RESERVE EXIT]  -->
-      <div class="status-row exit-controls">
+      <div class="status-row exit-controls" v-if="!engine.isDeathmatch">
         <button class="btn-cashout" :disabled="!player.isFolded" @click="handleCashout"
           :data-tooltip="cashoutTooltip">CASHOUT</button>
         <button class="btn-reserve-exit" :class="{ 'inactive': engine.exitReservationRounds === -1 }"

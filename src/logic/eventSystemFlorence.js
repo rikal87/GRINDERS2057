@@ -1,6 +1,6 @@
 import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_RESOLVE_TYPE } from "./messageSystem.js";
 import { store, getLanguage, getCurrentBankroll, getBustEnemyCount } from "./store.js";
-import { gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner } from "./partnerSystem.js";
+import { gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner, isJoinedPartner } from "./partnerSystem.js";
 import { scheduleEvent } from "./eventSystem.js";
 import { EVENT_MAX } from "./eventSystemMax.js";
 import { isEventCompleted } from "./eventSystem.js";
@@ -42,6 +42,12 @@ import { PARTNER_ID, LOCATION_ID } from './constants.js'
  * @property {string} JOINED_PARTNER // 프로렌스를 정식 파트너로 등록했습니다.
  * @property {string} RESOLVED_DEBT
  * @property {string} RESOLVED_DEBT_LOW_RELATIONSHIP
+ * @property {string} PRE_BUILD_UP_WARN_KBT
+ * @property {string} MAIN_STORY_3_0_WARN_BIG_DADDY
+ * @property {string} MAIN_STORY_3_2_CHALLENGE_KBT_ACCEPT_FLORENCE
+ * @property {string} MAIN_STORY_3_2_CHALLENGE_KBT_REFUSE_FLORENCE
+ * @property {string} MAIN_STORY_3_2_BIG_DADDY_WIN
+ * @property {string} MAIN_STORY_3_2_BIG_DADDY_LOSE
  */
 /** @type {FlorenceEvents} */
 export const EVENT_FLORENCE = new Proxy({}, {
@@ -545,4 +551,94 @@ export const EventData = [
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
+  {
+    id: EVENT_FLORENCE.PRE_BUILD_UP_WARN_KBT,
+    title_ko: '벌목꾼의 눈에 띄지 마세요',
+    title_en: 'Don\'t catch the lumberjack\'s eye',
+    body_ko: '요즘 판을 꽤 크게 벌리시던데, 나무가 너무 빨리 자라면 벌목꾼의 눈에 가장 먼저 띄는 법이죠. 특히 KBT 같은 위험한 집단은 더더욱요. 그 초대에 절대 응하지 마시길 바랍니다.',
+    body_en: 'You\'ve been playing some big pots lately. Trees that grow too fast are the first to catch the lumberjack\'s eye. Especially a dangerous group like KBT. I strongly advise against accepting that invitation.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_FLORENCE.MAIN_STORY_3_0_WARN_BIG_DADDY,
+    title_ko: '당장 그만두세요',
+    title_en: 'Stop immediately',
+    body_ko: '진짜로 그 미치광이의 판에 뛰어들 생각이신가요? 통제 불가능한 리스크입니다. 당장 그만두세요.',
+    body_en: 'Are you really thinking of jumping into that maniac\'s game? It\'s an uncontrollable risk. Stop immediately.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition() { return isJoinedPartner(PARTNER_ID.FLORENCE); },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_FLORENCE.MAIN_STORY_3_2_CHALLENGE_KBT_ACCEPT_FLORENCE,
+    title_ko: '실망입니다',
+    title_en: 'I\'m disappointed',
+    body_ko: '결국 제 조언을 무시하셨군요.',
+    body_en: 'You ignored my advice in the end.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition() { return isEventCompleted(EVENT_MAX.MAIN_STORY_3_2_CHALLENGE_KBT_ACCEPT) && isJoinedPartner(PARTNER_ID.FLORENCE); },
+    func() {
+      gainRelationship(PARTNER_ID.FLORENCE, -250);
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_FLORENCE.MAIN_STORY_3_2_CHALLENGE_KBT_REFUSE_FLORENCE,
+    title_ko: '현명한 선택 :)',
+    title_en: 'A wise choice :)',
+    body_ko: '현명한 판단입니다. 우리는 통제 가능한 싸움에만 베팅하면 됩니다.',
+    body_en: 'A wise judgment. We only need to bet on fights we can control.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition() { return isEventCompleted(EVENT_MAX.MAIN_STORY_3_2_CHALLENGE_KBT_REFUSE) && isJoinedPartner(PARTNER_ID.FLORENCE) },
+    func() {
+      gainRelationship(PARTNER_ID.FLORENCE, 200);
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_FLORENCE.MAIN_STORY_3_2_BIG_DADDY_WIN,
+    scenario: 'Big Daddy와의 매치 종료 시 플로렌스의 반응(승리)',
+    title_ko: '이번 한 번만 넘어가겠어요',
+    title_en: 'I\'ll let it slide this once',
+    body_ko: '당신의 무모함에 질렸지만... 실력과 자신감 하나만큼은 훌륭하네요. 이번 한 번만 넘어가겠어요.',
+    body_en: 'I\'m sick of your recklessness... but your skill and confidence are truly excellent. I\'ll let it slide this once.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition() { return isJoinedPartner(PARTNER_ID.FLORENCE); },
+    func() {
+      gainRelationship(PARTNER_ID.FLORENCE, 50);
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_FLORENCE.MAIN_STORY_3_2_BIG_DADDY_LOSE,
+    scenario: 'Big Daddy와의 매치 종료 시 플로렌스의 반응(패배)',
+    title_ko: '우리 비즈니스는 여기까지입니다',
+    title_en: 'Our business ends here',
+    body_ko: '제 경고를 그렇게 완전히 무시하다니... 당신은 통제 불가능한 리스크 그 자체입니다. 우리 비즈니스는 여기까지 하죠.',
+    body_en: 'To completely ignore my warning like that... You are an uncontrollable risk itself. Our business ends right here.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      leavePartner(PARTNER_ID.FLORENCE);
+      gainRelationship(PARTNER_ID.FLORENCE, -999);
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+    repeatable: false
+  }
 ];

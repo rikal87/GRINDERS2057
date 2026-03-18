@@ -241,9 +241,9 @@ const handleStart = (mode) => {
   audioManager.play();
   startTimeSystem();
 };
-
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const handleJoinTable = async (payload) => {
-  const { inviteId, size, buyIn, rake, rakeCap, isAdvanced, sb, bb, locationId, locationLV, buyInLimit, isMonitoring } = payload;
+  const { inviteId, size, buyIn, rake, rakeCap, isAdvanced, sb, bb, locationId, locationLV, buyInLimit, isMonitoring, isDeathmatch } = payload;
   console.info('handleJoinTable', payload);
   // [CLEANUP] Ensure previous engine is destroyed
   if (engine.value) {
@@ -256,7 +256,7 @@ const handleJoinTable = async (payload) => {
   const finalRake = rake !== undefined ? rake : 0.05;
   const finalRakeCap = rakeCap !== undefined ? rakeCap : (bb * 10);
   // const finalBuyInLimit = buyInLimit !== undefined ? buyInLimit : 999999;
-  engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isAdvanced, locationId, locationLV, buyInLimit, isMonitoring, inviteId);
+  engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isAdvanced, locationId, locationLV, buyInLimit, isMonitoring, inviteId, isDeathmatch);
 
   const equipped = store.equippedItem;
   if (equipped) {
@@ -265,7 +265,8 @@ const handleJoinTable = async (payload) => {
     engine.value.players[0].equippedItemInstance = equipped;
   }
   currentView.value = 'table';
-  await engine.value.startNewHand();
+
+  await engine.value.startNewHand(true);
 };
 
 const handleView = (view) => {
@@ -280,7 +281,6 @@ const handleOpenTaskSelector = (idx) => {
 
 const handleAction = async (payload) => {
   const { type, amount } = payload;
-  console.info('handleAction', payload);
   if (type === 'main_menu') {
     currentView.value = 'intro';
   } else if (type === 'hard_reset') {
@@ -297,17 +297,7 @@ const handleAction = async (payload) => {
       await engine.value.handlePlayerAction(engine.value.players[0], { type, amount });
       break;
     case 'exit':
-      showConfiscationOverlay.value = false;
-      showInvestigationOverlay.value = false;
-      showInvestigationResultOverlay.value = false;
-      showGameOverOverlay.value = false;
-      if (engine.value) {
-        applySessionExit(engine.value);
-        currentView.value = 'lobby';
-        showStatsModal.value = true;
-        engine.value.exitGame();
-        engine.value = null;
-      }
+      engine.value.cashOut(true);
       break;
     case 'cashout':
       currentView.value = 'lobby';
@@ -318,9 +308,9 @@ const handleAction = async (payload) => {
       audioManager.pause();
       audioManager.playSFX('paybill');
       audioManager.playSFX('clear-table')
+      showStatsModal.value = true;
+      applySessionExit();
       if (engine.value) {
-        applySessionExit(engine.value);
-        showStatsModal.value = true;
         engine.value.exitGame();
         engine.value = null;
       }
@@ -480,7 +470,7 @@ watch(currentView, (newView) => {
             <div class="row">
               <div class="status-group">
                 <span class="status-value">{{ formatGameDate(store.gameTime) }} ({{ formatGameDayOfWeek(store.gameTime)
-                }})</span>
+                  }})</span>
                 <span class="status-divider"></span>
                 <span class="status-value">{{ formatGameTime(store.gameTime) }}</span>
               </div>

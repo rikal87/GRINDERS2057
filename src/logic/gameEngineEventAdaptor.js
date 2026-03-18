@@ -6,7 +6,7 @@ import { scheduleEvent, EVENT_ID } from './eventSystem.js';
 import { PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js';
 import { recordPlayStatsSession, PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
 import { ITEM_EFFECT_ID } from './itemsEffect.js';
-
+import { LOCATION_ID } from './constants.js';
 
 const HAND_RANK_TO_STAT = {
   1: PLAY_RECORD_STATS_TYPE.WIN_WITH_HIGH_CARD,
@@ -26,7 +26,13 @@ export class EventAdaptor {
 
   }
   chat({ players, playerId, message }) {
-    console.info('chat', playerId, message);
+    // console.info('chat', playerId, message);
+  }
+  gameStart({ locationId, inviteId }) {
+    if (inviteId && locationId === LOCATION_ID.MIDDLE_KBT_VIP_ROOM) {
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_3_2_CHALLENGE_KBT_ACCEPT, 23);
+      scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_3_2_CHALLENGE_KBT_ACCEPT_FLORENCE, 77);
+    }
   }
   roundStart(players, { sb, bb }) {
     console.info('roundStart');
@@ -312,7 +318,7 @@ export class EventAdaptor {
     switch (effect.id) {
       case ITEM_EFFECT_ID.SHOW_ME_YOUR_BLUFF:
         const existBestWinner = context.bestWinner;
-        if (existBestWinner && !existBestWinner.isMe && Math.random() <= effect.value) {
+        if (context.street !== 'SHOWDOWN' && existBestWinner && !existBestWinner.isMe && Math.random() <= effect.value) {
           console.log('[EFFECT] Show Me Bluff ACTIVATED!');
           existBestWinner.showHoleCards = true;
           effect.cooldown = effect.maxCooldown;

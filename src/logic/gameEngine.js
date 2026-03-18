@@ -24,7 +24,8 @@ export const gameResult = (winBB) => {
 const eventAdaptor = new EventAdaptor();
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 export class GameEngine {
-  constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isAdvanced = false, locationId = 'micro_street_shop', locationLV = 1, buyInLimit = 999999, isMonitoring = false, inviteId = null) {
+  constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isAdvanced = false
+    , locationId = 'micro_street_shop', locationLV = 1, buyInLimit = 999999, isMonitoring = false, inviteId = null, isDeathmatch = false) {
     this.exited = false;
     this.locationId = locationId;
     this.tableSize = tableSize;
@@ -68,6 +69,7 @@ export class GameEngine {
     this.infamy = 0;
     this.playersPools = [];
     this.isMonitoring = isMonitoring;
+    this.isDeathmatch = isDeathmatch;
     // [FIX] Initialize players after all properties are set
     this.players = this.initializePlayers(playerClass, tableSize);
     // this.partners = [];
@@ -76,7 +78,7 @@ export class GameEngine {
   // Getter for backward compatibility / easier access
   // get pot() { return this.potManager.pot; } // Removed for direct property access
   get currentRoundBet() { return this.potManager.currentRoundBet; }
-
+  // if (Math.random() < 0.25) chatAI(aiPlayer, CHAT_TRIGGERS.GAME_START, "", 0, this)
   initializePlayers(humanClass, size) {
     const players = [];
 
@@ -197,17 +199,18 @@ export class GameEngine {
     console.log('this.buyInLimit', this.buyInLimit);
     let enemiesToPlace = [];
     // 0. partners Spawns (Top Priority from zone.js config)
-    const joinedPartners = getJoinedPartners();
-    joinedPartners.forEach(partner => {
-      const validContract = partner.contracts.find(contract => contract.type === CONTRACT_TYPE.COLLUSION && contract.active);
-      const template = CLASSES_PARTNER.find(e => e.id === partner.id)
-      if (template && validContract) {
-        enemiesToPlace.push({ ...template });
-      } else {
-        console.warn(`[GAME] Partner ${partner.name} is not with you`);
-      }
-    });
-
+    if (!this.inviteId) {
+      const joinedPartners = getJoinedPartners();
+      joinedPartners.forEach(partner => {
+        const validContract = partner.contracts.find(contract => contract.type === CONTRACT_TYPE.COLLUSION && contract.active);
+        const template = CLASSES_PARTNER.find(e => e.id === partner.id)
+        if (template && validContract) {
+          enemiesToPlace.push({ ...template });
+        } else {
+          console.warn(`[GAME] Partner ${partner.name} is not with you`);
+        }
+      });
+    }
     // 1. Guests Spawns (Top Priority from zone.js config)
     if (locationConfig.guests && Array.isArray(locationConfig.guests)) {
       locationConfig.guests.forEach(guestName => {
@@ -216,9 +219,6 @@ export class GameEngine {
         const template = [...CLASSES_ENEMY, ...CLASSES_PARTNER].find(e => e.name.toLowerCase() === targetId)
         if (template) {
           enemiesToPlace.push({ ...template });
-          setTimeout(() => {
-            chatAI(template, CHAT_TRIGGERS.GAME_START, "", 0, this);
-          }, 2000);
         } else {
           console.warn(`[GAME] Companion persona '${guestName}' not found in CLASSES.`);
         }
@@ -380,7 +380,7 @@ export class GameEngine {
       },
     };
 
-    if (Math.random() < 0.25) chatAI(aiPlayer, CHAT_TRIGGERS.GAME_START, "", 0, this)
+
     return aiPlayer;
   }
 
@@ -396,7 +396,7 @@ export class GameEngine {
     }
     return this.createAIPlayerFromTemplate(villanTemplate, customId);
   }
-  async startNewHand() {
+  async startNewHand(isFirstHand = false) {
     if (this.exited) return;
     audioManager.disableTensionMode();
     this.deck = createDeck();
@@ -439,7 +439,19 @@ export class GameEngine {
         });
       }
     });
-
+    if (isFirstHand) {
+      const players = this.players.filter(p => !p.isMe);
+      let pickOne = players.find((p) => p.name === 'Max(Mentor)');
+      if (pickOne) {
+        chatAI(pickOne, CHAT_TRIGGERS.GAME_START, "", 0, this)
+      } else {
+        pickOne = players[Math.floor(Math.random() * players.length)];
+        console.info('pickOne', pickOne)
+        chatAI(pickOne, CHAT_TRIGGERS.GAME_START, "", 0, this)
+      }
+      eventAdaptor.gameStart({ locationId: this.locationId, inviteId: this.inviteId });
+      await sleep(3000);
+    }
     this.calculationInProgress = false;
     // Check Trigger: PREFLOP start (or Round Start)
     // this.checkSkillTriggers('round_start');
@@ -894,7 +906,7 @@ export class GameEngine {
       p.voluntarilyInteracted = false;
     });
     // this.street = 'ROUND_END';
-    eventAdaptor.roundEnd({ players: this.players, bestWinner, street: 'ROUND_END' });
+    eventAdaptor.roundEnd({ players: this.players, bestWinner, street: this.street });
     const sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000
     await sleep(sleepTime)
     saveStore();
@@ -971,7 +983,7 @@ export class GameEngine {
     audioManager.play();
   }
 
-  checkBankruptcy(bestWinner, isConfiscation = false) {
+  async checkBankruptcy(bestWinner, isConfiscation = false) {
     // 1. Bankrupt Players
     this.players.forEach((p, index) => {
       if (p.isEliminated === true && !p.isHuman && Math.random() < 0.3) {
@@ -1011,12 +1023,11 @@ export class GameEngine {
     // 3. Check for Victory (Only Human Remains)
     const lastSurvior = this.players.filter(p => !p.isEliminated)
     if (lastSurvior.length === 1 && lastSurvior[0].isMe) {
-      console.log('[GAME] Victory! You are the last survivor.');
       this.winnerId = 'player';
       this.gameOver = true;
       this.victoryPrize = gainXPEstimate(lastSurvior[0], this.bb * 100, this.bb, this.isAdvanced, this.locationLV);
-      console.log(`[GAME] Victory Prize Awarded: ${this.bb * 100} `);
       eventAdaptor.gameWon(lastSurvior[0], this.bb * 100, this.locationId, this.inviteId);
+      await sleep(3000);
       this.cashOut(true);
     }
 

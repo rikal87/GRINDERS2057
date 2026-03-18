@@ -3,9 +3,12 @@ import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_LABEL_TY
 import { store, saveStore, getLanguage, gainMissedPayments, getMissedPayments, MISSED_PAYMENT_TYPE, isUnlockedLocation, getBustEnemyCount, getTotalIncomeTaxCalculated } from "./store.js";
 import { EVENT_FLORENCE, EventData as FlorenceEventData } from "./eventSystemFlorence.js";
 import { EVENT_MAX, EventData as MaxEventData } from "./eventSystemMax.js";
-import { ENEMY_ID, LOCATION_ID } from "./constants.js";
+import { ENEMY_ID, LOCATION_ID, PARTNER_ID } from "./constants.js";
 import { audioManager } from "./audioManager.js";
+import { isJoinedPartner } from './partnerSystem.js'
 import { CONTRACT_SIGN_PREVENT_REASON, CONTRACT_SIGN_PREVENT_REASON_DESC } from './partnerContractSystem.js'
+import { getCurrentBankroll } from './store.js'
+import { MESSAGE_ACTION_RESOLVE_TYPE } from './messageSystem.js'
 const pay_rent_bill = 5000;
 
 export const EVENT_ID = {
@@ -27,7 +30,8 @@ export const EVENT_ID = {
   },
   SYSTEM_PARTNER_BAILOUT_FOR_PLAYER: 'SYSTEM_PARTNER_BAILOUT_FOR_PLAYER',
   SYSTEM_PLAYER_BAILOUT_FOR_PARTNER: 'SYSTEM_PLAYER_BAILOUT_FOR_PARTNER',
-  CONTRACT_SIGN_PREVENT_REASON: CONTRACT_SIGN_PREVENT_REASON
+  CONTRACT_SIGN_PREVENT_REASON: CONTRACT_SIGN_PREVENT_REASON,
+  PRE_BUILD_UP_KBT_BROKER_MEET: 'PRE_BUILD_UP_KBT_BROKER_MEET'
 };
 
 const handleGameOver = async (reason) => {
@@ -42,6 +46,58 @@ const handleGameOver = async (reason) => {
 export const EventData = [
   ...FlorenceEventData,
   ...MaxEventData,
+  {
+    id: EVENT_MAX.PRE_BUILD_UP_KBT_BROKER_MEET,
+    title_ko: '진짜 큰 판으로의 초대',
+    title_en: 'Invitation to the Real Big Game',
+    body_ko: '네놈 이름이 요즘 테이블에서 자꾸 들리더군. 뒷골목 푼돈 줍는 건 이제 지겹지 않나? 진짜 "큰 판"에서 놀고 싶다면 [50만 CR]을 채워서 KBT 리더를 찾아와라. 그가 너의 배짱을 시험해 줄 테니.',
+    body_en: 'Your name keeps coming up at the tables lately. Tired of picking up back-alley pennies? If you wanna play in the "real big game", gather [500K] and seek out the KBT Leader. He\'ll test your guts.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    condition() { return getCurrentBankroll() >= 300000; },
+    timer: 1,
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? 'KBT Broker' : 'KBT 브로커');
+      if (isJoinedPartner(PARTNER_ID.MAX)) scheduleEvent(EVENT_MAX.PRE_BUILD_UP_MAX_EXCITED_1, 160);
+      if (isJoinedPartner(PARTNER_ID.FLORENCE)) scheduleEvent(EVENT_FLORENCE.PRE_BUILD_UP_WARN_KBT, 264);
+    },
+    repeatable: false
+  },
+  {
+    id: EVENT_MAX.MAIN_STORY_3_1_CHALLENGE_KBT_LEADER,
+    title_ko: '준비는 끝났나?',
+    title_en: 'Are you ready?',
+    body_ko: "말했던 판돈은 챙겼나? 장소는 준비됐으니 빨리 오라고. 알다시피 '빅대디'는 기다리는 걸 제일 싫어하거든.\n(이 이벤트는 스토리의 핵심 분기점입니다. 수락하거나 거절할시 돌이킬 수 없는 결과로 이어질 수 있습니다.)",
+    body_en: "Have you gathered the buy-in? The venue is ready, so get over here. You know 'Big Daddy' isn't famous for his patience.\n(This event is a critical story branching point. Accepting or refusing will lead to irreversible consequences.)",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    get accept_label() { return store.settings.language === 'en' ? 'Accept' : '수락하기'; },
+    get refuse_label() { return store.settings.language === 'en' ? 'Refuse' : '거절하기'; },
+    timer: 1,
+    condition() { return getCurrentBankroll() >= 500000 },
+    func() {
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_3_0_WARN_BIG_DADDY, 30);
+      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [
+        {
+          label: this.accept_label,
+          actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
+          payload: {
+            resolveType: MESSAGE_ACTION_RESOLVE_TYPE.JOIN,
+            location_id: LOCATION_ID.MIDDLE_KBT_VIP_ROOM,
+          }
+        },
+        {
+          label: this.refuse_label,
+          actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
+          payload: {
+            resolveType: MESSAGE_ACTION_RESOLVE_TYPE.REFUSE,
+            nextEvent: EVENT_MAX.MAIN_STORY_3_2_CHALLENGE_KBT_REFUSE
+          }
+        }
+      ], getLanguage() === 'en' ? 'KBT Broker' : 'KBT 브로커', 72 * 60); // only 3 days limit
+    },
+    repeatable: false
+  },
   {
     id: EVENT_ID.CONTRACT_SIGN_PREVENT_REASON.BENEFIT_SHARE_MAX_COUNT,
     scenario: '[이익 공유] 계약 최대치',

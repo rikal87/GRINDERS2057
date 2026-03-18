@@ -317,29 +317,7 @@ export const zones = [
     "description_ko": "본격적인 승부사들의 영역. 생계를 걸거나 도약을 준비하는 이들이 모임.",
     "description_en": "The realm of true gamblers. A gathering place for those risking their livelihood or preparing for a leap forward.",
     "locations": [
-      {
-        "id": "middle_kbt_vip_room",
-        "name_ko": "KBT VIP 룸",
-        "name_en": "KBT VIP Room",
-        "imgSrc": imgMiddleUndergroundCasinoVipRoom,
-        "description_ko": "KBT 조직의 VIP 룸. '더 벙커'의 안쪽에 위치해 있다.",
-        "description_en": "The VIP room of the KBT syndicate. Located deep inside 'The Bunker'.",
-        "atmosphere": "긴장감, 위압감",
-        "isHidden": true,
-        "requirements": null,
-        "level": 6,
-        "npcs": [
-          "KBT_Leader",
-        ],
-        "firstClearRewards": "the_bunker_key",
-        "tables": { isMonitoring: true, buyInLimit: 1, amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [2], baseRake: 0.00, rakeCap: 0, isAdvanced: true },
-        "theme": {
-          "background": "radial-gradient(circle, #1c1c1c 0%, #000000 100%)",
-          "borderColor": "#708090",
-          "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
-        },
-        'bgMusic': [TRACK_ENUM.ArgonGroove, TRACK_ENUM.Rockot_Bargur]
-      },
+
       {
         "id": "middle_underground_casino",
         "name_ko": "더 벙커",
@@ -362,6 +340,7 @@ export const zones = [
         },
         'bgMusic': [TRACK_ENUM.JourneyToTitan, TRACK_ENUM.ArgonGroove, TRACK_ENUM.Rockot_Bargur]
       },
+
       {
         "id": "middle_underground_casino_with_florence",
         "name_ko": "더 벙커",
@@ -384,6 +363,28 @@ export const zones = [
           "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
         },
         'bgMusic': [TRACK_ENUM.JourneyToTitan, TRACK_ENUM.ArgonGroove]
+      },
+      {
+        "id": "middle_kbt_vip_room",
+        "name_ko": "KBT VIP 룸",
+        "name_en": "KBT VIP Room",
+        "imgSrc": imgMiddleUndergroundCasinoVipRoom,
+        "description_ko": "KBT 조직의 VIP 룸. '더 벙커'의 안쪽에 위치해 있다. 빅 대디가 테이블에 앉아 당신을 기다리고 있다.",
+        "description_en": "The VIP room of the KBT syndicate. Located deep inside 'The Bunker'. Big Daddy is waiting for you at the table.",
+        "atmosphere": "긴장감, 위압감",
+        "isHidden": true,
+        "requirements": null,
+        "level": 6,
+        "npcs": ["Big_Daddy"],
+        "guests": ["Big_Daddy"],
+        "firstClearRewards": "holdem_house_membership",
+        "tables": { isDeathmatch: true, buyInLimit: 1, amount: 500000, amount_fmt: '500K', amount_min_fmt: '250K', sb: 2500, bb: 5000, available: [2], baseRake: 0.00, rakeCap: 0, isAdvanced: true },
+        "theme": {
+          "background": "radial-gradient(circle, #1c1c1c 0%, #000000 100%)",
+          "borderColor": "#708090",
+          "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
+        },
+        'bgMusic': [TRACK_ENUM.ArgonGroove, TRACK_ENUM.Rockot_Bargur]
       },
       {
         "id": "middle_casino_hotel",
@@ -412,6 +413,7 @@ export const zones = [
         },
         'bgMusic': [TRACK_ENUM.Futuristic, TRACK_ENUM.RemoteLocation]
       },
+
       {
         "id": "middle_holdem_house",
         "name_ko": "홀덤 하우스",

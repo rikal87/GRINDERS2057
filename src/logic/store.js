@@ -3,7 +3,7 @@ import { createPlayRecordStats, GAME_RESULT_CODE, recordPlayStatsSessionForPlaye
 import { hydrateStoreItems } from './items.js';
 import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
-import { initializePartners, triggerBankruptRescueForPlayer, gainRelationship } from './partnerSystem';
+import { initializePartners, triggerBankruptRescueForPlayer, gainRelationship, joinPartner } from './partnerSystem';
 import { TASK_STATS_TYPE } from './constants.js';
 import { setLanguageGetter } from './persona.js';
 import { deleteMessage } from './messageSystem';
@@ -418,7 +418,7 @@ export const getListPlayStatsSession = () => {
 export const getPlayStatsSession = (type) => {
   return store.play_stats_session?.[type];
 }
-export const applySessionExit = (engine) => {
+export const applySessionExit = () => {
   if (store.bankroll === 0) triggerBankruptRescueForPlayer();
 };
 export const gainClearReward = (locationId) => {
@@ -512,4 +512,39 @@ export const processMissionResult = (player, result, engine) => {
       scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL, 30);
     }
   }
+  if (locationId === LOCATION_ID.MIDDLE_KBT_VIP_ROOM) {
+    if (result.indexOf('WIN') !== -1) {
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_3_2_BIG_DADDY_WIN, 60);
+      scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_3_2_BIG_DADDY_WIN, 60);
+    } else {
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_3_2_BIG_DADDY_LOSE, 60);
+      scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_3_2_BIG_DADDY_LOSE, 120);
+    }
+  }
+}
+
+// --- DEBUG HELPERS ---
+if (typeof window !== 'undefined') {
+  window.cheat = {
+    addMoney: (amount) => {
+      gainBankroll(amount);
+      console.log(`[CHEAT] Added ${amount} CR. Total: ${store.bankroll}`);
+    },
+    setLevel: (level) => {
+      store.level = level;
+      console.log(`[CHEAT] Level set to ${level}`);
+    },
+    setStamina: (stamina) => {
+      store.stamina = stamina;
+      console.log(`[CHEAT] Stamina set to ${stamina}`);
+    },
+    setRelationship: (partnerId, relationship) => {
+      gainRelationship(partnerId, relationship);
+      console.log(`[CHEAT] Set relationship ${partnerId} to ${relationship}`);
+    },
+    joinPartner: (partnerId) => {
+      joinPartner(partnerId);
+      console.log(`[CHEAT] Joined partner ${partnerId}`);
+    }
+  };
 }

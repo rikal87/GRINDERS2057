@@ -116,4 +116,5 @@ export const LOCATION_ID = {
   MIDDLE_UNDERGROUND_CASINO_WITH_FLORENCE: "middle_underground_casino_with_florence",
   FREE_HABITAT: 'free_habitat',
   MIDDLE_KBT_BASE: "middle_kbt_base",
+  MIDDLE_KBT_VIP_ROOM: "middle_kbt_vip_room",
 }

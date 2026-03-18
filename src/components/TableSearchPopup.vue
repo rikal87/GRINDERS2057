@@ -49,9 +49,13 @@
                 </div>
                 <div class="stat-row" v-if="currentTableConfig.buyInLimit">
                   <span class="stat-label">BUY_IN_LIMIT:</span>
-                  <span class="stat-value red">
+                  <b class="stat-value red">
                     {{ currentTableConfig.buyInLimit }}
-                  </span>
+                  </b>
+                </div>
+                <div class="stat-row" v-if="currentTableConfig.isDeathmatch" :data-tooltip="deathmatchRulesInfo">
+                  <span class="stat-label">DEATHMATCH_RULES</span>
+                  <b class="stat-value red">YES</b>
                 </div>
               </div>
             </div>
@@ -124,14 +128,25 @@ defineExpose({
     }
     currentInviteId.value = inviteId;
     showSearchPopup.value = true;
+    selectedSize.value = flatLocations.value[idx].tables.available[0];
   },
 });
-
+// watch(currentLocation, (newLoc) => {
+//   if (newLoc && newLoc.tables && newLoc.tables.available) {
+//     if (!newLoc.tables.available.includes(selectedSize.value)) {
+//       selectedSize.value = newLoc.tables.available[0];
+//     }
+//   }
+// }, { immediate: true });
 watch(showSearchPopup, (newVal) => {
   if (!newVal) {
     emit('close');
   }
 });
+const deathmatchRulesInfo = computed(() => store.settings.language === 'ko' ?
+  '이 테이블에서는 중도 캐시아웃이 불가합니다. 신중하게 플레이하세요.'
+  : 'At this table, you cannot cash out until the end of the game. Play carefully.');
+
 const blacklistInfo = computed(() => store.settings.language === 'ko' ?
   '이 구역은 출입이 제한되었습니다. 의심 수치가 떨어지면 다시 방문할 수 있습니다.'
   : 'This zone is currently off-limits. You can visit again once your suspicion level drops.');
@@ -179,6 +194,8 @@ const getSuspicionNote = (locationId) => {
 }
 
 const selectedSize = ref(6);
+
+
 const getNote = (npc) => {
   const enemy = CLASSES_ENEMY.find(e => e.name === npc);
   return enemy ? getLocalizedText(enemy, 'note') : '';

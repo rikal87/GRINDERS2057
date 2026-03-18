@@ -304,7 +304,6 @@
 
 /* Seating Distribution Logic */
 /* 9-Player Distribution (Professional Elliptical) */
-@media (min-width: 1400px) {}
 .max9.seat-0 {
   bottom: 0;
   left: 50%;
@@ -432,10 +431,16 @@
   left: 50%;
   transform: translateX(-50%);
 }
+.max2.seat-bottom .chip-stack {
+  bottom: 105%;
+}
 .max2.seat-top {
   /* top: 20%; */
   left: 50%;
   transform: translateX(-50%);
+}
+.max2.seat-top .chip-stack {
+  top: 105%;
 }
 /* Mid-Right */
 
