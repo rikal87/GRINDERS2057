@@ -312,12 +312,10 @@ export class EventAdaptor {
     switch (effect.id) {
       case ITEM_EFFECT_ID.SHOW_ME_YOUR_BLUFF:
         const existBestWinner = context.bestWinner;
-        if (existBestWinner) {
-          if (!existBestWinner.isMe && Math.random() < effect.value) {
-            console.log('[EFFECT] Show Me Bluff ACTIVATED!');
-            existBestWinner.showHoleCards = true;
-            effect.cooldown = effect.maxCooldown;
-          }
+        if (existBestWinner && !existBestWinner.isMe && Math.random() <= effect.value) {
+          console.log('[EFFECT] Show Me Bluff ACTIVATED!');
+          existBestWinner.showHoleCards = true;
+          effect.cooldown = effect.maxCooldown;
         }
         break;
       case ITEM_EFFECT_ID.STONK: {

@@ -212,12 +212,13 @@ onMounted(() => {
   max-height: 85vh;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 .city-skyline {
   flex: 1;
   display: flex;
+  border: 1px solid var(--neon-cyan);
 }
 
 .minimap-viewport {

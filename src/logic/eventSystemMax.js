@@ -831,7 +831,9 @@ export const EventData = [
           label: this.label,
           actionType: MESSAGE_ACTION_TYPE.RECEIVE,
           payload: {
-            amount: taxiFee
+            amount: taxiFee,
+            currency: 'CR',
+            sender: getLanguage() === 'en' ? SENDER_EN : SENDER_KO
           }
         }
       ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)

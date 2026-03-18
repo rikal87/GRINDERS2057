@@ -1668,6 +1668,9 @@ export const relinkItem = (itemData) => {
       if (effectBase) {
         // Create stateful instance: base effect as prototype
         const effInstance = Object.create(effectBase);
+        // Ensure ID is an own property for persistence (JSON.stringify excludes prototype properties)
+        effInstance.id = effectBase.id;
+
         if (existingState) {
           // Recover saved state (cooldowns, stacks, etc.)
           Object.keys(existingState).forEach(k => {
@@ -1721,7 +1724,15 @@ export const hydrateStoreItems = () => {
     store.ownedItems = store.ownedItems.map(item => relinkItem(item));
   }
   if (store.equippedItem) {
-    store.equippedItem = relinkItem(store.equippedItem);
+    // If it's a legacy ID string, find the item in ownedItems
+    if (typeof store.equippedItem === 'string' && Array.isArray(store.ownedItems)) {
+      const found = store.ownedItems.find(p => (p.instanceId || p.id) === store.equippedItem);
+      if (found) store.equippedItem = found;
+    }
+    // Now relink if it's an object
+    if (typeof store.equippedItem === 'object') {
+      store.equippedItem = relinkItem(store.equippedItem);
+    }
   }
 };
 
