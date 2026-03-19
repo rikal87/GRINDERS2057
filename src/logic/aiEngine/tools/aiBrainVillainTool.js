@@ -26,6 +26,10 @@ export function profileVillain(context) {
 
   const isManiac = vPIP > 0.42 && (af > 3.0 || af === Infinity);
   const isStation = (vPIP > 0.45 && af < 0.8) || (vPIP > 0.60 && f2f < 0.3);
+  
+  // [v23] Nit (Rock) Detection: Low VPIP and extremely low 3-Bet frequency
+  const threeBetFreq = (rawStats.threeBetCount || 0) / Math.max(1, rawStats.threeBetOppCount || 0);
+  const isNit = vPIP < 0.20 && (threeBetFreq < 0.03 || handsPlayed < 5); // Assume Nit until proven otherwise if very tight
 
   const { weaknessLevel, exploitTrigger } = analyzeWeakness(opponent.id, context.actionHistory, context.street);
   
@@ -36,6 +40,7 @@ export function profileVillain(context) {
     af,
     isManiac,
     isStation,
+    isNit,
     confidence,
     rangeEstimate: `Top ${Math.round(vPIP * 100)}%`,
     weaknessLevel,

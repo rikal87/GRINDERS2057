@@ -8,7 +8,7 @@ import { PotManager } from './PotManager.js';
 const CLASSES_ENEMY = [...D2, ...D1]
 export async function runSimulation() {
   const opp1 = 'Max'
-  const opp2 = 'rich_guy'
+  const opp2 = 'gangster'
   const opp3 = 'shark'
   console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
   const logHeader = `Simulation Log - ${new Date().toLocaleString()}\n\n`;
@@ -76,8 +76,8 @@ export async function runSimulation() {
   console.log(`Initialized 6 players. Running ${handsToPlay} hands...`);
 
   const engine = {
-    bb: 2,
-    sb: 1,
+    bb: 20,
+    sb: 10,
     board: [],
     aggressor: null,
     players: players,

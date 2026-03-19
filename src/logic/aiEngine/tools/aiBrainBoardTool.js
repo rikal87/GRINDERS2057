@@ -10,6 +10,8 @@ export function analyzeBoard(context) {
 
   // Core texture from poker.js
   const base = analyzeBoardTexture(board);
+  const boardFreq = {}; 
+  if (base.ranks) base.ranks.forEach(r => boardFreq[r] = (boardFreq[r] || 0) + 1);
   
   // High card density
   const highCardCount = base.ranks ? base.ranks.filter(r => r >= 9).length : 0;
@@ -39,15 +41,35 @@ export function analyzeBoard(context) {
     if (riverRank > maxPrevRank) isDowngraded = true;
   }
 
+  const isBroadway = highCardCount >= 3;
+  const isHighCardHeavy = highCardCount >= 2;
+
+  // [v20] Range-to-Board Interaction: 
+  // How much does this board correlate with a narrowed preflop range (3BP/4BP)?
+  const potType = context.potType || 'SRP';
+  let rangeInteractionScore = 0;
+  if (['3BET_POT', '4BET_POT', '5BET_POT'].includes(potType)) {
+    if (isBroadway) rangeInteractionScore = 0.9;
+    else if (isHighCardHeavy) rangeInteractionScore = 0.6;
+    else if (base.maxSuit >= 3) rangeInteractionScore = 0.4;
+  }
+
   return {
     ...base,
     highCardCount,
+    isBroadway,
+    isHighCardHeavy,
+    rangeInteractionScore,
     flushDanger,
     straightDanger,
     isDowngraded,
     isWet: base.score >= 5,
     isDry: base.score <= 2,
     isPaired: base.maxRankCount >= 2,
+    isDoublePaired: Object.values(boardFreq).filter(v => v >= 2).length >= 2,
+    isTrips: base.maxRankCount >= 3,
+    fullHouseDanger: (Object.values(boardFreq).filter(v => v >= 2).length >= 2 || base.maxRankCount >= 3) ? 'HIGH' : 'LOW',
+    maxBoardRank: (base.ranks && base.ranks.length > 0) ? Math.max(...base.ranks) : -1,
     isFlushPossible: base.maxSuit >= 3
   };
 }

@@ -9,14 +9,14 @@ export function getHandBudget(equity, potSize, philosophy = 'TAG') {
   if (philosophy === 'LAG') multiplier = 1.25;
   if (philosophy === 'NIT') multiplier = 0.8;
 
-  if (equity >= 0.95) return potSize * 5.0; // All-in
-  if (equity >= 0.85) return potSize * 3.0; // Very deep
-  if (equity >= 0.75) return potSize * 2.5;
-  if (equity >= 0.65) return potSize * 2.0; 
-  if (equity >= 0.50) return potSize * 1.5; // Coinflip+: willing to put in full pot+
-  if (equity >= 0.35) return potSize * 0.8; // Marginal: willing to call small/medium bets
-  if (equity >= 0.20) return potSize * 0.4; // Draw/Weak: small investment only
-  return potSize * 0.15;
+  if (equity >= 0.95) return potSize * 20.0; // Effectively All-in
+  if (equity >= 0.85) return potSize * 10.0; // Monster: willing to commit stack
+  if (equity >= 0.75) return potSize * 5.0;
+  if (equity >= 0.65) return potSize * 3.5;
+  if (equity >= 0.50) return potSize * 2.5; // Coinflip+: willing to put in multiple barrels
+  if (equity >= 0.35) return potSize * 1.5; // Marginal: Enough to call a pot-sized bet and defend
+  if (equity >= 0.20) return potSize * 0.6; // Draw/Weak: small/medium investment
+  return potSize * 0.25;
 }
 
 /**
@@ -32,56 +32,75 @@ export function isPotCommitted(player, equity, currentPot) {
   const investmentRatio = totalInvested / totalStack;
   const spr = currentStack / (currentPot || 1);
   
-  // [v2.1] Strong Hand Commitment (SPR < 1.0)
-  if (spr < 1.0 && equity > 0.55) return true; // SPR < 1 is commitment zone for TP+
+  // [v2.2] Strong Hand Commitment (SPR < 1.0)
+  if (spr < 1.2 && equity > 0.45) return true; // SPR < 1.2 is high commitment for Good+ hands
 
-  // General commitment: Invested > 25% of stack with decent equity
-  return investmentRatio > 0.25 && equity > 0.35;
+  // General commitment: Invested > 20% of stack with decent equity
+  return investmentRatio > 0.20 && equity > 0.30;
 }
 
 /**
- * Calculates dynamic raise sizing based on board and equity context.
+ * Calculates dynamic raise sizing based on board, equity, and villain context.
+ * Goal: "Win BIG when winning, Control Pot when losing/marginal."
  */
-export function calculateRaiseSize(context, estimatedEquity, boardAnalysis) {
+export function calculateRaiseSize(context, estimatedEquity, boardAnalysis, villain = {}) {
   const { potSize, street, bb, potType, callAmount, currentBet } = context;
+  const streetsLeft = street === 'FLOP' ? 2 : (street === 'TURN' ? 1 : 0);
   
-  let potPct = 0.5; // Default SRP sizing
-  
-  if (potType === '4BET_POT') {
-    potPct = 0.25; // Small sizing in 4B pots (low SPR)
-  } else if (potType === '3BET_POT') {
-    potPct = 0.33; // Medium-small in 3B pots
+  // 1. Base Pot Pct (Standard)
+  // [v4.0] Balanced sizing base (incorporating aiEngine.js line 485 logic)
+  let potPct = 0.70;
+  potPct -= (streetsLeft * 0.15); // Flop: 0.4, Turn: 0.55, River: 0.70
+
+  if (potType === '4BET_POT') potPct *= 0.6; // Smaller relative to pot in 4B
+  else if (potType === '3BET_POT') potPct *= 0.8;
+
+  if (boardAnalysis.isDry) potPct -= 0.15;
+  if (boardAnalysis.isWet) potPct += 0.15;
+
+  // 2. [EXPLOIT] "Win Big" vs "Control Pot"
+  // A. MAX VALUE (Nuts/Monster)
+  if (estimatedEquity >= 0.85) {
+    if (villain.isStation) {
+      potPct = Math.max(potPct, 1.2); // Over-bet into the station!
+    } else if (villain.isNit) {
+      potPct = 0.35; // Trap the nit with a smaller "Curiosity" bet
+    } else {
+      potPct = Math.max(potPct, 0.75); // Standard strong value
+    }
+  } 
+  // B. POT CONTROL (Marginal Value / Strong but vulnerable)
+  else if (estimatedEquity >= 0.55 && estimatedEquity < 0.80) {
+    // "Blocker" sizing to keep the pot manageable
+    potPct = Math.min(potPct, 0.33); 
   }
-
-  // Adjust for board texture
-  if (boardAnalysis.isDry) potPct *= 0.8;
-  else if (boardAnalysis.isWet) potPct *= 1.3;
-
-  // Adjust for equity
-  if (estimatedEquity >= 0.9) potPct *= 1.5;
-  else if (estimatedEquity >= 0.8) potPct *= 1.2;
-
-  // Street specific overrides
-  if (street === 'FLOP' && boardAnalysis.isDry && potType === 'SRP') potPct = 0.33;
-  if (street === 'RIVER' && estimatedEquity > 0.8) potPct = Math.max(potPct, 0.75);
+  // C. POLARIZING BLUFF (Air into certain profiles)
+  else if (estimatedEquity < 0.30 && villain.isNit) {
+    potPct = 0.85; // Large "Fear-Inducing" bluff against rocks
+  }
 
   let amount = Math.floor(potSize * potPct);
 
-  // [v19/v24/v25] Ensure it's a strategic raise size if facing a bet
+  // 3. Strategic Raise Multiplier (Facing a Bet)
   if (callAmount > 0) {
-    // [v25] Boost multiplier for near-nuts (0.85+) to apply maximum pressure
-    let multiplier = 2.1;
-    if (estimatedEquity > 0.85) multiplier = 3.5;
-    else if (estimatedEquity > 0.7) multiplier = 2.5;
+    let multiplier = 2.2;
+    // Boost multiplier for strong hands to build pot or clear field
+    if (estimatedEquity > 0.85) {
+       multiplier = villain.isStation ? 4.5 : 3.0; // Crank it up vs stations
+    } else if (estimatedEquity < 0.4 && villain.isNit) {
+       multiplier = 3.5; // Large bluff-raise vs Nit
+    } else if (estimatedEquity < 0.7) {
+       multiplier = 2.1; // Standard/Protect
+    }
     
     let strategicRaise = Math.floor(currentBet * multiplier);
-    
-    // Ensure it's at least a valid min-raise
     const minIncrement = Math.max(callAmount, bb);
     const minRaise = currentBet + minIncrement;
     
     amount = Math.max(amount, strategicRaise, minRaise);
   }
 
-  return Math.max(amount, bb);
+  // Safety Capping
+  amount = Math.max(amount, bb);
+  return Math.floor(amount);
 }

@@ -39,6 +39,19 @@ export function getPreflopAction(context) {
       return { action: 'fold', insight: `ShortStack Fold (${myPos})` };
     }
 
+    // [v11] Limper Isolation Logic
+    if ((context.limperMoney || 0) > 0) {
+      let isoThreshold = 25;
+      if (myPosGTO === 'BTN') isoThreshold = 45;
+      else if (myPosGTO === 'BB') isoThreshold = 35;
+      else if (myPosGTO === 'SB') isoThreshold = 40;
+
+      if (handRank <= (isoThreshold + pOffset)) {
+        return { action: 'raise', amount: bb * 4 + (context.limperMoney || 0), insight: `Isolate Limpers (${myPosGTO}, Rank:${handRank})` };
+      }
+      if (myPosGTO === 'BB') return { action: 'check', insight: 'Check (BB vs Limpers)' };
+    }
+
     const rangeSet = matrix.OPEN[myPosGTO];
     let size = 2.5;
     if (myPosGTO === 'SB') size = 3.0;
@@ -52,7 +65,7 @@ export function getPreflopAction(context) {
     }
 
     // Exploit & Personality Override
-    const thresholds = { BTN: 90, CO: 55, MP: 33, UTG: 20 };
+    const thresholds = { BTN: 88, CO: 55, MP: 38, UTG: 22 }; // [v11] Synced with legacy Advanced thresholds
     const baseThreshold = thresholds[myPosGTO] || 20;
     const finalThreshold = baseThreshold + pOffset + exploitOffset;
 
@@ -92,9 +105,9 @@ export function getPreflopAction(context) {
       if (handRank <= 6) canRaise = true;
 
       // [v5.2] Polarized 4-Bet Bluffing (A2s-A5s)
-      // Fixes Hand #551 where A5s just folds UTG to a 3-Bet.
+      // Fixes Hand #990: Only bluff ONCE (during 4-bet). NEVER 6-bet bluff.
       const isSmallSuitedAce = hand[0] === 'A' && hand.endsWith('s') && '2345'.includes(hand[1]);
-      if (!canRaise && isSmallSuitedAce && Math.random() < 0.40) {
+      if (!canRaise && isSmallSuitedAce && engine.currentStreetRaises === 2 && !villain.isNit && Math.random() < 0.40) {
         return { action: 'raise', amount: currentBet * 2.3, insight: `Polarized 4-Bet Bluff (${hand})` };
       }
 
@@ -113,8 +126,16 @@ export function getPreflopAction(context) {
       }
 
       if (canRaise) {
-        const raiseSize = currentBet * 2.3;
-        return { action: 'raise', amount: raiseSize, insight: isCommitted ? `Committed 4-Bet+ (Rank:${handRank})` : `Value 4-Bet+ (Rank:${handRank})` };
+        // [v25] Forced All-In on 5-bet+: Break the infinite 2.3x raise loop
+        // If we are at the 4th raise (about to 5-bet), just shove.
+        const isFiveBetPlus = engine.currentStreetRaises >= 4;
+        const raiseSize = isFiveBetPlus ? (player.chips + (player.currentBet || 0)) : (currentBet * 2.5); // [v26] Standard 4-Bet sizing (2.5x)
+        
+        return { 
+          action: 'raise', 
+          amount: raiseSize, 
+          insight: isFiveBetPlus ? `5-Bet+ Shove (Rank:${handRank})` : (isCommitted ? `Committed 4-Bet+ (Rank:${handRank})` : `Value 4-Bet+ (Rank:${handRank})`) 
+        };
       }
 
       // [v4.0] Standard 4-Bet Call range (GTO: TT+, AQ+)
@@ -126,6 +147,9 @@ export function getPreflopAction(context) {
       }
 
       if (contextStrategies.CALL.has(hand) || handRank <= callThreshold) {
+        // [v23] Nit Respect: Don't call 3-bets from Nits with marginal rank (14-16)
+        if (villain.isNit && handRank > 10) return { action: 'fold', insight: 'Nit Respect - Tight Fold' };
+        
         return { action: 'call', insight: `GTO call ${engine.currentStreetRaises}-Bet (${posKey} Rank:${handRank})` };
       }
     }
@@ -163,18 +187,21 @@ export function getPreflopAction(context) {
     is3BetPositional = true;
   }
 
+  const isOOP = ['SB', 'BB'].includes(myPosGTO);
+  const raiseMult = isOOP ? 4.2 : 3.2; // [v26] Standard 3-Bet sizing: 4.2x OOP, 3.2x IP
+
   if (is3BetPremium || is3BetPositional) {
-    return { action: 'raise', amount: currentBet * 3.5, insight: `Premium 3-Bet Overlay (Rank:${handRank} Pos:${myPosGTO})` };
+    return { action: 'raise', amount: currentBet * raiseMult, insight: `Premium 3-Bet Overlay (Rank:${handRank} Pos:${myPosGTO})` };
   }
 
   // [v5.0] Polarized Bluffing Heuristics (A2s-A5s and Suited Connectors)
   // Essential for 6-max aggression.
   if (isLatePos || ['SB', 'BB'].includes(myPosGTO)) {
-    if (isSmallSuitedAce && Math.random() < 0.6) { // 60% Light 3B with A2s-A5s
-      return { action: 'raise', amount: currentBet * 3.8, insight: `Polarized 3-Bet (Suited Ace ${hand} from ${myPosGTO})` };
+    if (isSmallSuitedAce && !villain.isNit && Math.random() < 0.6) { // 60% Light 3B with A2s-A5s
+      return { action: 'raise', amount: currentBet * raiseMult, insight: `Polarized 3-Bet (Suited Ace ${hand} from ${myPosGTO})` };
     }
-    if (isSuitedConnector && v1 >= 4 && Math.random() < 0.4) { // 40% Light 3B for 65s+
-      return { action: 'raise', amount: currentBet * 3.4, insight: `Light 3-Bet (Suited Connector ${hand} from ${myPosGTO})` };
+    if (isSuitedConnector && v1 >= 4 && !villain.isNit && Math.random() < 0.4) { // 40% Light 3B for 65s+
+      return { action: 'raise', amount: currentBet * raiseMult, insight: `Light 3-Bet (Suited Connector ${hand} from ${myPosGTO})` };
     }
   }
 
@@ -182,7 +209,7 @@ export function getPreflopAction(context) {
     if (typeof defenseMatrix === 'object') {
 
       if (defenseMatrix.VALUE_3BET.has(hand)) {
-        return { action: 'raise', amount: currentBet * 3.5, insight: `GTO Value 3-Bet (vs ${aggPos})` };
+        return { action: 'raise', amount: currentBet * raiseMult, insight: `GTO Value 3-Bet (vs ${aggPos})` };
       }
 
       // [v5.0] Execute GTO Bluffs much more frequently (Target 11%)
@@ -191,7 +218,7 @@ export function getPreflopAction(context) {
       if (villain.isManiac || philosophy === 'LAG') bluffFreq = 1.0; 
 
       if (defenseMatrix.BLUFF_3BET.has(hand) && Math.random() < bluffFreq) {
-        return { action: 'raise', amount: currentBet * 3.3, insight: `GTO Bluff 3-Bet (vs ${aggPos})` };
+        return { action: 'raise', amount: currentBet * raiseMult, insight: `GTO Bluff 3-Bet (vs ${aggPos})` };
       }
 
       if (defenseMatrix.CALL.has(hand)) {

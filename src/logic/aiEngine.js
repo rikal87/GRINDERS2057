@@ -98,10 +98,13 @@ export const getAIAction = (player, engine) => {
  */
 const getRankVal = c => '23456789TJQKA'.indexOf(c[0]);
 function getHeuristicFallback(player, engine) {
+  const street = (engine.state || '').toUpperCase()
+  const streetsLeft = street === 'FLOP' ? 2 : (street === 'TURN' ? 1 : 0);
+  const pfIntensity = engine.preflopRaises || 0;
   const callAmt = engine.currentRoundBet - player.currentBet;
   const pot = engine.pot;
   const AF = player.class?.AF || 1;
-  const street = (engine.state || '').toUpperCase()
+
   let handCategory = 'AIR';
   const raises = engine.currentStreetRaises || 0;
   let dialogue = "";
@@ -120,6 +123,10 @@ function getHeuristicFallback(player, engine) {
   // Scales down SHARPLY with raises to prevent suicide bluffs in high-depth spots (3-bet/4-bet+)
   let bluffFreq = Math.max(0.0, (AF - 2) * 0.06 + 0.06);
   bluffFreq *= (1 / (raises + 1));
+
+  // [v5.0] High Intensity Bluff Safety: Reduce bluffs in 3B/4B pots to prevent suicide punts
+  if (pfIntensity >= 4) bluffFreq *= 0.3;
+  else if (pfIntensity >= 3) bluffFreq *= 0.5;
   // if (street === 'RIVER') bluffFreq *= 0.5; // River bluffs are most expensive
   if (street === 'PREFLOP') bluffFreq *= 0.1; // Pre Flop bluffs are less effective
   const boardTexture = analyzeBoardTexture([...engine.board]);
@@ -150,8 +157,7 @@ function getHeuristicFallback(player, engine) {
   let estimatedEquity = 0;
   let handRank = 169;
   let drawBonus = 0;
-  const streetsLeft = street === 'FLOP' ? 2 : (street === 'TURN' ? 1 : 0);
-  const pfIntensity = engine.preflopRaises || 0;
+
   if (street === 'PREFLOP') {
     if (isAdvanced && (player.chips <= 30 * (engine.bb || 10) || alivePlayers <= 2)) {
       handRank = getStartingHandRankHeadsup(player.hand);
@@ -214,15 +220,8 @@ function getHeuristicFallback(player, engine) {
     // [v4.0] Pot-Intensity Equity Discount
     // Villain's range in 3-bet/4-bet pots is MUCH tighter, so our GOOD hands are worth less.
     // This fixes the "Over-Calling in 4-bet pots" bug (e.g. TT calling 5-bet, TPTK in 4-bet pot).
-    if (!['NUTS', 'MONSTER'].includes(handCategory)) {
-      if (pfIntensity >= 4) {
-        estimatedEquity *= 0.78; // -22% in 4-bet+ pots (villain range: QQ+, AK)
-        insight += ' [4BetPot Disc]';
-      } else if (pfIntensity === 3) {
-        estimatedEquity *= 0.85; // -15% in 3-bet pots (villain range: TT+, AQ+)
-        insight += ' [3BetPot Disc]';
-      }
-    }
+    // [v5.0] Transitioned from Equity Reduction to Threshold Adjustment
+    // (Calculation moved to raiseEquityThreshold / requiredEquity sections)
 
     // [v4.0] Paired Board Penalty
     // If we have a Flush or Straight (usually STRONG/GOOD), but the board is paired,
@@ -308,16 +307,20 @@ function getHeuristicFallback(player, engine) {
   if (strategy === "RESPONSE") {
     // Standard required equity based on pot odds
     raiseEquityThreshold = requiredEquity + 0.45;
-    if (raises >= 2 && estimatedEquity >= 0.75 && ['FLOP', 'TURN'].includes(street)) {
+    if (handCategory === 'MONSTER' || handCategory === 'NUTS') {
+      raiseEquityThreshold -= 0.2;
+    }
+    if (estimatedEquity >= 0.85 && ['FLOP'].includes(street)) {
+      raiseEquityThreshold += 1.1 // set trap
+    }
+    if (raises >= 2 && estimatedEquity >= 0.75 && ['TURN'].includes(street)) {
       raiseEquityThreshold += estimatedEquity * Math.random() + 0.15
     }
     // if ((street === 'TURN' || street === 'RIVER') && !isAggressor) {
     //   raiseEquityThreshold -= 0.15; // Easier to check-raise/defend on later streets
     // }
     // High Aggression with Monsters: Lower threshold to ensure we don't just call
-    if (handCategory === 'MONSTER' || handCategory === 'NUTS') {
-      raiseEquityThreshold -= 0.2;
-    }
+
 
     // [MOD] Buffer raise threshold in high-intensity pots
     // if ((engine.preflopRaises || 0) >= 2) {
@@ -383,6 +386,12 @@ function getHeuristicFallback(player, engine) {
     raisePenalty = requiredEquityPenalty;
   }
   raiseEquityThreshold += raisePenalty;
+  // [v5.0] Intensity-based Requirement Adjustment (Formerly Equity Discount)
+  // In high-intensity pots, we need slightly more equity to call because villain's range is tight.
+  if (!['NUTS', 'MONSTER'].includes(handCategory)) {
+    if (pfIntensity >= 4) { requiredEquity += 0.15; insight += ' [4BP-Req]'; }
+    else if (pfIntensity === 3) { requiredEquity += 0.08; insight += ' [3BP-Req]'; }
+  }
   requiredEquity += requiredEquityPenalty;
 
   let wtsdBoost = 0.3 - (street === 'PREFLOP' ? vPIP : wtsd);
@@ -429,8 +438,8 @@ function getHeuristicFallback(player, engine) {
   if (callAmt >= player.chips) bluffFreq = 0;
 
   // Final Cap and safety
-  if (['TURN', 'RIVER'].includes(street)) raiseEquityThreshold = Math.min(0.8, raiseEquityThreshold);
-  requiredEquity = Math.min(0.8, requiredEquity); // dont fold monster
+  if (['TURN', 'RIVER'].includes(street)) raiseEquityThreshold = Math.min(0.75, raiseEquityThreshold);
+  // requiredEquity = Math.min(0.80, requiredEquity);
 
   const catLabel = handCategory ? ` (${handCategory})` : '';
 
@@ -439,23 +448,27 @@ function getHeuristicFallback(player, engine) {
   const variance = 0.05 - (Math.random() * .1);
   estimatedEquity += variance;
   if (estimatedEquity >= raiseEquityThreshold) {
-    // [FIX] Relax Call Huge threshold preflop to prevent limping strong hands
-    const callHugeThreshold = street === 'PREFLOP' ? 0.55 : 0.4;
+    // [FIX] Relax Call Huge threshold preflop to prevent limping strong hand
+    let currentBet = engine.currentRoundBet || 0;
+    const callHugeThreshold = street === 'PREFLOP' ? 0.55 : 0.45;
     if (potOdds > callHugeThreshold && street !== 'RIVER' && estimatedEquity < 0.85) {
       action = 'call'; insight += " (Call Huge)";
     } else {
       action = 'raise'; insight += " (Value Raise)";
+      amount = callAmt > 0 ? (currentBet * 2.5 + pot * 0.3) : (pot * 0.75); // Standard value bet
     }
   } else if (estimatedEquity >= requiredEquity) {
-
     action = 'call'; insight += " (Call Odds)";
   } else {
     // Bluffing
     const rnd = Math.random();
-    if (isAdvanced && rnd < bluffFreq / 2 && street === 'RIVER') {
+    if (isAdvanced && rnd < bluffFreq / 2 && street === 'RIVER' && spr > 0.5) {
       action = 'raise'; amount = player.chips + 10000; insight += " (River Shove Bluff)";
     } else if (rnd < bluffFreq) {
+      // [v5.0] Cap pure bluff size in high pots
       action = 'raise'; insight += " (Pure Bluff)";
+      if (pfIntensity >= 3) amount = Math.floor(pot * 0.35); // Smaller bluffs in big pots
+      else amount = Math.floor(pot * 0.65); // Standard bluff size
     } else {
       // [FIX] If we can check (callAmt == 0), don't fold.
       if (callAmt === 0) {

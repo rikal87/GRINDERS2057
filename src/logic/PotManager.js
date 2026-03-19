@@ -290,7 +290,8 @@ export class PotManager {
     });
 
     let bestWinner = bestWinners.length > 0 ? bestWinners[0] : null;
-    let isChop = bestWinners.length > 1;
+    // [v18] Fix Remainder-Chop Bug: If multiple winners tied in hand value in any pot, consider it a chop for history.
+    let isChop = bestWinners.length > 1 || (detailedPots.length > 0 && detailedPots.some(p => p.winners.length > 1 && p.name === 'Main Pot'));
 
     // Fallback: If nobody made profit (e.g. all equal loss due to rake?), use raw winnings
     // But usually someone makes profit in poker unless rake > 100%.

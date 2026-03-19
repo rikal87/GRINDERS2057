@@ -1,0 +1,206 @@
+
+======================================
+[HAND HISTORY DUMP] Hand #428 | Pot: 3724 | Board: [Td, 8s, 7d, 9c, 8d]
+Players: rich_guy_0 (Qd,Jd) | Max_1 (Ks,Js) | rich_guy_1 (3s,Qc)
+--------------------------------------
+[PREFLOP] shark_1: Folds
+[PREFLOP] Max_0: Folds
+[PREFLOP] rich_guy_0: Raises to 4 - < [Strategy: OPENER] (Value Raise) [RaiseTh:45% Eq:72% / C-Req:45% / B-Req:45% / B-Freq:0%] (AIR) (d:600ms)>
+[PREFLOP] shark_0: Folds
+[PREFLOP] Max_1: Raises to 14 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:57% Eq:68% / C-Req:44% / B-Req:57% / B-Freq:1%] (AIR) (d:2333ms)>
+[PREFLOP] rich_guy_1: Folds
+[PREFLOP] rich_guy_0: Calls 10 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:114% Eq:71% / C-Req:60% / B-Req:114% / B-Freq:0%] (AIR) (d:1786ms)>
+[FLOP] Max_1: Calls 0 - < [Strategy: C_BETTER] (Call Odds) [RaiseTh:25% Eq:20% / C-Req:11% / B-Req:25% / B-Freq:20%] (AIR) (d:4653ms)>
+[FLOP] rich_guy_0: Calls 0 - < [Strategy: OPENER] (Call Odds) [RaiseTh:50% Eq:26% / C-Req:17% / B-Req:50% / B-Freq:3%] (AIR) (d:2123ms)>
+[TURN] Max_1: Raises to 16 - < [Strategy: OPENER] (Value Raise) [RaiseTh:30% Eq:78% / C-Req:10% / B-Req:30% / B-Freq:15%] (STRONG) (d:2897ms)>
+[TURN] rich_guy_0: Raises to 56 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:75% Eq:99% / C-Req:46% / B-Req:75% / B-Freq:2%] (MONSTER) (d:600ms)>
+[TURN] Max_1: Raises to 310 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:75% Eq:78% / C-Req:58% / B-Req:75% / B-Freq:5%] (STRONG) (d:2075ms)>
+[TURN] rich_guy_0: Raises to 1847 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:75% Eq:97% / C-Req:74% / B-Req:75% / B-Freq:0%] (MONSTER) (d:2048ms)>
+[TURN] Max_1: Raises to 2070 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:75% Eq:80% / C-Req:59% / B-Req:75% / B-Freq:1%] (STRONG) (d:1620ms)>
+Showdown Results:
+  - rich_guy_0: Queen High Flush (Qd,Jd)
+  - Max_1: Straight (Jack High) (Ks,Js)
+Winner: rich_guy_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #317 | Pot: 587 | Board: [3s, Jd, 9c, 9h, 4h]
+Players: Max_0 (Th,Kh) | rich_guy_0 (Jh,Qh) | rich_guy_1 (9s,As)
+--------------------------------------
+[PREFLOP] shark_0: Folds
+[PREFLOP] Max_1: Folds
+[PREFLOP] rich_guy_1: Raises to 4 - < [Strategy: OPENER] (Value Raise) [RaiseTh:45% Eq:60% / C-Req:45% / B-Req:45% / B-Freq:0%] (AIR) (d:3067ms)>
+[PREFLOP] shark_1: Folds
+[PREFLOP] Max_0: Raises to 14 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:57% Eq:60% / C-Req:44% / B-Req:57% / B-Freq:1%] (AIR) (d:2020ms)>
+[PREFLOP] rich_guy_0: Calls 12 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:118% Eq:71% / C-Req:66% / B-Req:118% / B-Freq:0%] (AIR) (d:3352ms)>
+[PREFLOP] rich_guy_1: Calls 10 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:104% Eq:58% / C-Req:52% / B-Req:104% / B-Freq:0%] (AIR) (d:4120ms)>
+[FLOP] Max_0: Raises to 25 - < [Strategy: C_BETTER] (Pure Bluff) [RaiseTh:25% Eq:10% / C-Req:16% / B-Req:25% / B-Freq:20%] (AIR) (d:2667ms)>
+[FLOP] rich_guy_0: Calls 25 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:97% Eq:60% / C-Req:59% / B-Req:97% / B-Freq:2%] (GOOD) (d:4805ms)>
+[FLOP] rich_guy_1: Calls 25 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:91% Eq:56% / C-Req:53% / B-Req:91% / B-Freq:2%] (GOOD) (d:2785ms)>
+[TURN] Max_0: Calls 0 - < [Strategy: C_BETTER] (Check) [RaiseTh:45% Eq:10% / C-Req:15% / B-Req:45% / B-Freq:30%] (AIR) (d:3043ms)>
+[TURN] rich_guy_0: Raises to 64 - < [Strategy: OPENER] (Value Raise) [RaiseTh:50% Eq:53% / C-Req:15% / B-Req:50% / B-Freq:5%] (GOOD) (d:1270ms)>
+[TURN] rich_guy_1: Calls 64 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:75% Eq:73% / C-Req:51% / B-Req:75% / B-Freq:2%] (STRONG) (d:2257ms)>
+[TURN] Max_0: Folds
+[RIVER] rich_guy_0: Calls 0 - < [Strategy: C_BETTER] (Call Odds) [RaiseTh:65% Eq:50% / C-Req:10% / B-Req:65% / B-Freq:9%] (GOOD) (d:1635ms)>
+[RIVER] rich_guy_1: Raises to 171 - < [Strategy: OPENER] (Value Raise) [RaiseTh:50% Eq:74% / C-Req:10% / B-Req:50% / B-Freq:5%] (STRONG) (d:600ms)>
+[RIVER] rich_guy_0: Calls 171 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:75% Eq:51% / C-Req:49% / B-Req:75% / B-Freq:2%] (GOOD) (d:4385ms)>
+Showdown Results:
+  - rich_guy_0: Two Pair (Jacks and 9s) (Jh,Qh)
+  - rich_guy_1: Three of a Kind (9s) (9s,As)
+Winner: rich_guy_1
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #402 | Pot: 651 | Board: [4s, 9h, Ks, 5c, 3c]
+Players: rich_guy_0 (6d,Td) | shark_0 (As,Kc) | shark_1 (Kd,Ad)
+--------------------------------------
+[PREFLOP] Max_1: Folds
+[PREFLOP] rich_guy_1: Folds
+[PREFLOP] shark_1: Raises to 5 - <RFI Override CO (Rank:4/70)>
+[PREFLOP] Max_0: Folds
+[PREFLOP] rich_guy_0: Folds
+[PREFLOP] shark_0: Raises to 21 - <Premium 3-Bet Overlay (Rank:7 Pos:BB)>
+[PREFLOP] shark_1: Raises to 52.5 - <Value 4-Bet+ (Rank:4)>
+[PREFLOP] shark_0: Calls 31 - <GTO call 3-Bet (OOP Rank:7)>
+[FLOP] shark_0: Checks - <OOP Defense - Respecting 4BET_POT Initiative>
+[FLOP] shark_1: Raises to 9 [Exploit: PFR_PASSED] - <C-Bet (Exploiting Weakness)>
+[FLOP] shark_0: Raises to 85 - <Value Bet (FLOP - Eq:85%)>
+[FLOP] shark_1: Raises to 187 [Exploit: PFR_PASSED] - <Value Bet (FLOP - Eq:85%)>
+[FLOP] shark_0: Calls 102 - <Defensive Call (Eq:85% + Blf:0%)>
+[TURN] shark_0: Checks - <OOP Defense - Respecting 4BET_POT Initiative>
+[TURN] shark_1: Raises to 86 [Exploit: PFR_PASSED] - <Double Barrel (Exploiting Weakness)>
+[TURN] shark_0: Calls 86 - <Defensive Call (Eq:47% + Blf:0%)>
+[RIVER] shark_0: Checks - <OOP Defense - Respecting 4BET_POT Initiative>
+[RIVER] shark_1: Checks [Exploit: PFR_PASSED] - <Passive Check (Eq:53% + Blf:0%)>
+Showdown Results:
+  - shark_0: One Pair (Kings) (As,Kc)
+  - shark_1: One Pair (Kings) (Kd,Ad)
+Winner: shark_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #738 | Pot: 1471 | Board: [4s, Qd, 6c, Kd]
+Players: Max_0 (Kh,Ks) | rich_guy_0 (8c,Ts) | shark_0 (9d,Tc) | Max_1 (Ad,Jc) | rich_guy_1 (9s,Js)
+--------------------------------------
+[PREFLOP] Max_1: Raises to 4 - < [Strategy: OPENER] (Value Raise) [RaiseTh:5% Eq:69% / C-Req:48% / B-Req:5% / B-Freq:0%] (AIR) (d:3320ms)>
+[PREFLOP] rich_guy_1: Calls 4 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:103% Eq:58% / C-Req:57% / B-Req:103% / B-Freq:0%] (AIR) (d:2061ms)>
+[PREFLOP] shark_1: Folds
+[PREFLOP] Max_0: Raises to 18 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:54% Eq:95% / C-Req:45% / B-Req:54% / B-Freq:1%] (AIR) (d:600ms)>
+[PREFLOP] rich_guy_0: Folds
+[PREFLOP] shark_0: Folds
+[PREFLOP] Max_1: Calls 14 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:73% Eq:73% / C-Req:60% / B-Req:73% / B-Freq:1%] (AIR) (d:1119ms)>
+[PREFLOP] rich_guy_1: Calls 14 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:105% Eq:60% / C-Req:53% / B-Req:105% / B-Freq:0%] (AIR) (d:3669ms)>
+[FLOP] Max_1: Calls 0 - < [Strategy: DONK_AVOIDER] (Check) [RaiseTh:105% Eq:14% / C-Req:16% / B-Req:105% / B-Freq:3%] (ACE_HIGH) (d:3264ms)>
+[FLOP] rich_guy_1: Calls 0 - < [Strategy: DONK_AVOIDER] (Check) [RaiseTh:125% Eq:4% / C-Req:22% / B-Req:125% / B-Freq:1%] (AIR) (d:2512ms)>
+[FLOP] Max_0: Raises to 34 - < [Strategy: C_BETTER] (Value Raise) [RaiseTh:25% Eq:68% / C-Req:16% / B-Req:25% / B-Freq:20%] (STRONG) (d:3068ms)>
+[FLOP] Max_1: Raises to 122 - < [Strategy: RESPONSE] (Pure Bluff) [RaiseTh:77% Eq:15% / C-Req:53% / B-Req:77% / B-Freq:8%] (ACE_HIGH) (d:3971ms)>
+[FLOP] rich_guy_1: Folds
+[FLOP] Max_0: Calls 88 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:89% Eq:67% / C-Req:60% / B-Req:89% / B-Freq:5%] (STRONG) (d:3247ms)>
+[TURN] Max_1: Calls 0 - < [Strategy: C_BETTER] (Call Odds) [RaiseTh:45% Eq:10% / C-Req:10% / B-Req:45% / B-Freq:20%] (ACE_HIGH) (d:4799ms)>
+[TURN] Max_0: Raises to 165 - < [Strategy: OPENER] (Value Raise) [RaiseTh:30% Eq:84% / C-Req:10% / B-Req:30% / B-Freq:15%] (MONSTER) (d:2744ms)>
+[TURN] Max_1: Raises to 585 - < [Strategy: RESPONSE] (Pure Bluff) [RaiseTh:75% Eq:9% / C-Req:46% / B-Req:75% / B-Freq:8%] (ACE_HIGH) (d:1300ms)>
+[TURN] Max_0: Raises to 1829 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:75% Eq:80% / C-Req:59% / B-Req:75% / B-Freq:5%] (MONSTER) (d:2330ms)>
+[TURN] Max_1: Folds
+Showdown Results:
+  - Max_0: Three of a Kind (Kings) (Kh,Ks)
+Winner: Max_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #578 | Pot: 508 | Board: [Ac, 5h, Td, 7h]
+Players: Max_0 (Ad,Kd) | rich_guy_0 (As,Ah) | Max_1 (Tc,Qc) | rich_guy_1 (5s,9c)
+--------------------------------------
+[PREFLOP] shark_1: Folds
+[PREFLOP] Max_0: Raises to 4 - < [Strategy: OPENER] (Value Raise) [RaiseTh:5% Eq:89% / C-Req:46% / B-Req:5% / B-Freq:0%] (AIR) (d:2944ms)>
+[PREFLOP] rich_guy_0: Calls 4 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:103% Eq:91% / C-Req:55% / B-Req:103% / B-Freq:0%] (AIR) (d:2409ms)>
+[PREFLOP] shark_0: Folds
+[PREFLOP] Max_1: Raises to 18 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:48% Eq:58% / C-Req:37% / B-Req:48% / B-Freq:1%] (AIR) (d:2851ms)>
+[PREFLOP] rich_guy_1: Folds
+[PREFLOP] Max_0: Raises to 45 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:74% Eq:87% / C-Req:61% / B-Req:74% / B-Freq:1%] (AIR) (d:2062ms)>
+[PREFLOP] rich_guy_0: Calls 41 - < [Strategy: RESPONSE] [3BP-Req] (Call Odds) [RaiseTh:133% Eq:96% / C-Req:89% / B-Req:133% / B-Freq:0%] (AIR) (d:4299ms)>
+[PREFLOP] Max_1: Folds
+[FLOP] Max_0: Raises to 66 - < [Strategy: C_BETTER] [3BP-Req] (Value Raise) [RaiseTh:30% Eq:54% / C-Req:24% / B-Req:30% / B-Freq:10%] (GOOD) (d:2047ms)>
+[FLOP] rich_guy_0: Calls 66 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:192% Eq:87% / C-Req:59% / B-Req:192% / B-Freq:1%] (MONSTER) (d:2975ms)>
+[TURN] Max_0: Raises to 133 - < [Strategy: C_BETTER] [3BP-Req] (Value Raise) [RaiseTh:50% Eq:50% / C-Req:23% / B-Req:50% / B-Freq:10%] (GOOD) (d:1542ms)>
+[TURN] rich_guy_0: Raises to 472 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:75% Eq:84% / C-Req:51% / B-Req:75% / B-Freq:1%] (MONSTER) (d:2313ms)>
+[TURN] Max_0: Folds
+Showdown Results:
+  - rich_guy_0: Three of a Kind (Aces) (As,Ah)
+Winner: rich_guy_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #113 | Pot: 810 | Board: [5h, Js, Jh, 6d, Qc]
+Players: Max_0 (Jd,Kd) | rich_guy_0 (Kh,5s) | Max_1 (8s,8d) | rich_guy_1 (Jc,Ks)
+--------------------------------------
+[PREFLOP] shark_0: Folds
+[PREFLOP] Max_1: Raises to 4 - < [Strategy: OPENER] (Value Raise) [RaiseTh:5% Eq:61% / C-Req:46% / B-Req:5% / B-Freq:0%] (AIR) (d:600ms)>
+[PREFLOP] rich_guy_1: Calls 4 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:103% Eq:60% / C-Req:55% / B-Req:103% / B-Freq:0%] (AIR) (d:2008ms)>
+[PREFLOP] shark_1: Folds
+[PREFLOP] Max_0: Raises to 18 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:48% Eq:75% / C-Req:37% / B-Req:48% / B-Freq:1%] (AIR) (d:600ms)>
+[PREFLOP] rich_guy_0: Folds
+[PREFLOP] Max_1: Calls 14 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:74% Eq:63% / C-Req:61% / B-Req:74% / B-Freq:1%] (AIR) (d:4449ms)>
+[PREFLOP] rich_guy_1: Calls 14 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:105% Eq:63% / C-Req:53% / B-Req:105% / B-Freq:0%] (AIR) (d:4040ms)>
+[FLOP] Max_0: Raises to 33 - < [Strategy: C_BETTER] (Value Raise) [RaiseTh:25% Eq:70% / C-Req:16% / B-Req:25% / B-Freq:30%] (STRONG) (d:600ms)>
+[FLOP] Max_1: Calls 33 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:77% Eq:55% / C-Req:53% / B-Req:77% / B-Freq:11%] (GOOD) (d:2810ms)>
+[FLOP] rich_guy_1: Calls 33 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:91% Eq:65% / C-Req:53% / B-Req:91% / B-Freq:2%] (STRONG) (d:2035ms)>
+[TURN] Max_0: Raises to 61 - < [Strategy: C_BETTER] (Value Raise) [RaiseTh:45% Eq:72% / C-Req:15% / B-Req:45% / B-Freq:30%] (STRONG) (d:3382ms)>
+[TURN] Max_1: Calls 61 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:72% Eq:55% / C-Req:47% / B-Req:72% / B-Freq:11%] (GOOD) (d:2835ms)>
+[TURN] rich_guy_1: Calls 61 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:75% Eq:71% / C-Req:43% / B-Req:75% / B-Freq:2%] (STRONG) (d:2944ms)>
+[RIVER] Max_0: Raises to 236 - < [Strategy: C_BETTER] (Value Raise) [RaiseTh:45% Eq:75% / C-Req:15% / B-Req:45% / B-Freq:45%] (STRONG) (d:2896ms)>
+[RIVER] Max_1: Folds
+[RIVER] rich_guy_1: Calls 236 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:75% Eq:65% / C-Req:49% / B-Req:75% / B-Freq:2%] (STRONG) (d:1407ms)>
+Showdown Results:
+  - Max_0: Three of a Kind (Jacks) (Jd,Kd)
+  - rich_guy_1: Three of a Kind (Jacks) (Jc,Ks)
+Winner: Max_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #319 | Pot: 3955 | Board: [Tc, Jd, Kd, Qs, 5d]
+Players: Max_0 (Td,Qd) | rich_guy_0 (Jh,As) | shark_0 (2s,9d) | Max_1 (2h,3h) | rich_guy_1 (9c,Qc)
+--------------------------------------
+[PREFLOP] rich_guy_1: Raises to 4 - < [Strategy: OPENER] (Value Raise) [RaiseTh:45% Eq:64% / C-Req:49% / B-Req:45% / B-Freq:0%] (AIR) (d:2146ms)>
+[PREFLOP] shark_1: Folds
+[PREFLOP] Max_0: Calls 4 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:63% Eq:62% / C-Req:54% / B-Req:63% / B-Freq:1%] (AIR) (d:4550ms)>
+[PREFLOP] rich_guy_0: Calls 4 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:94% Eq:67% / C-Req:46% / B-Req:94% / B-Freq:0%] (AIR) (d:2124ms)>
+[PREFLOP] shark_0: Folds
+[PREFLOP] Max_1: Folds
+[FLOP] rich_guy_1: Raises to 13 - < [Strategy: C_BETTER] (Value Raise) [RaiseTh:40% Eq:101% / C-Req:17% / B-Req:40% / B-Freq:4%] (MONSTER) (d:2353ms)>
+[FLOP] Max_0: Calls 13 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:77% Eq:69% / C-Req:53% / B-Req:77% / B-Freq:8%] (MARGINAL) (d:1994ms)>
+[FLOP] rich_guy_0: Calls 13 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:89% Eq:54% / C-Req:51% / B-Req:89% / B-Freq:2%] (MARGINAL) (d:2335ms)>
+[TURN] rich_guy_1: Raises to 29 - < [Strategy: C_BETTER] (Value Raise) [RaiseTh:60% Eq:97% / C-Req:10% / B-Req:60% / B-Freq:4%] (MONSTER) (d:2159ms)>
+[TURN] Max_0: Calls 29 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:71% Eq:62% / C-Req:46% / B-Req:71% / B-Freq:8%] (GOOD) (d:2032ms)>
+[TURN] rich_guy_0: Raises to 102 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:66% Eq:99% / C-Req:41% / B-Req:66% / B-Freq:2%] (MONSTER) (d:2505ms)>
+[TURN] rich_guy_1: Raises to 566 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:75% Eq:94% / C-Req:55% / B-Req:75% / B-Freq:1%] (MONSTER) (d:2572ms)>
+[TURN] Max_0: Folds
+[TURN] rich_guy_0: Raises to 2215 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:75% Eq:93% / C-Req:73% / B-Req:75% / B-Freq:0%] (MONSTER) (d:600ms)>
+[TURN] rich_guy_1: Calls 1649 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:75% Eq:100% / C-Req:54% / B-Req:75% / B-Freq:0%] (MONSTER) (d:2675ms) (Downgraded to Call)>
+Showdown Results:
+  - rich_guy_0: Straight (Ace High) (Jh,As)
+  - rich_guy_1: Straight (King High) (9c,Qc)
+Winner: rich_guy_0
+======================================
+
+======================================
+[HAND HISTORY DUMP] Hand #822 | Pot: 3794 | Board: [5d, 2c, Kc, 3c, 3s]
+Players: rich_guy_0 (5c,Ac) | shark_0 (Kd,7h) | shark_1 (Qc,Tc)
+--------------------------------------
+[PREFLOP] Max_1: Folds
+[PREFLOP] shark_1: Raises to 5 - <RFI Override CO (Rank:20/70)>
+[PREFLOP] Max_0: Folds
+[PREFLOP] rich_guy_0: Calls 4 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:100% Eq:61% / C-Req:48% / B-Req:100% / B-Freq:0%] (AIR) (d:2751ms)>
+[PREFLOP] shark_0: Folds
+[FLOP] rich_guy_0: Calls 0 - < [Strategy: DONK_AVOIDER] (Call Odds) [RaiseTh:120% Eq:61% / C-Req:12% / B-Req:120% / B-Freq:1%] (GOOD) (d:2035ms)>
+[FLOP] shark_1: Raises to 2 - <Semi-Bluff (DRAW_STRONG)>
+[FLOP] rich_guy_0: Calls 2 - < [Strategy: RESPONSE] (Call Odds) [RaiseTh:78% Eq:60% / C-Req:35% / B-Req:78% / B-Freq:2%] (GOOD) (d:2908ms)>
+[TURN] rich_guy_0: Raises to 8 - < [Strategy: DONK_AVOIDER] (Value Raise) [RaiseTh:75% Eq:99% / C-Req:5% / B-Req:75% / B-Freq:1%] (NUTS) (d:2045ms)>
+[TURN] shark_1: Raises to 17 - <Value Bet (TURN - Eq:73%)>
+[TURN] rich_guy_0: Raises to 94 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:75% Eq:102% / C-Req:43% / B-Req:75% / B-Freq:1%] (NUTS) (d:600ms)>
+[TURN] shark_1: Raises to 1889 - <Multi-Raise Shove (TURN - Eq:73%)>
+[TURN] rich_guy_0: Raises to 4288 - < [Strategy: RESPONSE] (Value Raise) [RaiseTh:75% Eq:101% / C-Req:82% / B-Req:75% / B-Freq:0%] (NUTS) (d:2109ms)>
+Showdown Results:
+  - rich_guy_0: Ace High Flush (5c,Ac)
+  - shark_1: King High Flush (Qc,Tc)
+Winner: rich_guy_0
+======================================

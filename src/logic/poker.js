@@ -169,176 +169,68 @@ const getNutStatus = (hand, board) => {
     percentile: rank / sortedScores.length
   };
 };
+/**
+ * [BRAIN] Advanced Hand Valuation
+ * Used by: Shark / aiBrainHub.js
+ * Features: Uses Nut-status (absRank) and Percentile for strategic categorization.
+ * Note: Relative board danger is further assessed in aiBrainBoardTool.js.
+ */
 export const getHandCategory = (hand, board, evalResult) => {
-  const rank = evalResult.rank;
   const nutInfo = getNutStatus(hand, board);
   const usedHoleCards = evalResult.cards ? evalResult.cards.filter(c => hand.includes(c)).length : 0;
-
-  // Absolute Nuts Check (or near nuts)
-  if (nutInfo.isNuts) {
-    if (usedHoleCards === 0) return 'BOARD_CHOP'; // Board is nuts (guaranteed split)
-    // On the river, one card nuts is the absolute nuts. On earlier streets, it is vulnerable.
-    if (usedHoleCards === 1 && board.length < 5) return 'STRONG';
-    return 'NUTS';
+  const absRank = nutInfo.rank; // 1 = absolute nuts
+  const percentile = nutInfo.percentile; // 0 = nuts, 1 = air
+  const result = (cat) => ({ category: cat, percentile });
+  const isOnePair = evalResult.total >= 1000000 && evalResult.total < 2000000;
+  const isTwoPair = evalResult.total >= 2000000 && evalResult.total < 3000000;
+  // 1. Absolute Nut / Near Nut States
+  if (absRank === 1) {
+    if (usedHoleCards === 0) return result('BOARD_CHOP');
+    return result('NUTS');
   }
-  if (nutInfo.isSecondNuts) {
-    if (usedHoleCards === 0) return 'WEAK';
-    if (usedHoleCards === 1) return 'STRONG';
-    return 'MONSTER'; // Second Nuts is Monster if 2-cards
+  if (absRank === 2) {
+    if (usedHoleCards === 0) return result('WEAK');
+    if (usedHoleCards === 2) return result('MONSTER');
+    return percentile < 0.05 ? result('MONSTER') : result('STRONG');
+  }
+  if (absRank <= 5) {
+    if (usedHoleCards === 0) return result('WEAK');
+    // [MOD] Double-Paired Board Awareness
+    const boardRanks = board.map(c => '23456789TJQKA'.indexOf(c[0])).sort((a, b) => b - a);
+    const boardFreq = {}; boardRanks.forEach(r => boardFreq[r] = (boardFreq[r] || 0) + 1);
+    const isBoardDoublePaired = Object.values(boardFreq).filter(v => v >= 2).length >= 2;
+    if (isTwoPair && isBoardDoublePaired && absRank > 1) return result('GOOD');
+
+    return usedHoleCards === 2 ? result('MONSTER') : result('STRONG');
   }
 
-  // Get Rank Values
-  const getRankVal = c => '23456789TJQKA'.indexOf(c[0]);
-  const handRanks = hand.map(getRankVal).sort((a, b) => b - a);
-  const boardRanks = board.map(getRankVal).sort((a, b) => b - a);
-
-  // Board Texture Flags
-  const isBoardPaired = boardRanks.some((r, i) => r === boardRanks[i + 1]);
-  const isBoardTrips = boardRanks.some((r, i) => r === boardRanks[i + 1] && r === boardRanks[i + 2]);
-
-  const boardSuits = board.map(c => c[1]);
-  const boardSuitCounts = {};
-  boardSuits.forEach(s => boardSuitCounts[s] = (boardSuitCounts[s] || 0) + 1);
-  const isBoardFlushPossible = Object.values(boardSuitCounts).some(c => c >= 3);
-  const isBoardStraightPossible = analyzeBoardTexture(board).score >= 5;
-
-  // 10: Royal Flush
-  if (rank === 10) return 'NUTS';
-
-  // 9: Straight Flush
-  if (rank === 9) return nutInfo.rank <= 3 ? (usedHoleCards === 2 ? 'NUTS' : 'STRONG') : 'STRONG';
-
-  // 8: Quads
-  if (rank === 8) {
-    if (usedHoleCards === 0) return 'WEAK';
-    if (boardRanks.length >= 4 && boardRanks[0] === boardRanks[3]) {
-      // Board is Quads. Kicker battle.
-      if (nutInfo.rank <= 3) return usedHoleCards === 2 ? 'NUTS' : 'STRONG'; // Ace/King kicker
-      return 'WEAK'; // Playing board mostly
+  // 2. High Value Categories (Rank Based)
+  if (absRank <= 15) {
+    if (usedHoleCards === 0) return result('WEAK');
+    if (usedHoleCards === 2) {
+      if (isOnePair) return absRank <= 5 ? result('MONSTER') : result('STRONG');
+      if (isTwoPair) return absRank <= 10 ? result('MONSTER') : result('STRONG');
+      return result('MONSTER');
     }
-    return usedHoleCards === 2 ? 'NUTS' : 'STRONG';
+    return result('GOOD');
+  }
+  if (absRank <= 30) {
+    if (usedHoleCards === 0) return result('WEAK');
+    return usedHoleCards === 2 ? result('STRONG') : result('GOOD');
   }
 
-  // 7: Full House
-  if (rank === 7) {
-    if (usedHoleCards === 0) return 'WEAK';
-    if (nutInfo.rank <= 5) return usedHoleCards === 2 ? 'MONSTER' : 'STRONG';
-    if (nutInfo.rank <= 15) return 'STRONG';
-    return 'MARGINAL'; // Bottom boat or playing board
-  }
+  // 3. Percentile Based Mid-Range
+  if (percentile <= 0.10) return result('STRONG');
+  if (percentile <= 0.25) return result('GOOD');
+  if (percentile <= 0.45) return result('MARGINAL');
+  if (percentile <= 0.65) return result('WEAK');
 
-  // 6: Flush
-  if (rank === 6) {
-    if (usedHoleCards === 0) return 'WEAK';
-    if (isBoardPaired) return 'GOOD'; // Vulnerable to Full House
-    if (nutInfo.rank <= 5) return usedHoleCards === 2 ? 'NUTS' : 'MONSTER'; // High Flush
-    if (nutInfo.rank <= 15) return 'STRONG'; // Mid Flush
-    if (nutInfo.rank <= 25) return 'GOOD'; // Mid-Low Flush
-    return 'STRONG'; // Low Flush
-  }
-
-  // 5: Straight
-  if (rank === 5) {
-    if (usedHoleCards === 0) return 'WEAK';
-    if (isBoardFlushPossible) return 'MARGINAL'; // Vulnerable to Flush
-    if (isBoardPaired) return 'MARGINAL'; // Vulnerable to FH
-    if (nutInfo.rank <= 3) return usedHoleCards === 2 ? 'MONSTER' : 'STRONG'; // Nut Straight
-    if (nutInfo.rank <= 10) return 'STRONG'; // Good Straight
-    return 'GOOD'; // Bottom straight
-  }
-
-  // 4: Three of a Kind
-  if (rank === 4) {
-    if (usedHoleCards === 0) return 'WEAK';
-    if (isBoardTrips) {
-      if (nutInfo.rank <= 5) return 'STRONG'; // Top Kicker
-      if (nutInfo.rank <= 15) return 'GOOD'; // Mid Kicker
-      return 'WEAK'; // Low Kicker or Chop
-    }
-
-    // Set vs Trips
-    const isPocketPair = hand[0][0] === hand[1][0];
-    if (isPocketPair) return 'MONSTER'; // SET 
-    // Trips
-    if (nutInfo.rank <= 10) return 'STRONG'; // Good Kicker
-    if (nutInfo.rank <= 20) return 'GOOD'; // Mid Kicker
-    return 'MARGINAL'; // Weak Kicker
-  }
-
-  // 3: Two Pair
-  if (rank === 3) {
-    const boardHigh1 = boardRanks[0];
-    const boardHigh2 = boardRanks[1];
-    const hasTopPair = handRanks.includes(boardHigh1);
-    const hasSecondPair = handRanks.includes(boardHigh2);
-
-    if (isBoardPaired) {
-      const isPocketPair = hand[0][0] === hand[1][0];
-      // Overpair to the board pair (e.g. AA on KK86)
-      if (isPocketPair && handRanks[0] > boardHigh1) return 'STRONG';
-
-      // Counterfeited check
-      if (!hasTopPair && handRanks.some(v => v < boardHigh1)) return 'MARGINAL';
-      if (nutInfo.rank <= 15) return 'STRONG';
-      return 'GOOD';
-    }
-
-    // Normal Two Pair (No board pair)
-    if (hasTopPair && hasSecondPair) {
-      if (isBoardFlushPossible || isBoardStraightPossible) return 'GOOD';
-      return 'MONSTER'; // Top Two
-    }
-    if (hasTopPair) {
-      if (isBoardFlushPossible || isBoardStraightPossible) return 'MARGINAL';
-      return 'STRONG'; // Top Pair + Bottom Pair
-    }
-
-    // We have two pair but neither matches the top card (e.g., K-Q on A-K-Q)
-    if (hasSecondPair) return 'GOOD'; // 2nd + 3rd pair
-    return 'MARGINAL'; // Bottom two pairs
-  }
-
-  // 2: One Pair
-  if (rank === 2) {
-    const isPocketPair = hand[0][0] === hand[1][0];
-    const maxBoard = boardRanks[0];
-
-    if (isPocketPair) {
-      if (handRanks[0] > maxBoard) return 'STRONG'; // Overpair
-      if (handRanks[0] > (boardRanks[1] || -1)) {
-        if (isBoardFlushPossible || isBoardStraightPossible) return 'MARGINAL';
-        return 'GOOD'; // 2nd pair (Pocket pair between 1st and 2nd board card)
-      }
-      if (handRanks[0] < boardRanks[boardRanks.length - 1]) return 'WEAK'; // Underpair
-      return 'MARGINAL'; // 3rd pair etc.
-    } else {
-      if (handRanks.includes(maxBoard)) {
-        if (nutInfo.rank <= 30) return 'STRONG'; // TPTK / TPGK
-        if (nutInfo.rank <= 60) {
-          if (isBoardFlushPossible || isBoardStraightPossible) return 'MARGINAL';
-          return 'GOOD'; // TPMK
-        }
-        if (isBoardFlushPossible || isBoardStraightPossible) return 'WEAK';
-        return 'MARGINAL'; // TPWK
-      }
-
-      const pairedRank = handRanks.find(r => boardRanks.includes(r));
-      if (pairedRank === boardRanks[1]) {
-        if (isBoardFlushPossible || isBoardStraightPossible) return 'MARGINAL';
-        return 'GOOD'; // Middle Pair (2nd pair with board)
-      }
-      return 'MARGINAL'; // Bottom pair / 3rd pair
-    }
-  }
-
-  // 1: High Card
-  if (rank === 1) {
-    const holeVal = hand.map(c => '23456789TJQKA'.indexOf(c[0])).sort((a, b) => b - a);
-    if (holeVal.includes(12)) return 'ACE_HIGH';
-  }
-
-  return 'AIR';
+  // 4. Low Value / Air
+  const holeVal = hand.map(c => '23456789TJQKA'.indexOf(c[0])).sort((a, b) => b - a);
+  if (holeVal.includes(12)) return result('ACE_HIGH');
+  return result('AIR');
 };
+
 const scoreFiveCards = (cards) => {
   const ranks = cards.map(c => {
     const idx = RANKS.indexOf(c[0]);
@@ -744,6 +636,11 @@ export const getDrawCategory = (hand, board) => {
   if (outsData.outs >= 4) return 'DRAW_WEAK';
   return 'AIR';
 }
+/**
+ * [HEURISTIC] Fast Hand Valuation
+ * Used by: Max, Rich_Guy / aiEngine.js
+ * Features: Purely rank-based heuristics, no Nut-status calculation.
+ */
 export const getSimpleHandCategory = (hand, board, evalResult) => {
   const rank = evalResult.rank;
 
@@ -825,38 +722,49 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
     if (usedHoleCards === 0) {
       return getNutStatus(hand, board).isNuts ? 'BOARD_CHOP' : 'WEAK';
     }
-    if (isBoardPaired) return 'GOOD';
-
     const flushScore = evalResult.score || 0;
-    if (usedHoleCards === 2) {
-      if (flushScore >= 80) return 'MONSTER';
-      if (flushScore >= 40) return 'STRONG';
-      return 'GOOD';
-    } else {
-      // 1-card flush
-      if (flushScore >= 90) return 'STRONG';
-      if (flushScore >= 60) return 'GOOD';
-      return 'MARGINAL';
-    }
+    let caseSum = 0;
+    if (isBoardPaired) caseSum += 2;
+
+    if (flushScore >= 95) caseSum--;
+    else if (flushScore >= 80) caseSum = caseSum;
+    else if (flushScore >= 65) caseSum++;
+    else caseSum += 2;
+    if (usedHoleCards === 2) caseSum--;
+    else if (usedHoleCards === 1) caseSum++;
+
+    if (caseSum >= 2) return 'GOOD';
+    if (caseSum >= 0) return 'STRONG';
+    if (caseSum === -1) return 'MONSTER';
+    return 'NUTS'; // USUALLY
   }
 
   // 5: Straight
   if (rank === 5) {
     if (usedHoleCards === 0) {
       // If it's a Broadway straight on board, it's often the nuts (unless flush possible)
-      const isNuts = getNutStatus(hand, board).isNuts;
-      return isNuts ? 'BOARD_CHOP' : 'WEAK';
+      return getNutStatus(hand, board).isNuts ? 'BOARD_CHOP' : 'WEAK';
     }
+
+    // [v28] Straight caseSum (Top-end vs Bottom-end + Board Danger)
     let caseSum = 0;
-    if (isBoardPaired) caseSum++;
-    if (isBoardFlushPossible) caseSum++;
-    if (isBoardOnehandFlushPossible) caseSum++;
+    if (isBoardPaired) caseSum += 2;
+    if (isBoardFlushPossible) caseSum += 2;
+
+    // High End vs Bottom End Heuristic
+    const straightHigh = (evalResult.total % Math.pow(15, 5));
+    const maxBoardRank = Math.max(...boardRanks);
+
+    // If our straight high is 2+ ranks above the highest board card, it's a "Top End"
+    if (straightHigh >= maxBoardRank + 2) caseSum--;
+    // If our straight high is exactly equal to the board's highest possible straight-end, it's Nut-like
+    if (straightHigh >= 12) caseSum--; // Broadway/Ace-High Straight bonus
+
     if (usedHoleCards === 1) caseSum++;
     if (usedHoleCards === 2) caseSum--;
 
     if (caseSum >= 2) return 'GOOD';
-    else if (caseSum >= 0) return 'STRONG';
-    // else if (caseSum === -1) return 'MONSTER';
+    if (caseSum >= 0) return 'STRONG';
     return 'MONSTER';
   }
 
