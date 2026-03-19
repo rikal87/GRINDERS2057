@@ -56,6 +56,7 @@ export class GameEngine {
     this.potManager = new PotManager(this.rake, this.rakeCap);
     this.handHistory = [];
     this.currentHandHistory = null;
+    this.actionHistory = []; // [v3.0] Structured history for AI analysis
     this.processingAI = false;
     this.locationLV = locationLV;
     this.turnTimer = null;
@@ -112,15 +113,17 @@ export class GameEngine {
         vPIPCount: 0,
         pfrCount: 0,
         threeBetCount: 0,
+        threeBetOppCount: 0,
         fourBetOrMoreCount: 0,
+        fourBetOppCount: 0,
         facedFlopBet: 0,
         foldedToFlopBet: 0,
         aggressiveActions: 0, // Bet + Raise
         calls: 0,
         get vPIP() { return this.handsPlayed > 0 ? (this.vPIPCount / this.handsPlayed) * 100 : 0; },
         get pfr() { return this.handsPlayed > 0 ? (this.pfrCount / this.handsPlayed) * 100 : 0; },
-        get threeBet() { return this.handsPlayed > 0 ? (this.threeBetCount / this.handsPlayed) * 100 : 0; },
-        get fourBetOrMore() { return this.handsPlayed > 0 ? (this.fourBetOrMoreCount / this.handsPlayed) * 100 : 0; },
+        get threeBet() { return this.threeBetOppCount > 0 ? (this.threeBetCount / this.threeBetOppCount) * 100 : 0; },
+        get fourBetOrMore() { return this.fourBetOppCount > 0 ? (this.fourBetOrMoreCount / this.fourBetOppCount) * 100 : 0; },
         get foldToFlop() { return this.facedFlopBet > 0 ? (this.foldedToFlopBet / this.facedFlopBet) * 100 : 0; },
         get aggressionFactor() { return this.calls > 0 ? this.aggressiveActions / this.calls : (this.aggressiveActions > 0 ? 10 : 0); } // Infinite if no calls but has raises
       },
@@ -366,15 +369,17 @@ export class GameEngine {
         vPIPCount: 0,
         pfrCount: 0,
         threeBetCount: 0,
+        threeBetOppCount: 0,
         fourBetOrMoreCount: 0,
+        fourBetOppCount: 0,
         facedFlopBet: 0,
         foldedToFlopBet: 0,
         aggressiveActions: 0,
         calls: 0,
         get vPIP() { return this.handsPlayed > 0 ? (this.vPIPCount / this.handsPlayed) * 100 : 0; },
         get pfr() { return this.handsPlayed > 0 ? (this.pfrCount / this.handsPlayed) * 100 : 0; },
-        get threeBet() { return this.handsPlayed > 0 ? (this.threeBetCount / this.handsPlayed) * 100 : 0; },
-        get fourBetOrMore() { return this.handsPlayed > 0 ? (this.fourBetOrMoreCount / this.handsPlayed) * 100 : 0; },
+        get threeBet() { return this.threeBetOppCount > 0 ? (this.threeBetCount / this.threeBetOppCount) * 100 : 0; },
+        get fourBetOrMore() { return this.fourBetOppCount > 0 ? (this.fourBetOrMoreCount / this.fourBetOppCount) * 100 : 0; },
         get foldToFlop() { return this.facedFlopBet > 0 ? (this.foldedToFlopBet / this.facedFlopBet) * 100 : 0; },
         get aggressionFactor() { return this.calls > 0 ? this.aggressiveActions / this.calls : (this.aggressiveActions > 0 ? 10 : 0); }
       },
@@ -406,6 +411,7 @@ export class GameEngine {
     this.preflopRaises = 0;
     this.currentStreetRaises = 0; // [FIX] Reset raises for new hand
     this.aggressor = null;
+    this.actionHistory = []; // [v3.0] Reset history for new hand
 
     if (this.exitReservationRounds > 0) {
       this.exitReservationRounds--;
@@ -635,6 +641,24 @@ export class GameEngine {
         this.aggressor = player.id;
         if (this.state === 'PREFLOP') {
           this.preflopRaises++;
+          
+          // [v5.0] Track 3-Bet Opportunities (Fix 3B% calculation)
+          if (this.currentStreetRaises === 1) {
+            this.players.forEach(p => {
+              if (p.id !== player.id && !p.isFolded && p.chips > 0) {
+                if (p.stats.threeBetOppCount === undefined) p.stats.threeBetOppCount = 0;
+                p.stats.threeBetOppCount++;
+              }
+            });
+          } else if (this.currentStreetRaises === 2) {
+            // Track 4-Bet+ Opportunities
+            this.players.forEach(p => {
+              if (p.id !== player.id && !p.isFolded && p.chips > 0) {
+                if (p.stats.fourBetOppCount === undefined) p.stats.fourBetOppCount = 0;
+                p.stats.fourBetOppCount++;
+              }
+            });
+          }
         }
       } else {
         this.aggressor = null;
@@ -670,6 +694,15 @@ export class GameEngine {
         pot: this.pot
       });
     }
+
+    // [v3.0] Populate structured action history for AI engine
+    this.actionHistory.push({
+      playerId: player.id,
+      street: this.state,
+      action: action.type,
+      amount: action.amount || 0,
+      potSize: this.pot
+    });
 
     // [FIX] Do not increment acted count for Folds, because they are removed from activePlayers.
     // Otherwise we double-count (increment numerator AND decrement denominator).
@@ -805,7 +838,7 @@ export class GameEngine {
     // Finalize History
     if (this.currentHandHistory) {
       const winnerResult = result.results.find(res => res.id === result.winnerId);
-      this.currentHandHistory.winner = result.winnerId;
+      this.currentHandHistory.winner = result.isChop ? `CHOP (${result.choppers.join(', ')})` : result.winnerId;
       this.currentHandHistory.winnerHand = winnerResult ? winnerResult.hand.name : 'Unknown Hand';
       this.currentHandHistory.pot = currentPot;
       this.currentHandHistory.board = [...this.board];

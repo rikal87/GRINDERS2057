@@ -1,5 +1,5 @@
 import { evaluateHand } from './poker.js';
-import { ITEM_EFFECT_ID } from './itemsEffect.js';
+import { ITEM_EFFECT_ID } from './constants.js';
 
 export class PotManager {
   constructor(rake = 0.05, rakeCap = 50) {
@@ -277,11 +277,20 @@ export class PotManager {
     // Identify primary winner for UI highlights
     // Use Net Profit (Amount Won - Total Wagered) to determine true winner
     // This prevents "Refund Winners" (who bet huge, everyone else all-in small, they get refund > main pot) from being marked winner
-    let bestWinner = activePlayers.reduce((prev, current) => {
-      const prevNet = winnings[prev.id] - (prev.totalWagered || 0);
-      const currNet = winnings[current.id] - (current.totalWagered || 0);
-      return currNet > prevNet ? current : prev;
-    }, activePlayers[0]);
+    let maxNet = -Infinity;
+    let bestWinners = [];
+    activePlayers.forEach(p => {
+      const net = winnings[p.id] - (p.totalWagered || 0);
+      if (net > maxNet) {
+        maxNet = net;
+        bestWinners = [p];
+      } else if (net === maxNet) {
+        bestWinners.push(p);
+      }
+    });
+
+    let bestWinner = bestWinners.length > 0 ? bestWinners[0] : null;
+    let isChop = bestWinners.length > 1;
 
     // Fallback: If nobody made profit (e.g. all equal loss due to rake?), use raw winnings
     // But usually someone makes profit in poker unless rake > 100%.
@@ -298,6 +307,8 @@ export class PotManager {
         rakeSaved: playerRakeSaved[p.id] // [NEW]
       })),
       winnerId: bestWinner ? bestWinner.id : null,
+      isChop: isChop,
+      choppers: bestWinners.map(w => w.id),
       rake: totalRakeCollected,
       rakeSaved: totalRakeSaved, // [NEW] Return total rake saved
       detailedPots: detailedPots // [NEW] Return detailed pots

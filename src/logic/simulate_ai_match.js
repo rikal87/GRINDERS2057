@@ -1,15 +1,15 @@
 import fs from 'fs';
-import { calculateEquity, createDeck } from './poker.js';
+import { createDeck } from './poker.js';
 import { CLASSES_ENEMY as D1, CLASSES_PARTNER as D2 } from './persona.js'
 import { getAIAction } from './aiEngine.js';
-import { getAdvancedAIAction } from './aiEngineAdvanced.js';
+import { getUnifiedAction as getAdvancedAIAction } from './aiEngine/aiBrainHub.js';
 import { PotManager } from './PotManager.js';
 
 const CLASSES_ENEMY = [...D2, ...D1]
 export async function runSimulation() {
   const opp1 = 'Max'
-  const opp2 = 'the_don'
-  const opp3 = 'Florence'
+  const opp2 = 'rich_guy'
+  const opp3 = 'shark'
   console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
   const logHeader = `Simulation Log - ${new Date().toLocaleString()}\n\n`;
   fs.writeFileSync('hand_history.log', logHeader, 'utf8');
@@ -43,7 +43,9 @@ export async function runSimulation() {
       vpipCount: 0,
       pfrCount: 0,
       threeBetCount: 0,
+      threeBetOppCount: 0,
       fourBetPlusCount: 0,
+      fourBetOppCount: 0,
       wins: 0,
       bankrupt: false,
       foldsPerStreet: { PREFLOP: 0, FLOP: 0, TURN: 0, RIVER: 0 },
@@ -98,6 +100,7 @@ export async function runSimulation() {
     engine.currentStreetRaises = 0;
     engine.preflopRaises = 0;
     engine.handHistory = []; // [DEBUG OVERHAUL] Track storyline
+    engine.actionHistory = []; // [v3.0] Structured history for AI analysis
 
     const aliveCount = players.filter(p => p.chips > 0).length;
     if (aliveCount < 2) break;
@@ -160,6 +163,7 @@ export async function runSimulation() {
 
           if (action.type === 'fold') {
             engine.handHistory.push(`[${street}] ${p.name}: Folds${rangeEst}${expTrigger}`);
+            engine.actionHistory.push({ playerId: p.id, street, action: 'fold', amount: 0 });
             p.isFolded = true;
             if (engine.aggressor === p.id) engine.aggressor = null;
             p.stats.foldsPerStreet[street]++;
@@ -172,6 +176,7 @@ export async function runSimulation() {
               if (engine.aggressor === p.id) engine.aggressor = null;
 
               engine.handHistory.push(`[${street}] ${p.name}: ${action.type === 'check' ? 'Checks' : 'Calls ' + amount}${rangeEst}${expTrigger} - <${action.insight}>`);
+              engine.actionHistory.push({ playerId: p.id, street, action: action.type, amount: amount });
 
               if (amount > 0 && !p.handState.didVpip) {
                 p.stats.vpipCount++;
@@ -190,6 +195,7 @@ export async function runSimulation() {
               const totalBetOnStreet = p.currentBet + amount;
               const isActualRaise = totalBetOnStreet > potManager.currentRoundBet;
               engine.handHistory.push(`[${street}] ${p.name}: Raises to ${totalBetOnStreet}${rangeEst}${expTrigger} - <${action.insight}>`);
+              engine.actionHistory.push({ playerId: p.id, street, action: isActualRaise ? 'raise' : 'bet', amount: totalBetOnStreet });
 
               if (isActualRaise) {
                 engine.currentStreetRaises++;
@@ -197,8 +203,20 @@ export async function runSimulation() {
                   engine.preflopRaises++;
                   if (engine.currentStreetRaises === 1) {
                     if (!p.handState.didPfr) { p.stats.pfrCount++; p.handState.didPfr = true; }
+                    // [FIX] Register 3-Bet opportunity for all other active players
+                    players.forEach(px => {
+                      if (px.id !== p.id && !px.isFolded && px.chips > 0) {
+                        px.stats.threeBetOppCount++;
+                      }
+                    });
                   } else if (engine.currentStreetRaises === 2) {
                     if (!p.handState.didThreeBet) { p.stats.threeBetCount++; p.handState.didThreeBet = true; }
+                    // [v5.0] Track 4-Bet Opportunities
+                    players.forEach(px => {
+                      if (px.id !== p.id && !px.isFolded && px.chips > 0) {
+                        px.stats.fourBetOppCount++;
+                      }
+                    });
                   } else if (engine.currentStreetRaises >= 3) {
                     if (!p.handState.didFourBetPlus) { p.stats.fourBetPlusCount++; p.handState.didFourBetPlus = true; }
                   }
@@ -400,7 +418,9 @@ Showdown Wins: ${pList.reduce((s, p) => s + p.stats.showdownWinCount, 0)}/${pLis
     const currentVpipCount = pList.reduce((acc, p) => acc + p.stats.vpipCount, 0);
     const currentPfrCount = pList.reduce((acc, p) => acc + p.stats.pfrCount, 0);
     const current3bCount = pList.reduce((acc, p) => acc + p.stats.threeBetCount, 0);
+    const current3bOppCount = pList.reduce((acc, p) => acc + p.stats.threeBetOppCount, 0);
     const current4bCount = pList.reduce((acc, p) => acc + p.stats.fourBetPlusCount, 0);
+    const current4bOppCount = pList.reduce((acc, p) => acc + p.stats.fourBetOppCount, 0);
     const currentShowdownCount = pList.reduce((acc, p) => acc + p.stats.showdownCount, 0);
     const currentShowdownWinCount = pList.reduce((acc, p) => acc + p.stats.showdownWinCount, 0);
     const currentSawFlopCount = pList.reduce((acc, p) => acc + p.stats.sawFlopCount, 0);
@@ -415,7 +435,11 @@ Showdown Wins: ${pList.reduce((s, p) => s + p.stats.showdownWinCount, 0)}/${pLis
     m.vpipCountRaw += currentVpipCount;
     m.pfrCountRaw += currentPfrCount;
     m.threeBetCountRaw += current3bCount;
+    if (!m.threeBetOppCountRaw) m.threeBetOppCountRaw = 0;
+    m.threeBetOppCountRaw += current3bOppCount;
     m.fourBetCountRaw += current4bCount;
+    if (!m.fourBetOppCountRaw) m.fourBetOppCountRaw = 0;
+    m.fourBetOppCountRaw += current4bOppCount;
     m.showdownCountRaw += currentShowdownCount;
     m.showdownWinCountRaw += currentShowdownWinCount;
     m.sawFlopCountRaw += currentSawFlopCount;
@@ -430,8 +454,8 @@ Showdown Wins: ${pList.reduce((s, p) => s + p.stats.showdownWinCount, 0)}/${pLis
     s["Profit"] += pList.reduce((acc, p) => acc + p.stats.totalProfit, 0);
     s["VPIP"] = Number((m.vpipCountRaw / m.totalHandsRaw * 100).toFixed(1));
     s["PFR"] = Number((m.pfrCountRaw / m.totalHandsRaw * 100).toFixed(1));
-    s["3B"] = Number((m.threeBetCountRaw / m.totalHandsRaw * 100).toFixed(1));
-    s["4B+"] = Number((m.fourBetCountRaw / m.totalHandsRaw * 100).toFixed(1));
+    s["3B"] = Number((m.threeBetCountRaw / (m.threeBetOppCountRaw || 1) * 100).toFixed(1));
+    s["4B+"] = Number((m.fourBetCountRaw / (m.fourBetOppCountRaw || 1) * 100).toFixed(1));
     s["WTSD"] = Number((m.showdownCountRaw / (m.sawFlopCountRaw || 1) * 100).toFixed(1));
     s["W$SD"] = Number((m.showdownWinCountRaw / (m.showdownCountRaw || 1) * 100).toFixed(1));
     s["chips"] = pList.reduce((acc, p) => acc + p.chips, 0);

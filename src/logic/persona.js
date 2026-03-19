@@ -190,7 +190,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'shark',
-    name: 'Shark', philosophy: 'TAG', vPIP: .27, AF: 3, WTSD: .27, chipMultiply: 1.5, isAdvanced: true,
+    name: 'Shark', philosophy: 'TAG', vPIP: .27, AF: 3, WTSD: .27, chipMultiply: 1.5, isAdvanced: true, isBoss: true,
     note_ko: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.',
     note_en: 'The most frightening thing is not his hand, but his patience.',
 

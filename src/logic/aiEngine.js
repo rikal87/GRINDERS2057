@@ -1,6 +1,6 @@
 import { evaluateHand, getDrawCategory, analyzeBoardTexture, getHandCategory, getSimpleHandCategory, getStartingHandRankHeadsup, getStartingHandRank96Max } from './poker.js';
 // import { LLMService } from './llmService.js';
-import { getAIChatDialogue, } from './AIChatSystem.js';
+import { getAIChatDialogue } from './AIChatSystem.js';
 import { CHAT_TRIGGERS } from './constants.js'
 
 /**
@@ -204,16 +204,40 @@ function getHeuristicFallback(player, engine) {
     else estimatedEquity = 0.05; // AIR
 
     if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.25;
-    else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.15;
-    else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.08;
-    // draw bonus is not increed estimatedEquity.
+    else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.12; // [v4.0] Reduced from 0.15 (draw still speculative)
+    else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.06;   // [v4.0] Reduced from 0.08
+    // Diminishing draw bonus if we already have a made hand
+    if (['STRONG', 'GOOD'].includes(handCategory)) drawBonus *= 0.5;
     drawBonus *= (streetsLeft / 2);
     estimatedEquity = Math.min(0.98, estimatedEquity + drawBonus);
-    console.info(`[AI_ENGINE] ${player.name} Category: ${handCategory}, Base Eq: ${estimatedEquity}`);
+
+    // [v4.0] Pot-Intensity Equity Discount
+    // Villain's range in 3-bet/4-bet pots is MUCH tighter, so our GOOD hands are worth less.
+    // This fixes the "Over-Calling in 4-bet pots" bug (e.g. TT calling 5-bet, TPTK in 4-bet pot).
+    if (!['NUTS', 'MONSTER'].includes(handCategory)) {
+      if (pfIntensity >= 4) {
+        estimatedEquity *= 0.78; // -22% in 4-bet+ pots (villain range: QQ+, AK)
+        insight += ' [4BetPot Disc]';
+      } else if (pfIntensity === 3) {
+        estimatedEquity *= 0.85; // -15% in 3-bet pots (villain range: TT+, AQ+)
+        insight += ' [3BetPot Disc]';
+      }
+    }
+
+    // [v4.0] Paired Board Penalty
+    // If we have a Flush or Straight (usually STRONG/GOOD), but the board is paired,
+    // we must discount our equity as we are vulnerable to Full Houses.
+    const boardRanks = engine.board.map(c => c[0]);
+    const isBoardPaired = new Set(boardRanks).size < boardRanks.length && engine.board.length >= 3;
+    if (isBoardPaired && evaluation && (evaluation.rank === 6 || evaluation.rank === 5)) {
+      estimatedEquity = Math.max(0.1, estimatedEquity - 0.15);
+      insight += ' [PairedBoard Disc]';
+    }
+
+    console.info(`[AI_ENGINE] ${player.name} Category: ${handCategory}, Base Eq: ${estimatedEquity}, pfIntensity: ${pfIntensity}`);
 
     // [MOD] Intensity-based Range Differentiation (Post-flop)
     // If it was a 3-bet or 4-bet pot, we must be more cautious with medium hands
-
 
   }
   // If we are facing the preflop aggressor, "Marginal" hands are likely behind their tighter range
@@ -339,21 +363,30 @@ function getHeuristicFallback(player, engine) {
   raiseEquityThreshold += (2 - AF) * (street === 'PREFLOP' ? 0.2 : 0.1);
   let requiredEquityPenalty = 0;
   let raisePenalty = 0;
+  const spr = pot > 0 ? (player.chips / pot) : 20;
+
   if (street === 'PREFLOP') {
-    raisePenalty = Math.pow(1.12, raises) - 1; // Keep original curve for multi-raises
+    raisePenalty = Math.pow(1.12, raises) - 1;
     requiredEquityPenalty = Math.pow(1.12, raises) - 1;
   }
   else {
-    raisePenalty = Math.pow(1.06, pfIntensity + raises) - 1; // Keep original curve for multi-raises
-    requiredEquityPenalty = Math.pow(1.06, pfIntensity + raises) - 1;
+    // [MOD] Linear Penalty (More stable than Exponential)
+    // 5% per preflop raise, 10% per postflop raise. Cap at 35%.
+    let basePenalty = (pfIntensity * 0.05) + (raises * 0.10);
+    requiredEquityPenalty = Math.min(0.35, basePenalty);
+
+    // [MOD] SPR Commitment Adjustment
+    // In low SPR pots (3/4-bet pots), we shouldn't fold as easily.
+    if (spr < 1.5) {
+      requiredEquityPenalty *= 0.5;
+    }
+    raisePenalty = requiredEquityPenalty;
   }
   raiseEquityThreshold += raisePenalty;
   requiredEquity += requiredEquityPenalty;
 
   let wtsdBoost = 0.3 - (street === 'PREFLOP' ? vPIP : wtsd);
   if (street === 'FLOP' || street === 'PREFLOP') requiredEquity += wtsdBoost;
-
-  const spr = pot > 0 ? (player.chips / pot) : 20;
 
   if (isAdvanced) {
     if (spr < 1.5) {
@@ -396,7 +429,7 @@ function getHeuristicFallback(player, engine) {
   if (callAmt >= player.chips) bluffFreq = 0;
 
   // Final Cap and safety
-  if (street !== 'PREFLOP') raiseEquityThreshold = Math.min(0.8, raiseEquityThreshold);
+  if (['TURN', 'RIVER'].includes(street)) raiseEquityThreshold = Math.min(0.8, raiseEquityThreshold);
   requiredEquity = Math.min(0.8, requiredEquity); // dont fold monster
 
   const catLabel = handCategory ? ` (${handCategory})` : '';

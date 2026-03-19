@@ -1,6 +1,6 @@
 import { getPlayStats, addUnlockAchievement, getUnlockAchievements } from './store';
 import { PLAY_RECORD_STATS_TYPE } from './playRecordStats';
-import { ITEM_EFFECT_ID } from './itemsEffect';
+import { ITEM_EFFECT_ID } from './constants';
 import { ITEM_DATA } from './items';
 
 export const ACHIEVEMENT_ID = {

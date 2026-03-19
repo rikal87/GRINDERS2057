@@ -77,18 +77,70 @@ function expandRange(rangeStr) {
   };
 
   ranges.forEach(r => {
-    if (['Any Pair'].includes(r)) { for (let i = 0; i < 13; i++) addCombo(getRankChar(i), getRankChar(i), 'pair'); return; }
-    if (r.length === 3 && r.endsWith('+') && r[0] === r[1]) {
-      const startRank = getRankVal(r[0]);
-      for (let i = startRank; i <= 12; i++) addCombo(getRankChar(i), getRankChar(i), 'pair');
-    } else if (r.length === 2 && r[0] === r[1]) {
-      addCombo(r[0], r[0], 'pair');
-    } else {
-      // Basic support for AKs, AKo, etc.
-      let type = r.slice(-1);
-      if (type === 's' || type === 'o') {
-        addCombo(r[0], r[1], type);
+    // 1. Special Labels
+    if (r === 'Any Pair') { for (let i = 0; i < 13; i++) addCombo(getRankChar(i), getRankChar(i), 'pair'); return; }
+    if (r === 'Any Suited') { 
+      for (let i = 0; i < 13; i++) {
+        for (let j = 0; j < i; j++) addCombo(getRankChar(i), getRankChar(j), 's');
       }
+      return; 
+    }
+    if (r === 'Any Broad') {
+      const broads = 'TJQKA';
+      for (let i = 0; i < broads.length; i++) {
+        for (let j = 0; j < broads.length; j++) {
+           if (i === j) addCombo(broads[i], broads[j], 'pair');
+           else if (i > j) { addCombo(broads[i], broads[j], 's'); addCombo(broads[i], broads[j], 'o'); }
+        }
+      }
+      return;
+    }
+    if (r === 'Any Two Suited') { /* Same as Any Suited */
+        for (let i = 0; i < 13; i++) for (let j = 0; j < i; j++) addCombo(getRankChar(i), getRankChar(j), 's');
+        return;
+    }
+
+    // 2. Pairs (66+, 66-99)
+    if (r[0] === r[1]) {
+      if (r.endsWith('+')) {
+        const start = getRankVal(r[0]);
+        for (let i = start; i <= 12; i++) addCombo(getRankChar(i), getRankChar(i), 'pair');
+      } else if (r.includes('-')) {
+        const parts = r.split('-');
+        const start = getRankVal(parts[1][0]), end = getRankVal(parts[0][0]);
+        for (let i = start; i <= end; i++) addCombo(getRankChar(i), getRankChar(i), 'pair');
+      } else {
+        addCombo(r[0], r[0], 'pair');
+      }
+      return;
+    }
+
+    // 3. Suited/Offsuit with + (A2s+, AJo+)
+    if (r.endsWith('+')) {
+      const r1 = r[0], r2 = r[1], type = r[2];
+      const startRank = getRankVal(r2);
+      const anchorRank = getRankVal(r1);
+      for (let i = startRank; i < anchorRank; i++) addCombo(r1, getRankChar(i), type);
+      return;
+    }
+
+    // 4. Sub-ranges (A2s-A5s)
+    if (r.includes('-')) {
+       const parts = r.split('-'); // ["A2s", "A5s"]
+       const type = parts[0][2];
+       const r1 = parts[0][0];
+       const startRank = getRankVal(parts[0][1]);
+       const endRank = getRankVal(parts[1][1]);
+       for (let i = Math.min(startRank, endRank); i <= Math.max(startRank, endRank); i++) {
+         addCombo(r1, getRankChar(i), type);
+       }
+       return;
+    }
+
+    // 5. Single Combo (AKs, AKo, AJo)
+    if (r.length >= 3) {
+      const type = r[2];
+      if (type === 's' || type === 'o') addCombo(r[0], r[1], type);
     }
   });
 

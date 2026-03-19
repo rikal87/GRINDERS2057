@@ -2,14 +2,20 @@
  * [Tool] Budget Tool
  * Manages investment limits based on equity and pot sizes.
  */
-export function getHandBudget(equity, potSize) {
-  // [v9] Strategic Budgeting Logic
-  if (equity >= 0.95) return potSize * 3.0;
-  if (equity >= 0.85) return potSize * 2.0;
-  if (equity >= 0.75) return potSize * 1.4;
-  if (equity >= 0.65) return potSize * 1.2;
-  if (equity >= 0.55) return potSize * 0.8;
-  if (equity >= 0.35) return potSize * 0.35;
+export function getHandBudget(equity, potSize, philosophy = 'TAG') {
+  // [v2.1] More realistic budgeting. Equity is your "fair share" of the pot.
+  // A Shark/LAG should be willing to over-invest slightly to apply pressure.
+  let multiplier = 1.0;
+  if (philosophy === 'LAG') multiplier = 1.25;
+  if (philosophy === 'NIT') multiplier = 0.8;
+
+  if (equity >= 0.95) return potSize * 5.0; // All-in
+  if (equity >= 0.85) return potSize * 3.0; // Very deep
+  if (equity >= 0.75) return potSize * 2.5;
+  if (equity >= 0.65) return potSize * 2.0; 
+  if (equity >= 0.50) return potSize * 1.5; // Coinflip+: willing to put in full pot+
+  if (equity >= 0.35) return potSize * 0.8; // Marginal: willing to call small/medium bets
+  if (equity >= 0.20) return potSize * 0.4; // Draw/Weak: small investment only
   return potSize * 0.15;
 }
 
@@ -17,16 +23,20 @@ export function getHandBudget(equity, potSize) {
  * Determines if a player is pot-committed.
  * Return true if player has invested >25% of stack and has decent equity (>40%).
  */
-export function isPotCommitted(player, equity) {
+export function isPotCommitted(player, equity, currentPot) {
   const totalInvested = player.totalWagered || 0;
   const currentStack = player.chips || 0;
   const totalStack = totalInvested + currentStack;
   
   if (totalStack === 0) return false;
   const investmentRatio = totalInvested / totalStack;
+  const spr = currentStack / (currentPot || 1);
   
-  // Loosened for more organic interaction: 20% investment and 30% equity
-  return investmentRatio > 0.20 && equity > 0.30;
+  // [v2.1] Strong Hand Commitment (SPR < 1.0)
+  if (spr < 1.0 && equity > 0.55) return true; // SPR < 1 is commitment zone for TP+
+
+  // General commitment: Invested > 25% of stack with decent equity
+  return investmentRatio > 0.25 && equity > 0.35;
 }
 
 /**

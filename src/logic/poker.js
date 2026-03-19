@@ -789,23 +789,34 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
 
   // 7: Full House
   if (rank === 7) {
-    if (isBoardFullHouse === 0) return 'BOARD_CHOP';
-
-    // Extract triplet rank from evalResult.total
     const tripRank = Math.floor((evalResult.total % Math.pow(15, 5)) / Math.pow(15, 4));
+    const pairRank = Math.floor((evalResult.total % Math.pow(15, 4)) / Math.pow(15, 3));
 
     if (isBoardFullHouse) {
       if (isPocketPair) {
-        // High pocket pair improves the Board Trips to a massive Full House
+        // High pocket pair improves the Board Full House to a massive Full House
         return handRanks[0] >= 8 ? 'MONSTER' : 'STRONG'; // Tens (8) or higher
       }
-      return 'MARGINAL'; // Using 1 card to fill a boat on a trips board is vulnerable
+      return 'MARGINAL'; // Using 1 card to fill a better boat is vulnerable
     }
 
+    if (isBoardTrips) {
+      // Board has trips (e.g. 4 4 4 T Q). Our Full House uses those trips + a pair.
+      const nonTripBoardRanks = boardRanks.filter(r => r !== tripRank);
+      const topNonTripCard = nonTripBoardRanks.length > 0 ? nonTripBoardRanks[0] : -1;
+
+      if (pairRank >= 12) return 'NUTS'; // AA/KK on a trips board
+      if (pairRank >= 10 || pairRank > topNonTripCard) return 'MONSTER'; // QQ+ or better than any board card
+      if (pairRank === topNonTripCard) return 'STRONG'; // Paired the top card of the board
+      if (pairRank >= 7) return 'GOOD'; // 99-JJ
+      return 'MARGINAL'; // Pocket 22-88, correctly downgrades 66 on 444TQ
+    }
+
+    // Normal Full House (Our trips + board pair OR our two pair + board pairs one of them)
     const boardPairs = boardRanks.filter((r, i) => r === boardRanks[i + 1]);
     const higherBoardPair = boardPairs.some(r => r > tripRank);
 
-    if (higherBoardPair) return 'STRONG';
+    if (higherBoardPair) return 'STRONG'; // Over-full danger
     return 'MONSTER';
   }
 
@@ -852,17 +863,16 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
   // 4: Three of a Kind
   if (rank === 4) {
     if (isBoardTrips) return 'WEAK';
-    // Set vs Trips
     let caseSum = 0;
     if (isBoardFlushPossible) caseSum++;
     if (isBoardStraightPossible) caseSum++;
     if (isBoardOnehandFlushPossible) caseSum++;
     if (isBoardOnehandStraightPossible) caseSum++;
-    if (isPocketPair) caseSum -= 2;
+    if (isPocketPair) caseSum--;
 
     if (caseSum >= 3) return 'MARGINAL';
     else if (caseSum >= 2) return 'GOOD';
-    else if (caseSum >= 0) return 'STRONG'; // TRIPS
+    else if (caseSum >= 0) return 'STRONG';
     return 'MONSTER'; // SET 
   }
 
