@@ -4,7 +4,7 @@ import imgMicroWarehouse from '../assets/image/zone/micro_warehouse.png';
 import imgMicroUndergroundBar from '../assets/image/zone/micro_underground_bar.png';
 import imgLowNeonLounge from '../assets/image/zone/low_neon_lounge.png';
 import imgLowUndergroundClub from '../assets/image/zone/low_underground_club.png';
-import imgLowUndergroundClubWithMax from '../assets/image/zone/low_underground_club_with_max.png';
+import imgLowUndergroundClubVipRoom from '../assets/image/zone/low_underground_club_vip_room.png';
 import imgLowOldCasino from '../assets/image/zone/low_old_casino.png';
 import imgMiddleUndergroundCasino from '../assets/image/zone/middle_underground_casino.png';
 import imgMiddleUndergroundCasinoVipRoom from '../assets/image/zone/middle_underground_casino_vip_room.png';
@@ -14,7 +14,7 @@ import imgHighProHouse from '../assets/image/zone/high_pro_house.png'; // Used f
 import imgHighGrandCasino from '../assets/image/zone/high_grand_casino.png';
 import imgSpecialOrbitLounge from '../assets/image/zone/special_orbit_lounge.png';
 import { TRACK_ENUM } from './audioTracks.js';
-
+import { LOCATION_ID } from './constants.js'
 export const zones = [
   {
     "id": "free",
@@ -23,7 +23,7 @@ export const zones = [
     "description_en": "The starting point of your first journey in the game.",
     "locations": [
       {
-        "id": "free_street_shop",
+        "id": LOCATION_ID.FREE_STREET_SHOP,
         "name_ko": "길거리 상점 뒷편",
         "name_en": "Street Shop Backroom",
         "imgSrc": imgMicroStreetShop,
@@ -52,7 +52,7 @@ export const zones = [
         'bgMusic': [TRACK_ENUM.Kaazoom_DrivingHome, TRACK_ENUM.Placebo]
       },
       {
-        "id": "free_habitat",
+        "id": LOCATION_ID.FREE_HABITAT,
         "name_ko": "거주공간",
         "name_en": "Habitat",
         "imgSrc": imgFreeHabitat,
@@ -81,7 +81,7 @@ export const zones = [
         'bgMusic': [TRACK_ENUM.Kaazoom_DrivingHome, TRACK_ENUM.Nightscape]
       },
       {
-        "id": "free_street_shop_with_max",
+        "id": LOCATION_ID.FREE_STREET_SHOP_WITH_MAX,
         "name_ko": "길거리 상점 뒷편",
         "name_en": "Street Shop Backroom",
         "imgSrc": imgMicroStreetShop,
@@ -117,9 +117,8 @@ export const zones = [
     "description_ko": "단순 오락거리를 위해 찾는 곳. 돈을 잃어도 타격이 적어 무모한 플레이가 빈번하지만, 가끔 절박한 플레이어도 존재.",
     "description_en": "A place visited for simple entertainment. Since losing money doesn't hurt much, reckless play is frequent, but occasionally desperate players also exist.",
     "locations": [
-
       {
-        "id": "micro_warehouse",
+        "id": LOCATION_ID.MICRO_WAREHOUSE,
         "name_ko": "뒷골목 창고",
         "name_en": "Back Alley Warehouse",
         "imgSrc": imgMicroWarehouse,
@@ -143,9 +142,8 @@ export const zones = [
         },
         'bgMusic': [TRACK_ENUM.PartyInTheRuins, TRACK_ENUM.Futuristic]
       },
-
       {
-        "id": "micro_warehouse_with_max",
+        "id": LOCATION_ID.MICRO_WAREHOUSE_WITH_MAX,
         "name_ko": "뒷골목 창고",
         "name_en": "Back Alley Warehouse",
         "imgSrc": imgMicroWarehouse,
@@ -171,9 +169,8 @@ export const zones = [
         },
         'bgMusic': [TRACK_ENUM.PartyInTheRuins, TRACK_ENUM.Futuristic]
       },
-
       {
-        "id": "micro_underground_bar",
+        "id": LOCATION_ID.MICRO_UNDERGROUND_BAR,
         "name_ko": "지하 바",
         "name_en": "Underground Bar",
         "imgSrc": imgMicroUndergroundBar,
@@ -194,9 +191,7 @@ export const zones = [
           "borderColor": "#ff4d4d",
           "boxShadow": "0 0 40px rgba(255, 0, 0, 0.6)"
         },
-
-
-        'bgMusic': [TRACK_ENUM.MalibuMoon, TRACK_ENUM.Lnplusmusic_LatinTrap, TRACK_ENUM.Lnplusmusic_Background]
+        'bgMusic': [TRACK_ENUM.MalibuMoon, TRACK_ENUM.Lnplusmusic_LatinTrap, TRACK_ENUM.Lnplusmusic_Background, TRACK_ENUM.Fassounds_TheAfrobeat]
       }
     ]
   },
@@ -207,7 +202,7 @@ export const zones = [
     "description_en": "The stage where you start taking poker seriously as a profession. Skills begin to show, and a mix of various professions and tendencies exists.",
     "locations": [
       {
-        "id": "low_neon_lounge",
+        "id": LOCATION_ID.LOW_NEON_LOUNGE,
         "name_ko": "네온 라운지",
         "name_en": "Neon Lounge",
         "imgSrc": imgLowNeonLounge,
@@ -217,6 +212,7 @@ export const zones = [
         "requirements": null,
         "level": 4,
         "firstClearRewards": "club_membership",
+
         "npcs": [
           "Gambler",
           "Nit",
@@ -228,37 +224,10 @@ export const zones = [
           "borderColor": "#9d00ff",
           "boxShadow": "0 0 25px rgba(157, 0, 255, 0.4)"
         },
-        'bgMusic': [TRACK_ENUM.BeThere, TRACK_ENUM.Overnight, TRACK_ENUM.Lnplusmusic_Beauty, TRACK_ENUM.Joyinsound_NeonHongKong, TRACK_ENUM.Tvari_SeoulArcade]
+        'bgMusic': [TRACK_ENUM.BeThere, TRACK_ENUM.Overnight, TRACK_ENUM.Lnplusmusic_Beauty, TRACK_ENUM.Joyinsound_NeonHongKong, TRACK_ENUM.punk]
       },
       {
-        "id": "low_underground_club_meet_max",
-        "name_ko": "H.B.D 클럽",
-        "name_en": "H.B.D Club",
-        "imgSrc": imgLowUndergroundClubWithMax,
-        "description_ko": "돈만 많은 '호구' 부자들이 VIP 룸에 모여 판을 벌이고 있다.",
-        "description_en": "A bunch of rich fish are gathered in the VIP room, just waiting to be gutted.",
-        "atmosphere": "시끄러움, 혼란스러움, 들뜸",
-        "requirements": null,
-        "firstClearRewards": "club_membership",
-        isHidden: true,
-        "level": 5,
-        "npcs": [
-          "Rich_Guy"
-        ],
-        guests: ['Max', 'An_Unknown_Woman'],
-        "tables": {
-          buyInLimit: 1,
-          amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 125, bb: 250, available: [6, 9], baseRake: 0.06, rakeCap: 1000
-        },
-        "theme": {
-          "background": "radial-gradient(circle, #2e001f 0%, #1a0011 100%)",
-          "borderColor": "#ff0080",
-          "boxShadow": "0 0 30px rgba(255, 0, 128, 0.6)"
-        },
-        'bgMusic': [TRACK_ENUM.Rockot_TrafficHouse]
-      },
-      {
-        "id": "low_underground_club",
+        "id": LOCATION_ID.LOW_UNDERGROUND_CLUB,
         "name_ko": "H.B.D 클럽",
         "name_en": "H.B.D Club",
         "imgSrc": imgLowUndergroundClub,
@@ -279,10 +248,65 @@ export const zones = [
           "borderColor": "#ff0080",
           "boxShadow": "0 0 30px rgba(255, 0, 128, 0.6)"
         },
-        'bgMusic': [TRACK_ENUM.Rockot_TrafficHouse, TRACK_ENUM.DreamVector, TRACK_ENUM.VelvetShadows]
+        'bgMusic': [TRACK_ENUM.Rockot_TrafficHouse, TRACK_ENUM.Elijah_k_Bassline, TRACK_ENUM.Elijah_k_MachineUnlearning, TRACK_ENUM.Elijah_k_NeonNightscape, TRACK_ENUM.Elijah_k_Shenzhen, TRACK_ENUM.Elijah_k_Subwoofer, TRACK_ENUM.Elijah_k_UndergroundParty]
       },
       {
-        "id": "low_old_casino",
+        "id": LOCATION_ID.LOW_UNDERGROUND_CLUB_WITH_MAX,
+        "name_ko": "H.B.D 클럽",
+        "name_en": "H.B.D Club",
+        "imgSrc": imgLowUndergroundClub,
+        "description_ko": "맥스가 말한 돈만 많은 '호구' 부자들이 VIP 룸에 모여 판을 벌이고 있다.",
+        "description_en": "A bunch of rich fish are gathered in the VIP room, just waiting to be gutted.",
+        "atmosphere": "시끄러움, 혼란스러움, 들뜸",
+        "requirements": null,
+        "firstClearRewards": "club_membership",
+        isHidden: true,
+        "level": 5,
+        "npcs": [
+          "Rich_Guy"
+        ],
+        guests: ['Max', 'An_Unknown_Woman'],
+        "tables": {
+          buyInLimit: 1,
+          amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 125, bb: 250, available: [6], baseRake: 0.06, rakeCap: 1000
+        },
+        "theme": {
+          "background": "radial-gradient(circle, #2e001f 0%, #1a0011 100%)",
+          "borderColor": "#ff0080",
+          "boxShadow": "0 0 30px rgba(255, 0, 128, 0.6)"
+        },
+        'bgMusic': [TRACK_ENUM.Rockot_TrafficHouse, TRACK_ENUM.Elijah_k_Bassline, TRACK_ENUM.Elijah_k_MachineUnlearning, TRACK_ENUM.Elijah_k_NeonNightscape, TRACK_ENUM.Elijah_k_Shenzhen, TRACK_ENUM.Elijah_k_Subwoofer, TRACK_ENUM.Elijah_k_UndergroundParty]
+      },
+      {
+        "id": LOCATION_ID.LOW_UNDERGROUND_CLUB_VIP_ROOM,
+        "name_ko": "H.B.D 클럽 [VIP 룸]",
+        "name_en": "H.B.D Club [VIP Room]",
+        "imgSrc": imgLowUndergroundClubVipRoom,
+        "description_ko": "술에 취한 돈많은 부자들이 VIP 룸에서 난잡한 판을 벌이고 있다. 그들의 통제력이 무너진 지금이 가장 비싼 값을 받아낼 기회다.",
+        "description_en": "Intoxicated elites are running a messy game in the VIP room. With their Rigid Control collapsed, now is the time to extract maximum value.",
+        "atmosphere": "시끄러움, 혼란스러움, 들뜸",
+        "requirements": null,
+        "firstClearRewards": "club_membership",
+        isHidden: true,
+        isDrunken: true,
+        "level": 5,
+        "npcs": [
+          "Rich_Guy"
+        ],
+        guests: ['Florence'],
+        "tables": {
+          buyInLimit: 1,
+          amount: 25000, amount_fmt: '25K', amount_min_fmt: '12.5K', sb: 125, bb: 250, available: [6], baseRake: 0.06, rakeCap: 1000
+        },
+        "theme": {
+          "background": "radial-gradient(circle, #2e001f 0%, #1a0011 100%)",
+          "borderColor": "#ff0080",
+          "boxShadow": "0 0 30px rgba(255, 0, 128, 0.6)"
+        },
+        'bgMusic': [TRACK_ENUM.Rockot_TrafficHouse, TRACK_ENUM.Elijah_k_Bassline, TRACK_ENUM.Elijah_k_MachineUnlearning, TRACK_ENUM.Elijah_k_NeonNightscape, TRACK_ENUM.Elijah_k_Shenzhen, TRACK_ENUM.Elijah_k_Subwoofer, TRACK_ENUM.Elijah_k_UndergroundParty, TRACK_ENUM.Fassounds_TokyoFunk]
+      },
+      {
+        "id": LOCATION_ID.LOW_OLD_CASINO,
         "name_ko": "구형 카지노",
         "name_en": "Old Casino",
         "imgSrc": imgLowOldCasino,
@@ -319,7 +343,7 @@ export const zones = [
     "locations": [
 
       {
-        "id": "middle_underground_casino",
+        "id": LOCATION_ID.MIDDLE_UNDERGROUND_CASINO,
         "name_ko": "더 벙커",
         "name_en": "The Bunker",
         "imgSrc": imgMiddleUndergroundCasino,
@@ -340,32 +364,8 @@ export const zones = [
         },
         'bgMusic': [TRACK_ENUM.JourneyToTitan, TRACK_ENUM.ArgonGroove, TRACK_ENUM.Rockot_Bargur]
       },
-
       {
-        "id": "middle_underground_casino_with_florence",
-        "name_ko": "더 벙커",
-        "name_en": "The Bunker",
-        "imgSrc": imgMiddleUndergroundCasino,
-        "description_ko": "버려진 지하 벙커를 개조한 불법 도박장. KBT가 관리하고 있다. (플로렌스가 함께 한다)",
-        "description_en": "An illegal gambling den converted from an abandoned underground bunker. Managed by KBT. (Florence is with you)",
-        "atmosphere": "기괴함, 공포, 사이버펑크 호러",
-        "requirements": null,
-        "isHidden": true,
-        "level": 5,
-        "guests": ['florence'],
-        "npcs": [
-          "Gangster",
-        ],
-        "tables": { buyInLimit: 1, amount: 100000, amount_fmt: '100K', amount_min_fmt: '50K', sb: 500, bb: 1000, available: [6, 9], baseRake: 0.08, rakeCap: 5000 },
-        "theme": {
-          "background": "radial-gradient(circle, #1c1c1c 0%, #000000 100%)",
-          "borderColor": "#708090",
-          "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
-        },
-        'bgMusic': [TRACK_ENUM.JourneyToTitan, TRACK_ENUM.ArgonGroove]
-      },
-      {
-        "id": "middle_kbt_vip_room",
+        "id": LOCATION_ID.MIDDLE_KBT_VIP_ROOM,
         "name_ko": "KBT VIP 룸",
         "name_en": "KBT VIP Room",
         "imgSrc": imgMiddleUndergroundCasinoVipRoom,
@@ -384,10 +384,10 @@ export const zones = [
           "borderColor": "#708090",
           "boxShadow": "0 0 25px rgba(112, 128, 144, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.ArgonGroove, TRACK_ENUM.Rockot_Bargur]
+        'bgMusic': [TRACK_ENUM.ArgonGroove, TRACK_ENUM.Rockot_Bargur, TRACK_ENUM.Tunetank_Beat]
       },
       {
-        "id": "middle_casino_hotel",
+        "id": LOCATION_ID.MIDDLE_CASINO_HOTEL,
         "name_ko": "카지노 호텔",
         "name_en": "Casino Hotel",
         "imgSrc": imgMiddleCasinoHotel,
@@ -415,7 +415,7 @@ export const zones = [
       },
 
       {
-        "id": "middle_holdem_house",
+        "id": LOCATION_ID.MIDDLE_HOLDEM_HOUSE,
         "name_ko": "홀덤 하우스",
         "name_en": "Hold'em House",
         "imgSrc": imgMiddleHoldemHouse,
@@ -435,7 +435,7 @@ export const zones = [
           "borderColor": "#4682b4",
           "boxShadow": "0 0 25px rgba(70, 130, 180, 0.5)"
         },
-        'bgMusic': [TRACK_ENUM.Alexgrohl_OneStepAHead, TRACK_ENUM.Alexgrohl_Synthwave, TRACK_ENUM.DeepVibe]
+        'bgMusic': [TRACK_ENUM.Alexgrohl_OneStepAHead, TRACK_ENUM.Alexgrohl_Synthwave, TRACK_ENUM.Elijah_k_NeonNightscape]
       },
     ]
   },
@@ -447,7 +447,7 @@ export const zones = [
     "locations": [
 
       {
-        "id": "high_royal_room",
+        "id": LOCATION_ID.HIGH_PRO_HOUSE,
         "name_ko": "로열 프라이빗 카드룸",
         "name_en": "Royal Private Cardroom",
         "imgSrc": imgHighProHouse,
@@ -457,7 +457,6 @@ export const zones = [
         "requirements": 'royal_room_invite',
         "level": 8,
         "npcs": [
-          "Quant_Pro",
           "Shark",
           "Old_Lion",
           "Named_Pro",
@@ -470,34 +469,9 @@ export const zones = [
         },
         'bgMusic': [TRACK_ENUM.Alexgrohl_OneStepAHead, TRACK_ENUM.DreamVector, TRACK_ENUM.EvgenyBardyuzha_PasswordInfinity]
       },
+
       {
-        "id": "high_habitat",
-        "name_ko": "안전가옥",
-        "name_en": "Safe House",
-        "imgSrc": null,
-        "description_ko": "유명한 실력자들을 초대하였습니다.",
-        "description_en": "Invited famous skilled players to the safe house.",
-        "atmosphere": "다소 어두움, 진지한 분위기",
-        "requirements": null,
-        "isHidden": true,
-        "level": 0,
-        "npcs": [
-          "Shark"
-        ],
-        "tables": {
-          amount: 2500000, amount_fmt: '2.5M', amount_min_fmt: '1.25M', sb: 5000, bb: 10000, available: [
-            6
-          ], baseRake: 0.0, rakeCap: 0
-        },
-        "theme": {
-          "background": "radial-gradient(circle, #2c2c2c 0%, #1a1a1a 100%)",
-          "borderColor": "#3f6ae2ff",
-          "boxShadow": "0 0 20px rgba(146, 148, 255, 0.8)"
-        },
-        'bgMusic': [TRACK_ENUM.VelvetShadows, TRACK_ENUM.Nightscape, TRACK_ENUM.DreamVector]
-      },
-      {
-        "id": "high_grand_casino",
+        "id": LOCATION_ID.HIGH_GRAND_CASINO,
         "name_ko": "대형 카지노 호텔",
         "name_en": "Grand Casino Hotel",
         "imgSrc": imgHighGrandCasino,
@@ -556,7 +530,7 @@ export const zones = [
     "description_en": "A space outside of Earth. A game with destiny on the line.",
     "locations": [
       {
-        "id": "special_orbit_lounge",
+        "id": LOCATION_ID.SPECIAL_ORBIT_LOUNGE,
         "name_ko": "'투 더 마스' 궤도 라운지",
         "name_en": "The Orbit",
         "imgSrc": imgSpecialOrbitLounge,

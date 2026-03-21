@@ -99,6 +99,7 @@ export const PARTNER_STATUS = {
 };
 export const LOCATION_ID = {
   FREE_HABITAT: "free_habitat",
+  FREE_STREET_SHOP: "free_street_shop",
   FREE_STREET_SHOP_WITH_MAX: "free_street_shop_with_max",
   MICRO_WAREHOUSE: "micro_warehouse",
   MICRO_UNDERGROUND_BAR: "micro_underground_bar",
@@ -113,7 +114,7 @@ export const LOCATION_ID = {
   SPECIAL_ORBIT_LOUNGE: "special_orbit_lounge",
   MICRO_WAREHOUSE_WITH_MAX: "micro_warehouse_with_max",
   LOW_UNDERGROUND_CLUB_MEET_MAX: "low_underground_club_meet_max",
-  MIDDLE_UNDERGROUND_CASINO_WITH_FLORENCE: "middle_underground_casino_with_florence",
+  LOW_UNDERGROUND_CLUB_VIP_ROOM: "low_underground_club_vip_room",
   FREE_HABITAT: 'free_habitat',
   MIDDLE_KBT_BASE: "middle_kbt_base",
   MIDDLE_KBT_VIP_ROOM: "middle_kbt_vip_room",

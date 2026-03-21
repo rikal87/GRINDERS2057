@@ -1,5 +1,6 @@
-import { ITEM_EFFECT_ID, getItemEffect, getRndItemBucket } from "./itemsEffect";
+import { getItemEffect, getRndItemBucket } from "./itemsEffect";
 import { store } from './store.js';
+import { ITEM_EFFECT_ID } from './constants.js';
 export const ITEM_ID = {
   ADVANCED_EQUITY_CALC: 'advanced_equity_calc',
   ALGORITHMIC_REBATE_TOOL: 'algorithmic_rebate_tool',

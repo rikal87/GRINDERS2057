@@ -76,7 +76,8 @@ export const getAIAction = (player, engine) => {
     action.amount = player.chips + player.currentBet;
     action.type = 'all_in';
   }
-  if (Math.random() < 0.25) {
+
+  if (Math.random() < 0.25 + (player.isDrunken ? 0.25 : 0)) {
     let dialogueTrigger = action.type.toUpperCase();
     if (dialogueTrigger === 'CALL') {
       const callAmt = engine.currentRoundBet - player.currentBet;
@@ -336,17 +337,17 @@ function getHeuristicFallback(player, engine) {
     insight += " [Strategy: DONK_AVOIDER]";
   } else {
     // OPENER or C_BETTER
-    raiseEquityThreshold = 0.5; // Standard buffer for leading
+    raiseEquityThreshold = 0.4; // Standard buffer for leading
     if (strategy === "C_BETTER") {
       if (street === 'FLOP') raiseEquityThreshold -= 0.2;
       else if (['TURN', 'RIVER'].includes(street) && callAmt === 0) bluffFreq *= (1.5 - (streetsLeft * 0.5));
     }
     // [MOD] Preflop Opener: Buff aggression for strong hands
     if (strategy === 'OPENER') {
-      raiseEquityThreshold -= 0.15;
+      raiseEquityThreshold -= 0.2;
     }
     if (street !== 'FLOP' && estimatedEquity <= 0.5 && estimatedEquity >= 0.4) { // pot control we have show down value
-      raiseEquityThreshold += Math.random() * 0.1 + 0.1
+      raiseEquityThreshold += Math.random() * 0.5
       bluffFreq *= 0.5;
     }
     insight += ` [Strategy: ${strategy}]`;
@@ -394,7 +395,7 @@ function getHeuristicFallback(player, engine) {
   }
   requiredEquity += requiredEquityPenalty;
 
-  let wtsdBoost = 0.3 - (street === 'PREFLOP' ? vPIP : wtsd);
+  let wtsdBoost = 0.2 - (street === 'PREFLOP' ? vPIP : wtsd);
   if (street === 'FLOP' || street === 'PREFLOP') requiredEquity += wtsdBoost;
 
   if (isAdvanced) {
@@ -450,8 +451,8 @@ function getHeuristicFallback(player, engine) {
   if (estimatedEquity >= raiseEquityThreshold) {
     // [FIX] Relax Call Huge threshold preflop to prevent limping strong hand
     let currentBet = engine.currentRoundBet || 0;
-    const callHugeThreshold = street === 'PREFLOP' ? 0.55 : 0.45;
-    if (potOdds > callHugeThreshold && street !== 'RIVER' && estimatedEquity < 0.85) {
+    const callHugeThreshold = street === 'PREFLOP' ? 0.5 : 0.4;
+    if (potOdds > callHugeThreshold && street !== 'RIVER') {
       action = 'call'; insight += " (Call Huge)";
     } else {
       action = 'raise'; insight += " (Value Raise)";

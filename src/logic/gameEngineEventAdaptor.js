@@ -3,10 +3,8 @@ import { store, gainBankroll, gainLT } from './store.js';
 import { evaluateHand } from './poker.js';
 import { recoverStamina } from './staminaSystem.js';
 import { scheduleEvent, EVENT_ID } from './eventSystem.js';
-import { PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js';
 import { recordPlayStatsSession, PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
-import { ITEM_EFFECT_ID } from './itemsEffect.js';
-import { LOCATION_ID } from './constants.js';
+import { PARTNER_ID, TYPE_CHANGE_BANKROLL, ITEM_EFFECT_ID, LOCATION_ID } from './constants.js';
 
 const HAND_RANK_TO_STAT = {
   1: PLAY_RECORD_STATS_TYPE.WIN_WITH_HIGH_CARD,
@@ -105,6 +103,9 @@ export class EventAdaptor {
   // TODO: CHANGE WON LOGIC
   gameWon(player, prize, locationId, inviteId) {
     console.info('gameWon', player.name, prize);
+    // if (typeof window !== 'undefined') {
+    //   window.dispatchEvent(new CustomEvent('trigger-victory', { detail: { prize } }));
+    // }
     // // cleanupInvites(locationId);
     // deleteMessage(inviteId);
     // let firstClearReward = null;

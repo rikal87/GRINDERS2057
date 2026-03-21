@@ -140,7 +140,7 @@ export const createContractObject = (type, ratio) => {
   if (type === CONTRACT_TYPE.COLLUSION) return ContractCollusion(ratio ?? 0.5);
   return Contract(type);
 };
-export const shareCollusion = (partnerId = null, yourNetWinnings = 0, partnerNetWinnings = 0) => {
+export const shareCollusion = (partnerId = null, yourNetWinnings = 0, partnerNetWinnings = 0, isEvent = false) => {
   const partner = getPartners().find(p => p.id === partnerId && p.isJoined);
   if (!partner) return 0;
   if (yourNetWinnings < 0) yourNetWinnings = 0;
@@ -149,13 +149,21 @@ export const shareCollusion = (partnerId = null, yourNetWinnings = 0, partnerNet
   if (partner) {
     const contract = partner.contracts.find(c => c.type === CONTRACT_TYPE.COLLUSION && c.active);
     console.info('shareCollusion', partner, contract)
-    if (!contract) return 0;
-    const yourShare = partnerNetWinnings * contract.ratio;
-    const partnerShare = yourNetWinnings * contract.ratio;
-    diffShare = Math.floor(partnerShare - yourShare); // if +: partner gain, if -: you gain
+    let yourShare = 0;
+    let partnerShare = 0;
+    if (isEvent) {
+      yourShare = partnerNetWinnings * 0.5;
+      partnerShare = yourNetWinnings * 0.5;
+      diffShare = Math.floor(partnerShare - yourShare); // if +: partner gain, if -: you gain
+    } else {
+      if (!contract) return 0;
+      yourShare = partnerNetWinnings * contract.ratio;
+      partnerShare = yourNetWinnings * contract.ratio;
+      diffShare = Math.floor(partnerShare - yourShare); // if +: partner gain, if -: you gain
+      contract.profitTotal += diffShare;
+    }
     gainBankroll(yourShare, TYPE_CHANGE_BANKROLL.COLLUSION);
     gainPartnerBankroll(partner, partnerShare, TYPE_CHANGE_BANKROLL.COLLUSION);
-    contract.profitTotal += diffShare;
   };
   return diffShare;
 }

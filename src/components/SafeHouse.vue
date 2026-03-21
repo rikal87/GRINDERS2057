@@ -552,7 +552,7 @@ const cancelTask = (idx) => {
   const taskIdx = store.onWorkTasks.findIndex(t => t.slotIndex === idx);
   if (taskIdx !== -1) {
     const taskState = store.onWorkTasks[taskIdx];
-    store.activeBoosts = store.activeBoosts.filter(b => b.taskId !== taskState.taskId);
+    store.activeBoosts = store.activeBoosts.filter(b => b.instanceId !== taskState.instanceId);
     store.onWorkTasks.splice(taskIdx, 1);
     audioManager.playSFX('ui-click');
   }

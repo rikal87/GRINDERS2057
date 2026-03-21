@@ -100,8 +100,8 @@ const closeSkillSelector = () => {
 
 const toggleSettings = () => {
   isSettingsOpen.value = !isSettingsOpen.value;
-  const freq = isSettingsOpen.value ? 400 : 20000;
-  audioManager.setFilter(freq);
+  // const freq = isSettingsOpen.value ? 400 : 20000;
+  // audioManager.setFilter(freq);
 };
 
 onMounted(() => {
@@ -127,6 +127,15 @@ onMounted(() => {
     if (engine.value) {
       handleAction({ type: 'cashout' });
     }
+  });
+
+  window.addEventListener('trigger-game-over', (e) => {
+    audioManager.playSFX('glitch-reboot');
+    showGameOverOverlay.value = true;
+  });
+
+  window.addEventListener('trigger-victory', (e) => {
+    showVictoryOverlay.value = true;
   });
 
   window.addEventListener('trigger-confiscation', () => {
@@ -300,22 +309,30 @@ const handleAction = async (payload) => {
       engine.value.cashOut(true);
       break;
     case 'cashout':
-      currentView.value = 'lobby';
+      // currentView.value = 'lobby';
       showConfiscationOverlay.value = false;
       showInvestigationOverlay.value = false;
       showInvestigationResultOverlay.value = false;
       showGameOverOverlay.value = false;
       audioManager.pause();
       audioManager.playSFX('paybill');
-      audioManager.playSFX('clear-table')
+      audioManager.playSFX('end-session')
       showStatsModal.value = true;
       applySessionExit();
       if (engine.value) {
         engine.value.exitGame();
-        engine.value = null;
+        // engine.value = null; // [FIX] Defer this until the stats popup is closed
       }
       break;
   }
+};
+
+const handleBackToLobby = () => {
+  currentView.value = 'lobby';
+  // Use nextTick or a small timeout to ensure the view transition has started before nullifying the engine
+  nextTick(() => {
+    engine.value = null;
+  });
 };
 // Sleep System Refs
 const showSleepModal = ref(false);
@@ -416,28 +433,11 @@ watch(() => engine.value?.state, (newState, oldState) => {
   }
 });
 
+// Show Victory/Game Over directly from event
 const showGameOverOverlay = ref(false);
 const showVictoryOverlay = ref(false);
 const now = ref(new Date().toLocaleTimeString())
 setInterval(() => now.value = new Date().toLocaleTimeString(), 1000)
-// Watch for bankruptcy/game over
-watch(() => engine.value?.gameOver, (isGameOver) => {
-  if (isGameOver) {
-    setTimeout(() => {
-      if (engine.value.winnerId === 'player') {
-        showVictoryOverlay.value = true;
-      } else {
-        audioManager.playSFX('glitch-reboot');
-        if (Math.random() < 0.05) audioManager.setPlaybackRate(0.9);
-        audioManager.setFilter(800);
-        showGameOverOverlay.value = true;
-      }
-    }, 3500);
-  } else {
-    showGameOverOverlay.value = false;
-    showVictoryOverlay.value = false;
-  }
-});
 
 const staminaBlur = computed(() => {
   const s = store.stamina;
@@ -470,7 +470,7 @@ watch(currentView, (newView) => {
             <div class="row">
               <div class="status-group">
                 <span class="status-value">{{ formatGameDate(store.gameTime) }} ({{ formatGameDayOfWeek(store.gameTime)
-                  }})</span>
+                }})</span>
                 <span class="status-divider"></span>
                 <span class="status-value">{{ formatGameTime(store.gameTime) }}</span>
               </div>
@@ -600,7 +600,7 @@ watch(currentView, (newView) => {
       @close="closeSkillSelector" />
 
     <!-- Play Stats Modal -->
-    <PlayStatsPopup :show="showStatsModal" @close="showStatsModal = false" />
+    <PlayStatsPopup :show="showStatsModal" @close="showStatsModal = false" @back="handleBackToLobby" />
 
     <!-- Item Catalog Modal -->
     <ItemCatalogPopup :show="showCatalog" @close="showCatalog = false" />

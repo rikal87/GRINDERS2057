@@ -27,27 +27,29 @@ import { PARTNER_ID, LOCATION_ID } from './constants.js'
  * @property {string} SIGN_CONTRACT_BAILOUT
  * @property {string} SIGN_CONTRACT_DATE_WITH_ME
  * @property {string} GONE
- * @property {string} MAIN_STORY_2_1_KBT_UNDERGROUND // KBT UNDERGROUND THE BUNKER 미션
- * @property {string} MAIN_STORY_2_2_KBT_UNDERGROUND
- * @property {string} MAIN_STORY_2_2_B_KBT_UNDERGROUND
- * @property {string} MAIN_STORY_2_3_KBT_UNDERGROUND
- * @property {string} MAIN_STORY_2_4_KBT_UNDERGROUND
- * @property {string} MAIN_STORY_2_5_KBT_UNDERGROUND
- * @property {string} MAIN_STORY_2_6_KBT_UNDERGROUND
- * @property {string} MAIN_STORY_2_7_KBT_UNDERGROUND // 주인공과 접선
- * @property {string} MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL // 미션 실패
- * @property {string} MAIN_STORY_2_8_KBT_UNDERGROUND_SUCCESS // 미션 성공
- * @property {string} MAIN_STORY_2_9_KBT_UNDERGROUND_RETRY // 미션 재도전
+ * @property {string} MAIN_STORY_2_1_HBD_UNDERGROUND // KBT UNDERGROUND THE BUNKER 미션
+ * @property {string} MAIN_STORY_2_2_HBD_UNDERGROUND
+ * @property {string} MAIN_STORY_2_2_B_HBD_UNDERGROUND
+ * @property {string} MAIN_STORY_2_3_HBD_UNDERGROUND
+ * @property {string} MAIN_STORY_2_4_HBD_UNDERGROUND
+ * @property {string} MAIN_STORY_2_5_HBD_UNDERGROUND
+ * @property {string} MAIN_STORY_2_6_HBD_UNDERGROUND
+ * @property {string} MAIN_STORY_2_7_HBD_UNDERGROUND // 주인공과 접선
+ * @property {string} MAIN_STORY_2_8_HBD_UNDERGROUND_FAIL // 미션 실패
+ * @property {string} MAIN_STORY_2_8_HBD_UNDERGROUND_SUCCESS // 미션 성공
+ * @property {string} MAIN_STORY_2_9_HBD_UNDERGROUND_RETRY // 미션 재도전
  * @property {string} JOIN_PARTNER // 플로렌스가 정식 파트너가 되기로 결심합니다.
  * @property {string} JOINED_PARTNER // 프로렌스를 정식 파트너로 등록했습니다.
  * @property {string} RESOLVED_DEBT
  * @property {string} RESOLVED_DEBT_LOW_RELATIONSHIP
  * @property {string} PRE_BUILD_UP_WARN_KBT
  * @property {string} MAIN_STORY_3_0_WARN_BIG_DADDY
- * @property {string} MAIN_STORY_3_2_CHALLENGE_KBT_ACCEPT_FLORENCE
- * @property {string} MAIN_STORY_3_2_CHALLENGE_KBT_REFUSE_FLORENCE
+ * @property {string} MAIN_STORY_3_2_CHALLENGE_HBD_ACCEPT_FLORENCE
+ * @property {string} MAIN_STORY_3_2_CHALLENGE_HBD_REFUSE_FLORENCE
  * @property {string} MAIN_STORY_3_2_BIG_DADDY_WIN
  * @property {string} MAIN_STORY_3_2_BIG_DADDY_LOSE
+ * @property {string} RICH_GUY_HUNTER
+ * @property {string} RICH_GUY_HUNTER_REFUSE
  */
 /** @type {FlorenceEvents} */
 export const EVENT_FLORENCE = new Proxy({}, {
@@ -57,6 +59,7 @@ const SENDER_EN = 'Florence';
 const SENDER_KO = '플로렌스';
 export const EventData = [
   {
+
     id: EVENT_FLORENCE.RESOLVED_DEBT,
     scenario: '플레이어가 플로렌스에게 빚을 갚았습니다.',
     title_ko: '[채무 관계 해소]',
@@ -85,7 +88,7 @@ export const EventData = [
     },
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_0_KBT_UNDERGROUND,
+    id: EVENT_FLORENCE.MAIN_STORY_2_0_HBD_UNDERGROUND,
     scenario: 'MAIN_STORY_1_7_MEET_AT_CLUB_DONE 이후, 플레이어의 명성이 높아져서 미션을 의뢰하려는 플로렌스 이벤트',
     title_ko: '안녕? 혹시 저를 잊은 건 아니죠?',
     title_en: 'Hello. I remember seeing you at the H.B.D Club.',
@@ -93,17 +96,19 @@ export const EventData = [
     body_en: "Hello. You haven't forgotten me already, have you? We played at the H.B.D Club VIP room—right next to each other. Remember how we absolutely cleaned out those wealthy idiots?",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    timer: 30,
     condition: () => {
-      return isEventCompleted(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE) && getBustEnemyCount(ENEMY_ID.GANGSTER) >= 3 && getCurrentBankroll() >= 300000;
+      // return isEventCompleted(EVENT_MAX.MAIN_STORY_1_7_MEET_AT_CLUB_DONE) && getBustEnemyCount(ENEMY_ID.GANGSTER) >= 3 && getCurrentBankroll() >= 100000;
+      return getCurrentBankroll() >= 100000;
     },
     func() {
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_1_KBT_UNDERGROUND, 10)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_1_HBD_UNDERGROUND, 10)
     },
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_1_KBT_UNDERGROUND,
-    scenario: 'MAIN_STORY_2_1_KBT_UNDERGROUND 이벤트, 주인공의 명성이 높아져서 미션을 의뢰하려는 플로렌스',
+    id: EVENT_FLORENCE.MAIN_STORY_2_1_HBD_UNDERGROUND,
+    scenario: 'MAIN_STORY_2_1_HBD_UNDERGROUND 이벤트, 주인공의 명성이 높아져서 미션을 의뢰하려는 플로렌스',
     title_ko: '다시 생각해도 정말 허접한 판이었죠.',
     title_en: 'It was such an amateur table, looking back.',
     body_ko: '아무튼, 요즘 KBT 깡패 녀석들을 아주 "효율적"으로 처리하고 있다는 소문을 들었어요. 포커 테이블에서 그 무식한 놈들을 줄줄이 파산시켰다면서요? 덕분에 제 체증이 다 내려가더군요!',
@@ -111,12 +116,12 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_2_KBT_UNDERGROUND, 10)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_2_HBD_UNDERGROUND, 10)
     },
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_2_KBT_UNDERGROUND,
+    id: EVENT_FLORENCE.MAIN_STORY_2_2_HBD_UNDERGROUND,
     scenario: '주인공의 활약(KBT 격파)에 만족감을 드러내는 플로렌스',
     title_ko: '무례한 리스크들',
     title_en: 'Disrespectful Risks',
@@ -125,12 +130,12 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_2_B_KBT_UNDERGROUND, 6)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_2_B_HBD_UNDERGROUND, 6)
     },
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_2_B_KBT_UNDERGROUND,
+    id: EVENT_FLORENCE.MAIN_STORY_2_2_B_HBD_UNDERGROUND,
     scenario: '이름을 밝히며 친근감을 표시하는 플로렌스',
     title_ko: '아, 맞다!',
     title_en: 'Oh, wait!',
@@ -139,41 +144,41 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_3_KBT_UNDERGROUND, 10)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_3_HBD_UNDERGROUND, 10)
     },
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_3_KBT_UNDERGROUND,
-    scenario: '불법 개조된 지하 카지노의 위치를 알려주는 플로렌스',
-    title_ko: '[더 벙커]에 대해 들어본 적 없나요?',
-    title_en: 'Heard of [The Bunker]?',
-    body_ko: "일단 다시 본론으로 돌아가죠. 혹시 [더 벙커] 라고 들어봤나요? KBT 녀석들이 버려진 지하 방공호를 개조해 만든 불법 카지노예요. 아주 위험하고도 매력적인 '변동성'이 지배하는 곳이죠. 실력 좋은 그라인더인 당신에겐 꽤나 구미가 당기는 정보 아닌가요?",
-    body_en: "Back to business. Ever heard of [The Bunker]? It's an illegal casino in an old fallout shelter run by the KBT. It's filled with dangerous yet 'attractive volatility.' For a skilled grinder like you, it sounds like a tempting opportunity, doesn't it?",
+    id: EVENT_FLORENCE.MAIN_STORY_2_3_HBD_UNDERGROUND,
+    scenario: 'H.B.D Club VIP룸에 대해 다시 언급하는 플로렌스',
+    title_ko: '일단 다시 본론으로 돌아가죠.',
+    title_en: 'Let\'s get back to business.',
+    body_ko: "지난 번 당신 친구와 함께 갔던 [H.B.D Club VIP 룸] 기억하죠? 그곳은 평소에는 출입이 불가하지만, 제가 아는 사람 덕분에 출입이 가능해요. 실력 좋은 그라인더인 당신에겐 꽤나 구미가 당기는 정보 아닌가요?",
+    body_en: "Remember the [H.B.D Club VIP Room] you visited with your friend? Access is usually restricted, but thanks to a certain acquaintance of mine, I can get us in. For a skilled grinder like yourself, that's a tempting piece of intel, isn't it?",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_4_KBT_UNDERGROUND, 25)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_4_HBD_UNDERGROUND, 25)
     },
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_4_KBT_UNDERGROUND,
-    scenario: '불법 개조된 지하 카지노 [더 벙커]에  플로렌스가 주인공과 함께 가기로 제안하는 이벤트',
+    id: EVENT_FLORENCE.MAIN_STORY_2_4_HBD_UNDERGROUND,
+    scenario: '[H.B.D Club VIP룸]으로 가서 [담합]을 제안하는 플로렌스',
     title_ko: '공동 작업 제안',
     title_en: 'Joint Operation Proposal',
-    body_ko: '제 제안은 심플해요. 저와 함께 그곳에 가주시는 거예요. 자세한 옵션은 현장에서 설명해 드릴게요. 당신의 배짱과 제 계산이 합쳐진다면, 승률은 90%를 상회할 거라 확신해요. 팀워크를 한번 발휘해 볼까요?',
-    body_en: "My proposal is simple. Come with me to that place. I'll explain the detailed options on-site. With your guts and my calculations, I'm certain our win rate will exceed 90%. Shall we demonstrate some teamwork?",
+    body_ko: '제안은 간단해요. 저와 함께 그곳 VIP 룸에 들어가는 거죠. 평소라면 다들 돌부처처럼 타이트하게 치는 녀석들이지만, 클럽 음악이랑 고급 샴페인이 들어가면... 글쎄요, "철저한 통제력"에도 균열이 생기기 마련이거든요.',
+    body_en: "My proposal is simple. You're coming with me to that VIP room. Normally, those regulars play as tight as a vault, but add some loud music and flowing champagne... and well, even their 'Rigid Control' starts to show cracks eventually.",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_5_KBT_UNDERGROUND, 20)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_5_HBD_UNDERGROUND, 20)
     },
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_5_KBT_UNDERGROUND,
-    scenario: 'MAIN_STORY_2_4_KBT_UNDERGROUND 연계 이벤트, 주인공의 명성이 높아져서 미션을 의뢰하려는 플로렌스',
+    id: EVENT_FLORENCE.MAIN_STORY_2_5_HBD_UNDERGROUND,
+    scenario: '수익 배분에 대해 이야기하는 플로렌스',
     title_ko: '합리적인 수익 배분',
     title_en: 'Rational Profit Sharing',
     body_ko: '거기서 발생하는 수익은 정당하게 5:5로 하죠. 평소라면 제 엣지를 고려해 더 높은 지분을 요구했겠지만, 당신의 실력은 충분히 검증되었으니까요. 이 정도면 꽤나 매력적인 계약 조건 아닌가요?',
@@ -181,13 +186,13 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_6_KBT_UNDERGROUND, 20)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_6_HBD_UNDERGROUND, 20)
     },
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_6_KBT_UNDERGROUND,
-    scenario: 'MAIN_STORY_2_5_KBT_UNDERGROUND 연계 이벤트, 주인공의 명성이 높아져서 미션을 의뢰하려는 플로렌스',
+    id: EVENT_FLORENCE.MAIN_STORY_2_6_HBD_UNDERGROUND,
+    scenario: 'MAIN_STORY_2_5_HBD_UNDERGROUND 연계 이벤트, 주인공의 명성이 높아져서 미션을 의뢰하려는 플로렌스',
     title_ko: '긍정적인 검토',
     title_en: 'Positive Review',
     body_ko: '수락하시는 걸로 이해할게요. 불필요한 협상은 에너지 낭비니까요. 준비할 시간이 필요할 테니, 내일 다시 연락드리죠. 최상의 컨디션을 유지하세요.',
@@ -195,17 +200,17 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_7_KBT_UNDERGROUND, 19 * 60)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_7_HBD_UNDERGROUND, 19 * 60)
     },
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_7_KBT_UNDERGROUND,
-    scenario: 'MAIN_STORY_2_6_KBT_UNDERGROUND 연계 이벤트, 하루 뒤 주인공에게 준비가 되었음을 알리고 접선 준비',
-    title_ko: '[접전 준비 완료]',
-    title_en: '[Ready for Engagement]',
-    body_ko: '지금 즉시 [더 벙커]로 오세요. 위치 데이터는 전송했어요. 늦는 건 제 계산에 없는 변수니, 부디 정시에 도착해 주시길 바랄게요. 게임을 시작해 보죠.',
-    body_en: "Come to [The Bunker] immediately. I've sent the location data. Being late is a variable I haven't accounted for, so please arrive on time. Let's start the game.",
+    id: EVENT_FLORENCE.MAIN_STORY_2_7_HBD_UNDERGROUND,
+    scenario: 'MAIN_STORY_2_6_HBD_UNDERGROUND 연계 이벤트, 하루 뒤 주인공에게 준비가 되었음을 알리고 접선 준비',
+    title_ko: '접전 준비 완료',
+    title_en: 'Ready for Engagement',
+    body_ko: '지금 즉시 [H.B.D Club VIP 룸]으로 오세요. 위치 데이터는 전송했어요. 늦는 건 제 계산에 없는 변수니, 부디 정시에 도착해 주시길 바랄게요. 게임을 시작해 보죠.',
+    body_en: "Come to [H.B.D Club VIP Room] immediately. I've sent the location data. Being late is a variable I haven't accounted for, so please arrive on time. Let's start the game.",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     label_ko: '참가하기',
@@ -216,56 +221,114 @@ export const EventData = [
         label: this.label,
         actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
         payload: {
-          location_id: LOCATION_ID.MIDDLE_UNDERGROUND_CASINO_WITH_FLORENCE,
+          location_id: LOCATION_ID.LOW_UNDERGROUND_CLUB_VIP_ROOM,
         }
       }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
     repeatable: true,
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL,
-    scenario: 'MAIN_STORY_2_7_KBT_UNDERGROUND 연계 이벤트, 주인공이 미션을 실패했을 때, (주인공에게 가진 플로렌스는 크게 실망하였습니다.)',
-    title_ko: '[신뢰의 균열]',
-    title_en: '[Breach of Trust]',
+    id: EVENT_FLORENCE.MAIN_STORY_2_8_HBD_UNDERGROUND_FAIL,
+    scenario: 'MAIN_STORY_2_7_HBD_UNDERGROUND 연계 이벤트, 주인공이 미션을 실패했을 때, (주인공에게 가진 플로렌스는 크게 실망하였습니다.)',
+    title_ko: '신뢰의 균열',
+    title_en: 'Breach of Trust',
     body_ko: '아... 실망스럽네요. 제 계산이 빗나간 건가요, 아니면 당신의 집중력이 흐트러진 건가요? 이런 식의 리스크는 비즈니스에 치명적이에요. 당분간은 서로 거리를 두는 게 현명할 것 같네요.',
     body_en: "Ah... how disappointing. Did my calculations fail, or did your focus waver? Risks like this are fatal to business. It seems wise for us to keep our distance for the time being.",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       // gainRelationship(PARTNER_ID.FLORENCE, -50);
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_9_KBT_UNDERGROUND_RETRY, (Math.random() * 72 + 67) * 60)
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_9_HBD_UNDERGROUND_RETRY, (Math.random() * 72 + 67) * 60)
     },
     repeatable: true,
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_9_KBT_UNDERGROUND_RETRY,
-    scenario: 'MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL 이후, 하루 뒤 플로렌스가 다시 미션을 제안',
-    title_ko: '[재도전의 기회]',
-    title_en: '[Opportunity for Redemption]',
-    body_ko: '당신의 이전 데이터는 실망스러웠지만, 시장 상황이 변했어요. [더 벙커]의 테이블 엣지가 지금 최고조에 달했거든요. 리스크를 안고 다시 한번 협력해 볼 의향이 있나요? 이번엔 확실히 증명해 주길 바랄게요.',
-    body_en: "Your previous data was disappointing, but market conditions have changed. The table edge at [The Bunker] is peaking right now. Are you willing to take the risk and cooperate once more? I expect you to truly prove yourself this time.",
+    id: EVENT_FLORENCE.MAIN_STORY_2_9_HBD_UNDERGROUND_RETRY,
+    scenario: 'MAIN_STORY_2_8_HBD_UNDERGROUND_FAIL 이후, 하루 뒤 플로렌스가 다시 미션을 제안',
+    title_ko: '재도전의 기회',
+    title_en: 'Opportunity for Redemption',
+    body_ko: '당신의 이전 데이터는 실망스러웠지만, 시장 상황이 변했어요. 테이블 엣지가 지금 최고조에 달했거든요. 리스크를 안고 다시 한번 협력해 볼 의향이 있나요? 이번엔 확실히 증명해 주길 바랄게요.',
+    body_en: "Your previous data was disappointing, but market conditions have changed. The table edge is peaking right now. Are you willing to take the risk and cooperate once more? I expect you to truly prove yourself this time.",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     repeatable: true,
     func() {
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_7_KBT_UNDERGROUND, (Math.random() * 8 + 4) * 60) // 4 ~ 12
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_7_HBD_UNDERGROUND, (Math.random() * 8 + 4) * 60) // 4 ~ 12
     },
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_SUCCESS,
-    scenario: 'MAIN_STORY_2_7_KBT_UNDERGROUND 연계 이벤트, 주인공이 미션을 성공했을 때, (플로렌스는 크게 기뻐합니다.)',
-    title_ko: '[완벽한 실행]',
-    title_en: '[Perfect Execution]',
-    body_ko: '역시 제 안목은 틀리지 않았군요. 그 지옥 같은 벙커에서 살아남아 수익까지 챙기다니... 기대 이상의 성과예요. 당신이라는 \'변수\'가 제 포트폴리오에 아주 긍정적인 영향을 주고 있네요. 조만간 더 재미있는 제안을 하러 가죠. :)',
-    body_en: "As expected, my intuition was correct. To survive that hellish bunker and even come away with a profit... it's a performance beyond expectations. The 'variable' that is you is having a very positive impact on my portfolio. I'll come to you with a more interesting proposal soon :)",
+    id: EVENT_FLORENCE.MAIN_STORY_2_8_HBD_UNDERGROUND_SUCCESS,
+    scenario: 'MAIN_STORY_2_7_HBD_UNDERGROUND 연계 이벤트, 주인공이 미션을 성공했을 때, (플로렌스는 크게 기뻐합니다.)',
+    title_ko: '완벽한 실행',
+    title_en: 'Perfect Execution',
+    body_ko: '역시 제 안목은 틀리지 않았군요. 그 시끄러운 VIP 룸에서 살아남아 수익까지 챙기다니! 기대 이상의 성과예요. 조만간 더 재미있는 제안을 하러 가죠. :)',
+    body_en: "As expected, my intuition was correct. To survive that chaotic VIP room and even come away with a profit! It's a performance beyond expectations. I'll come to you with a more interesting proposal soon :)",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      // gainRelationship(PARTNER_ID.FLORENCE, 100);
-      sendMessage(MESSAGE_TYPE.MISSION, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.JOIN_PARTNER, 2 * 24 * 60); // Join after 2 days
+      gainRelationship(PARTNER_ID.FLORENCE, 50);
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_FLORENCE.JOIN_PARTNER, 2 * 24 * 60); // Join after 1 days
+    },
+  },
+  {// simulate repeatable event
+    id: EVENT_FLORENCE.RICH_GUY_HUNTER,
+    scenario: '플로렌스가 플레이어에게 H.B.D Vip룸에서 술에 취한채 게임을 하고있는 부자를 게임을 벌이는 곳을 찾아내어 같이 게임을 하자고 제안합니다. (수익은 5:5로 강제로 고정됩니다)',
+    title_ko: '기대수익 극대화의 시간',
+    title_en: 'High EV Opportunity',
+    body_ko: "흥미로운 데이터를 하나 찾았어요. 지난번 처럼 H.B.D VIP 룸에 부자들이 모인다고 하더군요. 지금 들어가면 우리의 기대수익이 비정상적으로 높을 거예요. 자산 증식의 기회인데, 함께하시겠어요?",
+    body_en: "I've found some interesting data. Apparently, the whales are gathering in the H.B.D VIP room again. If we move in now, our EV will be abnormally high. It's a rare chance to grow our assets—care to join me?",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    accept_ko: '참가하기',
+    accept_en: 'Join',
+    refuse_ko: '거절하기',
+    refuse_en: 'Refuse',
+    get acceptLabel() { return store.settings.language === 'en' ? this.accept_en : this.accept_ko; },
+    get refuseLabel() { return store.settings.language === 'en' ? this.refuse_en : this.refuse_ko; },
+    timer: 4 * 24 * 60, // 4days
+    condition: () => {
+      return isEventCompleted(EVENT_FLORENCE.MAIN_STORY_2_8_HBD_UNDERGROUND_SUCCESS) && getRelationship(PARTNER_ID.FLORENCE) >= 300;
+    },
+    func() {
+      sendMessage(MESSAGE_TYPE.EVENT, this.title, this.body, [
+        {
+          label: this.acceptLabel,
+          actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
+          payload: {
+            resolveType: MESSAGE_ACTION_RESOLVE_TYPE.JOIN,
+            location_id: LOCATION_ID.LOW_UNDERGROUND_CLUB_VIP_ROOM
+          }
+        },
+        {
+          label: this.refuseLabel,
+          actionType: MESSAGE_ACTION_TYPE.ACCEPT_INVITE,
+          payload: {
+            resolveType: MESSAGE_ACTION_RESOLVE_TYPE.REFUSE,
+            nextEvent: EVENT_FLORENCE.RICH_GUY_HUNTER_REFUSE
+          }
+        }
+      ], getLanguage() === 'en' ? SENDER_EN : SENDER_KO, 60 * 24)
+    },
+    repeatable: true // if repeatable is true, do not register store.completedEvents
+  },
+  {// simulate repeatable event
+    id: EVENT_FLORENCE.RICH_GUY_HUNTER_REFUSE,
+    scenario: '[EVENT_FLORENCE.RICH_GUY_HUNTER] 반복 이벤트 거절',
+    title_ko: '기회비용의 발생',
+    title_en: 'Opportunity Cost',
+    body_ko: '수익 기회를 스스로 거절하다니, 흥미로운 선택이네요. 뭐, 각자의 리스크 관리 방식이 있는 거니까요. 이 기회비용은 오롯이 제가 흡수하도록 하죠.',
+    body_en: "Rejecting a clear profit opportunity... an interesting choice. Well, everyone has their own risk management style. I'll just absorb this opportunity cost myself then.",
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    repeatable: true,
+    condition() {
+      return getRelationship(PARTNER_ID.FLORENCE) >= 500;
+    },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
     },
   },
   {
@@ -580,14 +643,14 @@ export const EventData = [
     repeatable: false
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_3_2_CHALLENGE_KBT_ACCEPT_FLORENCE,
+    id: EVENT_FLORENCE.MAIN_STORY_3_2_CHALLENGE_HBD_ACCEPT_FLORENCE,
     title_ko: '실망입니다',
     title_en: 'I\'m disappointed',
     body_ko: '결국 제 조언을 무시하셨군요.',
     body_en: 'You ignored my advice in the end.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    condition() { return isEventCompleted(EVENT_MAX.MAIN_STORY_3_2_CHALLENGE_KBT_ACCEPT) && isJoinedPartner(PARTNER_ID.FLORENCE); },
+    condition() { return isEventCompleted(EVENT_MAX.MAIN_STORY_3_2_CHALLENGE_HBD_ACCEPT) && isJoinedPartner(PARTNER_ID.FLORENCE); },
     func() {
       gainRelationship(PARTNER_ID.FLORENCE, -250);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
@@ -595,14 +658,14 @@ export const EventData = [
     repeatable: false
   },
   {
-    id: EVENT_FLORENCE.MAIN_STORY_3_2_CHALLENGE_KBT_REFUSE_FLORENCE,
+    id: EVENT_FLORENCE.MAIN_STORY_3_2_CHALLENGE_HBD_REFUSE_FLORENCE,
     title_ko: '현명한 선택 :)',
     title_en: 'A wise choice :)',
     body_ko: '현명한 판단입니다. 우리는 통제 가능한 싸움에만 베팅하면 됩니다.',
     body_en: 'A wise judgment. We only need to bet on fights we can control.',
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
-    condition() { return isEventCompleted(EVENT_MAX.MAIN_STORY_3_2_CHALLENGE_KBT_REFUSE) && isJoinedPartner(PARTNER_ID.FLORENCE) },
+    condition() { return isEventCompleted(EVENT_MAX.MAIN_STORY_3_2_CHALLENGE_HBD_REFUSE) && isJoinedPartner(PARTNER_ID.FLORENCE) },
     func() {
       gainRelationship(PARTNER_ID.FLORENCE, 200);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);

@@ -6,7 +6,7 @@ import { TRACK_ENUM, TRACK_INFO } from './audioTracks.js';
 // const trackModules = import.meta.glob('../assets/music/*.mp3', { eager: true, import: 'default' });
 const sfxModules = import.meta.glob('../assets/sfx/*.{mp3,wav}', { eager: true, import: 'default' });
 
-const DEFAULT_PLAYLIST = [TRACK_ENUM.Lucid];
+const DEFAULT_PLAYLIST = [TRACK_ENUM.Lucid, TRACK_ENUM.Fassounds_CryptoDreams];
 export let playlist = DEFAULT_PLAYLIST;
 // export const playlist = Object.entries(trackModules).map(([path, url]) => {
 //   const fileName = path.split('/').pop().replace('.mp3', '');
@@ -44,7 +44,8 @@ class AudioManager {
     this.initialized = false;
     this.sfxBuffers = {};
     this.currentTrackInfo = ref({ title: 'SYSTEM_TRACK', artist: 'SYSTEM_TRACK', license: null });
-    this.loadLock = false; // Prevent concurrent track loading
+    this.abortController = null;   // Manage fetch aborts
+    this.currentLoadId = 0;        // Track the latest load request
   }
 
   async init() {
@@ -69,8 +70,15 @@ class AudioManager {
   }
 
   async loadTrack(index = 0, trackInfo = null) {
-    if (this.loadLock) return;
-    this.loadLock = true;
+    if (this.abortController) {
+      this.abortController.abort(); // Cancel any ongoing fetch
+    }
+    this.abortController = new AbortController();
+    const signal = this.abortController.signal;
+
+    this.currentLoadId++;
+    const loadId = this.currentLoadId;
+
     try {
       await this.init();
 
@@ -102,11 +110,15 @@ class AudioManager {
         this.source.onended = null; // Prevent trigger when manually changing tracks
         try { this.source.stop(); } catch (e) { }
         this.source.disconnect();
+        this.source = null;
       }
 
-      const response = await fetch(track.file);
+      const response = await fetch(track.file, { signal });
       const arrayBuffer = await response.arrayBuffer();
       const audioBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+
+      // If a new track was requested while we were fetching/decoding, discard this one
+      if (this.currentLoadId !== loadId) return;
 
       this.currentTrackInfo.value = track;
       this.source = this.ctx.createBufferSource();
@@ -134,8 +146,16 @@ class AudioManager {
       if (this.isPlaying.value) {
         this.source.start(0);
       }
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        console.log('Track load aborted in favor of a newer track.');
+        return;
+      }
+      console.error('Error loading track:', err);
     } finally {
-      this.loadLock = false;
+      if (this.currentLoadId === loadId) {
+        this.abortController = null;
+      }
     }
   }
 

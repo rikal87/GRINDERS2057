@@ -505,11 +505,13 @@ export const processMissionResult = (player, result, engine) => {
       scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_FAILED, 30);
     }
   }
-  if (locationId === LOCATION_ID.MIDDLE_UNDERGROUND_CASINO_WITH_FLORENCE) {
+  if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_VIP_ROOM) {
+    const client = engine.players.find(p => p.id === PARTNER_ID.FLORENCE);
     if (result.indexOf('WIN') !== -1) {
-      scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_SUCCESS, 30);
+      gainRelationship(client.id, 50);
+      scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_2_8_HBD_UNDERGROUND_SUCCESS, 30);
     } else {
-      scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_2_8_KBT_UNDERGROUND_FAIL, 30);
+      scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_2_8_HBD_UNDERGROUND_FAIL, 30);
     }
   }
   if (locationId === LOCATION_ID.MIDDLE_KBT_VIP_ROOM) {

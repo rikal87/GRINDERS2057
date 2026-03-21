@@ -59,7 +59,13 @@
       <!-- Character Dialogue Bubble -->
 
       <div class="meta">
-        <span class="name" :class="{ 'companion': p.isPartner }">{{ p.name }}</span>
+        <span class="name" :class="{ 'companion': p.isPartner }">
+          <span class="tilted" v-if="p.tilt >= 75" :data-tooltip="getTiltTooltip(p.tilt)">😡</span>
+          <span class="tilted" v-else-if="p.tilt >= 50" :data-tooltip="getTiltTooltip(p.tilt)">😠</span>
+          <span class="tilted" v-else-if="p.tilt >= 25" :data-tooltip="getTiltTooltip(p.tilt)">😒</span>
+          <span class="drunken" v-if="p.isDrunken" :data-tooltip="getDrunkTooltip()">🍺</span>
+          {{ p.name }}
+        </span>
         <!-- no more need to show class tag -->
         <!-- <span class="class-tag" v-if="p.isHuman">{{ p.class?.name }}</span> -->
       </div>
@@ -139,6 +145,7 @@ import { computed, ref, watch, onMounted } from 'vue';
 import Card from './Card.vue';
 import ChipDisplay from './ChipDisplay.vue';
 import ChipStack from './ChipStack.vue';
+import { getLanguage } from '../logic/store.js';
 import { zones } from '../logic/zone.js';
 const props = defineProps({
   engine: Object
@@ -161,7 +168,33 @@ watch(() => props.engine?.locationId, (newLoc) => {
     audioManager.playTrackByZoneId(newLoc);
   }
 });
-
+const DRUNK_DESC = {
+  ko: '이 친구는 지금 취했습니다. 평소보다 말이 많아지며, 플레이가 루즈해집니다.',
+  en: 'Hammered and chatty. Range is wider than ever—expect some loose plays.',
+}
+const TILT_DESC = {
+  HIGH: {
+    ko: '완전한 틸트 상태입니다!',
+    en: 'Full-on tilted!',
+  },
+  MID: {
+    ko: '화가 난거 같아 보이네요...',
+    en: 'Seems pretty salty...',
+  },
+  LOW: {
+    ko: '조금 짜증나 보이네요.',
+    en: 'Looks a bit peeved.',
+  }
+}
+const getDrunkTooltip = () => {
+  return DRUNK_DESC[getLanguage()];
+}
+const getTiltTooltip = (tilt) => {
+  if (tilt >= 75) return TILT_DESC.HIGH[getLanguage()];
+  else if (tilt >= 50) return TILT_DESC.MID[getLanguage()];
+  else if (tilt >= 25) return TILT_DESC.LOW[getLanguage()];
+  else return '';
+}
 
 const showShowdown = ref(false);
 let showdownTimer = null;
@@ -171,7 +204,7 @@ let showdownTimer = null;
 // Modified for Sequential Side Pot Animation
 const activePotWinner = ref(null); // Player IDs of current pot winners
 const activePotWinnerSeat = ref(''); // Seat class of a primary winner
-const isPotCollecting = ref(false); 
+const isPotCollecting = ref(false);
 const visualTotalPot = ref(0);
 const currentPotName = ref('');
 const visualChips = ref({}); // [NEW] For chip sync animation
@@ -203,7 +236,7 @@ watch(() => props.engine.showdownResults, async (newResults) => {
       for (const pot of potsToAnimate) {
         currentPotName.value = pot.name;
         activePotWinner.value = pot.winners;
-        
+
         // Find winner seat class for animation direction
         const firstWinnerIdx = props.engine.players.findIndex(p => p.id === pot.winners[0]);
         if (firstWinnerIdx !== -1) {

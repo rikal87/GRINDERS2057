@@ -106,7 +106,7 @@ const getNewItemMsg = (items) => {
   const msgObj = NEW_ITEM_MSG[getLanguage()]
   return `+${items.length - 5} ${msgObj}`;
 }
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'back']);
 const getMsg = (msgCode) => {
   const msgObj = pickRandomMessage(msgCode);
   if (!msgObj) return '';
@@ -257,7 +257,11 @@ const wsdTarget = computed(() => {
 
 const handleClose = () => {
   audioManager.playSFX('ui-click');
-  store.play_stats_session = null;
+  if (isSession.value) {
+    // currentView.value = 'lobby';
+    emit('back');
+    store.play_stats_session = null;
+  }
   // setTimeout(() => {
   //   if (audioManager.currentZoneId.value) {
   //     if (isSession.value) {
@@ -283,7 +287,8 @@ const handleClose = () => {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
-  overflow: hidden; /* Added to prevent scrollbar flickering during animations */
+  overflow: hidden;
+  /* Added to prevent scrollbar flickering during animations */
 }
 .unlock-card {
   display: flex;

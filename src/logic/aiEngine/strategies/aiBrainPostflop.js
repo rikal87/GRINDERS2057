@@ -139,9 +139,33 @@ export function getPostflopAction(context) {
   if (street === 'RIVER' && evalResult.total >= 1000000) {
     finalEquity = Math.max(finalEquity, 0.22);
   }
-  const budget = getHandBudget(finalEquity, potSize, philosophy);
+
+  // [v5.1] River Bluff-Catch Equity Realization
+  // On the river, absolute hand equity means nothing if the opponent is bluffing.
+  // We add their perceived bluffing frequency to our equity if we hold a bluff-catcher.
+  let effectiveEquity = finalEquity;
+  let isBluffCatchSituation = false;
+
+  if (street === 'RIVER' && !isCheckable) {
+    let riverBluffProb = 0.20;
+    if (boardAnalysis.isPaired) riverBluffProb += 0.15; // Increased to call more on paired boards
+    if (villain.af > 2.0 || philosophy === 'LAG') riverBluffProb += 0.15; // Aggressive opponents
+    // Base bluff prob boost for calling
+    riverBluffProb += 0.05;
+
+    // Eligible Bluff Catchers: WEAK pairs, MARGINAL pairs, GOOD, STRONG, A-High, or K-High
+    const hasShowdownValue = ['WEAK', 'MARGINAL', 'GOOD', 'STRONG', 'ACE_HIGH'].includes(category) ||
+      (evalResult.rank === 1 && player.hand.some(c => c[0] === 'A' || c[0] === 'K'));
+
+    if (hasShowdownValue) {
+      effectiveEquity += riverBluffProb;
+      isBluffCatchSituation = true;
+    }
+  }
+
+  const budget = getHandBudget(Math.max(finalEquity, effectiveEquity), potSize, philosophy);
   const isOverBudget = (player.totalWagered + callAmount) > budget;
-  const isCommitted = isPotCommitted(player, finalEquity, potSize);
+  const isCommitted = isPotCommitted(player, effectiveEquity, potSize);
 
   // 3. Decision Logic
   // [v2.2] Adjusted Required Equity: Pot Odds + Aggression Pressure
@@ -155,25 +179,6 @@ export function getPostflopAction(context) {
     const leadThreshold = (category === 'NUTS') ? 0.75 : 0.95;
     if (finalEquity < leadThreshold) {
       return { action: 'check', insight: extraInsight + `OOP Defense - Respecting ${potType} Initiative` };
-    }
-  }
-
-  // [v12] River Decision: Bluff Catch vs Fold
-  if (street === 'RIVER' && !isCheckable) {
-    if (isOverBudget && !isCommitted) {
-      // [MOD] Normalize River Call (MDF Compliance)
-      // Removed the +0.1 buffer to prevent over-folding bluff catchers.
-      if (finalEquity < potOdds) {
-        return { action: 'fold', insight: extraInsight + 'Budget Exhausted - Safe Fold' };
-      }
-    }
-
-    if (isOverBudget && isCommitted) {
-      // [v2.1] Higher Bluff Probability consideration for certain textures
-      const bluffProbability = (villain.af > 2.5 || boardAnalysis.isPaired) ? 0.35 : 0.15;
-      if (finalEquity + bluffProbability >= potOdds) {
-        return { action: 'call', insight: extraInsight + 'Pot Committed - Bluff Catching', isBluffCatch: true };
-      }
     }
   }
 
@@ -365,27 +370,6 @@ export function getPostflopAction(context) {
   }
 
   // Defensive Call/Check
-  // [v5.1] River Bluff-Catch Equity Realization
-  // On the river, our absolute hand equity means nothing if the opponent is bluffing.
-  // We add their perceived bluffing frequency to our equity if we hold a bluff-catcher (K-High+).
-  let effectiveEquity = finalEquity;
-  let isBluffCatchSituation = false;
-
-  if (street === 'RIVER' && !isCheckable) {
-    let riverBluffProb = 0.20;
-    if (boardAnalysis.isPaired) riverBluffProb += 0.10; // Paired boards invite dry bluffs
-    if (villain.af > 2.0 || philosophy === 'LAG') riverBluffProb += 0.15; // Aggressive opponents
-
-    // Eligible Bluff Catchers: WEAK pairs, MARGINAL pairs, A-High, or K-High
-    const hasShowdownValue = ['WEAK', 'MARGINAL', 'GOOD', 'ACE_HIGH'].includes(category) ||
-      (evalResult.rank === 1 && player.hand.some(c => c[0] === 'A' || c[0] === 'K'));
-
-    if (hasShowdownValue) {
-      effectiveEquity += riverBluffProb;
-      isBluffCatchSituation = true;
-    }
-  }
-
   // [MOD] Hard-Tighten Flop Buffer (+0.12) - Raising Flop Fold Rate to target 20-30%
   const callThreshold = (street === 'FLOP') ? (requiredEquity + 0.12) : requiredEquity;
 
@@ -395,7 +379,10 @@ export function getPostflopAction(context) {
       const isTinyBet = potOdds < 0.10;
       const isMarginalPlus = ['STRONG', 'GOOD', 'MARGINAL'].includes(category) || finalEquity > 0.35;
 
-      if (!isCheckable && !isCommitted && (!isTinyBet || !isMarginalPlus)) {
+      // [FIX] River MDF Compliance: If our effective equity matches or exceeds potOdds, call regardless of budget limits
+      const isRiverMDFCall = street === 'RIVER' && effectiveEquity >= potOdds;
+
+      if (!isCheckable && !isCommitted && (!isTinyBet || !isMarginalPlus) && !isRiverMDFCall) {
         return { action: 'fold', insight: extraInsight + 'Over Budget - Defensive Fold' };
       }
     }

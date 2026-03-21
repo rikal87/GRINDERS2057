@@ -38,6 +38,18 @@ import BGM_Rockot_Bargur from '../assets/music/Rockot_Bargur.mp3'
 import BGM_Tvari_SeoulArcade from '../assets/music/Tvari_SeoulArcade.mp3'
 import BGM_Penguinmusic_Mellow from '../assets/music/Penguinmusic_Mellow.mp3'
 import BGM_u_98o9hlkn7r_Cyberpunk from '../assets/music/u98o9hlkn7r_Cyberpunk.mp3'
+import BGM_Elijah_k_Bassline from '../assets/music/Elijah_k_Bassline.mp3'
+import BGM_Elijah_k_MachineUnlearning from '../assets/music/Elijah_k_MachineUnlearning.mp3'
+import BGM_Elijah_k_NeonNightscape from '../assets/music/Elijah_k_NeonNightscape.mp3'
+import BGM_Elijah_k_Shenzhen from '../assets/music/Elijah_k_Shenzhen.mp3'
+import BGM_Elijah_k_Subwoofer from '../assets/music/Elijah_k_Subwoofer.mp3'
+import BGM_Elijah_k_UndergroundParty from '../assets/music/Elijah_k_UndergroundParty.mp3'
+import BGM_Fassounds_CryptoDreams from '../assets/music/Fassounds_CryptoDreams.mp3'
+import BGM_Tunetank_Beat from '../assets/music/Tunetank_Beat.mp3'
+import BGM_Tunetank_Chill from '../assets/music/Tunetank_Chill.mp3'
+import BGM_Fassounds_TokyoFunk from '../assets/music/Fassounds_TokyoFunk.mp3'
+import BGM_Fassounds_TheAfrobeat from '../assets/music/Fassounds_TheAfrobeat.mp3'
+
 // Dusk Horizon by | escp | https://www.escp.space https://escp-music.bandcamp.com
 export const TRACK_ENUM = {
   Placebo: "Placebo",
@@ -79,9 +91,93 @@ export const TRACK_ENUM = {
   Rockot_TrafficHouse: "Rockot_TrafficHouse",
   Rockot_Bargur: "Rockot_Bargur",
   Tvari_SeoulArcade: "Tvari_SeoulArcade",
+  Elijah_k_Bassline: "Elijah_k_Bassline",
+  Elijah_k_MachineUnlearning: "Elijah_k_MachineUnlearning",
+  Elijah_k_NeonNightscape: "Elijah_k_NeonNightscape",
+  Elijah_k_Shenzhen: "Elijah_k_Shenzhen",
+  Elijah_k_Subwoofer: "Elijah_k_Subwoofer",
+  Elijah_k_UndergroundParty: "Elijah_k_UndergroundParty",
+  Fassounds_CryptoDreams: "Fassounds_CryptoDreams",
+  Fassounds_TokyoFunk: "Fassounds_TokyoFunk",
+  Fassounds_TheAfrobeat: "Fassounds_TheAfrobeat",
+  Tunetank_Beat: "Tunetank_Beat",
+  Tunetank_Chill: "Tunetank_Chill",
+
 };
 //  Karl Casey @ White Bat Audio"
 export const TRACK_INFO = {
+  [TRACK_ENUM.Fassounds_TokyoFunk]: {
+    "title": "Tokyo Funk",
+    "artist": "Fassounds",
+    "license": "",
+    "file": BGM_Fassounds_TokyoFunk
+  },
+  [TRACK_ENUM.Fassounds_TheAfrobeat]: {
+    "title": "The Afrobeat",
+    "artist": "Fassounds",
+    "license": "",
+    "file": BGM_Fassounds_TheAfrobeat
+  },
+  [TRACK_ENUM.Tunetank_Chill]: {
+    "title": "Chill",
+    "artist": "Tunetank",
+    "license": "",
+    "file": BGM_Tunetank_Chill
+  },
+  [TRACK_ENUM.Tunetank_Beat]: {
+    "title": "Beat",
+    "artist": "Tunetank",
+    "license": "",
+    "file": BGM_Tunetank_Beat
+  },
+  [TRACK_ENUM.Elijah_k_Bassline]: {
+    "title": "Bassline",
+    "artist": "Elijah_k",
+    "license": "",
+    "file": BGM_Elijah_k_Bassline
+  },
+  [TRACK_ENUM.Elijah_k_MachineUnlearning]: {
+    "title": "Machine Unlearning",
+    "artist": "Elijah_k",
+    "license": "",
+    "file": BGM_Elijah_k_MachineUnlearning
+  },
+  [TRACK_ENUM.Elijah_k_NeonNightscape]: {
+    "title": "Neon Nightscape",
+    "artist": "Elijah_k",
+    "license": "",
+    "file": BGM_Elijah_k_NeonNightscape
+  },
+  [TRACK_ENUM.Elijah_k_Shenzhen]: {
+    "title": "Shenzhen",
+    "artist": "Elijah_k",
+    "license": "",
+    "file": BGM_Elijah_k_Shenzhen
+  },
+  [TRACK_ENUM.Elijah_k_Subwoofer]: {
+    "title": "Subwoofer",
+    "artist": "Elijah_k",
+    "license": "",
+    "file": BGM_Elijah_k_Subwoofer
+  },
+  [TRACK_ENUM.Elijah_k_UndergroundParty]: {
+    "title": "Underground Party",
+    "artist": "Elijah_k",
+    "license": "",
+    "file": BGM_Elijah_k_UndergroundParty
+  },
+  [TRACK_ENUM.Fassounds_CryptoDreams]: {
+    "title": "Crypto Dreams",
+    "artist": "Fassounds",
+    "license": "",
+    "file": BGM_Fassounds_CryptoDreams
+  },
+  [TRACK_ENUM.EvgenyBardyuzha_PasswordInfinity]: {
+    "title": "Password Infinity",
+    "artist": "Evgeny Bardyuzha",
+    "license": "",
+    "file": BGM_EvgenyBardyuzha_PasswordInfinity
+  },
   [TRACK_ENUM.EvgenyBardyuzha_PasswordInfinity]: {
     "title": "Password Infinity",
     "artist": "Evgeny Bardyuzha",

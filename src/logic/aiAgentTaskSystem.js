@@ -190,7 +190,8 @@ export const processAiTasks = () => {
           sendMessage(MESSAGE_TYPE.SYSTEM, 'Effect Expired', `${taskDef.name} effect has ended. Cooldown started.`, [], 'System', 24 * 60);
 
           // Remove active boosts associated with this task
-          store.activeBoosts = store.activeBoosts.filter(b => b.taskId !== taskState.taskId);
+          // Remove active boosts associated with this task instance
+          store.activeBoosts = store.activeBoosts.filter(b => b.instanceId !== taskState.instanceId);
 
           if (taskDef.cooldown <= 0) {
             store.onWorkTasks.splice(i, 1);
@@ -238,7 +239,7 @@ const triggerTaskSuccess = (taskState, taskDef) => {
       // Don't add penalty effects to activeBoosts (they are processed minutely)
       if (eff.type === 'penalty_amount') return;
 
-      const boost = { taskId: taskDef.id, effect: { ...eff } };
+      const boost = { taskId: taskDef.id, instanceId: taskState.instanceId, effect: { ...eff } };
 
       // Handle random location for rake discounts
       if (eff.type === 'rake_discount_rnd_mul') {
@@ -267,7 +268,7 @@ const triggerRiskDetection = (index, effDef, taskName) => {
 
   if (index >= 0) {
     const taskState = store.onWorkTasks[index];
-    store.activeBoosts = store.activeBoosts.filter(b => b.taskId !== taskState.taskId);
+    store.activeBoosts = store.activeBoosts.filter(b => b.instanceId !== taskState.instanceId);
 
     const taskDef = AI_TASK_DATA.find(t => t.id === taskState.taskId);
     if (taskDef && taskDef.cooldown > 0) {
@@ -310,11 +311,7 @@ export const startTask = (taskId) => {
   const taskDef = AI_TASK_DATA.find(t => t.id === taskId);
   if (!taskDef) return false;
 
-  // Check if already active in any status
-  if (store.onWorkTasks.find(t => t.taskId === taskId)) {
-    sendMessage(MESSAGE_TYPE.SYSTEM, 'Already Active', `${taskDef.name} is already running or in cooldown.`, [], 'System', 24 * 60);
-    return false;
-  }
+
 
   // Check Max Slots and Compatibility
   const agent = store.aiAgent;
@@ -353,6 +350,7 @@ export const startTask = (taskId) => {
     // Instant trigger
     const newTaskState = {
       taskId,
+      instanceId: store.gameTime + "_" + Math.random().toString(36).substr(2, 5),
       status: 'WORKING',
       startTime: store.gameTime,
       slotIndex: foundSlotIdx,
@@ -366,6 +364,7 @@ export const startTask = (taskId) => {
   // Standard Task
   store.onWorkTasks.push({
     taskId,
+    instanceId: store.gameTime + "_" + Math.random().toString(36).substr(2, 5),
     status: 'SEARCHING',
     startTime: store.gameTime,
     slotIndex: foundSlotIdx,

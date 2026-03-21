@@ -673,7 +673,7 @@
   line-height: 1.4;
   text-align: center;
   box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
-  z-index: 100;
+  z-index: 1;
   pointer-events: none;
 }
 
