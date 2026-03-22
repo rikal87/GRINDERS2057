@@ -30,7 +30,7 @@ export function getPostflopAction(context) {
     category = 'STRONG'; // Downgrade Two-Pair in dangerous textures (Hand #77)
     if (player.handState?.facedRaise || boardAnalysis.isDoublePaired) category = 'GOOD';
   } else if (category === 'MONSTER' && isTwoPair && boardAnalysis.isHighCardHeavy && isIntensePot) {
-    category = 'STRONG'; 
+    category = 'STRONG';
     if (player.handState?.facedRaise) category = 'GOOD';
   }
 
@@ -73,16 +73,16 @@ export function getPostflopAction(context) {
   if (isPocketPair) {
     const ranksStr = '23456789TJQKA';
     const myPairRank = ranksStr.indexOf(player.hand[0][0]);
-    
+
     // A. Counterfeit (Paired Board)
     if (boardAnalysis.isPaired && myPairRank < boardAnalysis.maxBoardRank) {
-       penalty += 0.22;
+      penalty += 0.22;
     }
-    
+
     // B. Overcard Presence (Hard Overcard Penalty)
     // If board has any card higher than our pocket pair, we are likely second best.
     if (boardAnalysis.maxBoardRank > myPairRank) {
-       penalty += 0.35; // Severe penalty for KK on A-high board (Hand #276)
+      penalty += 0.35; // Severe penalty for KK on A-high board (Hand #276)
     }
   }
 
@@ -93,7 +93,7 @@ export function getPostflopAction(context) {
 
   // [v20] Applied Range Interaction Penalty from Tool
   if (boardAnalysis.rangeInteractionScore > 0 && !['NUTS', 'MONSTER'].includes(category)) {
-      penalty += (boardAnalysis.rangeInteractionScore * 0.25);
+    penalty += (boardAnalysis.rangeInteractionScore * 0.25);
   }
 
   // [v2.2] Aggression Awareness: Aggression doesn't change raw equity, 
@@ -122,21 +122,26 @@ export function getPostflopAction(context) {
   // [v11] Equity Decay against Aggression: 
   // If villain raises, our "estimated" equity in their eyes drops because their range is stronger.
   let scaleFactor = 1.0;
-  if (!['NUTS', 'MONSTER'].includes(category)) {
-     if (currentStreetRaises >= 2) scaleFactor = 0.45; // Extreme discount for non-premiums under heavy fire
-     else if (currentStreetRaises === 1) scaleFactor = 0.85;
+  // [v18] Early SPR & Stack calculations
+  const stackAfterAction = player.chips - callAmount;
+  const sprAfterAction = stackAfterAction / (potSize + callAmount);
 
-     // [v19] Range Condensation (Action Memory): 
-     // If this is a 3-Bet/4-Bet pot, the opponent's range is already very narrow.
-     if (potType === '3BET_POT') scaleFactor *= 0.88;
-     else if (['4BET_POT', '5BET_POT'].includes(potType)) scaleFactor *= 0.75;
+  if (!['NUTS', 'MONSTER'].includes(category)) {
+    if (currentStreetRaises >= 2) scaleFactor = 0.45; // Extreme discount for non-premiums under heavy fire
+    else if (currentStreetRaises === 1) scaleFactor = 0.85;
+
+    // [v19] Range Condensation (Action Memory): 
+    // If this is a 3-Bet/4-Bet pot, the opponent's range is already very narrow.
+    if (potType === '3BET_POT') scaleFactor *= 0.88;
+    else if (['4BET_POT', '5BET_POT'].includes(potType)) scaleFactor *= 0.75;
   }
   let finalEquity = Math.max(0.01, (estimatedEquity * scaleFactor) + aggressionOffset);
 
   // [v3.1] River Showdown Floor: 
   // If we have at least One-Pair on the river, our absolute equity floor should be ~22%. 
-  // This prevents the "Budget Trap" where scary boards force a fold against tiny bets.
-  if (street === 'RIVER' && evalResult.total >= 1000000) {
+  // [MOD] Avoid floor for WEAK/AIR or "Board Play" hands (Hand #433 fix)
+  if (street === 'RIVER' && evalResult.total >= 1000000 && !['WEAK', 'AIR'].includes(category)) {
+    // Only apply floor if we didn't get downgraded to WEAK via Board-Play awareness
     finalEquity = Math.max(finalEquity, 0.22);
   }
 
@@ -147,17 +152,44 @@ export function getPostflopAction(context) {
   let isBluffCatchSituation = false;
 
   if (street === 'RIVER' && !isCheckable) {
-    let riverBluffProb = 0.20;
-    if (boardAnalysis.isPaired) riverBluffProb += 0.15; // Increased to call more on paired boards
-    if (villain.af > 2.0 || philosophy === 'LAG') riverBluffProb += 0.15; // Aggressive opponents
-    // Base bluff prob boost for calling
-    riverBluffProb += 0.05;
+    // [v28] Dynamic River Bluff Prob (AF-scaled)
+    // Passive (AF < 1) -> Low bluff prob (~0.1)
+    // Aggro (AF > 3) -> High bluff prob (~0.3)
+    let riverBluffProb = 0.10 + Math.max(0, (villain.af - 1) * 0.1);
+    
+    if (boardAnalysis.isPaired) riverBluffProb += 0.10; // Slightly reduced from 0.15
+    if (philosophy === 'LAG') riverBluffProb += 0.05;
+
+    // Cap at 0.35 to prevent insane bluff-catching with air
+    riverBluffProb = Math.min(0.35, riverBluffProb);
 
     // Eligible Bluff Catchers: WEAK pairs, MARGINAL pairs, GOOD, STRONG, A-High, or K-High
-    const hasShowdownValue = ['WEAK', 'MARGINAL', 'GOOD', 'STRONG', 'ACE_HIGH'].includes(category) ||
+    // [MOD] Tightened: WEAK hands on paired boards are no longer eligible if they are just board-play.
+    const isBoardPlayWeak = category === 'WEAK' && boardAnalysis.isPaired;
+    const hasShowdownValue = (['WEAK', 'MARGINAL', 'GOOD', 'STRONG', 'ACE_HIGH'].includes(category) && !isBoardPlayWeak) ||
       (evalResult.rank === 1 && player.hand.some(c => c[0] === 'A' || c[0] === 'K'));
 
     if (hasShowdownValue) {
+      // [v29] Dangerous Board Penalty (Anti-Bust)
+      const hasFlushBlocker = player.hand.some(c => boardAnalysis.suitCounts?.[c[1]] >= 3);
+      const is4FlushBoard = boardAnalysis.maxSuit >= 4;
+      const is4StraightBoard = boardAnalysis.maxConnectivity >= 4;
+
+      if (is4FlushBoard && !hasFlushBlocker && !['NUTS', 'MONSTER'].includes(category)) {
+        riverBluffProb = 0; // Don't bluff catch 4-flushes without a spade!
+        extraInsight += " [Dangerous Flush - No Blocker]";
+      } else if (is4StraightBoard && !['NUTS', 'MONSTER', 'STRONG'].includes(category)) {
+        riverBluffProb = 0; // Don't bluff catch 4-straights with weak pairs
+        extraInsight += " [Dangerous Straight - No Piece]";
+      }
+
+      // [v29] SPR-based Anti-Bust (Don't stack off light on scary boards)
+      const isLowSPRStackOff = sprAfterAction < 0.8 && !isCheckable;
+      if (isLowSPRStackOff && (is4FlushBoard || is4StraightBoard) && !['NUTS', 'MONSTER'].includes(category)) {
+        riverBluffProb -= 0.15; // Aggressive reduction to force fold
+        extraInsight += " [Anti-Bust Protection]";
+      }
+
       effectiveEquity += riverBluffProb;
       isBluffCatchSituation = true;
     }
@@ -175,8 +207,14 @@ export function getPostflopAction(context) {
 
   // [v11/v25] Donk-bet Prevention (Tightened)
   if (isOOP && isCheckable && (potType !== 'SRP' || street === 'FLOP')) {
-    // [v25] Only lead with NEAR-NUTS/MONSTER (Threshold 0.95)
-    const leadThreshold = (category === 'NUTS') ? 0.75 : 0.95;
+    // [v28] Weakness-based Initiative Recovery
+    const isVillainWeak = villain.weaknessLevel >= 0.4;
+    let leadThreshold = (category === 'NUTS') ? 0.75 : 0.95;
+    
+    // Lower threshold when Villain is weak or it's the River
+    if (isVillainWeak) leadThreshold = 0.5;
+    else if (street === 'RIVER') leadThreshold = 0.82;
+
     if (finalEquity < leadThreshold) {
       return { action: 'check', insight: extraInsight + `OOP Defense - Respecting ${potType} Initiative` };
     }
@@ -218,7 +256,7 @@ export function getPostflopAction(context) {
       extraInsight += " [River Reraise Block - Nuts Only]";
     }
   } else if (street === 'TURN' && currentStreetRaises >= 2 && !isValuePremium) {
-    canValueBet = false; 
+    canValueBet = false;
   }
 
   // [v21] SRP Pot Reraise Block: Even in SRP, don't 3-bet/4-bet on dangerous boards without Nuts/Top Monster.
@@ -228,16 +266,18 @@ export function getPostflopAction(context) {
   }
 
   if (street === 'RIVER' && !isCheckable && ['GOOD', 'MARGINAL', 'WEAK'].includes(category)) {
-    canValueBet = false;
+    // [v28] Prevent thin value betting on the river that gets raised/called by better
+    const isVeryStrongGood = category === 'GOOD' && finalEquity > 0.85;
+    if (!isVeryStrongGood) canValueBet = false;
   }
   if (boardAnalysis.flushDanger === 'HIGH' && !['NUTS', 'MONSTER'].includes(category)) {
     canValueBet = false;
   }
-  
+
   // [v22] Trap Logic (Nuts on Flop/Turn): 
   // If we have the NEAR-NUTS, don't scare them away too early.
   if (canValueBet && street === 'FLOP' && ['NUTS', 'MONSTER'].includes(category)) {
-     if (Math.random() < 0.35) canValueBet = false; // [Trap Mode]
+    if (Math.random() < 0.35) canValueBet = false; // [Trap Mode]
   }
 
   // [v24] Postflop Aggression Cap
@@ -255,7 +295,7 @@ export function getPostflopAction(context) {
     }
     const isMultiRaiseWar = currentStreetRaises >= 3;
     const amount = isMultiRaiseWar ? (player.chips + (player.currentBet || 0)) : calculateRaiseSize(context, finalEquity, boardAnalysis, villain);
-    
+
     return {
       action: 'raise',
       amount,
@@ -295,13 +335,14 @@ export function getPostflopAction(context) {
           cbetChance = Math.max(cbetChance, 0.75);
         }
 
-        // Relentless Double Barrel on the Turn if we have any equity
+        // [v28] Relentless Double Barrel on the Turn (Tightened for Pure Air)
         if (street === 'TURN') {
-          const hasResidualEquity = ['DRAW_WEAK', 'DRAW_STRONG', 'DRAW_MONSTER'].includes(drawCategory) || boardAnalysis.highCardCount >= 2;
+          const hasResidualEquity = category !== 'AIR' || ['DRAW_WEAK', 'DRAW_STRONG', 'DRAW_MONSTER'].includes(drawCategory) || boardAnalysis.highCardCount >= 2;
           if (hasResidualEquity) {
-            cbetChance = Math.max(cbetChance, 0.80); // Keep firing!
+            cbetChance = Math.max(cbetChance, 0.80); // Keep firing with equity!
           } else {
-            cbetChance = Math.max(cbetChance, 0.60);
+            cbetChance = 0.30; // [v28] Give up on pure air (high card only) even with initiative
+            extraInsight += " [Turn Initiative Give-up (Air)]";
           }
         }
       } else {
@@ -337,7 +378,7 @@ export function getPostflopAction(context) {
       let probeChance = 0.25;
       if (villain.weaknessLevel > 0) probeChance = Math.min(1, probeChance + villain.weaknessLevel);
       if (philosophy === 'LAG') probeChance += 0.2;
-      
+
       // [v23] Nit Exploitation - Probe aggressively when they check
       if (villain.isNit) probeChance = Math.max(probeChance, 0.70);
 
@@ -358,8 +399,6 @@ export function getPostflopAction(context) {
   // [v22] Tightened C-Shove (Hand #534): Only MONSTER+ should shove. STRONG (Top Pair) must not.
   const canCommitShove = ['NUTS', 'MONSTER'].includes(category);
   if (!isCheckable && finalEquity >= potOdds && canCommitShove) {
-    const stackAfterAction = player.chips - callAmount;
-    const sprAfterAction = stackAfterAction / (potSize + callAmount);
     if (sprAfterAction < 0.2) {
       return {
         action: 'raise',

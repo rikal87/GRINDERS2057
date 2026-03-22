@@ -163,7 +163,9 @@ export const getMissedPayments = (type) => {
 export const getLanguage = () => {
   return store.settings.language;
 };
-
+export const getLevel = () => {
+  return store.level;
+}
 export const getLocalizedText = (obj, field) => {
   if (!obj) return '';
   const lang = getLanguage();

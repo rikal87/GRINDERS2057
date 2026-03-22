@@ -6,7 +6,7 @@ import { TRACK_ENUM, TRACK_INFO } from './audioTracks.js';
 // const trackModules = import.meta.glob('../assets/music/*.mp3', { eager: true, import: 'default' });
 const sfxModules = import.meta.glob('../assets/sfx/*.{mp3,wav}', { eager: true, import: 'default' });
 
-const DEFAULT_PLAYLIST = [TRACK_ENUM.Lucid, TRACK_ENUM.Fassounds_CryptoDreams];
+const DEFAULT_PLAYLIST = [TRACK_ENUM.Lucid, TRACK_ENUM.Fassounds_CryptoDreams, TRACK_ENUM.Amsleybeats_DeepVibes];
 export let playlist = DEFAULT_PLAYLIST;
 // export const playlist = Object.entries(trackModules).map(([path, url]) => {
 //   const fileName = path.split('/').pop().replace('.mp3', '');

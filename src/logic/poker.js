@@ -219,7 +219,24 @@ export const getHandCategory = (hand, board, evalResult) => {
     return usedHoleCards === 2 ? result('STRONG') : result('GOOD');
   }
 
-  // 3. Percentile Based Mid-Range
+  // 3. Percentile Based Mid-Range (v28 Board-Play Awareness)
+  // [v28] Robust Board-Play Detection
+  const boardOnlyEval = evaluateHand(board);
+  const isPlayingBoard = evalResult.rank === boardOnlyEval.rank && usedHoleCards < 2;
+
+  if (isPlayingBoard && percentile > 0.20) {
+    const holeRanks = hand.map(c => '23456789TJQKA'.indexOf(c[0]));
+    // Find the highest hole card used in the 5-card hand
+    const usedHoleRanks = holeRanks.filter(r => evalResult.cards.some(c => '23456789TJQKA'.indexOf(c[0]) === r));
+    const bestHoleRank = usedHoleRanks.length > 0 ? Math.max(...usedHoleRanks) : -1;
+    
+    // If our best hole card used in the hand is lower than a Jack (rank 9)
+    // AND it doesn't improve the board's natural kicker significantly
+    if (bestHoleRank < 9) { 
+       return result('WEAK');
+    }
+  }
+
   if (percentile <= 0.10) return result('STRONG');
   if (percentile <= 0.25) return result('GOOD');
   if (percentile <= 0.45) return result('MARGINAL');
@@ -627,7 +644,7 @@ export const analyzeBoardTexture = (board) => {
   if (score >= 7) type = 'WET';
   else if (score <= 2) type = 'DRY';
 
-  return { type, score, maxConnectivity, maxSuit, maxRankCount, ranks };
+  return { type, score, maxConnectivity, maxSuit, maxRankCount, ranks, suitCounts };
 };
 export const getDrawCategory = (hand, board) => {
   const outsData = calculateOuts(hand, board);
@@ -848,8 +865,13 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
     // Pair strength base weights
     if (isPocketPair) {
       if (handRanks[0] > maxBoard) caseSum -= 2; // High Overpair
-      else if (handRanks[0] > (boardRanks[1] || -1)) caseSum++; // Middle pocket pair
-      else caseSum += 2; // Underpair
+      else {
+        // [v28] Pocket Pair Overcard Penalty (Hand #35 fix)
+        const overcards = boardRanks.filter(r => r > handRanks[0]).length;
+        if (overcards >= 2) caseSum += 3; // Severe penalty for 2+ overcards
+        else if (overcards === 1) caseSum += 1; // Standard penalty for 1 overcard
+        else caseSum += 1; // Middle pocket pair
+      }
     } else {
       if (pairedRank === maxBoard) caseSum += 0; // Top Pair (Normalized)
       else if (pairedRank === boardRanks[1]) caseSum += 1; // Middle Pair
@@ -859,10 +881,10 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
       else if (kicker >= 12) caseSum -= 1; // Ace/King Kicker Bonus
     }
 
-    // Final Mapping (User adjusted)
+    // Final Mapping (User adjusted) - [FIX] Fixed mapping order to allow WEAK
     if (caseSum <= -2) return 'STRONG';
     else if (caseSum <= 0) return 'GOOD';
-    else if (caseSum >= 1) return 'MARGINAL';
+    else if (caseSum === 1) return 'MARGINAL';
     return 'WEAK';
   }
 

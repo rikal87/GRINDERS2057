@@ -1,4 +1,4 @@
-import { getLanguage } from './store.js';
+import { getLanguage, getLevel } from './store.js';
 import { ITEM_EFFECT_ID } from './constants.js';
 
 export const ITEM_EFFECT_DATA = [
@@ -248,7 +248,7 @@ export const ITEM_EFFECT_DATA = [
         : `파산 시 뱅크롤 +${this.valueCalc} (효과는 레벨이 올라갈수록 증가, 쿨타임: ${this.maxCooldown} 라운드)`;
     },
     get valueCalc() {
-      return store.level * this.value;
+      return getLevel() * this.value;
     },
     value: 1000,
     isStackable: true
@@ -870,7 +870,7 @@ export const ITEM_EFFECT_DATA = [
     get name() { return getLanguage() === 'en' ? this.name_en : this.name_ko; },
     rarity: 'Common',
     cooldown: 0,
-    maxCooldown: 20,
+    maxCooldown: 10,
     trigger: ['round_end'],
     get desc() { return getLanguage() === 'en' ? `At the end of a round, there's a ${this.value * 100}% chance to expose the winner's hand. (Cooldown: ${this.maxCooldown} rounds)` : `라운드 종료 시 ${this.value * 100}% 확률로 최종 승자의 핸드를 강제로 공개합니다. (재사용 대기시간: ${this.maxCooldown} 라운드)`; },
     value: 0.25,

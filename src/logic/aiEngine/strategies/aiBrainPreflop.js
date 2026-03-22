@@ -8,8 +8,8 @@ export function getPreflopAction(context) {
   const { player, engine, myPos, bb, callAmount, isCheckable, matrix } = context;
   const hand = getCanonicalHand(player.hand);
   const handRank = getStartingHandRank(player.hand);
-
-  const myPosGTO = mapPosToGTO(myPos);
+  const playerCount = engine.players ? engine.players.length : 6;
+  const myPosGTO = mapPosToGTO(myPos, playerCount);
   const effectiveStackBB = player.chips / bb;
   const isShortStack = effectiveStackBB < 25;
   const isUnopened = (context.currentBet || 0) <= bb && engine.currentStreetRaises === 0;
@@ -65,8 +65,8 @@ export function getPreflopAction(context) {
     }
 
     // Exploit & Personality Override
-    const thresholds = { BTN: 88, CO: 55, MP: 38, UTG: 22 }; // [v11] Synced with legacy Advanced thresholds
-    const baseThreshold = thresholds[myPosGTO] || 20;
+    const thresholds = { BTN: 95, CO: 65, MP: 45, UTG: 28 }; // [v12] Widened thresholds to boost 6-max VPIP to ~25%
+    const baseThreshold = thresholds[myPosGTO] || 25;
     const finalThreshold = baseThreshold + pOffset + exploitOffset;
 
     if (handRank <= finalThreshold) {
@@ -233,24 +233,38 @@ export function getPreflopAction(context) {
   const fallbackRank = 7 + (villain.isManiac ? 5 : 0);
   if (handRank <= fallbackRank) return { action: 'raise', amount: currentBet * 3, insight: 'Premium Value Raise' };
 
-  const marginalThreshold = 20 + (villain.isManiac ? 15 : 0);
-  if (handRank <= marginalThreshold && callAmount > 0 && callAmount / bb <= 15) return { action: 'call', insight: 'Marginal Defense' };
+  // [v29] Boosted Marginal Threshold for TAG/LAG to target ~25-30% VPIP
+  let marginalThreshold = 22 + (villain.isManiac ? 15 : 0);
+  if (['TAG', 'LAG', 'Maniac'].includes(philosophy)) marginalThreshold += 12; // Allow rank up to ~34-45
+  
+  if (handRank <= marginalThreshold && callAmount > 0 && callAmount / bb <= 15) {
+    return { action: 'call', insight: `Marginal Defense (Rank:${handRank}/${marginalThreshold})` };
+  }
 
   return isCheckable ? { action: 'check', insight: 'Check' } : { action: 'fold', insight: 'Fold' };
 }
 
 /** 
- * Helper: Map table position to GTO position name
+ * Helper: Map table position to GTO position name based on player count
  */
-function mapPosToGTO(pos) {
+function mapPosToGTO(pos, playerCount = 6) {
   if (!pos) return 'UTG';
   const p = pos.toUpperCase();
-  if (p.includes('EP') || p.includes('UTG')) return 'UTG';
-  if (p.includes('MP') || p.includes('HJ')) return 'MP';
-  if (p.includes('CO')) return 'CO';
   if (p.includes('BTN')) return 'BTN';
   if (p.includes('SB')) return 'SB';
   if (p.includes('BB')) return 'BB';
+  
+  // Shift positions for short-handed tables
+  if (playerCount <= 4) {
+    if (p.includes('UTG') || p.includes('EP')) return 'CO'; // 4-max UTG plays like 6-max CO
+  } else if (playerCount === 5) {
+    if (p.includes('UTG') || p.includes('EP')) return 'MP'; // 5-max UTG plays like 6-max MP
+    if (p.includes('MP')) return 'CO';
+  }
+
+  if (p.includes('EP') || p.includes('UTG')) return 'UTG';
+  if (p.includes('MP') || p.includes('HJ')) return 'MP';
+  if (p.includes('CO')) return 'CO';
   return 'UTG';
 }
 

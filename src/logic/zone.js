@@ -189,7 +189,7 @@ export const zones = [
         "theme": {
           "background": "radial-gradient(circle, #3d0000 0%, #1a0000 100%)",
           "borderColor": "#ff4d4d",
-          "boxShadow": "0 0 40px rgba(255, 0, 0, 0.6)"
+          "boxShadow": "0 0 40px rgba(255, 0, 0, 0.73)"
         },
         'bgMusic': [TRACK_ENUM.MalibuMoon, TRACK_ENUM.Lnplusmusic_LatinTrap, TRACK_ENUM.Lnplusmusic_Background, TRACK_ENUM.Fassounds_TheAfrobeat]
       }
@@ -224,7 +224,7 @@ export const zones = [
           "borderColor": "#9d00ff",
           "boxShadow": "0 0 25px rgba(157, 0, 255, 0.4)"
         },
-        'bgMusic': [TRACK_ENUM.BeThere, TRACK_ENUM.Overnight, TRACK_ENUM.Lnplusmusic_Beauty, TRACK_ENUM.Joyinsound_NeonHongKong, TRACK_ENUM.punk]
+        'bgMusic': [TRACK_ENUM.BeThere, TRACK_ENUM.Overnight, TRACK_ENUM.Lnplusmusic_Beauty, TRACK_ENUM.Joyinsound_NeonHongKong, TRACK_ENUM.Dystopia]
       },
       {
         "id": LOCATION_ID.LOW_UNDERGROUND_CLUB,
@@ -461,7 +461,7 @@ export const zones = [
           "Old_Lion",
           "Named_Pro",
         ],
-        "tables": { isMonitoring: true, amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.05, rakeCap: 50000, isAdvanced: true },
+        "tables": { isMonitoring: true, amount: 1000000, amount_fmt: '1M', amount_min_fmt: '500K', sb: 5000, bb: 10000, available: [6, 9], baseRake: 0.05, rakeCap: 100000, isAdvanced: true },
         "theme": {
           "background": "radial-gradient(circle, #0f1a3a 0%, #050510 100%)",
           "borderColor": "#d4af37",
@@ -492,7 +492,7 @@ export const zones = [
           "borderColor": "#ffcc00",
           "boxShadow": "0 0 45px rgba(0, 191, 255, 0.5), inset 0 0 15px rgba(255, 204, 0, 0.3)"
         },
-        'bgMusic': [TRACK_ENUM.EvgenyBardyuzha_PasswordInfinity, TRACK_ENUM.Penguinmusic_FutureDesign, TRACK_ENUM.Penguinmusic_Mellow]
+        'bgMusic': [TRACK_ENUM.EvgenyBardyuzha_PasswordInfinity, TRACK_ENUM.Penguinmusic_FutureDesign, TRACK_ENUM.Penguinmusic_Mellow, TRACK_ENUM.Tunetank_Chill]
       },
       {
         "id": "war_of_the_gods",

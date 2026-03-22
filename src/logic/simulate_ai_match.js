@@ -9,7 +9,7 @@ const CLASSES_ENEMY = [...D2, ...D1]
 export async function runSimulation() {
   const opp1 = 'Max'
   const opp2 = 'gangster'
-  const opp3 = 'shark'
+  const opp3 = 'maniac'
   console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
   const logHeader = `Simulation Log - ${new Date().toLocaleString()}\n\n`;
   fs.writeFileSync('hand_history.log', logHeader, 'utf8');
@@ -72,7 +72,7 @@ export async function runSimulation() {
     players.push(createPlayer(`${opp3}_${i}`, `${opp3}_${i}`, oop3Template, 2000));
   }
 
-  let handsToPlay = 1000;
+  const handsToPlay = 1000;
   console.log(`Initialized 6 players. Running ${handsToPlay} hands...`);
 
   const engine = {

@@ -287,7 +287,7 @@ const handleClose = () => {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
-  overflow: hidden;
+  overflow: visible;
   /* Added to prevent scrollbar flickering during animations */
 }
 .unlock-card {
