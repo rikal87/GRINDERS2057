@@ -251,7 +251,7 @@ export const zones = [
         'bgMusic': [TRACK_ENUM.Rockot_TrafficHouse, TRACK_ENUM.Elijah_k_Bassline, TRACK_ENUM.Elijah_k_MachineUnlearning, TRACK_ENUM.Elijah_k_NeonNightscape, TRACK_ENUM.Elijah_k_Shenzhen, TRACK_ENUM.Elijah_k_Subwoofer, TRACK_ENUM.Elijah_k_UndergroundParty]
       },
       {
-        "id": LOCATION_ID.LOW_UNDERGROUND_CLUB_WITH_MAX,
+        "id": LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX,
         "name_ko": "H.B.D 클럽",
         "name_en": "H.B.D Club",
         "imgSrc": imgLowUndergroundClub,

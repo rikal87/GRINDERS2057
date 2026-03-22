@@ -168,7 +168,7 @@ export const processAiTasks = () => {
             const bankrollEff = taskDef.effect?.find(e => e.type === 'add_bankroll');
             if (bankrollEff) {
               gainBankroll(bankrollEff.amount, TYPE_CHANGE_BANKROLL.AGENT_TASK);
-              sendMessage(MESSAGE_TYPE.SYSTEM, 'Shadow Work Profit', `[${taskDef.name}] Generated ${bankrollEff.amount} CR.`, [], 'System', 24 * 60);
+              sendMessage(MESSAGE_TYPE.REWARD, 'Agent Work Profit', `[${taskDef.name}] Generated ${bankrollEff.amount} CR.`, [], 'System', 60);
             }
           }
         } else {
@@ -228,9 +228,9 @@ const triggerTaskSuccess = (taskState, taskDef) => {
   }
 
   if (taskDef.type === 'AGENT_WORK') {
-    sendMessage(MESSAGE_TYPE.SYSTEM, `Task Initialized: ${taskDef.name}`, `The process is now running. Consuming LT continuously.`, [], 'System', 24 * 60);
+    sendMessage(MESSAGE_TYPE.SYSTEM, `Task Initialized: ${taskDef.name}`, `The process is now running. Consuming LT continuously.`, [], 'System', 1 * 60);
   } else {
-    sendMessage(MESSAGE_TYPE.SYSTEM, `Task Success: ${taskDef.name}`, `The task was successful! Effect active for ${taskDef.duration / 60} hours.`, actions, 'System', 24 * 60);
+    sendMessage(MESSAGE_TYPE.SYSTEM, `Task Success: ${taskDef.name}`, `The task was successful! Effect active for ${taskDef.duration / 60} hours.`, actions, 'System', 1 * 60);
   }
 
   // Apply Buff Effects

@@ -33,9 +33,18 @@ export class EventAdaptor {
     }
   }
   roundStart(players, { sb, bb }) {
-    console.info('roundStart');
+    if (!players || !Array.isArray(players)) {
+      console.error('[EventAdaptor] Invalid players array in roundStart', players);
+      return;
+    }
     players.forEach(p => {
-      p.item?.effects?.forEach(e => {
+      const effects = p.item?.effects || [];
+      effects.forEach(e => {
+        // [FIX] Safety check for string effects
+        if (typeof e !== 'object' || !e.trigger) {
+          console.warn(`[EventAdaptor] Skipping non-object/triggerless effect for player ${p.name}:`, e);
+          return;
+        }
         if (e.trigger.includes('round_start')) {
           this.executeItemEffect(p, e, { sb, bb });
         }
@@ -43,7 +52,9 @@ export class EventAdaptor {
     });
   }
   cashout(player, { netWinnings, gainedXP, stats }) {
-    player.item?.effects?.forEach(e => {
+    const effects = player.item?.effects || [];
+    effects.forEach(e => {
+      if (typeof e !== 'object' || !e.trigger) return;
       if (e.trigger.includes('cashout')) {
         this.executeItemEffect(player, e, { netWinnings, gainedXP, stats });
       }
@@ -61,7 +72,9 @@ export class EventAdaptor {
   roundEnd({ players, street, bestWinner }) {
     console.info('roundEnd');
     players.forEach(p => {
-      p.item?.effects?.forEach(e => {
+      const effects = p.item?.effects || [];
+      effects.forEach(e => {
+        if (typeof e !== 'object' || !e.trigger) return;
         if (e.trigger.includes('round_end')) {
           this.executeItemEffect(p, e, { street, bestWinner });
         }
@@ -78,7 +91,9 @@ export class EventAdaptor {
   }
   bustEnemy(player, bestWinner) {
     recordPlayStatsSession(bestWinner, PLAY_RECORD_STATS_TYPE.BUST_ENEMY, { enemyClass: player.class.id });
-    player.item?.effects?.forEach(e => {
+    const effects = player.item?.effects || [];
+    effects.forEach(e => {
+      if (typeof e !== 'object' || !e.trigger) return;
       if (e.trigger.includes('bust_enemy')) {
         this.executeItemEffect(player, e, {});
       }
@@ -87,7 +102,9 @@ export class EventAdaptor {
 
   playerBankrupt(player, bestWinner, locationId, inviteId) {
     recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.BUST);
-    player.item?.effects?.forEach(e => {
+    const effects = player.item?.effects || [];
+    effects.forEach(e => {
+      if (typeof e !== 'object' || !e.trigger) return;
       if (e.trigger.includes('bankrupt')) {
         this.executeItemEffect(player, e, {});
       }
@@ -132,14 +149,18 @@ export class EventAdaptor {
   }
 
   raise({ player, amount, pot, street }) {
-    player.item?.effects?.forEach(e => {
+    const effects = player.item?.effects || [];
+    effects.forEach(e => {
+      if (typeof e !== 'object' || !e.trigger) return;
       if (e.trigger.includes('raise') || e.trigger.includes('bet')) {
         this.executeItemEffect(player, e, { amount, pot });
       }
     });
   }
   call({ player, amount, pot, street }) {
-    player.item?.effects?.forEach(e => {
+    const effects = player.item?.effects || [];
+    effects.forEach(e => {
+      if (typeof e !== 'object' || !e.trigger) return;
       if (e.trigger.includes('call')) {
         this.executeItemEffect(player, e, { amount, pot });
       }
@@ -147,7 +168,9 @@ export class EventAdaptor {
   }
   blindPay({ player, amount, pot }) {
     // console.info('blindPay', player, amount, pot);
-    player.item?.effects?.forEach(e => {
+    const effects = player.item?.effects || [];
+    effects.forEach(e => {
+      if (typeof e !== 'object' || !e.trigger) return;
       if (e.trigger.includes('blind_pay')) {
         this.executeItemEffect(player, e, { amount, pot });
       }
@@ -266,7 +289,9 @@ export class EventAdaptor {
     if (player.isMe) {
       store.play_stats.bankruptcy_count++;
     }
-    player.item?.effects?.forEach(e => {
+    const effects = player.item?.effects || [];
+    effects.forEach(e => {
+      if (typeof e !== 'object' || !e.trigger) return;
       if (e.trigger.includes('bankrupt')) {
         this.executeItemEffect(player, e, {});
       }

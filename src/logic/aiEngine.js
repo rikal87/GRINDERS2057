@@ -206,18 +206,18 @@ function getHeuristicFallback(player, engine) {
     else if (handCategory === 'STRONG') estimatedEquity = 0.7;
     else if (handCategory === 'GOOD') estimatedEquity = 0.55;
     else if (handCategory === 'MARGINAL') estimatedEquity = 0.45;
-    else if (handCategory === 'WEAK') estimatedEquity = 0.2;
-    else if (handCategory === 'ACE_HIGH') estimatedEquity = 0.1;
+    else if (handCategory === 'WEAK') estimatedEquity = 0.25;
+    else if (handCategory === 'ACE_HIGH') estimatedEquity = 0.15;
     else estimatedEquity = 0.05; // AIR
 
-    if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.25;
-    else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.12; // [v4.0] Reduced from 0.15 (draw still speculative)
-    else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.06;   // [v4.0] Reduced from 0.08
+    if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.5;
+    else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.35;
+    else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.15;
     // Diminishing draw bonus if we already have a made hand
-    if (['STRONG', 'GOOD'].includes(handCategory)) drawBonus *= 0.5;
-    drawBonus *= (streetsLeft / 2);
+    // if (['STRONG', 'GOOD'].includes(handCategory)) drawBonus *= 0.5;
+    if (street === 'RIVER') drawBonus = 0;
+    bluffFreq += drawBonus; // if we made nothing, we can bluff
     estimatedEquity = Math.min(0.98, estimatedEquity + drawBonus);
-
     // [v4.0] Pot-Intensity Equity Discount
     // Villain's range in 3-bet/4-bet pots is MUCH tighter, so our GOOD hands are worth less.
     // This fixes the "Over-Calling in 4-bet pots" bug (e.g. TT calling 5-bet, TPTK in 4-bet pot).
@@ -297,7 +297,7 @@ function getHeuristicFallback(player, engine) {
       }
     } else if (isAggressor) {
       strategy = "C_BETTER"; // Continuing aggression
-      bluffFreq *= 1.33;
+      bluffFreq *= 1.5;
     } else {
       strategy = "OPENER"; // First to act in open pot
     }
@@ -346,8 +346,8 @@ function getHeuristicFallback(player, engine) {
     if (strategy === 'OPENER') {
       raiseEquityThreshold -= 0.2;
     }
-    if (street !== 'FLOP' && estimatedEquity <= 0.5 && estimatedEquity >= 0.4) { // pot control we have show down value
-      raiseEquityThreshold += Math.random() * 0.5
+    if (street === 'RIVER' && estimatedEquity <= 0.5 && estimatedEquity >= 0.4) { // pot control we have show down value
+      raiseEquityThreshold += Math.random() * 0.3
       bluffFreq *= 0.5;
     }
     insight += ` [Strategy: ${strategy}]`;
@@ -358,8 +358,8 @@ function getHeuristicFallback(player, engine) {
     const multiWayFactor = (street === 'PREFLOP') ? 0.02 : 0.05;
     requiredEquity += (alivePlayers - 2) * multiWayFactor;
   }
-  if (player.class.id.toUpperCase() === 'GAMBLER') {
-    const addBonus = drawBonus > 0.0 ? .1 : 0;
+  if (player.class.id.toUpperCase() === 'GAMBLER' && street !== 'RIVER') {
+    const addBonus = drawBonus > 0.2 ? .15 : 0;
     estimatedEquity = Math.min(0.98, estimatedEquity + addBonus);
   }
 
@@ -371,7 +371,7 @@ function getHeuristicFallback(player, engine) {
 
   if (street === 'PREFLOP') {
     raisePenalty = Math.pow(1.12, raises) - 1;
-    requiredEquityPenalty = Math.pow(1.12, raises) - 1;
+    requiredEquityPenalty = Math.pow(1.06, raises) - 1;
   }
   else {
     // [MOD] Linear Penalty (More stable than Exponential)
@@ -420,7 +420,7 @@ function getHeuristicFallback(player, engine) {
     } else {
       if (boardAnalysis.type === 'WET') bluffFreq += 0.05;
     }
-    if (street === 'TURN') bluffFreq *= 0.66;
+    if (street === 'RIVER') bluffFreq *= 0.66;
   }
   const isVirtuallyCommitted = callAmt > 0 && (
     (player.chips <= ((engine.bb || 10) * 2)) ||

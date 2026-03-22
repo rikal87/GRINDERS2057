@@ -237,9 +237,10 @@ export const EventData = [
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
-      // gainRelationship(PARTNER_ID.FLORENCE, -50);
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
-      scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_9_HBD_UNDERGROUND_RETRY, (Math.random() * 72 + 67) * 60)
+      if (isEventCompleted(EVENT_FLORENCE.MAIN_STORY_2_8_HBD_UNDERGROUND_SUCCESS)) {
+        gainRelationship(PARTNER_ID.FLORENCE, -50);
+      } else scheduleEvent(EVENT_FLORENCE.MAIN_STORY_2_9_HBD_UNDERGROUND_RETRY, (Math.random() * 72 + 67) * 60)
     },
     repeatable: true,
   },
@@ -272,6 +273,7 @@ export const EventData = [
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
       scheduleEvent(EVENT_FLORENCE.JOIN_PARTNER, 2 * 24 * 60); // Join after 1 days
     },
+    repeatable: true,
   },
   {// simulate repeatable event
     id: EVENT_FLORENCE.RICH_GUY_HUNTER,

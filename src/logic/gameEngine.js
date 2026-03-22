@@ -138,15 +138,33 @@ export class GameEngine {
       //   const bonus = this.item.effects.reduce((sum, e) => (e.id === 'chip_rounding') ? sum + e.value : sum, 0);
       //   return Math.pow(10, bonus);
       // },
+      get rakeReduction() {
+        if (!this.item || !this.item.effects) return 0;
+        const reductionEffect = this.item.effects.reduce((sum, e) => {
+          const effectObj = e.effect || (typeof e === 'object' ? e : null);
+          if (effectObj && effectObj.id === ITEM_EFFECT_ID.RAKE_REDUCTION) {
+            return sum + (effectObj.value || 0);
+          }
+          if (e === ITEM_EFFECT_ID.RAKE_REDUCTION) {
+            return sum + 0.25; // Default T2 reduction value
+          }
+          return sum;
+        }, 0);
+        return reductionEffect;
+      },
       get infamy_boost() {
         if (!this.item || !this.item.effects) return 0;
-        const bonus = this.item.effects.reduce((sum, e) => (e.id === 'infamy_boost') ? sum + e.value : sum, 0);
-        return bonus;
+        return this.item.effects.reduce((sum, e) => {
+          const id = e.id || (typeof e === 'string' ? e : null);
+          return (id === 'infamy_boost') ? sum + (e.value || 0.1) : sum;
+        }, 0);
       },
       get born_villain() {
         if (!this.item || !this.item.effects) return 0;
-        const bonus = this.item.effects.reduce((sum, e) => (e.id === 'born_villain') ? sum + e.value : sum, 0);
-        return bonus;
+        return this.item.effects.reduce((sum, e) => {
+          const id = e.id || (typeof e === 'string' ? e : null);
+          return (id === 'born_villain') ? sum + (e.value || 0.1) : sum;
+        }, 0);
       },
       // get bonusXpToGoldRatio() {
       // if (!this.item || !this.item.effects) return 0;
@@ -168,6 +186,7 @@ export class GameEngine {
       },
 
       timeBankRemaining: 15, // Initial value
+      isEliminated: false,
       // Helper methods for skills
     }
     this.processBuyIn(YOU)
@@ -210,7 +229,7 @@ export class GameEngine {
         if (template && validContract) {
           enemiesToPlace.push({ ...template });
         } else {
-          console.warn(`[GAME] Partner ${partner.name} is not with you`);
+          console.info(`[GAME] Partner ${partner.name} is not with you`);
         }
       });
     }
@@ -343,8 +362,8 @@ export class GameEngine {
     if (this.infamy >= 20) {
       // NPC AF = ((3 - {NPC 초기 AF} ) * 0.5) + {NPC 초기 AF} 로 보정.
       const baseAF = villan.AF || 1.0;
-      villan.class.AF = ((3 - baseAF) * 0.5) + baseAF;
-      villan.initialAF = villan.class.AF;
+      villan.AF = ((3 - baseAF) * 0.5) + baseAF;
+      villan.initialAF = villan.AF;
     }
     const chips = this.buyIn * villan.chipMultiply;
     const genId = customId || `cpu_${Math.random().toString(36).substr(2, 5)}`;
@@ -372,6 +391,7 @@ export class GameEngine {
       timeBankRemaining: 15,
       tilt: 0,
       isDrunken: villan.isDrunken || false,
+      isEliminated: false,
       stats: {
         handsPlayed: 0,
         vPIPCount: 0,
@@ -384,6 +404,32 @@ export class GameEngine {
         foldedToFlopBet: 0,
         aggressiveActions: 0,
         calls: 0,
+        check: 0,
+        fold: 0,
+        all_in: 0,
+        win: 0,
+        lose: 0,
+        bust: 0,
+        bankrupt: 0,
+        currentWinStreak: 0,
+        currentLoseStreak: 0,
+        maxWinStreak: 0,
+        maxLoseStreak: 0,
+        max_win_equity: 0,
+        maxLoseEquity: 0,
+        maxLosePot: 0,
+        paid_rake: 0,
+        rake_saved: 0,
+        w$sd: 0,
+        wtsd: 0,
+        wsd: 0,
+        faced_raise: 0,
+        faced_3bet: 0,
+        faced_4bet_or_more: 0,
+        folded_to_raise: 0,
+        folded_to_3bet: 0,
+        folded_to_4bet_or_more: 0,
+        net_winning: 0,
         get vPIP() { return this.handsPlayed > 0 ? (this.vPIPCount / this.handsPlayed) * 100 : 0; },
         get pfr() { return this.handsPlayed > 0 ? (this.pfrCount / this.handsPlayed) * 100 : 0; },
         get threeBet() { return this.threeBetOppCount > 0 ? (this.threeBetCount / this.threeBetOppCount) * 100 : 0; },
@@ -427,19 +473,7 @@ export class GameEngine {
       this.cashOut();
       return;
     }
-    if (isFirstHand) {
-      const players = this.players.filter(p => !p.isMe);
-      let pickOne = players.find((p) => p.name === 'Max(Mentor)');
-      if (pickOne) {
-        chatAI(pickOne, CHAT_TRIGGERS.GAME_START, "", 0, this)
-      } else {
-        pickOne = players[Math.floor(Math.random() * players.length)];
-        console.info('pickOne', pickOne)
-        chatAI(pickOne, CHAT_TRIGGERS.GAME_START, "", 0, this)
-      }
-      eventAdaptor.gameStart({ locationId: this.locationId, inviteId: this.inviteId });
-      await sleep(2000);
-    }
+
     this.players.forEach(p => {
       p.hand = [this.deck.pop(), this.deck.pop()];
       p.isFolded = p.chips <= 0; // Out of game if no chips
@@ -487,7 +521,19 @@ export class GameEngine {
     // Check Trigger: PREFLOP start (or Round Start)
     // this.checkSkillTriggers('round_start');
     // this.checkSkillTriggers('preflop_start');
-
+    if (isFirstHand) {
+      const players = this.players.filter(p => !p.isMe);
+      let pickOne = players.find((p) => p.name === 'Max(Mentor)');
+      if (pickOne) {
+        chatAI(pickOne, CHAT_TRIGGERS.GAME_START, "", 0, this)
+      } else {
+        pickOne = players[Math.floor(Math.random() * players.length)];
+        console.info('pickOne', pickOne)
+        chatAI(pickOne, CHAT_TRIGGERS.GAME_START, "", 0, this)
+      }
+      eventAdaptor.gameStart({ locationId: this.locationId, inviteId: this.inviteId });
+      await sleep(2000);
+    }
     eventAdaptor.roundStart(this.players, { sb: this.sb, bb: this.bb });
     // Initialize history for new hand
     this.currentHandHistory = {
@@ -589,7 +635,7 @@ export class GameEngine {
 
   async handlePlayerAction(player, action) {
     if (this.runoutInProgress) return; // Block actions during runout
-    if (this.state === 'IDLE') return;
+    if (this.exited) return;
 
     // [FIX] Capture state BEFORE action for correct dialogue triggers
     const callAmtBefore = this.potManager.currentRoundBet - player.currentBet;
@@ -787,7 +833,7 @@ export class GameEngine {
   }
 
   async nextStreet() {
-    if (this.state === 'IDLE') return;
+    if (this.exited) return;
     this.currentPlayerIndex = -1; // Block actions during sleep
     await sleep(1000);
     this.players.forEach(p => p.currentBet = 0);
@@ -914,7 +960,6 @@ export class GameEngine {
       }
     } else {
       const isHuge = this.pot > (this.bb * 40);
-
       // Process AI reactions and Tilt (Tilt only changes if they chat)
       if (this.street !== 'PREFLOP') {
         this.players.forEach(p => {
@@ -932,7 +977,7 @@ export class GameEngine {
             } else {
               chatAI(p, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL, "", 0, this);
               // Increase tilt based on the total pot they lost out on
-              p.tilt = Math.min(100, p.tilt + Math.round(this.pot / this.bb));
+              p.tilt = Math.min(100, p.tilt + Math.round(this.pot / this.bb * 0.5));
             }
           }
         });
@@ -1114,8 +1159,11 @@ export class GameEngine {
   }
   exitGame() {
     this.exited = true;
+    audioManager.disableTensionMode();
     eventAdaptor.playerLeaveTable(this.players[0], this.locationId, this.players, this.inviteId);
-    this.cleanup();
+    this.stopTurnTimer();
+    this.state = 'IDLE';
+    console.log('[GAME] Engine cleaned up.');
   }
   processBuyIn(player) {
     if (store.bankroll <= 0 || player.buyInLimit <= 0) {
@@ -1249,7 +1297,7 @@ export class GameEngine {
       gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING); // returned chips
 
       eventAdaptor.cashout(player, { gainedXP, netWinnings, stats: getListPlayStatsSession() });
-      const isFlorenceEvent = this.locationId === LOCATION_ID.LOW_UNDERGROUND_CASINO_WITH_FLORENCE;
+      const isFlorenceEvent = this.locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_VIP_ROOM;
       // share collusion
       const partners = this.players.filter(p => p.isPartner);
       partners.forEach(partner => {
@@ -1321,7 +1369,7 @@ export class GameEngine {
 
   }
   checkSkipAction() {
-    return this.gameOver || this.state === 'SHOWDOWN' || this.state === 'IDLE'
+    return this.gameOver || this.state === 'SHOWDOWN' || this.exited
   }
   // --- Timebank System ---
 
@@ -1366,13 +1414,14 @@ export class GameEngine {
     }
   }
 
-  cleanup() {
-    this.stopTurnTimer();
-    audioManager.disableTensionMode();
-    // this.gameOver = true;
-    this.state = 'IDLE';
-    // this.players = []; // [FIX] Don't wipe players yet to prevent UI crashes during transition
-    console.log('[GAME] Engine cleaned up.');
-  }
+  // cleanup() {
+  //   this.stopTurnTimer();
+  //   audioManager.disableTensionMode();
+  //   // this.gameOver = true;
+  //   this.state = 'IDLE';
+  //   this = null;
+  //   // this.players = []; // [FIX] Don't wipe players yet to prevent UI crashes during transition
+  //   console.log('[GAME] Engine cleaned up.');
+  // }
 }
 

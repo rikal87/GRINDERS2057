@@ -102,7 +102,7 @@ import { AI_TASK_DATA, } from '../logic/aiAgentTaskData';
 import { isTaskUnlocked, startTask } from '../logic/aiAgentTaskSystem';
 import { audioManager } from '../logic/audioManager';
 import { TASK_STATS_TYPE } from '../logic/constants';
-import { PLAY_RECORD_STATS_TYPE, } from '../logic/playRecordStats';
+import { PLAY_RECORD_STATS_TYPE, PLAY_RECORD_STATS_DESC } from '../logic/playRecordStats';
 
 const PLAY_RECORD_STATS_TYPE_DESC = {
   PAID_RAKE: {
@@ -260,7 +260,7 @@ const PLAY_RECORD_STATS_TYPE_DESC = {
 }
 const getRecordStatsDesc = (type) => {
   if (!type) return;
-  return PLAY_RECORD_STATS_TYPE_DESC[type.toUpperCase()][getLanguage()];
+  return PLAY_RECORD_STATS_DESC[type.toUpperCase()][getLanguage()];
 }
 const getRecordStatsCurrentCount = (type, id) => {
   switch (type) {
@@ -366,10 +366,8 @@ const canStartCurrentTask = computed(() => {
   if (!task) return false;
   if (!isTaskUnlocked(task)) return false;
 
-  // Check if already active or on cooldown
-  if (store.onWorkTasks.find(t => t.taskId === task.id)) return false;
-
-  // Check LT
+  // [FIX] Allow multiple assignments of the same task type in different slots.
+  // Check if LT
   if (store.ludusTokens < task.cost) return false;
 
   // Check if slot tier is sufficient
@@ -383,12 +381,8 @@ const taskInitiateBtnText = computed(() => {
   if (!task) return 'NO_TASK_SELECTED';
   if (!isTaskUnlocked(task)) return 'INITIATE';
 
-  const activeTask = store.onWorkTasks.find(t => t.taskId === task.id);
-  if (activeTask) {
-    if (activeTask.status === 'COOLDOWN') return 'ON_COOLDOWN';
-    if (activeTask.status === 'ACTIVE' || activeTask.status === 'WORKING') return 'IN_PROGRESS';
-    return 'UNAVAILABLE';
-  }
+  // [FIX] Removed global check to allow multiple assignments of the same task.
+  // Since the popup is only opened for empty slots, any existing task instance is in another slot.
 
   if (task.tier > slotTierValue.value) return `LOW_TIER_TASKSLOT`;
 

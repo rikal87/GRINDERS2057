@@ -28,7 +28,7 @@ export const CLASSES_PARTNER = [
     note_en: 'Your long-time friend from Texas. At the table, he breaks opponents\' composure with rough and unpredictable plays.',
   },
   {
-    id: 'Florence', name: 'Florence', fullName: 'Florence Quinn', philosophy: 'TAG', vPIP: .25, AF: 3.5, WTSD: .27, W$SD: 0.57, chipMultiply: 1.5,
+    id: 'Florence', name: 'Florence', fullName: 'Florence Quinn', philosophy: 'TAG', vPIP: .23, AF: 3.5, WTSD: .27, W$SD: 0.57, chipMultiply: 1.5,
     age: 32,
     isAdvanced: false,
     isPartner: true,

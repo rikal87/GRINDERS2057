@@ -376,45 +376,29 @@ export const processEvents = () => {
   const elapsedMinutes = Math.floor((store.gameTime - START_TIME) / 60000);
   const now = store.gameTime;
 
-  // 1. Process standard Time/Condition Based Events
+  // 1. 자동 감지 및 큐(Queue) 등록 단계
   EventData.forEach(event => {
-    // 단발성 이벤트인데 이미 완료되었다면 무시 (스케줄된 이벤트는 pendingEvents 에서 관리됨)
-    if (!event.repeatable && store.completedEvents.includes(event.id)) return;
-    // 명시적으로 조건 함수가 없으면 타이머만 체크 (연계 이벤트들은 타이머가 없고 큐로 관리댐)
-    if (event.condition === undefined && event.timer === undefined) return;
+    // 수동 호출형 이벤트는 자동 검사 생략 (타이머가 없으면 자동 큐에 넣지 않음)
+    if (event.timer === undefined) return;
 
-    let shouldTrigger = false;
+    // 단발성인데 이미 완료되었으면 무시 (pendingEvents에 있는 것은 별도 실행)
+    if (!event.repeatable && isEventCompleted(event.id)) return;
 
-    // 조건 함수가 있는 이벤트의 경우, 조건을 만족하지 않으면 검사 건너뜀
-    if (event.condition && !event.condition()) {
-      return;
-    }
-
-    if (!event.repeatable) {
-      if (event.timer !== undefined && elapsedMinutes >= event.timer) {
-        shouldTrigger = true;
-      }
-    } else {
-      // 반복성 이벤트는 지정된 분 단위마다 정확히 발생
-      if (event.timer !== undefined && elapsedMinutes > 0 && elapsedMinutes % event.timer === 0) {
-        shouldTrigger = true;
-      }
-    }
-
-    if (shouldTrigger) {
-      event.func();
-      if (!event.repeatable) {
-        store.completedEvents.push(event.id);
-      }
+    // 조건이 없거나, 조건을 만족했을 때 큐(pendingEvents)에 등록
+    if (event.condition === undefined || event.condition()) {
+      // 이미 큐(pendingEvents)에 대기 중이면 무시 (중복 방지)
+      if (store.pendingEvents.some(e => e.id === event.id)) return;
+      
+      scheduleEvent(event.id, event.timer);
     }
   });
 
-  // 2. Process Pending (Scheduled/Queued) Events
+  // 2. 대기열(pendingEvents) 실행 단계
   if (store.pendingEvents && store.pendingEvents.length > 0) {
     const triggeredEvents = [];
     const remainingEvents = [];
 
-    // 실행할 이벤트와 대기할 이벤트를 먼저 분리
+    // 실행할 이벤트와 대기할 이벤트를 분리
     store.pendingEvents.forEach(pending => {
       if (now >= pending.triggerTime) {
         triggeredEvents.push(pending);
@@ -423,23 +407,37 @@ export const processEvents = () => {
       }
     });
 
-    // 큐를 먼저 갱신. (이렇게 해야 아래 func() 안에서 스케줄링된 새 이벤트가 날아가지 않고 올바르게 추가됨)
+    // 큐를 먼저 갱신
     store.pendingEvents = remainingEvents;
 
     // 분리된 이벤트 실행
     triggeredEvents.forEach(pending => {
       const eventDef = EventData.find(e => e.id === pending.id);
       if (eventDef) {
-        // [FIX] Prevent re-triggering completed non-repeatable events
-        if (!eventDef.repeatable && store.completedEvents.includes(pending.id)) {
+        // 단발성이며 이미 완료된 경우 중복 실행 방지
+        if (!eventDef.repeatable && isEventCompleted(pending.id)) {
           console.info(`[EVENT] Skipping already completed '${pending.id}'`);
           return;
         }
 
+        // 실행 직전 조건 재확인 (대기 중 조건이 불만족 상태가 되었을 수 있음)
+        if (eventDef.condition && !eventDef.condition()) {
+          console.info(`[EVENT] Condition no longer met for '${pending.id}', dropping from queue.`);
+          return;
+        }
+
         console.info(`[EVENT] Triggering '${pending.id}'`);
-        eventDef.func(pending.payload); // 대기열에서 조건 달성 즉시 실행
+        eventDef.func(pending.payload);
+        
         if (!eventDef.repeatable) {
           store.completedEvents.push(pending.id);
+        } else if (eventDef.timer !== undefined) {
+          // 반복 가능한 이벤트는 실행 후 타이머를 기반으로 다시 큐에 등록 (조건이 여전히 맞는지 검사하기 위해 딜레이 부여 후 다음 틱부터 재평가되거나 즉시 스케줄링)
+          // 여기서 pendingEvents에 바로 넣는 것이 아니라 '다음 프레임에 1번 항목에서 자동 스케줄링' 되도록 놔두는 것도 방법이지만,
+          // 반복성이 보장되도록 scheduleEvent를 명시적으로 호출합니다.
+          if (eventDef.condition === undefined || eventDef.condition()) {
+            scheduleEvent(eventDef.id, eventDef.timer);
+          }
         }
       } else {
         console.info(`[EVENT] Not Found '${pending.id}'`);

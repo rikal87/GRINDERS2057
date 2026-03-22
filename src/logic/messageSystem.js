@@ -59,7 +59,8 @@ export const sendMessage = (type, title, body, actions = [], sender = 'System', 
   const now = Date.now();
   // Use a static property on sendMessage to track time across calls
   if (!sendMessage.lastSoundTime || now - sendMessage.lastSoundTime > 500) {
-    audioManager.playSFX('inmessage');
+    if (type === MESSAGE_TYPE.REWARD) audioManager.playSFX('ATM');
+    else audioManager.playSFX('inmessage');
     sendMessage.lastSoundTime = now;
   }
 

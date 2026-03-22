@@ -250,13 +250,11 @@ const handleStart = (mode) => {
   audioManager.play();
   startTimeSystem();
 };
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 const handleJoinTable = async (payload) => {
   const { inviteId, size, buyIn, rake, rakeCap, isAdvanced, sb, bb, locationId, locationLV, buyInLimit, isMonitoring, isDeathmatch } = payload;
-  console.info('handleJoinTable', payload);
   // [CLEANUP] Ensure previous engine is destroyed
   if (engine.value) {
-    engine.value.cleanup();
+    // engine.value.exitGame();
     engine.value = null;
   }
   // Initialize session stats
@@ -264,7 +262,7 @@ const handleJoinTable = async (payload) => {
   // Use passed rake or default
   const finalRake = rake !== undefined ? rake : 0.05;
   const finalRakeCap = rakeCap !== undefined ? rakeCap : (bb * 10);
-  // const finalBuyInLimit = buyInLimit !== undefined ? buyInLimit : 999999;
+
   engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isAdvanced, locationId, locationLV, buyInLimit, isMonitoring, inviteId, isDeathmatch);
 
   const equipped = store.equippedItem;
@@ -273,6 +271,7 @@ const handleJoinTable = async (payload) => {
     engine.value.players[0].equippedItemIcon = equipped.icon;
     engine.value.players[0].equippedItemInstance = equipped;
   }
+
   currentView.value = 'table';
 
   await engine.value.startNewHand(true);
@@ -310,6 +309,7 @@ const handleAction = async (payload) => {
       break;
     case 'cashout':
       // currentView.value = 'lobby';
+      engine.value.exitGame();
       showConfiscationOverlay.value = false;
       showInvestigationOverlay.value = false;
       showInvestigationResultOverlay.value = false;
@@ -319,20 +319,12 @@ const handleAction = async (payload) => {
       audioManager.playSFX('end-session')
       showStatsModal.value = true;
       applySessionExit();
-      if (engine.value) {
-        engine.value.exitGame();
-        // engine.value = null; // [FIX] Defer this until the stats popup is closed
-      }
       break;
   }
 };
 
 const handleBackToLobby = () => {
   currentView.value = 'lobby';
-  // Use nextTick or a small timeout to ensure the view transition has started before nullifying the engine
-  nextTick(() => {
-    engine.value = null;
-  });
 };
 // Sleep System Refs
 const showSleepModal = ref(false);
@@ -470,7 +462,7 @@ watch(currentView, (newView) => {
             <div class="row">
               <div class="status-group">
                 <span class="status-value">{{ formatGameDate(store.gameTime) }} ({{ formatGameDayOfWeek(store.gameTime)
-                }})</span>
+                  }})</span>
                 <span class="status-divider"></span>
                 <span class="status-value">{{ formatGameTime(store.gameTime) }}</span>
               </div>

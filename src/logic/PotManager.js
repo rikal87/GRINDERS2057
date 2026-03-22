@@ -140,8 +140,17 @@ export class PotManager {
       let maxReduction = 0;
       winners.forEach(w => {
         if (w.item && w.item.effects) {
-          const reductionEffect = w.item.effects.reduce((sum, e) => (e.effect && e.effect.id === ITEM_EFFECT_ID.RAKE_REDUCTION) ? sum + e.effect.value : sum, 0);
-          // apply reduction to strongest effect
+          // [FIX] Support both object and string formats in effects
+          const reductionEffect = w.item.effects.reduce((sum, e) => {
+            const effectObj = e.effect || (typeof e === 'object' ? e : null);
+            if (effectObj && effectObj.id === ITEM_EFFECT_ID.RAKE_REDUCTION) {
+              return sum + (effectObj.value || 0);
+            }
+            if (e === ITEM_EFFECT_ID.RAKE_REDUCTION) {
+              return sum + 0.25; // Default T2 reduction value
+            }
+            return sum;
+          }, 0);
           maxReduction = Math.max(maxReduction, reductionEffect)
         }
       });

@@ -282,7 +282,7 @@ export const recordPlayStatsSessionForPlayer = (action, payload) => {
   switch (action) {
     // BET is an alias for RAISE (both count as aggressive actions)
     case PLAY_RECORD_STATS_TYPE.BET:
-      return recordPlayStatsSessionForPlayer(player, PLAY_RECORD_STATS_TYPE.RAISE, payload);
+      return recordPlayStatsSessionForPlayer(PLAY_RECORD_STATS_TYPE.RAISE, payload);
     case PLAY_RECORD_STATS_TYPE.WIN:
       totalStats.win++;
       if (sessionStats) {
