@@ -4,9 +4,9 @@ import { recordPlayStatsSessionForPlayer, PLAY_RECORD_STATS_TYPE } from './playR
 const DEPOSITION_RATE_IDLE = 2 / 60; // 2 per hour = 2/60 per minute
 const DEPOSITION_RATE_TABLE = 4 / 60; // 4 per hour = 4/60 per minute
 
-export const consumeStamina = (isAtTable = false) => {
+export const consumeStamina = (isAtTable = false, multiplier = 1) => {
   if (store.stamina <= 0) return;
-  const rate = isAtTable ? DEPOSITION_RATE_TABLE : DEPOSITION_RATE_IDLE;
+  const rate = (isAtTable ? DEPOSITION_RATE_TABLE : DEPOSITION_RATE_IDLE) * multiplier;
   const consumed = Math.min(store.stamina, rate);
   store.stamina = Math.max(0, store.stamina - rate);
   recordPlayStatsSessionForPlayer(PLAY_RECORD_STATS_TYPE.STAMINA_CONSUMED, { amount: consumed });

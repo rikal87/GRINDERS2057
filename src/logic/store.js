@@ -65,7 +65,8 @@ const getDefaultState = () => ({
       { label: '100%', type: '100p' }
     ],
     fourColorMode: false,
-    showAsBB: false
+    showAsBB: false,
+    fastFoward: false
   },
   shop: {
     items: [],
@@ -112,6 +113,9 @@ const getDefaultState = () => ({
 const RENT_BILL_MAX_MISS = 3;
 const INCOME_TAX_MAX_MISS = 3;
 const FINE_MAX_MISS = 3;
+export const isFastFoward = () => {
+  return store.settings.fastFoward;
+}
 export const getUnlockAchievements = () => {
   return store.unlockAchievements;
 }

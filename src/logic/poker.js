@@ -229,11 +229,11 @@ export const getHandCategory = (hand, board, evalResult) => {
     // Find the highest hole card used in the 5-card hand
     const usedHoleRanks = holeRanks.filter(r => evalResult.cards.some(c => '23456789TJQKA'.indexOf(c[0]) === r));
     const bestHoleRank = usedHoleRanks.length > 0 ? Math.max(...usedHoleRanks) : -1;
-    
+
     // If our best hole card used in the hand is lower than a Jack (rank 9)
     // AND it doesn't improve the board's natural kicker significantly
-    if (bestHoleRank < 9) { 
-       return result('WEAK');
+    if (bestHoleRank < 9) {
+      return result('WEAK');
     }
   }
 
@@ -839,7 +839,7 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
     }
 
     if (caseSum <= -2) return 'STRONG';
-    else if (caseSum <= 2) return 'GOOD';
+    else if (caseSum <= 0) return 'GOOD';
     return 'MARGINAL';
   }
   // 2: One Pair

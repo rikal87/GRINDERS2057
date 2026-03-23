@@ -1,5 +1,5 @@
 
-import { store, gainInfamy, gainSuspicion, checkPlayerBankrupt } from './store';
+import { store, gainInfamy, gainSuspicion, checkPlayerBankrupt, isFastFoward } from './store';
 import { consumeStamina } from './staminaSystem';
 import { processAiTasks } from './aiAgentTaskSystem';
 import { sendLoreAndSpamMessage, checkMessageExpiration } from './messageSystem';
@@ -17,51 +17,51 @@ export const startTimeSystem = () => {
   if (timerInterval) return;
 
   timerInterval = setInterval(() => {
-    // Add 1 minute (60000ms) per tick
-    const oldDate = new Date(store.gameTime);
-    const oldDay = oldDate.getDate();
+    const isFastFowardActive = window.isAtTable && isFastFoward() && window.isFastFowardActive;
+    const ticks = isFastFowardActive ? 5 : 1;
 
-    store.gameTime += GAME_MINUTES_PER_TICK * 60 * 1000;
+    for (let i = 0; i < ticks; i++) {
+      // Add 1 minute (60000ms) per tick
+      const oldDate = new Date(store.gameTime);
+      const oldDay = oldDate.getDate();
 
-    const newDate = new Date(store.gameTime);
-    const newDay = newDate.getDate();
+      store.gameTime += GAME_MINUTES_PER_TICK * 60 * 1000;
 
-    if (oldDay !== newDay) {
-      // Daily rollover logic
-      processDailyDecay();
+      const newDate = new Date(store.gameTime);
+      const newDay = newDate.getDate();
+
+      if (oldDay !== newDay) {
+        // Daily rollover logic
+        processDailyDecay();
+      }
+
+      // Process AI Agent logic (LT regen, Task success check, etc.)
+      processAiTasks();
+
+      // Process global storyline / repeating events
+      processEvents();
+
+      // Check for message expiration
+      checkMessageExpiration();
+
+      // Process hourly events
+      const currentHour = new Date(store.gameTime).getHours();
+      if (lastProcessedHour === null) {
+        lastProcessedHour = currentHour;
+        simulatePartnersBehavior();
+      } else if (lastProcessedHour !== currentHour) {
+        lastProcessedHour = currentHour;
+        simulatePartnersBehavior();
+      }
+
+      // 3% chance per game hour (60 game minutes)
+      const probPerTick = 0.03 / (60 / GAME_MINUTES_PER_TICK);
+      if (Math.random() < probPerTick) sendLoreAndSpamMessage();
+
+      // Consume player stamina
+      consumeStamina(window.isAtTable || false);
+      checkPlayerBankrupt();
     }
-
-    // Process AI Agent logic (LT regen, Task success check, etc.)
-    processAiTasks();
-
-    // Process global storyline / repeating events
-    processEvents();
-
-    // Check for message expiration
-    checkMessageExpiration();
-
-    // Process hourly events
-    const currentHour = new Date(store.gameTime).getHours();
-    if (lastProcessedHour === null) {
-      lastProcessedHour = currentHour;
-      simulatePartnersBehavior();
-    } else if (lastProcessedHour !== currentHour) {
-      lastProcessedHour = currentHour;
-      simulatePartnersBehavior();
-    }
-
-    // 3% chance per game hour (60 game minutes)
-    const probPerTick = 0.03 / (60 / GAME_MINUTES_PER_TICK);
-    if (Math.random() < probPerTick) sendLoreAndSpamMessage();
-
-    // Consume player stamina
-    // We check if the player is currently at a table (this would require checking view state or engine status)
-    // For now, we can pass a simple flag or let the stamina system handle state check if possible.
-    // However, App.vue has currentView.
-    consumeStamina(window.isAtTable || false);
-    checkPlayerBankrupt()
-    // Check for daily rollover or other time-based events here if needed
-    // processTimeBasedEvents(store.gameTime);
   }, 1000 / TICKS_PER_SECOND);
 };
 

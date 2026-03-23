@@ -107,7 +107,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'fish',
-    name: 'Fish', philosophy: 'LAP', vPIP: .65, AF: 1.5, WTSD: .22, chipMultiply: 1, isAdvanced: false,
+    name: 'Fish', philosophy: 'LAP', vPIP: .65, AF: 1.5, WTSD: .35, chipMultiply: 1, isAdvanced: false,
     note_ko: '판돈을 불리는 데는 일등 공신이지만, 막상 끝까지 가는 배짱은 없어서 정교한 블러핑 한 방이면 칩을 고스란히 헌납할 겁니다.',
     note_en: 'He is a great contributor to increasing the pot, but he lacks the courage to go all the way, so a single sophisticated bluff will cost him all his chips.',
 

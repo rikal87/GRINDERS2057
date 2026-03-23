@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
-import { store, resetStore, saveStore, initStore, calculateSessionReport, applySessionExit } from './logic/store';
+import { store, resetStore, saveStore, initStore, calculateSessionReport, applySessionExit, isFastFoward, getLanguage } from './logic/store';
 import { createPlayRecordStats } from './logic/playRecordStats';
 import { GameEngine } from './logic/gameEngine';
 import Intro from './components/Intro.vue';
@@ -214,6 +214,9 @@ const rebootTimer = ref(null);
 const rebootInterval = ref(null);
 const rebootProgress = ref(0);
 const isRebooting = ref(false);
+const getFastForward = () => {
+  return getLanguage() === 'en' ? 'If this option is turned on, the game speed will increase when you fold.' : '이 옵션이 켜져있을때 자신이 폴드하면 게임 진행 속도가 빨라집니다.';
+}
 
 const startReboot = () => {
   if (isRebooting.value) return;
@@ -302,6 +305,9 @@ const handleAction = async (payload) => {
     case 'fold':
     case 'call':
     case 'raise':
+      if (type === 'fold' && isFastFoward()) {
+        window.isFastFowardActive = true;
+      }
       await engine.value.handlePlayerAction(engine.value.players[0], { type, amount });
       break;
     case 'exit':
@@ -569,6 +575,15 @@ watch(currentView, (newView) => {
               <span class="label">SESSION_LINK:</span>
               <button class="btn-danger" @click="handleAction({ type: 'exit' }); toggleSettings()">LEAVE_TABLE</button>
             </div> -->
+            <div class="setting-item">
+              <span class="label" :data-tooltip="getFastForward()">{{
+                store.settings.language === 'en' ? 'FAST_FORWARD:' : 'FAST_FORWARD:' }}</span>
+              <button @click="store.settings.fastFoward = !store.settings.fastFoward">
+                {{ store.settings.fastFoward ? (store.settings.language === 'en' ? 'ON' : '켜짐') :
+                  (store.settings.language
+                    === 'en' ? 'OFF' : '꺼짐') }}
+              </button>
+            </div>
             <div class="setting-item">
               <span class="label">EXIT_GAME:</span>
               <button class="btn-danger" @click="handleQuitApp">EXIT</button>

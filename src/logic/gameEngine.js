@@ -7,7 +7,7 @@ import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
 import { getPartner, getJoinedPartners } from './partnerSystem.js';
 import { shareBenefitForPartners, shareCollusion } from './partnerContractSystem.js';
-import { getListPlayStatsSession, gainInfamy, gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion, getCurrentSuspicion, getCurrentInfamy, gainXP, gainClearedZoneCount, gainClearReward, processMissionResult } from './store.js';
+import { isFastFoward, getListPlayStatsSession, gainInfamy, gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion, getCurrentSuspicion, getCurrentInfamy, gainXP, gainClearedZoneCount, gainClearReward, processMissionResult } from './store.js';
 import { LOCATION_ID, CONTRACT_TYPE, CHAT_TRIGGERS, TYPE_CHANGE_BANKROLL } from './constants.js'
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
 import { zones } from './zone.js';
@@ -362,7 +362,7 @@ export class GameEngine {
     if (this.infamy >= 20) {
       // NPC AF = ((3 - {NPC 초기 AF} ) * 0.5) + {NPC 초기 AF} 로 보정.
       const baseAF = villan.AF || 1.0;
-      villan.AF = ((3 - baseAF) * 0.5) + baseAF;
+      villan.AF = ((2.5 - baseAF) * 0.5) + baseAF;
       villan.initialAF = villan.AF;
     }
     const chips = this.buyIn * villan.chipMultiply;
@@ -905,7 +905,9 @@ export class GameEngine {
     const result = this.potManager.resolveShowdown(this.players, this.board, this.board.length === 0);
     this.showdownResults = result;
     this.calculationInProgress = true
-    // this.state = 'ROUND_END';
+
+    // [FAST_FOLD] Reduce showdown delay if player is folded and setting is ON
+
     // Finalize History
     if (this.currentHandHistory) {
       const winnerResult = result.results.find(res => res.id === result.winnerId);
@@ -928,7 +930,7 @@ export class GameEngine {
     }
     // else eventAdaptor.win({ player: this.players[0], pot: this.pot });
     this.runoutInProgress = false; // Reset runout flag
-
+    window.isFastFowardActive = false; // Rest fast fold flag
     // if (isPlayerWinner) {
     //   eventAdaptor.showdownWin({ winnerResult, pot: this.pot });
     //   if (isAllIn) eventAdaptor.allinWin({ winnerResult, pot: currentPot });
@@ -951,9 +953,12 @@ export class GameEngine {
       if (bestWinnerResult) maxWinAmount = bestWinnerResult.amountWon;
     }
 
-    if (result.isChop && bestWinnersList.length > 1) {
+    if (result.isChop) {
       // It's a true Chop for the main pot
-      const aiChoppers = this.players.filter(p => !p.isHuman && !p.isFolded && bestWinnersList.includes(p.id));
+      const mainPot = result.detailedPots?.find(p => p.name.includes('Main Pot'));
+      const mainPotWinners = mainPot ? mainPot.winners : [];
+
+      const aiChoppers = this.players.filter(p => !p.isHuman && !p.isFolded && mainPotWinners.includes(p.id));
       if (aiChoppers.length > 0) {
         const chopper = aiChoppers[Math.floor(Math.random() * aiChoppers.length)];
         chatAI(chopper, CHAT_TRIGGERS.CHOP, "", 0, this);
@@ -1027,10 +1032,9 @@ export class GameEngine {
     });
     // this.street = 'ROUND_END';
     eventAdaptor.roundEnd({ players: this.players, bestWinner, street: this.street });
-
-    const sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000
-    await sleep(sleepTime)
+    const sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000;
     saveStore();
+    await sleep(sleepTime)
     if (this.suspicion >= 40 && this.checkTriggerCasinoInvestigation()) return;
     this.calculationInProgress = false;
     this.startNewHand();
@@ -1348,8 +1352,9 @@ export class GameEngine {
     } else {
       action = getAIAction(player, this);
     }
-    const delay = action.delay || (1000 + Math.random() * 1000); // Fallback
-    console.log(`[AI TURN] ${player.name} thinking for ${Math.floor(delay)}ms...`);
+
+    const delay = (action.delay || (1000 + Math.random() * 1000)) * (window.isFastFowardActive ? 0.2 : 1);
+    console.log(`[AI TURN] ${player.name} thinking for ${Math.floor(delay)}ms...${window.isFastFowardActive ? ' (FAST_FOLD)' : ''}`);
     // await sleep(delay); // Removed redundant sleep. Timer loop handles delay.
     // Safety check if state changed during delay
 

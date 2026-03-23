@@ -123,7 +123,7 @@ function getHeuristicFallback(player, engine) {
   // Base Bluff Frequency based on Aggression Factor
   // Scales down SHARPLY with raises to prevent suicide bluffs in high-depth spots (3-bet/4-bet+)
   let bluffFreq = Math.max(0.0, (AF - 2) * 0.06 + 0.06);
-  bluffFreq *= (1 / (raises + 1));
+
 
   // [v5.0] High Intensity Bluff Safety: Reduce bluffs in 3B/4B pots to prevent suicide punts
   if (pfIntensity >= 4) bluffFreq *= 0.3;
@@ -132,16 +132,16 @@ function getHeuristicFallback(player, engine) {
   if (street === 'PREFLOP') bluffFreq *= 0.1; // Pre Flop bluffs are less effective
   const boardTexture = analyzeBoardTexture([...engine.board]);
   if (boardTexture === 'DRY' && street === 'RIVER') bluffFreq *= 0.3;
-  if (boardTexture === 'WET' && street === 'RIVER') bluffFreq *= 1.5;
+  if (boardTexture === 'WET' && street === 'RIVER') bluffFreq *= 1.3;
 
   const boardRanks = engine.board.map(getRankVal).sort((a, b) => b - a);
   const isBoardPaired = boardRanks.some((r, i) => r === boardRanks[i + 1]);
-  if (isBoardPaired) bluffFreq *= 1.5;
+  if (isBoardPaired) bluffFreq *= 1.3;
 
   // Further reduce bluff freq if facing a huge bet relative to pot (low fold equity)
   const betToPotRatio = pot > 0 ? (callAmt / pot) : 0;
   if (betToPotRatio > 1) bluffFreq = 0; // Polarized/Large bet usually means less fold equity
-  else if (betToPotRatio > 0.6) bluffFreq *= 0.33;
+  else if (betToPotRatio > 0.6) bluffFreq *= 0.3;
 
   let multiplier = 1.0;
   const distFromButton = (dealerIdx - playerIdx + playerCount) % playerCount;
@@ -160,7 +160,7 @@ function getHeuristicFallback(player, engine) {
   let drawBonus = 0;
 
   if (street === 'PREFLOP') {
-    if (isAdvanced && (player.chips <= 30 * (engine.bb || 10) || alivePlayers <= 2)) {
+    if (player.chips <= 30 * (engine.bb || 10) || alivePlayers <= 2) {
       handRank = getStartingHandRankHeadsup(player.hand);
     } else {
       handRank = getStartingHandRank96Max(player.hand);
@@ -172,19 +172,19 @@ function getHeuristicFallback(player, engine) {
     // vPIP Fold Check
     let vPIPThreshold = 1 - vPIP;
     if (percentile < vPIPThreshold) {
-      return { action: callAmt > 0 ? 'fold' : 'check', amount: 0, insight: `vPIP Fold (Eq: ${(percentile * 100).toFixed(0)}%)` };
+      return { action: callAmt === 0 ? 'call' : 'fold', amount: 0, insight: `vPIP Fold (Eq: ${(estimatedEquity * 100).toFixed(0)}%)` };
     }
     if (handRank <= 2) estimatedEquity = 0.95;
     else if (handRank <= 4) estimatedEquity = 0.9;
     else if (handRank <= 7) estimatedEquity = 0.85;
     else if (handRank <= 11) estimatedEquity = 0.8;
-    else if (handRank <= 17) estimatedEquity = 0.7;
-    else if (handRank <= 33) estimatedEquity = 0.6;
-    else if (handRank <= 41) estimatedEquity = 0.45;
-    else if (handRank <= 55) estimatedEquity = 0.4;
-    else if (handRank <= 80) estimatedEquity = 0.35;
+    else if (handRank <= 17) estimatedEquity = 0.75;
+    else if (handRank <= 33) estimatedEquity = 0.7;
+    else if (handRank <= 41) estimatedEquity = 0.6;
+    else if (handRank <= 55) estimatedEquity = 0.5;
+    else if (handRank <= 80) estimatedEquity = 0.4;
     else if (handRank <= 100) estimatedEquity = 0.3;
-    else estimatedEquity = 0.25;
+    else estimatedEquity = 0.2;
     if (isAdvanced) {
       if (distFromButton <= 1) estimatedEquity += 0.05;
       else if (distFromButton >= alivePlayers - 2) estimatedEquity -= 0.05;
@@ -200,18 +200,20 @@ function getHeuristicFallback(player, engine) {
     if (handCategory === 'NUTS') estimatedEquity = 0.95;
     else if (handCategory === 'MONSTER') estimatedEquity = 0.85;
     else if (handCategory === 'STRONG') estimatedEquity = 0.7;
-    else if (handCategory === 'GOOD') estimatedEquity = 0.55;
-    else if (handCategory === 'MARGINAL') estimatedEquity = 0.45;
-    else if (handCategory === 'WEAK') estimatedEquity = 0.25;
+    else if (handCategory === 'GOOD') estimatedEquity = 0.6;
+    else if (handCategory === 'MARGINAL') estimatedEquity = 0.5;
+    else if (handCategory === 'WEAK') estimatedEquity = 0.3;
     else if (handCategory === 'ACE_HIGH') estimatedEquity = 0.15;
     else estimatedEquity = 0.05; // AIR
 
-    if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.5;
-    else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.35;
-    else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.15;
+    if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.7;
+    else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.5;
+    else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.3;
     bluffFreq += drawBonus; // if we made nothing, we can bluff
-    drawBonus = (streetsLeft * 0.5) * drawBonus;
-    estimatedEquity = Math.min(0.98, estimatedEquity + drawBonus);
+    drawBonus *= (streetsLeft / 2);
+    if (player.class.id.toUpperCase() === 'GAMBLER') drawBonus *= 1.5 // they like to draw bonus more 
+
+    estimatedEquity = Math.min(0.98, Math.max(estimatedEquity, drawBonus));
     console.info(`[AI_ENGINE] ${player.name} Category: ${handCategory}, Base Eq: ${estimatedEquity}, pfIntensity: ${pfIntensity}`);
   }
   estimatedEquity = Math.min(0.99, estimatedEquity * (multiplier > 1 ? (1 + (multiplier - 1) * 0.2) : 1));
@@ -248,18 +250,18 @@ function getHeuristicFallback(player, engine) {
       }
     } else if (isAggressor) {
       strategy = "C_BETTER"; // Continuing aggression
-      bluffFreq *= 1.5;
+
     } else {
       strategy = "OPENER"; // First to act in open pot
     }
   }
 
   // Set thresholds based on strategy
-  let raiseEquityThreshold = requiredEquity + 0.35;
+  let raiseEquityThreshold = requiredEquity + 0.3 + (2 - AF) * (street === 'PREFLOP' ? 0.1 : 0.05);
   if (strategy === "RESPONSE") {
     // Standard required equity based on pot odds
     if (estimatedEquity >= 0.85 && ['FLOP'].includes(street)) {
-      if (Math.random() <= 0.4) raiseEquityThreshold = 1.1 // set trap
+      if (Math.random() <= 0.65 || raises >= 2) raiseEquityThreshold = 1.1 // set trap
     }
     insight += " [Strategy: RESPONSE]";
   } else if (strategy === "DONK_AVOIDER") {
@@ -270,15 +272,16 @@ function getHeuristicFallback(player, engine) {
   } else {
     // OPENER or C_BETTER
     // raiseEquityThreshold = 0.4; // Standard buffer for leading
-    if (strategy === "OPENER") raiseEquityThreshold -= 0.15;
-
+    // if (strategy === "OPENER") raiseEquityThreshold -= 0;
     if (strategy === "C_BETTER") {
-      if (street === 'FLOP') raiseEquityThreshold -= 0.15;
-      else if (['TURN', 'RIVER'].includes(street) && callAmt === 0) bluffFreq *= (1.5 - (streetsLeft * 0.5));
+      if (street === 'FLOP') raiseEquityThreshold -= 0.2;
+      if (['FLOP', 'TURN'].includes(street) && callAmt === 0) bluffFreq *= (1.5 - (streetsLeft * 0.5));
     }
-    if (street === 'RIVER' && estimatedEquity <= 0.5 && estimatedEquity >= 0.4) { // pot control we have show down value
-      raiseEquityThreshold = 1.1
-      bluffFreq *= 0.5;
+    if (street !== 'PREFLOP' && estimatedEquity <= 0.5 && estimatedEquity >= 0.4) {
+      if (requiredEquity + .2 > estimatedEquity) {
+        raiseEquityThreshold = 1.1
+        bluffFreq = 0;
+      }
     }
     insight += ` [Strategy: ${strategy}]`;
   }
@@ -288,57 +291,26 @@ function getHeuristicFallback(player, engine) {
     const multiWayFactor = (street === 'PREFLOP') ? 0.02 : 0.05;
     requiredEquity += (alivePlayers - 2) * multiWayFactor;
   }
-  if (player.class.id.toUpperCase() === 'GAMBLER' && street !== 'RIVER') {
-    const addBonus = drawBonus > 0.2 ? .15 : 0;
-    estimatedEquity = Math.min(0.98, estimatedEquity + addBonus);
-  }
-
   // Global adjustments
-  raiseEquityThreshold += (2 - AF) * (street === 'PREFLOP' ? 0.15 : 0.05);
-  let requiredEquityPenalty = 0;
-  let raisePenalty = 0;
+  // raiseEquityThreshold += (2 - AF) * (street === 'PREFLOP' ? 0.1 : 0.05);
+  let requiredEquityPenalty = (raises - 1) * 0.1;
+  let raisePenalty = Math.pow(1.15, raises) - 1;
   const spr = pot > 0 ? (player.chips / pot) : 20;
-
   if (street === 'PREFLOP') {
-    raisePenalty = Math.pow(1.12, raises) - 1;
-    requiredEquityPenalty = Math.pow(1.06, raises) - 1;
-  }
-  else {
-    // [MOD] Linear Penalty (More stable than Exponential)
-    // 5% per preflop raise, 10% per postflop raise. Cap at 35%.
-    let basePenalty = (pfIntensity * 0.05) + (raises * 0.10);
-    requiredEquityPenalty = Math.min(0.35, basePenalty);
-
-    // [MOD] SPR Commitment Adjustment
-    // In low SPR pots (3/4-bet pots), we shouldn't fold as easily.
+  } else {
+    requiredEquityPenalty += (3 - streetsLeft) * (pfIntensity * 0.05)
     if (spr < 1.5) {
-      requiredEquityPenalty *= 0.7;
-    }
-    raisePenalty = requiredEquityPenalty;
-  }
-  raiseEquityThreshold += raisePenalty;
-  // [v5.0] Intensity-based Requirement Adjustment (Formerly Equity Discount)
-  // In high-intensity pots, we need slightly more equity to call because villain's range is tight.
-  if (!['NUTS', 'MONSTER'].includes(handCategory)) {
-    if (pfIntensity >= 4) { requiredEquity += 0.15; insight += ' [4BP-Req]'; }
-    else if (pfIntensity === 3) { requiredEquity += 0.08; insight += ' [3BP-Req]'; }
-  }
-  requiredEquity += requiredEquityPenalty;
-
-  let wtsdBoost = 0.2 - (street === 'PREFLOP' ? vPIP : wtsd);
-  if (street === 'FLOP' || street === 'PREFLOP') requiredEquity += wtsdBoost;
-
-  if (isAdvanced) {
-    if (spr < 1.5) {
-      requiredEquity *= 0.8;
-    } else if (spr > 10) {
+      requiredEquityPenalty *= 0.5;
+    } else if (isAdvanced && spr > 10) {
       requiredEquity *= 1.1;
       if (street !== 'RIVER') bluffFreq += 0.05;
     }
   }
+  raiseEquityThreshold += raisePenalty + (pfIntensity * 0.05);
+  const boost = street === 'PREFLOP' ? vPIP : wtsd;
+  requiredEquity += requiredEquityPenalty + (0.25 - boost);
 
   const boardAnalysis = analyzeBoardTexture(engine.board);
-
   if (isAdvanced) {
     const highCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r >= 9).length : 0;
     const lowCardCount = boardAnalysis.ranks ? boardAnalysis.ranks.filter(r => r < 9).length : 0;
@@ -360,6 +332,7 @@ function getHeuristicFallback(player, engine) {
   if (isVirtuallyCommitted) {
     if (estimatedEquity >= 0.1 || streetsLeft > 0) {
       requiredEquity = 0;
+      bluffFreq = 0;
       insight += " [V-Committed]";
     } else {
       // Fold complete trash (AIR) even if committed
@@ -367,38 +340,34 @@ function getHeuristicFallback(player, engine) {
     }
   }
   if (callAmt >= player.chips) bluffFreq = 0;
-
+  bluffFreq *= (1 / (raises + 1));
   // Final Cap and safety
-  if (['TURN', 'RIVER'].includes(street)) raiseEquityThreshold = Math.min(0.75, raiseEquityThreshold);
+  // if (['RIVER'].includes(street)) raiseEquityThreshold = Math.min(0.6, raiseEquityThreshold);
   // requiredEquity = Math.min(0.80, requiredEquity);
 
   const catLabel = handCategory ? ` (${handCategory})` : '';
 
   let action = 'fold';
-  const variance = Math.random() * -.08;
-  estimatedEquity += variance;
+  if (street === 'RIVER' && estimatedEquity <= 0.5) {
+    const variance = (Math.random() * .1);
+    estimatedEquity -= variance;
+  }
   if (estimatedEquity >= raiseEquityThreshold) {
-    // [FIX] Relax Call Huge threshold preflop to prevent limping strong hand
-    let currentBet = engine.currentRoundBet || 0;
-    const callHugeThreshold = street === 'PREFLOP' ? 0.5 : 0.4;
-    if (potOdds > callHugeThreshold && street !== 'RIVER') {
-      action = 'call'; insight += " (Call Huge)";
-    } else {
-      action = 'raise'; insight += " (Value Raise)";
-      amount = callAmt > 0 ? (currentBet * 2.5 + pot * 0.3) : (pot * 0.75); // Standard value bet
-    }
+    action = 'raise'; insight += " (Value Raise)";
   } else if (estimatedEquity >= requiredEquity) {
     action = 'call'; insight += " (Call Odds)";
   } else {
     // Bluffing
     const rnd = Math.random();
-    if (isAdvanced && rnd < bluffFreq / 2 && street === 'RIVER' && spr > 0.5) {
-      action = 'raise'; amount = player.chips + 10000; insight += " (River Shove Bluff)";
-    } else if (rnd < bluffFreq) {
+    if (rnd < bluffFreq && spr >= 3) {
       // [v5.0] Cap pure bluff size in high pots
-      action = 'raise'; insight += " (Pure Bluff)";
-      if (pfIntensity >= 3) amount = Math.floor(pot * 0.35); // Smaller bluffs in big pots
-      else amount = Math.floor(pot * 0.65); // Standard bluff size
+      if (isAdvanced && rnd < bluffFreq / 2 && street === 'RIVER') {
+        action = 'raise'; amount = player.chips + 10000; insight += " (River Shove Bluff)";
+      } else {
+        action = 'raise'; insight += " (Bluff)";
+        if (pfIntensity >= 3) amount = Math.floor(pot * 0.35); // Smaller bluffs in big pots
+        else amount = Math.floor(pot * 0.65); // Standard bluff size
+      }
     } else {
       // [FIX] If we can check (callAmt == 0), don't fold.
       if (callAmt === 0) {
@@ -411,7 +380,7 @@ function getHeuristicFallback(player, engine) {
   if (handCategory === 'BOARD_CHOP') {
     action = 'call'; insight = "Board Chop";
   }
-  insight += ` [RaiseTh:${(raiseEquityThreshold * 100).toFixed(0)}% Eq:${(estimatedEquity * 100).toFixed(0)}% / C-Req:${(requiredEquity * 100).toFixed(0)}% / B-Req:${(raiseEquityThreshold * 100).toFixed(0)}% / B-Freq:${(bluffFreq * 100).toFixed(0)}%]${catLabel}`;
+  insight += ` [RaiseTh:${(raiseEquityThreshold * 100).toFixed(0)}% Eq:${(estimatedEquity * 100).toFixed(0)}% / C-Req:${(requiredEquity * 100).toFixed(0)}% / Bluff-Freq:${(bluffFreq * 100).toFixed(0)}%]${catLabel}`;
   // --- 5. Sizing ---
   if (action === 'raise') {
     let currentBet = engine.currentRoundBet || 0;
