@@ -11,6 +11,7 @@
         </div>
         <div v-if="store.messages.length === 0" class="empty-msg">NO_NEW_MESSAGES</div>
       </div>
+
     </aside>
     <!-- Betting & Actions -->
     <div class="betting-interface">
@@ -58,31 +59,18 @@
     </div>
     <!-- Gadget Panel -->
     <div class="skill-panel">
-      <!-- Permanent Hand Rank Display (Always Visible) -->
-      <div class="permanent-hud">
-        <div class="hud-stat">
-          <span class="label">CURRENT_HAND:</span>
-          <span class="value">{{ currentHandRank }}</span>
-        </div>
+      <!-- [CASHOUT], [RESERVE EXIT]  -->
+      <div class="status-row exit-controls" v-if="!engine.isDeathmatch">
+        <button class="btn-cashout" :disabled="!player.isFolded" @click="handleCashout"
+          :data-tooltip="cashoutTooltip">CASHOUT</button>
+        <button class="btn-reserve-exit" :class="{ 'inactive': engine.exitReservationRounds === -1 }"
+          :data-tooltip="reserveExitTooltip" :disabled="!player.isFolded || engine.exitReservationRounds !== -1"
+          @click="handleReserveExit" :style="engine.exitReservationRounds >= 0 ? {
+            '--gauge-percent': `${(engine.exitReservationRounds / Math.max(engine.exitReservationRoundsMax, 1)) * 100}%`
+          } : { '--gauge-percent': '0%' }">
+          {{ engine.exitReservationRounds >= 0 ? `EXIT IN ${engine.exitReservationRounds} ROUNDS` : 'RESERVE EXIT' }}
+        </button>
       </div>
-      <!-- Victory Condition Display (Always Visible) -->
-      <div class="permanent-hud">
-        <div class="hud-stat">
-          <span class="label">{{ getLanguage() === 'ko' ? '승리 조건' : 'VICTORY_CONDITION' }}:</span>
-          <span class="value" :class="victoryConditionChips >= acquiredChips ? 'yellow' : 'green'">
-            {{ formatUnit(acquiredChips) }} / {{ formatUnit(victoryConditionChips) }}
-          </span>
-        </div>
-      </div>
-      <!-- Permanent Stamina Display (Always Visible) -->
-      <div class="permanent-hud">
-        <div class="hud-stat" :class="{ 'low-stamina': store.stamina < 25 }">
-          <span class="label">STAMINA:</span>
-          <span class="value" :style="{ color: getStaminaColor }">{{ Math.floor(store.stamina) }} / {{
-            getEffectiveMaxStamina() }}</span>
-        </div>
-      </div>
-
       <!-- [MOVED] Protector Badge & Effects HUD -->
       <div class="status-row" v-if="player.item">
         <div class="protector-badge" :data-tooltip="player.item.desc">
@@ -102,17 +90,38 @@
           </div>
         </div>
       </div>
-      <!-- [CASHOUT], [RESERVE EXIT]  -->
-      <div class="status-row exit-controls" v-if="!engine.isDeathmatch">
-        <button class="btn-cashout" :disabled="!player.isFolded" @click="handleCashout"
-          :data-tooltip="cashoutTooltip">CASHOUT</button>
-        <button class="btn-reserve-exit" :class="{ 'inactive': engine.exitReservationRounds === -1 }"
-          :data-tooltip="reserveExitTooltip" :disabled="!player.isFolded || engine.exitReservationRounds !== -1"
-          @click="handleReserveExit" :style="engine.exitReservationRounds >= 0 ? {
-            '--gauge-percent': `${(engine.exitReservationRounds / Math.max(engine.exitReservationRoundsMax, 1)) * 100}%`
-          } : { '--gauge-percent': '0%' }">
-          {{ engine.exitReservationRounds >= 0 ? `EXIT IN ${engine.exitReservationRounds} ROUNDS` : 'RESERVE EXIT' }}
-        </button>
+      <!-- Victory Condition Display (Always Visible) -->
+      <div class="permanent-hud double">
+        <div class="hud-stat">
+          <span class="label">{{ getLanguage() === 'ko' ? '승리 조건' : 'WIN_CONDITION' }}:</span>
+          <span class="value" :class="victoryConditionChips >= acquiredChips ? 'yellow' : 'green'">
+            {{ formatUnit(acquiredChips) }} / {{ formatUnit(victoryConditionChips) }}
+          </span>
+        </div>
+      </div>
+      <!-- Permanent Stamina Display (Always Visible) -->
+      <div class="permanent-hud">
+        <div class="hud-stat" :class="{ 'low-stamina': store.stamina < 25 }">
+          <span class="label">STAMINA:</span>
+          <span class="value" :style="{ color: getStaminaColor }">{{ Math.floor(store.stamina) }} / {{
+            getEffectiveMaxStamina() }}</span>
+        </div>
+      </div>
+      <!--  Hand Rank Display -->
+      <div class="permanent-hud" v-if="isActiveHandHud()">
+        <div class="hud-stat">
+          <span class="label">HAND:</span>
+          <span class="value">{{ currentHandRank }}</span>
+        </div>
+      </div>
+      <!--  Suspicion Display -->
+      <div class="permanent-hud" v-if="isActiveSuspicionHud()">
+        <div class="hud-stat">
+          <span class="label">SUSPICION:</span>
+          <span class="value" :style="{ color: getSuspicionColorLabelClass(props.engine.zoneId) }">{{
+            getCurrentSuspicion(props.engine.zoneId)
+          }}/100</span>
+        </div>
       </div>
     </div>
     <!-- Custom Cashout Modal -->
@@ -141,9 +150,16 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { evaluateHand } from '../logic/poker.js';
-import { store, getEffectiveMaxStamina, getLanguage } from '../logic/store';
+import { store, getEffectiveMaxStamina, getLanguage, isActiveHandHud, isActiveSuspicionHud, getCurrentSuspicion } from '../logic/store';
 import { audioManager } from '../logic/audioManager.js';
-
+const getSuspicionColorLabelClass = (locationId) => {
+  const suspicion = getCurrentSuspicion(locationId);
+  if (suspicion >= 80) return 'CRITICAL';
+  else if (suspicion >= 60) return 'HIGH';
+  else if (suspicion >= 40) return 'MEDIUM';
+  else if (suspicion >= 20) return 'LOW';
+  else return 'NONE';
+}
 const props = defineProps({
   engine: Object
 });
@@ -334,7 +350,7 @@ button {
     max-width: 600px;
   }
   .permanent-hud {
-    flex: 1.5;
+    /* flex: 1.5; */
     max-width: 500px;
   }
   .skill-panel {
@@ -689,11 +705,14 @@ aside.inbox-panel {
 
 /* HUD Mini-Display */
 .permanent-hud {
-  grid-column: span 2;
+  /* grid-column: span 2; */
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 8px;
   margin-top: 5px;
+}
+.double {
+  grid-column: span 2;
 }
 .hud-overlay-mini {
   grid-column: span 2;

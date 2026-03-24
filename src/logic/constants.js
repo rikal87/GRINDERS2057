@@ -26,10 +26,6 @@ export const ENEMY_ID = {
   THE_WHALE: 'the_whale',
   NAMED_PRO: 'named_pro',
 }
-export const TASK_STATS_TYPE = {
-  COST_LT_TOTAL: 'cost_lt_total',
-  COMPLETED_TASK_COUNT: 'completed_task_count'
-}
 
 export const TYPE_CHANGE_BANKROLL = {
   GAMBLING: 'GAMBLING',
@@ -81,8 +77,6 @@ export const CHAT_TRIGGERS = {
   CHECK_FOR_PLAYER: 'CHECK_FOR_PLAYER',
   BLUFF_CAUGHT_FOR_PLAYER: 'BLUFF_CAUGHT_FOR_PLAYER',
 };
-
-
 
 export const PARTNER_ID = {
   MAX: 'Max',

@@ -1,10 +1,10 @@
 
-import { store, getPlayStatsCount, gainBankroll, getAgentTaskStat, gainAgentTaskStat, getCurrentLT, gainLT, getCurrentBankroll, getAgent, getLocalizedText } from './store';
+import { store, getPlayStatsCount, gainBankroll, getCurrentLT, gainLT, getCurrentBankroll, getAgent, getLocalizedText } from './store';
 import { sendMessage, MESSAGE_TYPE } from './messageSystem';
 import { AI_TASK_DATA, TASK_EFFECT_TYPE } from './aiAgentTaskData';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 import { zones } from './zone';
-import { TYPE_CHANGE_BANKROLL, TASK_STATS_TYPE } from './constants.js'
+import { TYPE_CHANGE_BANKROLL } from './constants.js'
 // Task Definitions
 // Logic to process tasks every game tick (e.g. hourly)
 // Actually we can process minutely, but probability is per hour.
@@ -17,6 +17,7 @@ import { TYPE_CHANGE_BANKROLL, TASK_STATS_TYPE } from './constants.js'
  */
 export const checkSubscription = () => {
   const agent = getAgent();
+  if (!agent) return;
   if (store.gameTime < agent.subscriptionExpireAt) return; // Not expired yet
 
   // If expired or not set (0), try to renew
@@ -53,6 +54,12 @@ export const checkSubscription = () => {
  */
 export const validateTaskSlots = () => {
   const agent = getAgent();
+  if (!agent) {
+    if (store.onWorkTasks.length > 0) {
+      store.onWorkTasks = []; // Purge all tasks if no agent
+    }
+    return;
+  }
   const planData = agent.model?.price_plan[agent.price_plan_idx] || { slot: ['T1'] };
   const availableSlotsCount = planData.slot.length;
 
@@ -72,9 +79,16 @@ export const processAiTasks = () => {
 
   // Update HUD Active status
   store.isActiveHud = !!store.activeBoosts.find(b => b.effect.type === TASK_EFFECT_TYPE.HUD_ACTIVE);
+  store.isActiveHandHud = !!store.activeBoosts.find(b => b.effect.type === TASK_EFFECT_TYPE.HAND_HUD_ACTIVE);
+  store.isActiveSuspicionHud = !!store.activeBoosts.find(b => b.effect.type === TASK_EFFECT_TYPE.SUSPICION_HUD_ACTIVE);
 
   // Use model/plan data from store
   const agent = store.aiAgent;
+  if (!agent) {
+    // Basic LT regen even without agent?
+    // Let's stick to 0 regen if no agent to incentivize booting.
+    return;
+  }
   const planIdx = agent.price_plan_idx;
   const planData = agent.model?.price_plan[planIdx] || { maxLt: 100 };
   const maxLt = planData.maxLt;
@@ -239,6 +253,37 @@ const triggerTaskSuccess = (taskState, taskDef) => {
       // Don't add penalty effects to activeBoosts (they are processed minutely)
       if (eff.type === 'penalty_amount') return;
 
+      if (eff.type === TASK_EFFECT_TYPE.IDENTITY_FORGERY) {
+        let maxLocationId = null;
+        let maxSuspicion = -1;
+        for (const [locId, status] of Object.entries(store.status_zone)) {
+          if (status.suspicion > maxSuspicion) {
+            maxSuspicion = status.suspicion;
+            maxLocationId = locId;
+          }
+        }
+        if (maxLocationId && maxSuspicion > 0) {
+          const discount = eff.amount || 0.5;
+          store.status_zone[maxLocationId].suspicion = Math.floor(store.status_zone[maxLocationId].suspicion * (1 - discount));
+          store.status_zone[maxLocationId].infamy = Math.floor(store.status_zone[maxLocationId].infamy * (1 - discount));
+          if (store.status_zone[maxLocationId].suspicion < 100) {
+            store.status_zone[maxLocationId].isBlacklisted = false;
+          }
+          let locName = maxLocationId;
+          for (const zone of zones) {
+            const loc = zone.locations.find(l => l.id === maxLocationId);
+            if (loc) {
+              locName = getLocalizedText(loc, 'name');
+              break;
+            }
+          }
+          sendMessage(MESSAGE_TYPE.SYSTEM, 'Identity Forged', `Suspicion and Infamy in [${locName}] have been reduced by ${discount * 100}%.`);
+        } else {
+          sendMessage(MESSAGE_TYPE.SYSTEM, 'Identity Forged', `You already have spotless records everywhere. No suspicion to clear!`);
+        }
+        return; // Do not add to active boosts
+      }
+
       const boost = { taskId: taskDef.id, instanceId: taskState.instanceId, effect: { ...eff } };
 
       // Handle random location for rake discounts
@@ -300,9 +345,6 @@ export const isTaskUnlocked = (taskDef) => {
 
   const { type, count, id, amount, credit } = taskDef.unlock;
   switch (type) {
-    case TASK_STATS_TYPE.COST_LT_TOTAL:
-    case TASK_STATS_TYPE.COMPLETED_TASK_COUNT:
-      return getAgentTaskStat(type) >= (amount || count);
     default: return getPlayStatsCount(type) >= (amount || count);
   }
 };
@@ -315,6 +357,10 @@ export const startTask = (taskId) => {
 
   // Check Max Slots and Compatibility
   const agent = store.aiAgent;
+  if (!agent) {
+    sendMessage(MESSAGE_TYPE.SYSTEM, 'System Offline', 'Please boot your AI Agent before starting tasks.', [], 'System', 24 * 60);
+    return false;
+  }
   const planData = agent.model?.price_plan[agent.price_plan_idx] || { slot: ['T1'] };
   const availableSlots = planData.slot;
 

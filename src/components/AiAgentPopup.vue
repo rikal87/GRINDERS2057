@@ -11,17 +11,24 @@
             <div class="agent-header">
               <span class="id-tag">MODEL_ID: {{ selectedModelId }}</span>
               <h3 class="name">{{ selectedModelId }}</h3>
+              <div v-if="isModelLocked" class="level-lock-info">
+                <span class="lock-icon">🔒</span>
+                <span class="lock-text">LEVEL {{ getRequiredLevel(selectedModelId) }} REQUIRED</span>
+              </div>
             </div>
             <!-- <div class="agent-visual">
               <span class="icon">🤖</span>
             </div> -->
-            <div class="agent-info">
+            <div class="agent-info" :class="{ 'is-locked': isModelLocked }">
               <p class="slogan">"{{ AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId]?.slogan }}"</p>
               <div class="features-box">
                 <div class="label">KEY_CAPABILITIES</div>
-                <ul class="features">
+                <ul v-if="!isModelLocked" class="features">
                   <li>{{ AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId]?.key_features }}</li>
                 </ul>
+                <div v-else class="locked-placeholder">
+                  [ DATA ENCRYPTED - INSUFFICIENT CLEARANCE ]
+                </div>
               </div>
             </div>
           </div>
@@ -29,7 +36,7 @@
             :disabled="currentModelIdx === availableModelIds.length - 1">&gt;</button>
         </div>
 
-        <div v-if="selectedModelId" class="plan-selector">
+        <div v-if="selectedModelId && !isModelLocked" class="plan-selector">
           <div class="v4-label">SELECT_SUBSCRIPTION_PLAN</div>
           <div class="plan-grid">
             <div v-for="(plan, idx) in AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId]?.price_plan" :key="idx"
@@ -41,8 +48,11 @@
                 <span class="cost">{{ plan.cost.toLocaleString() }} CR</span>
               </div>
               <div class="plan-stats">
-                <span>LT_MAX: {{ plan.maxLt }}</span>
-                <span>SLOTS: {{ plan.slot.join(', ') }}</span>
+                <div>TOKENS_CAPACITY: <span style="color:var(--neon-cyan)">{{ plan.maxLt.toLocaleString() }}</span>
+                </div>
+                <div>SLOTS:
+                  <span v-for="(slot, idx) in plan.slot" :key="idx" :class="slot">[{{ slot }}]</span>
+                </div>
                 <span v-if="plan.cooldown_bonus" style="color:var(--neon-magenta)">COOLDOWN_BONUS: +{{
                   (plan.cooldown_bonus * 100).toFixed(0) }}%</span>
                 <span v-if="plan.duration_bonus" style="color:var(--neon-yellow)">DURATION_BONUS: +{{
@@ -81,18 +91,31 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const selectedModelId = ref(store.aiAgent.name);
-const selectedPlanIdx = ref(store.aiAgent.price_plan_idx);
+const selectedModelId = ref(store.aiAgent?.name || 'VANGUARD');
+const selectedPlanIdx = ref(store.aiAgent?.price_plan_idx || 0);
 
 watch(() => props.show, (newVal) => {
   if (newVal) {
-    selectedModelId.value = store.aiAgent.name;
-    selectedPlanIdx.value = store.aiAgent.price_plan_idx;
+    selectedModelId.value = store.aiAgent?.name || 'VANGUARD';
+    selectedPlanIdx.value = store.aiAgent?.price_plan_idx || 0;
   }
 });
 
 const availableModelIds = computed(() => Object.keys(AI_AGENT_MODEL_AND_PLAN_DATA));
 const currentModelIdx = computed(() => availableModelIds.value.indexOf(selectedModelId.value));
+
+const getRequiredLevel = (modelId) => {
+  const allIds = Object.keys(AI_AGENT_MODEL_AND_PLAN_DATA);
+  const idx = allIds.indexOf(modelId);
+  if (idx <= 0) return 1;
+  return 1 + (idx * 2);
+};
+
+const isModelLocked = computed(() => {
+  // Current agent is never locked
+  if (store.aiAgent?.name === selectedModelId.value) return false;
+  return store.level < getRequiredLevel(selectedModelId.value);
+});
 
 const nextAgent = () => {
   if (currentModelIdx.value < availableModelIds.value.length - 1) {
@@ -111,11 +134,12 @@ const prevAgent = () => {
 };
 
 const isCurrentPlan = (modelId, idx) => {
-  return store.aiAgent.name === modelId && store.aiAgent.price_plan_idx === idx;
+  return store.aiAgent?.name === modelId && store.aiAgent?.price_plan_idx === idx;
 };
 
 const canPurchase = computed(() => {
   if (selectedPlanIdx.value === null) return false;
+  if (isModelLocked.value) return false;
   const plan = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value]?.price_plan[selectedPlanIdx.value];
   if (!plan) return false;
   if (isCurrentPlan(selectedModelId.value, selectedPlanIdx.value)) return false;
@@ -124,6 +148,7 @@ const canPurchase = computed(() => {
 
 const purchaseBtnText = computed(() => {
   if (!selectedModelId.value) return 'SELECT AGENT';
+  if (isModelLocked.value) return `LEVEL ${getRequiredLevel(selectedModelId.value)} REQUIRED`;
   if (isCurrentPlan(selectedModelId.value, selectedPlanIdx.value)) return 'CURRENT PLAN';
   const plan = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value]?.price_plan[selectedPlanIdx.value];
   if (!plan) return 'N/A';
@@ -136,11 +161,18 @@ const confirmPurchase = () => {
   if (store.bankroll < plan.cost) return;
 
   gainBankroll(-plan.cost, TYPE_CHANGE_BANKROLL.AI_AGENT_SUBSCRIPTION)
-  store.aiAgent.name = selectedModelId.value;
-  store.aiAgent.model = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value];
-  store.aiAgent.price_plan_idx = selectedPlanIdx.value;
-  // Set expiration to 30 days from now
-  store.aiAgent.subscriptionExpireAt = store.gameTime + (30 * 24 * 60 * 60 * 1000);
+  const agentUpdate = {
+    name: selectedModelId.value,
+    model: AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value],
+    price_plan_idx: selectedPlanIdx.value,
+    subscriptionExpireAt: store.gameTime + (30 * 24 * 60 * 60 * 1000)
+  };
+
+  if (!store.aiAgent) {
+    store.aiAgent = agentUpdate;
+  } else {
+    Object.assign(store.aiAgent, agentUpdate);
+  }
 
   audioManager.playSFX('action-confirm');
   emit('close');
@@ -156,5 +188,27 @@ const confirmPurchase = () => {
 /* Override some styles to make sure it looks identical as a modal */
 .v5-modal-overlay {
   z-index: 1000;
+}
+
+.level-lock-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--neon-red);
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+  font-weight: bold;
+}
+
+.agent-info.is-locked {
+  filter: grayscale(1) opacity(0.7);
+}
+
+.locked-placeholder {
+  color: var(--neon-red);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  padding: 1rem 0;
+  text-align: center;
 }
 </style>

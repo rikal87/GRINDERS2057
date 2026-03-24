@@ -1,11 +1,11 @@
 
 import { store } from './store.js';
 import { PLAY_RECORD_STATS_TYPE } from './playRecordStats.js'
-import { TASK_STATS_TYPE } from './constants.js'
 // Task Definitions
 export const TASK_EFFECT_TYPE = {
   XP_BOOST: 'xp_boost',
   ADD_BANKROLL: 'add_bankroll',
+  HAND_HUD_ACTIVE: 'hand_hud_active',
   HUD_ACTIVE: 'hud_active',
   PENALTY_AMOUNT: 'penalty_amount',
   SPAWN_RATE_MUL: 'spawn_rate_mul',
@@ -14,6 +14,9 @@ export const TASK_EFFECT_TYPE = {
   SPAWN: 'spawn',
   PAID_REFUND: 'paid_refund',
   UNLOCK_ZONE: 'unlock_zone',
+  LOW_PROFILE: 'low_profile',
+  IDENTITY_FORGERY: 'identity_forgery',
+  SUSPICION_HUD_ACTIVE: 'suspicion_hud_active',
 };
 export const TASK_ACTION_TYPE = {
   ACCEPT_INVITE: 'ACCEPT_INVITE',
@@ -21,11 +24,90 @@ export const TASK_ACTION_TYPE = {
 // export const UNLOCK_TYPE = {
 //   HANDS_PLAYED: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED,
 //   BUST_ENEMY: PLAY_RECORD_STATS_TYPE.BUST_ENEMY,
-//   COST_LT: TASK_STATS_TYPE.COST_LT_TOTAL,
+//   COST_LT: PLAY_RECORD_STATS_TYPE.COST_LT_TOTAL,
 //   PAID_RAKE: PLAY_RECORD_STATS_TYPE.PAID_RAKE,
 // }
 
 export const AI_TASK_DATA = [
+  {
+    id: 'hand_hud',
+    tier: 1,
+    name_ko: "족보 오버레이",
+    name_en: "Hand Overlay",
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    type: 'AGENT_WORK',
+    desc_ko: `테이블에서 자신이 현재 완성한 족보를 실시간으로 확인 할 수 있는 인터페이스를 활성화 합니다.`,
+    desc_en: `HUD is activated.`,
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    desc_detail_ko: '자신이 현재 완성한 족보가 무엇인지 조차 모르는 초짜들한테 유용합니다!',
+    desc_detail_en: 'Perfect for rookies who can\'t tell a Straight from a Flush. Stop guessing and start grinding.',
+    get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
+    cost: 0,
+    probability: 1,
+    duration: 1 * 24 * 60,
+    cooldown: 0,
+    effect: [{ type: TASK_EFFECT_TYPE.HAND_HUD_ACTIVE, amount: 1 }],
+  },
+  {
+    id: 'suspicion_hud',
+    tier: 3,
+    name_ko: "의심도 오버레이",
+    name_en: "Suspicion Overlay",
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    type: 'AGENT_WORK',
+    desc_ko: `현재 테이블에서의 의심도를 실시간으로 확인 할 수 있는 인터페이스를 활성화 합니다.`,
+    desc_en: `Activates a real-time monitor to track your current suspicion level at the table.`,
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    desc_detail_ko: '그들이 알아차리기 전에 자리를 뜨는게 현명하죠.',
+    desc_detail_en: 'Better to cash out and vanish before the house catches on to your "luck."',
+    get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
+    cost: 0,
+    probability: 1,
+    duration: 1 * 24 * 60,
+    cooldown: 0,
+    effect: [{ type: TASK_EFFECT_TYPE.SUSPICION_HUD_ACTIVE, amount: 1 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.TOTAL_GAIN_SUSPICION, count: 25 },
+  },
+  {
+    id: 'low_profile',
+    tier: 3,
+    name_ko: "익명성",
+    name_en: "Low Profile",
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    type: 'HACKING',
+    desc_ko: `해당 효과가 활성화 되어 있는 동안 생성되는 의심도가 50% 감소합니다.`,
+    desc_en: `While this effect is active, the suspicion generated is reduced by 50%.`,
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    desc_detail_ko: '쥐도 새도 모르게 하세요.',
+    desc_detail_en: 'The best ghost is the one you never knew was there.',
+    get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
+    cost: 15,
+    probability: 0.05,
+    duration: 4 * 60,
+    cooldown: 0,
+    effect: [{ type: TASK_EFFECT_TYPE.LOW_PROFILE, amount: 0.5 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.TOTAL_GAIN_SUSPICION, count: 100 },
+  },
+  {
+    id: 'identity_forgery',
+    tier: 5,
+    name_ko: "신분 위조",
+    name_en: "Identity Forgery",
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    type: 'HACKING',
+    desc_ko: `가장 높은 의심도를 가진 구역의 의심도와 악명를 50% 감소시킵니다.`,
+    desc_en: `Reduces the suspicion and infamy of the area with the highest suspicion level by 50%.`,
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    desc_detail_ko: '필터 챙기는 거 잊지 마시고요.',
+    desc_detail_en: 'Just don\'t forget your filter.',
+    get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
+    cost: 25,
+    probability: 0.03,
+    duration: 60,
+    cooldown: 7 * 24 * 60,
+    effect: [{ type: TASK_EFFECT_TYPE.IDENTITY_FORGERY, amount: 0.5 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.TOTAL_GAIN_SUSPICION, count: 250 },
+  },
   {
     id: 'neighborhood_game',
     tier: 1,
@@ -123,7 +205,7 @@ export const AI_TASK_DATA = [
     duration: 60,
     cooldown: 0,
     effect: [{ type: TASK_EFFECT_TYPE.ADD_BANKROLL, amount: 2500 }],
-    unlock: { type: TASK_STATS_TYPE.COST_LT_TOTAL, amount: 1000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.COST_LT_TOTAL, amount: 1000 }
   },
   {
     id: 'shadow_work_3',
@@ -143,7 +225,7 @@ export const AI_TASK_DATA = [
     duration: 0,
     cooldown: 3 * 24 * 60,
     effect: [{ type: 'add_bankroll', amount: 10000 }, { type: 'penalty_amount', id: 'SECURITY_DETECTION', probability: 0.01, amount: 25000 }],
-    unlock: { type: TASK_STATS_TYPE.COST_LT_TOTAL, amount: 5000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.COST_LT_TOTAL, amount: 5000 }
   },
   {
     id: 'shadow_work_4',
@@ -163,7 +245,7 @@ export const AI_TASK_DATA = [
     duration: 0,
     cooldown: 5 * 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.ADD_BANKROLL, amount: 25000 }, { type: TASK_EFFECT_TYPE.PENALTY_AMOUNT, id: 'SECURITY_DETECTION', probability: 0.03, amount: 25000 }],
-    unlock: { type: TASK_STATS_TYPE.COST_LT_TOTAL, amount: 10000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.COST_LT_TOTAL, amount: 10000 }
   },
   {
     id: 'rake_discount_micro',

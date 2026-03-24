@@ -14,8 +14,8 @@ export function getHandBudget(equity, potSize, philosophy = 'TAG') {
   if (equity >= 0.75) return potSize * 5.0;
   if (equity >= 0.65) return potSize * 3.5;
   if (equity >= 0.50) return potSize * 2.5; // Coinflip+: willing to put in multiple barrels
-  if (equity >= 0.35) return potSize * 1.5; // Marginal: Enough to call a pot-sized bet and defend
-  if (equity >= 0.20) return potSize * 0.6; // Draw/Weak: small/medium investment
+  if (equity >= 0.35) return potSize * 2.0; // Softened from 1.5
+  if (equity >= 0.20) return potSize * 1.0; // Softened from 0.6
   return potSize * 0.25;
 }
 

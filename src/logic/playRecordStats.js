@@ -73,6 +73,9 @@ export const PLAY_RECORD_STATS_TYPE = {
   TOTAL_GAIN_INFAMY: 'total_gain_infamy',
   TOTAL_GAIN_SUSPICION: 'total_gain_suspicion',
   STAMINA_CONSUMED: 'stamina_consumed',
+  COST_LT_TOTAL: 'cost_lt_total',
+  COMPLETED_TASK_COUNT: 'completed_task_count',
+  FAILED_TASK_COUNT: 'failed_task_count',
 }
 export const PLAY_RECORD_STATS_DESC = {
   // Bankroll Types (from TYPE_CHANGE_BANKROLL)
@@ -93,7 +96,18 @@ export const PLAY_RECORD_STATS_DESC = {
   [PLAY_RECORD_STATS_TYPE.ITEM_EFFECT]: { ko: '아이템 효과', en: 'Item Effect' },
   [PLAY_RECORD_STATS_TYPE.BRIBE_DEALER]: { ko: '딜러에게 뇌물', en: 'Dealer Bribe' },
   [PLAY_RECORD_STATS_TYPE.CONTRACT]: { ko: '계약 수익/손실', en: 'Contract Profit/Loss' },
-
+  [PLAY_RECORD_STATS_TYPE.COST_LT_TOTAL]: {
+    'ko': '총 LT 소모량',
+    'en': 'Total LT Spent'
+  },
+  [PLAY_RECORD_STATS_TYPE.COMPLETED_TASK_COUNT]: {
+    'ko': '완료된 작업 수',
+    'en': 'Completed Task Count'
+  },
+  [PLAY_RECORD_STATS_TYPE.FAILED_TASK_COUNT]: {
+    'ko': '실패한 작업 수',
+    'en': 'Failed Task Count'
+  },
   // Gameplay Metrics
   [PLAY_RECORD_STATS_TYPE.LEVEL_REACHED]: { ko: '도달 레벨', en: 'Level Reached' },
   [PLAY_RECORD_STATS_TYPE.PAID_RAKE]: { ko: '지불한 레이크', en: 'Paid Rake' },

@@ -50,10 +50,10 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
     slogan: "Powerful Multi-modal synergy.",
     key_features: "Maximum task concurrency from the start.",
     price_plan: [
-      { cost: 12000 * 1.00, maxLt: 300, slot: ['T1', 'T1'], cooldown_bonus: 0.05 },
-      { cost: 12000 * 1.50, maxLt: 450, slot: ['T2', 'T2', 'T1'], cooldown_bonus: 0.10 },
-      { cost: 12000 * 2.25, maxLt: 550, slot: ['T2', 'T2', 'T1', 'T1'], cooldown_bonus: 0.15 },
-      { cost: 12000 * 3.5, maxLt: 550, slot: ['T3', 'T3', 'T2', 'T2'], cooldown_bonus: 0.20 },
+      { cost: 12000 * 1.00, maxLt: 300, slot: ['T1', 'T1'] },
+      { cost: 12000 * 1.50, maxLt: 450, slot: ['T2', 'T2', 'T1'] },
+      { cost: 12000 * 2.25, maxLt: 550, slot: ['T2', 'T2', 'T1', 'T1'] },
+      { cost: 12000 * 3.5, maxLt: 550, slot: ['T3', 'T3', 'T2', 'T2'] },
     ]
   },
   [AI_AGENT_MODEL_ENUM.LEO]: {
@@ -109,23 +109,23 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
   },
   [AI_AGENT_MODEL_ENUM.CAPRICORN]: {
     slogan: "Eternal persistence.\nFoundation of the Net.",
-    key_features: "The highest Max LT limits in the mid-high range.",
+    key_features: "The highest Max LT limits in the mid-high range and task duration bonus.",
     price_plan: [
-      { cost: 40000 * 1.00, maxLt: 1000, slot: ['T2', 'T2', 'T2'] },
-      { cost: 40000 * 1.50, maxLt: 1500, slot: ['T2', 'T2', 'T2'] },
-      { cost: 40000 * 2.25, maxLt: 1750, slot: ['T3', 'T3', 'T3'] },
-      { cost: 40000 * 3.5, maxLt: 2000, slot: ['T4', 'T4', 'T4'] },
+      { cost: 40000 * 1.00, maxLt: 1000, slot: ['T2', 'T2', 'T2'], duration_bonus: 0.25 },
+      { cost: 40000 * 1.50, maxLt: 1500, slot: ['T2', 'T2', 'T2'], duration_bonus: 0.5 },
+      { cost: 40000 * 2.25, maxLt: 1750, slot: ['T3', 'T3', 'T3'], duration_bonus: 0.75 },
+      { cost: 40000 * 3.5, maxLt: 2000, slot: ['T4', 'T4', 'T4'], duration_bonus: 1.0 },
     ]
   },
   // HIGH TIER
   [AI_AGENT_MODEL_ENUM.AQUARIUS]: {
     slogan: "Deep technical insight.\nVisionary.",
-    key_features: "Can Access to dual elite Slot(T6) and Task duration bonus.",
+    key_features: "Can Access to dual elite Slot(T6) and fast cooldown.",
     price_plan: [
-      { cost: 65000 * 1.00, maxLt: 800, slot: ['T3', 'T3'], duration_bonus: 0.25 },
-      { cost: 65000 * 1.50, maxLt: 800, slot: ['T4', 'T4'], duration_bonus: 0.50 },
-      { cost: 65000 * 2.25, maxLt: 800, slot: ['T5', 'T5'], duration_bonus: 0.75 },
-      { cost: 65000 * 3.5, maxLt: 800, slot: ['T6', 'T6'], duration_bonus: 1.0 },
+      { cost: 65000 * 1.00, maxLt: 800, slot: ['T3', 'T3'], cooldown_bonus: 0.15 },
+      { cost: 65000 * 1.50, maxLt: 800, slot: ['T4', 'T4'], cooldown_bonus: 0.3 },
+      { cost: 65000 * 2.25, maxLt: 800, slot: ['T5', 'T5'], cooldown_bonus: 0.45 },
+      { cost: 65000 * 3.5, maxLt: 800, slot: ['T6', 'T6'], cooldown_bonus: 0.6 },
     ]
   },
   [AI_AGENT_MODEL_ENUM.PISCES]: {
@@ -144,7 +144,7 @@ export const AI_AGENT_MODEL_AND_PLAN_DATA = {
     key_features: "Ultimate everything. If you have this, you own the Net.",
     isHidden: true,
     price_plan: [
-      { cost: 500000, maxLt: 2000, slot: ['T6', 'T6', 'T6', 'T6'], probability_bonus: 0.03, lt_regen_bonus_rate: 1.0, duration_bonus: 0.5, cooldown_bonus: 0.15 }
+      { cost: 500000, maxLt: 2000, slot: ['T6', 'T6', 'T6', 'T6'], probability_bonus: 0.03, lt_regen_bonus_rate: 2.0, duration_bonus: 0.5, cooldown_bonus: 0.5 }
     ]
   }
 };

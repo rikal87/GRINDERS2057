@@ -35,7 +35,8 @@ export function getPostflopAction(context) {
   }
 
   if (category === 'STRONG' && player.handState?.facedRaise && isDangerousBoard) {
-    category = 'GOOD'; // Further downgrade if facing a raise
+    // [v29] Removed Redundant Downgrade: Penalties already handle danger.
+    // category = 'GOOD'; 
   }
 
   // 2. Equity & Budgeting
@@ -49,15 +50,28 @@ export function getPostflopAction(context) {
     baseEquity = (baseEquity * 0.7) + (rawEquity * 0.3);
   }
 
+  // [v29] Draw Equity Realization (v5 Refinement)
+  let drawBonus = 0;
+  if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.65;
+  else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.45;
+  else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.15;
+
+  // Scale draw bonus by streets left (Flop = 100%, Turn = 50%)
+  const streetsLeft = street === 'FLOP' ? 2 : (street === 'TURN' ? 1 : 0);
+  drawBonus *= (streetsLeft / 2);
+
+  // Blend Draw Bonus with Base Equity
+  baseEquity = Math.max(baseEquity, drawBonus);
+
   let penalty = 0;
 
-  // [v11] Board Risk Penalties
-  if (boardAnalysis.flushDanger === 'HIGH') penalty += 0.25;
-  else if (boardAnalysis.flushDanger === 'MED') penalty += 0.12;
+  // [v11] Board Risk Penalties (v29 Refined)
+  if (boardAnalysis.flushDanger === 'HIGH') penalty += 0.15;
+  else if (boardAnalysis.flushDanger === 'MED') penalty += 0.07;
 
   // [v22] Straight Awareness
-  if (boardAnalysis.straightDanger === 'HIGH') penalty += 0.15;
-  else if (boardAnalysis.straightDanger === 'MED') penalty += 0.07;
+  if (boardAnalysis.straightDanger === 'HIGH') penalty += 0.10;
+  else if (boardAnalysis.straightDanger === 'MED') penalty += 0.05;
 
   if (boardAnalysis.isDowngraded) penalty += 0.08;
 
@@ -76,19 +90,25 @@ export function getPostflopAction(context) {
 
     // A. Counterfeit (Paired Board)
     if (boardAnalysis.isPaired && myPairRank < boardAnalysis.maxBoardRank) {
-      penalty += 0.22;
+      penalty += 0.12; // Softened from 0.22
     }
 
     // B. Overcard Presence (Hard Overcard Penalty)
     // If board has any card higher than our pocket pair, we are likely second best.
     if (boardAnalysis.maxBoardRank > myPairRank) {
-      penalty += 0.35; // Severe penalty for KK on A-high board (Hand #276)
+      // [v29] Refined: Panic only if 2+ overcards OR an Ace is present.
+      const overcards = boardAnalysis.ranks.filter(r => r > myPairRank).length;
+      if (overcards >= 2 || boardAnalysis.ranks.includes(12)) {
+        penalty += 0.20;
+      } else {
+        penalty += 0.08; // Single non-Ace overcard is common/tolerable.
+      }
     }
   }
 
   // [v23] Nit (Rock) Exploitation - Overfold to their raises
   if (villain.isNit && player.handState?.facedRaise && category !== 'NUTS') {
-    penalty += 0.20; // Massive penalty for playing back against a rock
+    penalty += 0.10; // Softened from 0.20
   }
 
   // [v20] Applied Range Interaction Penalty from Tool
@@ -100,7 +120,7 @@ export function getPostflopAction(context) {
   // but it increases the 'price' (required equity) to stay in.
   let aggressionPressure = 0;
   if ((currentStreetRaises >= 1 || player.handState?.facedRaise) && category !== 'NUTS') {
-    aggressionPressure = (currentStreetRaises || 1) * 0.08; // Reduced from 0.10
+    aggressionPressure = (currentStreetRaises || 1) * 0.05; // Reduced from 0.08
 
     if (['MONSTER', 'STRONG'].includes(category) && (potType === '3BET_POT' || potType === '4BET_POT')) {
       aggressionPressure *= 0.5;
@@ -111,7 +131,7 @@ export function getPostflopAction(context) {
   // We reduce penalties by 50% on the river because RIO (Reverse Implied Odds) no longer exists.
   if (street === 'RIVER') penalty *= 0.5;
 
-  const estimatedEquity = Math.max(0.05, baseEquity - penalty);
+  const estimatedEquity = Math.max(0.12, baseEquity - penalty);
 
   // [v25] Personality-based Aggression Scale
   const philosophy = player.class?.philosophy || 'TAG';
@@ -128,7 +148,7 @@ export function getPostflopAction(context) {
 
   if (!['NUTS', 'MONSTER'].includes(category)) {
     if (currentStreetRaises >= 2) scaleFactor = 0.45; // Extreme discount for non-premiums under heavy fire
-    else if (currentStreetRaises === 1) scaleFactor = 0.85;
+    else if (currentStreetRaises === 1) scaleFactor = 0.92; // Increased from 0.85
 
     // [v19] Range Condensation (Action Memory): 
     // If this is a 3-Bet/4-Bet pot, the opponent's range is already very narrow.
@@ -152,16 +172,19 @@ export function getPostflopAction(context) {
   let isBluffCatchSituation = false;
 
   if (street === 'RIVER' && !isCheckable) {
-    // [v28] Dynamic River Bluff Prob (AF-scaled)
-    // Passive (AF < 1) -> Low bluff prob (~0.1)
-    // Aggro (AF > 3) -> High bluff prob (~0.3)
-    let riverBluffProb = 0.10 + Math.max(0, (villain.af - 1) * 0.1);
-    
-    if (boardAnalysis.isPaired) riverBluffProb += 0.10; // Slightly reduced from 0.15
-    if (philosophy === 'LAG') riverBluffProb += 0.05;
+    // [v29] Dynamic River Bluff Prob (Refined v4)
+    let baseBluffProb = 0.05;
+    if (potType === '3BET_POT') baseBluffProb = 0.02;
+    else if (['4BET_POT', '5BET_POT'].includes(potType)) baseBluffProb = 0.00;
 
-    // Cap at 0.35 to prevent insane bluff-catching with air
-    riverBluffProb = Math.min(0.35, riverBluffProb);
+    let riverBluffProb = baseBluffProb + Math.max(0, (villain.af - 2) * 0.07);
+    
+    if (boardAnalysis.isWet) riverBluffProb += 0.05;
+    if (boardAnalysis.isDry) riverBluffProb -= 0.05;
+    if (boardAnalysis.isPaired) riverBluffProb += 0.05;
+
+    // Cap at 0.20 to prevent over-optimistic calls in narrow range spots
+    riverBluffProb = Math.max(0, Math.min(0.20, riverBluffProb));
 
     // Eligible Bluff Catchers: WEAK pairs, MARGINAL pairs, GOOD, STRONG, A-High, or K-High
     // [MOD] Tightened: WEAK hands on paired boards are no longer eligible if they are just board-play.
@@ -203,17 +226,17 @@ export function getPostflopAction(context) {
   // [v2.2] Adjusted Required Equity: Pot Odds + Aggression Pressure
   const potOdds = callAmount / (potSize + callAmount);
   const requiredEquity = Math.min(0.85, potOdds + aggressionPressure);
-  const isOOP = !hasInitiative;
+  const isOOP = !context.hasPosition;
 
   // [v11/v25] Donk-bet Prevention (Tightened)
   if (isOOP && isCheckable && (potType !== 'SRP' || street === 'FLOP')) {
     // [v28] Weakness-based Initiative Recovery
     const isVillainWeak = villain.weaknessLevel >= 0.4;
-    let leadThreshold = (category === 'NUTS') ? 0.75 : 0.95;
-    
+    let leadThreshold = (['NUTS', 'MONSTER', 'STRONG'].includes(category)) ? 0.35 : 0.82;
+
     // Lower threshold when Villain is weak or it's the River
-    if (isVillainWeak) leadThreshold = 0.5;
-    else if (street === 'RIVER') leadThreshold = 0.82;
+    if (isVillainWeak) leadThreshold = 0.4;
+    else if (street === 'RIVER') leadThreshold = 0.5;
 
     if (finalEquity < leadThreshold) {
       return { action: 'check', insight: extraInsight + `OOP Defense - Respecting ${potType} Initiative` };
@@ -409,8 +432,8 @@ export function getPostflopAction(context) {
   }
 
   // Defensive Call/Check
-  // [MOD] Hard-Tighten Flop Buffer (+0.12) - Raising Flop Fold Rate to target 20-30%
-  const callThreshold = (street === 'FLOP') ? (requiredEquity + 0.12) : requiredEquity;
+  // [MOD] Hard-Tighten Flop Buffer (+0.05) - Softened from +0.12 to lower fold rate
+  const callThreshold = (street === 'FLOP') ? (requiredEquity + 0.05) : requiredEquity;
 
   if (effectiveEquity >= callThreshold) {
     if (isOverBudget && !isPremium && !isCommitted) {

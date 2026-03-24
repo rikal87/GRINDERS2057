@@ -521,14 +521,6 @@ code {
   .game-container {
     max-width: 1600px;
   }
-  :root {
-    /* 
-       Base: 1rem = 18px at 1440p (QHD height).
-       Scaling factor: 18 / 1440 = 0.0125 (1.25vh).
-       This ensures FHD (1080p) renders at ~13.5px, perfectly proportional.
-    */
-    /* font-size: 1.25vh; */
-  }
   .glitch-text {
     font-size: 3.5rem;
     /* Will scale with root font-size */
@@ -709,6 +701,18 @@ main {
   box-shadow: 0 0 10px var(--neon-magenta);
 }
 
+.setting-item button.is-on {
+  background: rgba(248, 239, 0, 0.2);
+  border-left-color: var(--neon-yellow);
+  color: var(--neon-yellow);
+}
+
+.setting-item button.is-on:hover {
+  background: var(--neon-yellow);
+  color: #000;
+  box-shadow: 0 0 10px var(--neon-yellow);
+}
+
 .btn-danger {
   background: var(--neon-magenta) !important;
   border-left: 2px solid #fff !important;
@@ -718,7 +722,6 @@ main {
   box-shadow: 0 0 15px var(--neon-magenta) !important;
   filter: brightness(1.2);
 }
-.warn {}
 .btn-close {
   margin-top: 2rem;
   background: transparent;

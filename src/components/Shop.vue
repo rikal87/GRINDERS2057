@@ -194,12 +194,6 @@ const formatTime = (ms) => {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
 };
 
-const isHighTier = (item) => {
-  if (!item || !item.tier) return false;
-  const t = parseInt(item.tier.replace('T', ''));
-  return t >= 4;
-};
-
 const buyItem = (item, idx) => {
   if (store.bankroll >= item.price) {
     gainBankroll(-item.price, TYPE_CHANGE_BANKROLL.BUY_ITEM)

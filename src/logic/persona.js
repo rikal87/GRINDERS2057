@@ -114,7 +114,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'broke',
-    name: 'Broke', philosophy: 'TAP', vPIP: .38, AF: 3, WTSD: .5, chipMultiply: 0.5, isAdvanced: false,
+    name: 'Broke', philosophy: 'LAG', vPIP: .33, AF: 3, WTSD: .45, chipMultiply: 0.5, isAdvanced: false,
     note_ko: '내일이 없는 친구입니다. 리버에 기적이 일어나길 빌며 모든 걸 걸었다가, 결국 오늘도 빈털터리로 돌아갑니다',
     note_en: 'He is a friend with no tomorrow. He bets everything hoping for a miracle on the river, only to end up broke again today.',
 
@@ -176,21 +176,19 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'the_whale',
-    name: 'The_Whale', philosophy: 'LAP', vPIP: .70, AF: 2, WTSD: .75, chipMultiply: 8, isAdvanced: true,
+    name: 'The_Whale', philosophy: 'LAP', vPIP: .5, AF: 3, WTSD: .5, chipMultiply: 8, isAdvanced: true,
     note_ko: '숫자 놀음에는 관심 없는 도시의 거물입니다. 판돈이 수십 배로 불어나도 눈 하나 깜짝하지 않으며, 오히려 상대를 파산시키는 과정 자체를 유흥으로 즐기는 진정한 포식자입니다.',
     note_en: 'A high-stakes mogul who treats millions like pocket change. He doesn\'t play the cards; he plays the adrenaline. To him, losing a fortune is just the entry fee for a good laugh.',
-
   },
   {
     id: 'old_lion',
-    name: 'Old_Lion', philosophy: 'TAG', vPIP: .25, AF: 2.5, WTSD: .27, chipMultiply: 1.5, isAdvanced: true,
+    name: 'Old_Lion', philosophy: 'TAG', vPIP: .25, AF: 2.5, WTSD: .25, chipMultiply: 1.5, isAdvanced: true,
     note_ko: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.',
     note_en: 'His prime has passed, but he is still a sharp veteran. If he has entered the game, it means he has already laid all the traps, so don\'t mess with him carelessly.',
-
   },
   {
     id: 'shark',
-    name: 'Shark', philosophy: 'TAG', vPIP: .27, AF: 3, WTSD: .27, chipMultiply: 1.5, isAdvanced: true, isBoss: true,
+    name: 'Shark', philosophy: 'TAG', vPIP: .22, AF: 3.5, WTSD: .25, chipMultiply: 1.5, isAdvanced: true, isBoss: true,
     note_ko: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.',
     note_en: 'The most frightening thing is not his hand, but his patience.',
 

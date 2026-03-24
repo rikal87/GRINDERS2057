@@ -1,6 +1,6 @@
 // for first player
 import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_RESOLVE_TYPE } from "./messageSystem.js";
-import { store, registerCompletedEvent, getLanguage, getCurrentBankroll } from "./store.js";
+import { store, registerCompletedEvent, getLanguage, getCurrentBankroll, getCurrentLevel } from "./store.js";
 import { gainRelationship, leavePartner, getRelationship, gainPartnerBankroll, getPartner, joinPartner, isJoinedPartner } from "./partnerSystem.js";
 import { scheduleEvent } from "./eventSystem.js";
 import { recoverStamina } from "./staminaSystem.js";
@@ -69,6 +69,13 @@ import { PARTNER_ID, LOCATION_ID, ENEMY_ID } from './constants.js'
  * @property {string} PLAYER_ELIMINATED
  * @property {string} WIN_MAX
  * @property {string} WIN_PLAYER
+ * @property {string} HOW_TO_USE_AI_AGENT_1
+ * @property {string} HOW_TO_USE_AI_AGENT_2
+ * @property {string} HOW_TO_USE_AI_AGENT_3
+ * @property {string} HOW_TO_USE_AI_AGENT_4
+ * @property {string} HOW_TO_USE_AI_AGENT_5
+ * @property {string} HOW_TO_USE_AI_AGENT_6
+ * @property {string} HOW_TO_USE_AI_AGENT_7
  */
 /** @type {MaxEvents} */
 export const EVENT_MAX = new Proxy({}, {
@@ -77,6 +84,116 @@ export const EVENT_MAX = new Proxy({}, {
 const SENDER_EN = 'Max';
 const SENDER_KO = '맥스';
 export const EventData = [
+  {
+    id: EVENT_MAX.HOW_TO_USE_AI_AGENT_1,
+    scenario: '맥스가 유휴 상태인 AI 에이전트 단말기의 기초 활용법을 알려줍니다.',
+    title_ko: '어이 친구, 그 깡통 단말기 말이야',
+    title_en: 'Hey, about that tin can terminal...',
+    body_ko: '그 방구석에 처박아둔 깡통 단말기 말이야. 난 기계 쪼가리한테 내 카드를 맡기는 건 딱 질색이지만, 굳이 먼지만 쌓이게 둘 필요는 없잖아? 일단 전원 버튼이라도 좀 눌러둬.',
+    body_en: 'About that tin can terminal you\'ve got gathering dust. I despise leaving my cards to some machine, but there\'s no reason to let it sit idle. At least hit the power button for once.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    timer: 30,
+    condition() {
+      return getCurrentLevel() >= 2;
+    },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+      scheduleEvent(EVENT_MAX.HOW_TO_USE_AI_AGENT_2, 1);
+    },
+  },
+  {
+    id: EVENT_MAX.HOW_TO_USE_AI_AGENT_2,
+    scenario: '맥스가 정부에서 모든 시민에게 무료로 제공되는 뱅가드(Vanguard) AI에 대해 마치 무료 배급소에 비유하듯 반감을 들어냅니다.',
+    title_ko: '전원을 켰으면 그...',
+    title_en: 'Once it\'s on...',
+    body_ko: '정부가 배급소 빵 퍼주듯이 공짜로 제공하는 뱅가드(Vanguard) AI라도 써먹어보라고. 난 그딴 "공짜 점심"은 질색이지만.',
+    body_en: 'You might as well use that Vanguard AI the government hands out like a damn soup kitchen. I usually steer clear of "free lunches".',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+      scheduleEvent(EVENT_MAX.HOW_TO_USE_AI_AGENT_3, 1);
+    },
+  },
+  {
+    id: EVENT_MAX.HOW_TO_USE_AI_AGENT_3,
+    scenario: '맥스가 얼마전에 주위사람에게 들은 섀도 워크(Shadow Work) 기능에 대해 언급합니다.',
+    title_ko: '근데 말이야',
+    title_en: 'But listen',
+    body_ko: '얼마 전에 들은 얘긴데, 그 깡통을 서브넷 뒷골목에 던져놓으면 알아서 푼돈을 벌어오게 할 수도 있다더군. 이른바 "섀도 워크(Shadow Work)"라고 부르는 모양인데... 매 시간마다 운만 좋으면 크레딧을 쏠쏠하게 물어온다나 봐.',
+    body_en: 'I heard something interesting lately. You can toss that tin can into the sub-net back-alleys and have it scavenge for loose change. They call it "Shadow Work," or something like that... word is they drag back some Credits every hour if luck\'s on your side.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    label_ko: '그게 뭐야?',
+    label_en: 'What is that?',
+    get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body, [{
+        label: this.label,
+        actionType: MESSAGE_ACTION_TYPE.INTERACT,
+        payload: {
+          resolveType: MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT,
+          nextEvent: EVENT_MAX.HOW_TO_USE_AI_AGENT_4,
+        }
+      }], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
+    },
+  },
+  {
+    id: EVENT_MAX.HOW_TO_USE_AI_AGENT_4,
+    scenario: '맥스가 섀도 워크의 위험성과 이점을 설명하며 튜토리얼을 마무리합니다.',
+    title_ko: '어디 한번 굴려보라고!',
+    title_en: 'Give it a Spin!',
+    body_ko: '듣기로는 토큰(LT) 소모가 장난 아니게 심하긴 하다던데, 그래도 가끔 크레딧을 물어오면 꽤 쏠쏠할 거야. 주머니 사정이 안 좋을 때 집에서 한번 굴려보는 것도 나쁘지 않겠지. 나중에 맥주나 한 잔 사라고, 알았냐?',
+    body_en: 'I hear they burn through LT like crazy, but if they drag back some Credits now and then, it\'s damn well worth it. If your pockets are feeling light, try setting it up at your home terminal. You owe me a beer if it pays off, alright?',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+      scheduleEvent(EVENT_MAX.HOW_TO_USE_AI_AGENT_5, 15);
+    },
+  },
+  {
+    id: EVENT_MAX.HOW_TO_USE_AI_AGENT_5,
+    scenario: '맥스와 나눈 대화를 기반으로 시스템 추가 안내를 내보냅니다.',
+    title_ko: 'AI 에이전트 사용자 매뉴얼 1',
+    title_en: 'AI Agent User Manual 1',
+    body_ko: '2057년의 그라인더에게 AI 에이전트는 생존의 필수 요소입니다. 먼저 거주 구역(Habitat) 좌측의 단말기를 확인하십시오. 테스크 슬롯에 활성화된 [족보 오버레이]를 길게 눌러 해당 작업을 제거할 수 있습니다.',
+    body_en: 'In 2057, an AI Agent is essential for survival. Check the terminal on the left side of your Habitat. Long-press the active [Hand Overlay] in the task slot to remove it.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body)
+      scheduleEvent(EVENT_MAX.HOW_TO_USE_AI_AGENT_6, 25);
+    },
+  },
+  {
+    id: EVENT_MAX.HOW_TO_USE_AI_AGENT_6,
+    scenario: '맥스와 나눈 대화를 기반으로 시스템 추가 안내를 내보냅니다.2',
+    title_ko: 'AI 에이전트 사용자 매뉴얼 2',
+    title_en: 'AI Agent User Manual 2',
+    body_ko: '슬롯이 비워졌다면, 해당 빈 슬롯을 클릭하여 태스크 목록을 엽니다. 목록에서 [섀도 워크(Shadow Work)]를 선택하여 새로운 작업을 할당하십시오.',
+    body_en: 'Once the slot is empty, click it to open the task selection menu. Select [Sub-net Shadow Work] from the list to assign it.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body)
+      scheduleEvent(EVENT_MAX.HOW_TO_USE_AI_AGENT_7, 25);
+    },
+  },
+  {
+    id: EVENT_MAX.HOW_TO_USE_AI_AGENT_7,
+    scenario: '맥스와 나눈 대화를 기반으로 시스템 추가 안내를 내보냅니다.3',
+    title_ko: 'AI 에이전트 사용자 매뉴얼 3',
+    title_en: 'AI Agent User Manual 3',
+    body_ko: '모든 에이전트 작업은 LT(Lodus Token)를 소모합니다. 작업 중 LT가 고갈되면 현재 진행 중인 태스크가 즉시 취소되니 주의하십시오. LT는 시간이 흐름에 따라 서서히 충전됩니다.',
+    body_en: 'All agent tasks consume LT (Lodus Token). If you run out of LT during a task, the process will be canceled immediately. LT will naturally recharge over time.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.TUTORIAL, this.title, this.body)
+    },
+  },
   {
     id: EVENT_MAX.WIN_MAX,
     scenario: '플레이어와 맥스가 승리시(MAX CHIP > PLAYER)',

@@ -24,9 +24,9 @@ export function analyzeBoard(context) {
 
   // Straight Danger Level
   let straightDanger = 'LOW';
-  if (base.connectedness >= 4) straightDanger = 'HIGH'; // 4+ to a straight
-  else if (base.connectedness === 3 && highCardCount >= 2) straightDanger = 'MED'; // 3 to a straight on high board
-  else if (base.connectedness === 3) straightDanger = 'LOW';
+  if (base.maxConnectivity >= 4) straightDanger = 'HIGH'; // 4+ to a straight
+  else if (base.maxConnectivity === 3 && highCardCount >= 2) straightDanger = 'MED'; // 3 to a straight on high board
+  else if (base.maxConnectivity === 3) straightDanger = 'LOW';
 
   // Downgrade Check: Is there an overcard on the current street?
   const ranksStr = '23456789TJQKA';

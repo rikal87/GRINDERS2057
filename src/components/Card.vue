@@ -67,16 +67,16 @@ const suitIcon = computed(() => {
 }
 
 .poker-card.red {
-  color: #ff003c;
+  color: #ff003c !important;
 }
 .poker-card.blue {
-  color: #0070ff;
+  color: #0070ff !important;
 }
 .poker-card.green {
-  color: #00b341;
+  color: #00b341 !important;
 }
 .poker-card.black {
-  color: #000;
+  color: #000 !important;
 }
 
 .poker-card.hidden {

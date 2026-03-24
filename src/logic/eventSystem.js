@@ -9,6 +9,8 @@ import { isJoinedPartner } from './partnerSystem.js'
 import { CONTRACT_SIGN_PREVENT_REASON, CONTRACT_SIGN_PREVENT_REASON_DESC } from './partnerContractSystem.js'
 import { getCurrentBankroll } from './store.js'
 import { MESSAGE_ACTION_RESOLVE_TYPE } from './messageSystem.js'
+import { UNLOCK_RULES } from "./achievementManager.js";
+import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 const pay_rent_bill = 5000;
 
 export const EVENT_ID = {
@@ -31,7 +33,23 @@ export const EVENT_ID = {
   SYSTEM_PARTNER_BAILOUT_FOR_PLAYER: 'SYSTEM_PARTNER_BAILOUT_FOR_PLAYER',
   SYSTEM_PLAYER_BAILOUT_FOR_PARTNER: 'SYSTEM_PLAYER_BAILOUT_FOR_PARTNER',
   CONTRACT_SIGN_PREVENT_REASON: CONTRACT_SIGN_PREVENT_REASON,
-  PRE_BUILD_UP_KBT_BROKER_MEET: 'PRE_BUILD_UP_KBT_BROKER_MEET'
+  PRE_BUILD_UP_KBT_BROKER_MEET: 'PRE_BUILD_UP_KBT_BROKER_MEET',
+  UNLOCK_AGENT_GENERAL: 'UNLOCK_AGENT_GENERAL',
+  UNLOCK_AGENT: {
+    ARIES: 'ARIES',
+    TAURUS: 'TAURUS',
+    GEMINI: 'GEMINI',
+    CANCER: 'CANCER',
+    LEO: 'LEO',
+    VIRGO: 'VIRGO',
+    LIBRA: 'LIBRA',
+    SCORPIO: 'SCORPIO',
+    SAGITTARIUS: 'SAGITTARIUS',
+    CAPRICORN: 'CAPRICORN',
+    AQUARIUS: 'AQUARIUS',
+    PISCES: 'PISCES',
+    ZODIAC: 'ZODIAC',
+  }
 };
 
 const handleGameOver = async (reason) => {
@@ -46,6 +64,27 @@ const handleGameOver = async (reason) => {
 export const EventData = [
   ...FlorenceEventData,
   ...MaxEventData,
+  // AI Agent Unlock Events (Generated via Template)
+  ...Object.keys(AI_AGENT_MODEL_ENUM)
+    .filter(key => AI_AGENT_MODEL_ENUM[key] !== AI_AGENT_MODEL_ENUM.VANGUARD) // Skip Vanguard
+    .map((key, index) => {
+      const modelId = AI_AGENT_MODEL_ENUM[key];
+      const unlockLevel = 3 + (index * 2); // 3, 5, 7...
+      return {
+        id: `UNLOCK_AGENT_${modelId}`,
+        title_ko: `새로운 AI 에이전트 잠금 해제: ${modelId}`,
+        title_en: `New AI Agent Unlocked: ${modelId}`,
+        body_ko: `당신의 레벨이 ${unlockLevel}에 도달하여 새로운 AI 에이전트 [${modelId}]를 이용할 수 있게 되었습니다. 거주구역 단말기에서 확인해보세요.`,
+        body_en: `Your level has reached ${unlockLevel}. A new AI agent [${modelId}] is now available. Check it out at the habitat terminal.`,
+        get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+        get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+        condition() { return store.level >= unlockLevel; },
+        func() {
+          sendMessage(MESSAGE_TYPE.REWARD, this.title, this.body);
+        },
+        repeatable: false
+      };
+    }),
   {
     id: EVENT_MAX.PRE_BUILD_UP_KBT_BROKER_MEET,
     title_ko: '진짜 큰 판으로의 초대',
@@ -388,7 +427,7 @@ export const processEvents = () => {
     if (event.condition === undefined || event.condition()) {
       // 이미 큐(pendingEvents)에 대기 중이면 무시 (중복 방지)
       if (store.pendingEvents.some(e => e.id === event.id)) return;
-      
+
       scheduleEvent(event.id, event.timer);
     }
   });
@@ -428,7 +467,7 @@ export const processEvents = () => {
 
         console.info(`[EVENT] Triggering '${pending.id}'`);
         eventDef.func(pending.payload);
-        
+
         if (!eventDef.repeatable) {
           store.completedEvents.push(pending.id);
         } else if (eventDef.timer !== undefined) {

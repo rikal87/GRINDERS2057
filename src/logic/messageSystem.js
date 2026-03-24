@@ -24,6 +24,8 @@ export const MESSAGE_ACTION_TYPE = {
   DEBT_REPAYMENT: 'DEBT_REPAYMENT',
   PAY_INCOME_TAX: 'PAY_INCOME_TAX',
   ACCEPT_INVITE: 'ACCEPT_INVITE',
+  INTERACT: 'INTERACT',
+  DELETE_MESSAGE: 'DELETE_MESSAGE',
 }
 export const MESSAGE_ACTION_LABEL_TYPE = {
   PAY: 'PAY',
@@ -198,7 +200,14 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
         }));
       }
       break;
-    case 'DELETE_MESSAGE':
+    case MESSAGE_ACTION_TYPE.INTERACT:
+      if (action.payload.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT) {
+        scheduleEvent(action.payload.nextEvent, 5 + Math.random() * 12);
+      } else if (action.payload.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.REFUSE) {
+        scheduleEvent(action.payload.nextEvent, 5 + Math.random() * 12);
+      }
+      break;
+    case MESSAGE_ACTION_TYPE.DELETE_MESSAGE:
       // audioManager.playSFX('notification');
       deleteMessage(msgId);
       break;

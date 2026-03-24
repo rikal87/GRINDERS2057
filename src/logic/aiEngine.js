@@ -290,15 +290,16 @@ function getHeuristicFallback(player, engine) {
   if (alivePlayers > 2) {
     const multiWayFactor = (street === 'PREFLOP') ? 0.02 : 0.05;
     requiredEquity += (alivePlayers - 2) * multiWayFactor;
+    raiseEquityThreshold += (alivePlayers - 2) * multiWayFactor;
   }
   // Global adjustments
   // raiseEquityThreshold += (2 - AF) * (street === 'PREFLOP' ? 0.1 : 0.05);
   let requiredEquityPenalty = (raises - 1) * 0.1;
-  let raisePenalty = Math.pow(1.15, raises) - 1;
+  let raisePenalty = Math.pow(1.12, raises) - 1;
   const spr = pot > 0 ? (player.chips / pot) : 20;
   if (street === 'PREFLOP') {
   } else {
-    requiredEquityPenalty += (3 - streetsLeft) * (pfIntensity * 0.05)
+    requiredEquityPenalty += (2 - streetsLeft) * (pfIntensity * 0.05)
     if (spr < 1.5) {
       requiredEquityPenalty *= 0.5;
     } else if (isAdvanced && spr > 10) {
@@ -307,8 +308,8 @@ function getHeuristicFallback(player, engine) {
     }
   }
   raiseEquityThreshold += raisePenalty + (pfIntensity * 0.05);
-  const boost = street === 'PREFLOP' ? vPIP : wtsd;
-  requiredEquity += requiredEquityPenalty + (0.25 - boost);
+  const boost = (street === 'PREFLOP' ? vPIP : wtsd) / 2;
+  requiredEquity += requiredEquityPenalty + (0.1 - boost);
 
   const boardAnalysis = analyzeBoardTexture(engine.board);
   if (isAdvanced) {

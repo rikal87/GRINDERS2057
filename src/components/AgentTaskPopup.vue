@@ -97,175 +97,19 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { store, getLanguage, getEnemyBustCount, getPlayStatsCount, getAgentTaskStat } from '../logic/store';
+import { store, getLanguage, getEnemyBustCount, getPlayStatsCount } from '../logic/store';
 import { AI_TASK_DATA, } from '../logic/aiAgentTaskData';
 import { isTaskUnlocked, startTask } from '../logic/aiAgentTaskSystem';
 import { audioManager } from '../logic/audioManager';
-import { TASK_STATS_TYPE } from '../logic/constants';
 import { PLAY_RECORD_STATS_TYPE, PLAY_RECORD_STATS_DESC } from '../logic/playRecordStats';
 
-const PLAY_RECORD_STATS_TYPE_DESC = {
-  PAID_RAKE: {
-    'ko': '레이크 지불',
-    'en': 'Paid Rake'
-  },
-  HANDS_PLAYED: {
-    'ko': '핸드 수',
-    'en': 'Hands Played'
-  },
-  FACED_RAISE: {
-    'ko': '레이즈 당함',
-    'en': 'Faced Raise'
-  },
-  FACED_3BET: {
-    'ko': '3벳 당함',
-    'en': 'Faced 3Bet'
-  },
-  FACED_4BET_OR_MORE: {
-    'ko': '4벳 이상 당함',
-    'en': 'Faced 4Bet or More'
-  },
-  FOLDED_TO_RAISE: {
-    'ko': '레이즈에 폴드',
-    'en': 'Folded to Raise'
-  },
-  FOLDED_TO_3BET: {
-    'ko': '3벳에 폴드',
-    'en': 'Folded to 3Bet'
-  },
-  FOLDED_TO_4BET_OR_MORE: {
-    'ko': '4벳 이상에 폴드',
-    'en': 'Folded to 4Bet or More'
-  },
-  BET: {
-    'ko': '벳',
-    'en': 'Bet'
-  },
-  RAISE: {
-    'ko': '레이즈',
-    'en': 'Raise'
-  },
-  CALL: {
-    'ko': '콜',
-    'en': 'Call'
-  },
-  FOLD: {
-    'ko': '폴드',
-    'en': 'Fold'
-  },
-  CHECK: {
-    'ko': '체크',
-    'en': 'Check'
-  },
-  ALL_IN: {
-    'ko': '올인',
-    'en': 'All In'
-  },
-  _3BET: {
-    'ko': '3벳',
-    'en': '3Bet'
-  },
-  _4BET_OR_MORE: {
-    'ko': '4벳 이상',
-    'en': '4Bet or More'
-  },
-  SHOWDOWN: {
-    'ko': '쇼다운',
-    'en': 'Showdown'
-  },
-  WIN: {
-    'ko': '승리',
-    'en': 'Win'
-  },
-  LOSE: {
-    'ko': '패배',
-    'en': 'Lose'
-  },
-  BUST: {
-    'ko': '파산',
-    'en': 'Bankrupt'
-  },
-  VPIP: {
-    'ko': 'VPIP',
-    'en': 'VPIP'
-  },
-  PFR: {
-    'ko': 'PFR',
-    'en': 'PFR'
-  },
-  WTSD: {
-    'ko': 'WTSD',
-    'en': 'WTSD'
-  },
-  WSD: {
-    'ko': 'WSD',
-    'en': 'WSD'
-  },
-  W$SD: {
-    'ko': 'W$SD',
-    'en': 'W$SD'
-  },
-  MAX_LOSE_STREAK: {
-    'ko': '최대 연속 패배',
-    'en': 'Max Lose Streak'
-  },
-  MAX_WIN_STREAK: {
-    'ko': '최대 연속 승리',
-    'en': 'Max Win Streak'
-  },
-  MAX_LOSE_POT: {
-    'ko': '최대 패배 팟',
-    'en': 'Max Lose Pot'
-  },
-  MAX_WIN_POT: {
-    'ko': '최대 승리 팟',
-    'en': 'Max Win Pot'
-  },
-  MAX_LOSE_EQUITY: {
-    'ko': '최대 패배 에퀴티',
-    'en': 'Max Lose Equity'
-  },
-  MAX_WIN_EQUITY: {
-    'ko': '최대 승리 에퀴티',
-    'en': 'Max Win Equity'
-  },
-  BUST_ENEMY: {
-    'ko': '적 파산 횟수',
-    'en': 'Bust Enemy'
-  },
-  NET_SHARE: {
-    'ko': '파트너와의 수익 분배',
-    'en': 'Net Share to Partner'
-  },
-  NET_WINNING: {
-    'ko': '순수익',
-    'en': 'Net Winning'
-  },
-  COST_LT: {
-    'ko': '비용',
-    'en': 'Cost LT'
-  },
-  FACED_FLOP_BET: {
-    'ko': '플랍 벳 당함',
-    'en': 'Faced Flop Bet'
-  },
-  COST_LT_TOTAL: {
-    'ko': '총 LT 소모량',
-    'en': 'Total LT Spent'
-  },
-  COMPLETED_TASK_COUNT: {
-    'ko': '완료된 작업 수',
-    'en': 'Completed Task Count'
-  }
-}
 const getRecordStatsDesc = (type) => {
   if (!type) return;
-  return PLAY_RECORD_STATS_DESC[type.toUpperCase()][getLanguage()];
+  console.info('PLAY_RECORD_STATS_DESC[]', PLAY_RECORD_STATS_DESC[type], type)
+  return PLAY_RECORD_STATS_DESC[type][getLanguage()];
 }
 const getRecordStatsCurrentCount = (type, id) => {
   switch (type) {
-    case TASK_STATS_TYPE.COST_LT_TOTAL:
-    case TASK_STATS_TYPE.COMPLETED_TASK_COUNT: return getAgentTaskStat(type) || 0;
     case PLAY_RECORD_STATS_TYPE.BUST_ENEMY: return getEnemyBustCount(id) || 0;
     default: return getPlayStatsCount(type) || 0;
   }

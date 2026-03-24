@@ -644,7 +644,7 @@ export const analyzeBoardTexture = (board) => {
   if (score >= 7) type = 'WET';
   else if (score <= 2) type = 'DRY';
 
-  return { type, score, maxConnectivity, maxSuit, maxRankCount, ranks, suitCounts };
+  return { type, score, maxConnectivity, maxSuit, maxRankCount, ranks, suitCounts, rankCounts };
 };
 export const getDrawCategory = (hand, board) => {
   const outsData = calculateOuts(hand, board);
@@ -667,19 +667,20 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
   const boardRanks = board.map(getRankVal).sort((a, b) => b - a);
 
   // Board Texture Flags
-  const isBoardPaired = boardRanks.some((r, i) => r === boardRanks[i + 1]);
-  const isBoardTrips = boardRanks.some((r, i) => r === boardRanks[i + 1] && r === boardRanks[i + 2]);
-
   const texture = analyzeBoardTexture(board);
+  const rankCounts = texture.rankCounts || {};
+  const freq = Object.values(rankCounts).sort((a, b) => b - a);
+
+  const isBoardPaired = texture.maxRankCount >= 2;
+  const isBoardTrips = texture.maxRankCount >= 3;
+  const isBoardQuads = texture.maxRankCount >= 4;
+  const isBoardFullHouse = freq[0] >= 3 && freq[1] >= 2;
+
   const isBoardFlushPossible = texture.maxSuit >= 3;
   const isBoardStraightPossible = texture.maxConnectivity >= 3;
   const isBoardOnehandFlushPossible = texture.maxSuit >= 4;
   const isBoardOnehandStraightPossible = texture.maxConnectivity >= 4;
   const isPocketPair = hand[0][0] === hand[1][0];
-  const isBoardFullHouse = (boardRanks.length >= 5) && (
-    (boardRanks[0] === boardRanks[2] && boardRanks[3] === boardRanks[4]) ||
-    (boardRanks[0] === boardRanks[1] && boardRanks[2] === boardRanks[4])
-  );
   const holeVal = hand.map(c => '23456789TJQKA'.indexOf(c[0])).sort((a, b) => b - a);
   const usedHoleCards = evalResult.cards ? evalResult.cards.filter(c => hand.includes(c)).length : 0;
 
@@ -692,11 +693,17 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
 
   // 8: Quads
   if (rank === 8) {
-    // Board is Quads?
-    const boardIsQuads = boardRanks.length >= 4 && boardRanks[0] === boardRanks[3];
-    if (boardIsQuads) {
-      if (getNutStatus(hand, board).isNuts) return 'NUTS'; // Ace Kicker
-      return 'BOARD_CHOP'; // High Kicker (K, Q) or Marginal
+    if (isBoardQuads) {
+      // Which rank is the quad on board?
+      const boardQuadRank = Number(Object.keys(rankCounts).find(r => rankCounts[r] === 4));
+      const boardKicker = Math.max(...boardRanks.filter(r => r !== boardQuadRank));
+      const myHighCard = handRanks[0];
+
+      if (myHighCard > boardKicker) {
+        if (myHighCard === 12) return 'NUTS'; // Ace Kicker
+        return 'MONSTER';
+      }
+      return 'BOARD_CHOP';
     }
     return 'NUTS';
   }

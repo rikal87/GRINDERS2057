@@ -71,13 +71,19 @@
         <div class="v5-panel v5-neural-template">
           <div class="v5-panel-label">
             <span>AI_AGENT</span>
-            <button class="set-up-agent-btn" @click="$emit('open-agent-modal')">SETUP</button>
+            <button class="set-up-agent-btn" @click="$emit('open-agent-modal')" v-if="store.aiAgent">SETUP</button>
+            <button class="boot-up-agent-btn" @click="bootAgentClick" :disabled="isBooting" v-else>
+              <span v-if="isBooting" class="boot-loading"></span>
+              {{ isBooting ? 'BOOTING...' : 'BOOT' }}
+            </button>
           </div>
-          <div class="v5-panel-inner">
+          <div class="v5-panel-inner" :class="{ 'is-booting': isBooting }">
             <div class="v5-neural-hero">
-              <span class="v5-class-title">{{ store.aiAgent.name }}</span>
+              <span class="v5-class-title">{{ store.aiAgent ? store.aiAgent.name : (isBooting ? 'INITIALIZING' :
+                'OFFLINE') }}</span>
               <p class="v5-class-desc qhd-only">
-                {{ store.aiAgent.model?.slogan }}
+                {{ store.aiAgent ? store.aiAgent.model?.slogan : (isBooting ? 'LOADING_CORE_SYSTEMS' :
+                  'SYSTEM_READY_FOR_BOOT') }}
               </p>
               <div class="v5-stat-row">
                 <div class="v5-stat-group">
@@ -86,11 +92,14 @@
                     <small>LT</small></span>
                 </div>
               </div>
-              <div class="v5-status-badges qhd-only">
+              <div class="v5-status-badges qhd-only" v-if="store.aiAgent">
                 <span class="v5-badge-mini" v-if="store.gameTime < store.aiAgent.subscriptionExpireAt">SYS_ACTIVE</span>
                 <span class="v5-badge-mini" v-else style="color:var(--neon-red)">SYS_EXPIRED</span>
                 <span class="v5-badge-mini">XK254015</span>
                 <span class="v5-badge-mini">RAID_X</span>
+              </div>
+              <div class="v5-status-badges qhd-only" v-else>
+                <span class="v5-badge-mini offline">OFFLINE</span>
               </div>
             </div>
             <div class="v5-slot-list">
@@ -338,7 +347,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-              }} UNREAD]</small>
+          }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
@@ -384,7 +393,7 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import { store, getNextLevelThreshold, getEffectiveMaxStamina, gainBankroll, getLocalizedText, getLanguage } from '../logic/store';
+import { store, getNextLevelThreshold, getEffectiveMaxStamina, gainBankroll, getLocalizedText, getLanguage, bootAgent } from '../logic/store';
 import { marketState, sellCoin } from '../logic/cryptoMarket';
 import { markAsRead, handleMessageAction as processMsgAction } from '../logic/messageSystem';
 import { AI_TASK_DATA } from '../logic/aiAgentTaskData';
@@ -463,6 +472,22 @@ const checkDisableContractSign = (partner, contract, isClick = false) => {
 const emit = defineEmits(['sleep', 'back', 'open-task-selector', 'open-agent-modal', 'open-skill-selector', 'open-stats-modal']);
 const sleepDuration = ref(8.0);
 const mainTab = ref('hardware');
+const isBooting = ref(false);
+
+const bootAgentClick = async () => {
+  if (isBooting.value) return;
+  isBooting.value = true;
+  audioManager.playSFX('bootup');
+
+  // Booting Production Sequence
+  await new Promise(resolve => setTimeout(resolve, 5000));
+
+  bootAgent(); // Initialize the agent
+
+  isBooting.value = false;
+  audioManager.playSFX('success');
+};
+
 const selectedMessage = ref(null);
 const repaymentAmounts = ref({});
 const sendDebtRepayment = (partner, amount) => {
@@ -489,8 +514,10 @@ const longPressProgress = ref(0);
 let longPressTimer = null;
 
 const currentAgentSlots = computed(() => {
-  const agentData = store.aiAgent.model; // This is the plan object from AI_AGENT_MODEL_AND_PLAN_DATA
-  return agentData?.price_plan[store.aiAgent.price_plan_idx]?.slot || ['T1'];
+  const agent = store.aiAgent;
+  if (!agent || !agent.model) return [];
+  const agentData = agent.model; // This is the plan object from AI_AGENT_MODEL_AND_PLAN_DATA
+  return agentData?.price_plan[agent.price_plan_idx]?.slot || [];
 });
 
 const taskSlots = computed(() => {
@@ -635,3 +662,55 @@ const getNetWorthChartPath = (partner) => {
 </script>
 <style></style>
 <style scoped src="../styles/components/SafeHouse.css"></style>
+<style scoped>
+.boot-btn {
+  background: var(--neon-cyan);
+  color: #000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.boot-loading {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #000;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: boot-spin 0.8s linear infinite;
+}
+
+@keyframes boot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.is-booting {
+  animation: v5-panel-boot 2s ease-in-out;
+}
+
+@keyframes v5-panel-boot {
+  0% {
+    filter: brightness(1) contrast(1);
+  }
+  10% {
+    filter: brightness(2) contrast(1.5);
+  }
+  20% {
+    filter: brightness(0);
+  }
+  30% {
+    filter: brightness(1.5) contrast(1.2);
+  }
+  100% {
+    filter: brightness(1) contrast(1);
+  }
+}
+
+.offline {
+  background: rgba(255, 0, 60, 0.2);
+  color: var(--neon-red);
+  border: 1px solid var(--neon-red);
+}
+</style>

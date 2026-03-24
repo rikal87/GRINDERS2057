@@ -48,6 +48,15 @@ function buildPokerContext(player, engine) {
     return posMap6[dist] || 'MP';
   };
   const myPos = getPosName(playerIdx);
+  const myRelativeIdx = (playerIdx - (dealerIdx + 1) + playerCount) % playerCount;
+  const hasPosition = engine.players
+    .filter(p => !p.isFolded)
+    .every(p => {
+      if (p.id === player.id) return true;
+      const pIdx = engine.players.findIndex(px => px.id === p.id);
+      const pRelativeIdx = (pIdx - (dealerIdx + 1) + playerCount) % playerCount;
+      return myRelativeIdx >= pRelativeIdx;
+    });
 
   // Initiative & Pot Type Detection
   const preflopRaises = engine.preflopRaises || 0; // Assuming engine tracks this, if not we infer from current pot
@@ -71,6 +80,7 @@ function buildPokerContext(player, engine) {
     currentStreetRaises: engine.currentStreetRaises || 0,
     callAmount,
     myPos,
+    hasPosition,
     potType,
     hasInitiative,
     actionHistory: player.actionHistory || engine.actionHistory || [],

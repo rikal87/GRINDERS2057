@@ -67,7 +67,7 @@
                 {{ getInfamyNote(currentLocation.id) }}
               </span>
               <span class="tag" v-if="currentTableConfig.isMonitoring" :data-tooltip="suspicioninfo"
-                :class="`${getSuspicionColorLabel(currentLocation.id)}`">
+                :class="`${getSuspicionColorLabelClass(currentLocation.id)}`">
                 {{ getSuspicionNote(currentLocation.id) }}
               </span>
             </div>
@@ -168,7 +168,7 @@ const getInfamyColorlabel = (locationId) => {
   else if (suspicion >= 20) return 'LOW';
   else return 'NONE';
 }
-const getSuspicionColorLabel = (locationId) => {
+const getSuspicionColorLabelClass = (locationId) => {
   const suspicion = getCurrentSuspicion(locationId);
   if (suspicion >= 80) return 'CRITICAL';
   else if (suspicion >= 60) return 'HIGH';

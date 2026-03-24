@@ -468,7 +468,7 @@ watch(currentView, (newView) => {
             <div class="row">
               <div class="status-group">
                 <span class="status-value">{{ formatGameDate(store.gameTime) }} ({{ formatGameDayOfWeek(store.gameTime)
-                  }})</span>
+                }})</span>
                 <span class="status-divider"></span>
                 <span class="status-value">{{ formatGameTime(store.gameTime) }}</span>
               </div>
@@ -550,38 +550,32 @@ watch(currentView, (newView) => {
                 </span>
               </button>
             </div>
-            <!-- Global Actions
-
-            <!-- Accessibility -->
             <div class="setting-item">
-              <span class="label">VISUAL_MODE:</span>
-              <button @click="store.settings.fourColorMode = !store.settings.fourColorMode">
-                {{ store.settings.fourColorMode ? '4-COLOR: ON' : '4-COLOR: OFF' }}
+              <span class="label">STACK_DISPLAY:</span>
+              <button @click="store.settings.showAsBB = !store.settings.showAsBB"
+                :class="{ 'is-on': store.settings.showAsBB }">
+                {{ store.settings.showAsBB ? 'BIG_BLIND' : 'CURRENCY' }}
+              </button>
+            </div>
+            <div class="setting-item">
+              <span class="label">DECK_COLOR:</span>
+              <button @click="store.settings.fourColorMode = !store.settings.fourColorMode"
+                :class="{ 'is-on': store.settings.fourColorMode }">
+                {{ store.settings.fourColorMode ? 'FOUR_COLOR' : 'STANDARD' }}
               </button>
             </div>
             <div class="setting-item">
               <span class="label">LANGUAGE:</span>
               <button @click="store.settings.language = store.settings.language === 'en' ? 'ko' : 'en'">
-                {{ store.settings.language === 'en' ? 'LANG: EN' : 'LANG: KO' }}
+                {{ store.settings.language === 'en' ? 'ENGLISH' : '한국어' }}
               </button>
             </div>
-            <div class="setting-item">
-              <span class="label">DISPLAY_UNIT:</span>
-              <button @click="store.settings.showAsBB = !store.settings.showAsBB">
-                {{ store.settings.showAsBB ? 'UNIT: BB' : 'UNIT: CR' }}
-              </button>
-            </div>
-            <!-- <div class="setting-item" v-if="currentView === 'table'">
-              <span class="label">SESSION_LINK:</span>
-              <button class="btn-danger" @click="handleAction({ type: 'exit' }); toggleSettings()">LEAVE_TABLE</button>
-            </div> -->
             <div class="setting-item">
               <span class="label" :data-tooltip="getFastForward()">{{
                 store.settings.language === 'en' ? 'FAST_FORWARD:' : 'FAST_FORWARD:' }}</span>
-              <button @click="store.settings.fastFoward = !store.settings.fastFoward">
-                {{ store.settings.fastFoward ? (store.settings.language === 'en' ? 'ON' : '켜짐') :
-                  (store.settings.language
-                    === 'en' ? 'OFF' : '꺼짐') }}
+              <button @click="store.settings.fastFoward = !store.settings.fastFoward"
+                :class="{ 'is-on': store.settings.fastFoward }">
+                {{ store.settings.fastFoward ? 'ON' : 'OFF' }}
               </button>
             </div>
             <div class="setting-item">

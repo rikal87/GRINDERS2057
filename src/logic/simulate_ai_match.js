@@ -9,7 +9,7 @@ const CLASSES_ENEMY = [...D2, ...D1]
 export async function runSimulation() {
   const opp1 = 'Florence'
   const opp2 = 'gangster'
-  const opp3 = 'old_lion'
+  const opp3 = 'shark'
   console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
   const logHeader = `Simulation Log - ${new Date().toLocaleString()}\n\n`;
   fs.writeFileSync('hand_history.log', logHeader, 'utf8');
@@ -102,8 +102,11 @@ export async function runSimulation() {
     engine.handHistory = []; // [DEBUG OVERHAUL] Track storyline
     engine.actionHistory = []; // [v3.0] Structured history for AI analysis
 
-    const aliveCount = players.filter(p => p.chips > 0).length;
-    if (aliveCount < 2) break;
+    const activeGroups = new Set(players.filter(p => p.chips > 0).map(p => p.class.id));
+    if (activeGroups.size <= 1) {
+      console.log(`!!!Simulation complete: Only group [${Array.from(activeGroups)[0] || 'NONE'}] remains.`);
+      break;
+    }
 
     players.forEach(p => {
       p.hand = [deck.pop(), deck.pop()];

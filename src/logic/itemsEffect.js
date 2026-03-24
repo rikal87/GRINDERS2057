@@ -1,4 +1,4 @@
-import { getLanguage, getLevel } from './store.js';
+import { getLanguage, getCurrentLevel } from './store.js';
 import { ITEM_EFFECT_ID } from './constants.js';
 
 export const ITEM_EFFECT_DATA = [
@@ -248,7 +248,7 @@ export const ITEM_EFFECT_DATA = [
         : `파산 시 뱅크롤 +${this.valueCalc} (효과는 레벨이 올라갈수록 증가, 쿨타임: ${this.maxCooldown} 라운드)`;
     },
     get valueCalc() {
-      return getLevel() * this.value;
+      return getCurrentLevel() * this.value;
     },
     value: 1000,
     isStackable: true

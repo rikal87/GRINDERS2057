@@ -4,7 +4,6 @@ import { hydrateStoreItems } from './items.js';
 import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 import { initializePartners, triggerBankruptRescueForPlayer, gainRelationship, joinPartner } from './partnerSystem';
-import { TASK_STATS_TYPE } from './constants.js';
 import { setLanguageGetter } from './persona.js';
 import { deleteMessage } from './messageSystem';
 import { zones } from './zone.js';
@@ -23,13 +22,15 @@ const getDefaultState = () => ({
   ownedItems: [], // Array of materialized item objects
   equippedItem: null, // item object or null
   equippedSkills: [null, null, null], // 3 Slots
-  activeBoosts: [], // [{ taskId, effect: {} }]
+  activeBoosts: [], // This will be overwritten by getDefaultState or saved data
   selectedPortrait: 'p1',
   boostRegenLT: 0,
   completedEvents: [],
   pendingEvents: [],
   unlockAchievements: [],
   latest_pay_income_base_amount: 0,
+  isActiveHandHud: true,
+  isActiveSuspicionHud: true,
   isActiveHud: false,
   status_zone: {
     'micro_warehouse_with_max': { suspicion: 0.0, infamy: 0.0, isBlacklisted: false },
@@ -81,18 +82,30 @@ const getDefaultState = () => ({
   unlockedLocations: [], // Array of item IDs that unlock locations
   ludusTokens: 50,
   gameTime: new Date('2057-01-20T09:00:00').getTime(), // Start Date
-  aiAgent: {
-    model: AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD],
-    name: AI_AGENT_MODEL_ENUM.VANGUARD,
-    price_plan_idx: 0,
-    subscriptionExpireAt: 0,
-  },
-  agentStats: {
-    cost_lt_total: 0,
-    completed_task_count: 0,
-    failed_task_count: 0,
-  },
-  onWorkTasks: [], // [{ taskId, startTime, lastProcessTime }]
+  // aiAgent: {
+  //   model: AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD],
+  //   name: AI_AGENT_MODEL_ENUM.VANGUARD,
+  //   price_plan_idx: 0,
+  //   subscriptionExpireAt: 0,
+  // },
+  aiAgent: null,
+  onWorkTasks: [
+    {
+      taskId: 'hand_hud',
+      instanceId: 'initial_hand_hud',
+      status: 'ACTIVE',
+      startTime: new Date('2057-01-20T09:00:00').getTime(),
+      slotIndex: 0,
+      failureCount: 0
+    }
+  ], // [{ taskId, startTime, lastProcessTime }]
+  activeBoosts: [
+    {
+      taskId: 'hand_hud',
+      instanceId: 'initial_hand_hud',
+      effect: { type: 'hand_hud_active', amount: 1 }
+    }
+  ], // [{ taskId, effect: {} }]
   messages: [], // [{ id, type, title, body, timestamp, isRead, actions?, expireAt? }]
   stamina: 100,
   maxStamina: 100,
@@ -113,6 +126,24 @@ const getDefaultState = () => ({
 const RENT_BILL_MAX_MISS = 3;
 const INCOME_TAX_MAX_MISS = 3;
 const FINE_MAX_MISS = 3;
+export const isActiveSuspicionHud = () => {
+  return store.isActiveSuspicionHud;
+}
+export const setActiveSuspicionHud = (isActiveSuspicionHud) => {
+  store.isActiveSuspicionHud = isActiveSuspicionHud;
+}
+export const isActiveHandHud = () => {
+  return store.isActiveHandHud;
+}
+export const setActiveHandHud = (isActiveHandHud) => {
+  store.isActiveHandHud = isActiveHandHud;
+}
+export const isActiveHud = () => {
+  return store.isActiveHud;
+}
+export const setActiveHud = (val) => {
+  store.isActiveHud = val;
+}
 export const isFastFoward = () => {
   return store.settings.fastFoward;
 }
@@ -167,7 +198,7 @@ export const getMissedPayments = (type) => {
 export const getLanguage = () => {
   return store.settings.language;
 };
-export const getLevel = () => {
+export const getCurrentLevel = () => {
   return store.level;
 }
 export const getLocalizedText = (obj, field) => {
@@ -203,6 +234,7 @@ export const getCurrentAgent = () => {
 }
 export const getEffectiveMaxLT = () => {
   const agent = store.aiAgent;
+  if (!agent) return 50; // Default LT when no agent
   const planIdx = agent.price_plan_idx;
   const baseMax = agent.model?.price_plan[planIdx]?.maxLt || 100;
   const bonus = store.equippedItem?.effects?.reduce((sum, e) => (e.id === 'lt_max_plus') ? sum + e.value : sum, 0) || 0;
@@ -213,7 +245,7 @@ export const getAgent = () => {
 }
 export const gainLT = (amount) => {
   store.ludusTokens = Math.max(0, Math.min(getEffectiveMaxLT(), store.ludusTokens + amount));
-  if (amount < 0) gainAgentTaskStat(TASK_STATS_TYPE.COST_LT_TOTAL, -amount);
+  if (amount < 0) recordPlayStatsSessionForPlayer(PLAY_RECORD_STATS_TYPE.COST_LT_TOTAL, { amount: -amount });
 }
 export const getCurrentLT = () => {
   return store.ludusTokens;
@@ -256,10 +288,18 @@ export const gainXP = (player) => {
 }
 export const gainSuspicion = (locationId, amount) => {
   if (!store.status_zone[locationId]) store.status_zone[locationId] = { suspicion: 0, infamy: 0, isBlacklisted: false };
-  const suspicion = Math.ceil(Math.max(0, store.status_zone[locationId].suspicion + Math.min(100, amount)));
+  let finalAmount = amount;
+  if (amount > 0 && store.activeBoosts) {
+    const lowProfileBoosts = store.activeBoosts.filter(b => b.effect.type === 'low_profile');
+    if (lowProfileBoosts.length > 0) {
+      const discount = Math.min(1.0, lowProfileBoosts.reduce((acc, b) => acc + (b.effect.amount || 0), 0));
+      finalAmount *= (1 - discount);
+    }
+  }
+  const suspicion = Math.ceil(Math.max(0, store.status_zone[locationId].suspicion + Math.min(100, finalAmount)));
   store.status_zone[locationId].suspicion = suspicion;
   if (suspicion >= 100) store.status_zone[locationId].isBlacklisted = true;
-  recordPlayStatsSessionForPlayer(PLAY_RECORD_STATS_TYPE.TOTAL_GAIN_SUSPICION, { amount });
+  if (finalAmount > 0) recordPlayStatsSessionForPlayer(PLAY_RECORD_STATS_TYPE.TOTAL_GAIN_SUSPICION, { amount: finalAmount });
 }
 export const isBlacklisted = (locationId) => {
   if (!store.status_zone[locationId]) return false;
@@ -340,7 +380,6 @@ export const initStore = async () => {
   }
 };
 
-// EVENT SYSTEM
 export const registerCompletedEvent = (eventId) => {
   if (store.completedEvents.includes(eventId)) return;
   store.completedEvents.push(eventId);
@@ -352,6 +391,17 @@ export const unregisterCompletedEvent = (eventId) => {
   store.completedEvents = store.completedEvents.filter(id => id !== eventId);
 }
 
+export const bootAgent = () => {
+  if (store.aiAgent) return;
+  store.aiAgent = {
+    model: AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD],
+    name: AI_AGENT_MODEL_ENUM.VANGUARD,
+    price_plan_idx: 0,
+    subscriptionExpireAt: 0,
+  };
+  hydrateStoreItems(); // Re-read items if necessary
+}
+
 // ZONE CLEAR SYSTEM
 export const getClearedZoneCount = (zoneId) => {
   return store.cleared_zones[zoneId] || 0;
@@ -360,12 +410,6 @@ export const gainClearedZoneCount = (locationId) => {
   if (!locationId) return;
   if (!store.cleared_zones[locationId]) store.cleared_zones[locationId] = 1
   store.cleared_zones[locationId]++
-}
-export const gainAgentTaskStat = (type, amount) => {
-  store.agentStats[type] += amount
-}
-export const getAgentTaskStat = (type) => {
-  return store.agentStats[type];
 }
 // CAN USE NAGATIVE AMOUNT
 export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
