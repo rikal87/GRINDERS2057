@@ -354,7 +354,7 @@ export class GameEngine {
 
     if (this.infamy >= 40) {
       villan.vPIP = (villan.vPIP || 1) * 0.7;
-      villan.WTSD = (villan.WTSD || 1) * 1.3;
+      villan.WTSD = (villan.WTSD || 1) * 0.7;
       villan.initialVPIP = villan.vPIP;
       villan.initialWTSD = villan.WTSD;
     }

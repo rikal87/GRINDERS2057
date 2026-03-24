@@ -99,7 +99,7 @@ export const EventData = [
     },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
-      scheduleEvent(EVENT_MAX.HOW_TO_USE_AI_AGENT_2, 1);
+      scheduleEvent(EVENT_MAX.HOW_TO_USE_AI_AGENT_2, 25);
     },
   },
   {
@@ -113,7 +113,7 @@ export const EventData = [
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     func() {
       sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO);
-      scheduleEvent(EVENT_MAX.HOW_TO_USE_AI_AGENT_3, 1);
+      scheduleEvent(EVENT_MAX.HOW_TO_USE_AI_AGENT_3, 15);
     },
   },
   {

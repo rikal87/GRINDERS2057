@@ -17,6 +17,7 @@ export const EVENT_ID = {
   FIRST_PAY_RENT_BILL: 'first_pay_rent_bill',
   PAY_RENT_BILL_WARNING: 'pay_rent_bill_warning',
   PAY_RENT_BILL: 'pay_rent_bill',
+  PAY_RENT_BILL_TUTORIAL: 'pay_rent_bill_tutorial',
   PAY_RENT_BILL_EVICTION: 'pay_rent_bill_eviction',
   INCOME_TAX: 'income_tax',
   MAX: EVENT_MAX,
@@ -327,7 +328,7 @@ export const EventData = [
     scenario: '게임 시작 후 얼마지나지 않아 첫 주거 렌트비 지불 메시지',
     timer: 30 * 60, // after 1 DAY 6 hour(in game)
     func() {
-      scheduleEvent(EVENT_ID.PAY_RENT_BILL, 3)
+      scheduleEvent(EVENT_ID.PAY_RENT_BILL_TUTORIAL, 3)
       scheduleEvent(EVENT_ID.PAY_RENT_BILL_WARNING, 5)
     },
     repeatable: false
@@ -342,6 +343,29 @@ export const EventData = [
       sendMessage(MESSAGE_TYPE.SOCIAL, title, body, [], sender)
     },
     repeatable: false
+  },
+  {
+    id: EVENT_ID.PAY_RENT_BILL_TUTORIAL,
+    scenario: '렌트비 지불 (TUTORIAL)',
+    func() {
+      gainMissedPayments(MISSED_PAYMENT_TYPE.RENT_BILL, 1);
+      if (getMissedPayments(MISSED_PAYMENT_TYPE.RENT_BILL) >= 3) {
+        const reason = store.settings.language === 'en' ? '[Eviction] You were kicked out onto the streets due to 3 missed rent payments.' : '[퇴거 조치] 렌트비 3회 미납으로 인해 길거리로 쫓겨났습니다.';
+        handleGameOver(reason);
+        return;
+      }
+      const title = store.settings.language === 'en' ? 'Pay Rent Bill' : '렌트비 고지서';
+      const body = store.settings.language === 'en' ? `You have a rent bill to pay. (Missed: ${getMissedPayments(MISSED_PAYMENT_TYPE.RENT_BILL)}/3)` : `납부해야 할 주거 렌트비가 있습니다. (미납: ${getMissedPayments(MISSED_PAYMENT_TYPE.RENT_BILL)}/3)`;
+      const sender = store.settings.language === 'en' ? 'System' : 'System';
+      sendMessage(MESSAGE_TYPE.FINANCE, title, body, [{
+        label: MESSAGE_ACTION_LABEL_TYPE.PAY,
+        actionType: MESSAGE_ACTION_TYPE.PAY_RENT,
+        payload: {
+          currency: 'CR',
+          amount: pay_rent_bill
+        }
+      }], sender)
+    },
   },
   {
     id: EVENT_ID.PAY_RENT_BILL,

@@ -147,7 +147,7 @@ export const AI_TASK_DATA = [
     duration: 1 * 24 * 60,
     cooldown: 0,
     effect: [{ type: TASK_EFFECT_TYPE.XP_BOOST, amount: 0.10 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 100 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 50 }
   },
   {
     id: 'status_hud',
@@ -205,7 +205,7 @@ export const AI_TASK_DATA = [
     duration: 60,
     cooldown: 0,
     effect: [{ type: TASK_EFFECT_TYPE.ADD_BANKROLL, amount: 2500 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.COST_LT_TOTAL, amount: 1000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.COST_LT_TOTAL, amount: 500 }
   },
   {
     id: 'shadow_work_3',
@@ -225,7 +225,7 @@ export const AI_TASK_DATA = [
     duration: 0,
     cooldown: 3 * 24 * 60,
     effect: [{ type: 'add_bankroll', amount: 10000 }, { type: 'penalty_amount', id: 'SECURITY_DETECTION', probability: 0.01, amount: 25000 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.COST_LT_TOTAL, amount: 5000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.COST_LT_TOTAL, amount: 2500 }
   },
   {
     id: 'shadow_work_4',
@@ -468,28 +468,6 @@ export const AI_TASK_DATA = [
     unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 10000 }
   },
   {
-    id: 'kbt_leader_challenge',
-    tier: 3,
-    type: 'NETWORKING',
-    name_ko: "KBT 리더와의 승부",
-    name_en: "KBT Leader Challenge",
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    desc_ko: `[THE_BUNKER] VIP 룸에서 열리는 특별 게임에 초대받았습니다.`,
-    desc_en: `You're invited to a special game held at the [THE_BUNKER] VIP room.`,
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    desc_detail_ko: 'KBT 조직에 당신의 악명이 닿았습니다. 이제 그들의 본거지로 찾아가 조직 리더와 헤즈업 승부를 벌일 차례입니다.',
-    desc_detail_en: 'Your infamy has reached the KBT organization. It is time to head to their stronghold and face their leader in a heads-up match.',
-    get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
-    cost: 10,
-    probability: 0.6,
-    duration: 24 * 60,
-    cooldown: 3 * 24 * 60,
-    action: {
-      type: 'ACCEPT_INVITE', zone: 'middle', location_id: 'middle_kbt_base', available: 2 // only 2max
-    },
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gangster', count: 50 }
-  },
-  {
     id: 'maniac_attractor_2',
     tier: 4,
     name_ko: 'Mad Max',
@@ -668,7 +646,7 @@ export const AI_TASK_DATA = [
     duration: 24 * 60,
     cooldown: 72 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'broke', amount: 3 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'broke', count: 100 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'broke', count: 50 }
   },
   {
     id: 'heavy_security',
@@ -708,7 +686,7 @@ export const AI_TASK_DATA = [
     duration: 4 * 60,
     cooldown: 3 * 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'rich_guy', amount: 2 }, { type: TASK_EFFECT_TYPE.SPAWN, id: 'shark', amount: 1 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 75 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 50 }
   },
   {
     tier: 5,
