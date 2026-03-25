@@ -206,6 +206,7 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
       } else if (action.payload.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.REFUSE) {
         scheduleEvent(action.payload.nextEvent, 5 + Math.random() * 12);
       }
+      deleteMessage(msgId);
       break;
     case MESSAGE_ACTION_TYPE.DELETE_MESSAGE:
       // audioManager.playSFX('notification');

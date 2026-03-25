@@ -826,17 +826,18 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
       if (isPocketPair) {
         if (holeVal[0] > boardHigh1) caseSum -= 2; // Overpair to the board
         else if (holeVal[0] > boardHigh2) caseSum -= 1; // Middle pocket pair
-        else caseSum += 2; // Underpair counterfeited
+        else caseSum += 3; // Underpair counterfeited (v5: Severe Penalty)
       } else {
         if (hole1) caseSum -= 1; // Top Pair + Board Pair
-        else if (hole2) caseSum += 0; // 2nd Pair + Board Pair
-        else caseSum += 2; // Weak Pair + Board Pair
+        else if (hole2) caseSum += 1; // 2nd Pair + Board Pair
+        else caseSum += 3; // Weak Pair + Board Pair (v5: Severe Penalty)
       }
     } else {
       // Normal Two Pair (No board pair)
       if (hole1 && hole2) caseSum -= 2; // Top Two
-      else if (hole1 || hole2) caseSum -= 1; // Top Pair + Middle Pair
-      if (myPair > 0 && myPair < boardHigh1 && myPair < boardHigh2) caseSum += 2; // Counterfeited
+      else if (hole1) caseSum -= 1; // Top Pair + Middle/Bottom Pair
+      else if (hole2) caseSum += 1; // Middle Pair + Bottom Pair
+      else caseSum += 3; // Bottom Two Pair (Neither Top nor 2nd)
     }
 
     // [FIX] If the two-pair is entirely on the board and player matched nothing
@@ -847,7 +848,8 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
 
     if (caseSum <= -2) return 'STRONG';
     else if (caseSum <= 0) return 'GOOD';
-    return 'MARGINAL';
+    else if (caseSum <= 2) return 'MARGINAL';
+    return 'WEAK';
   }
   // 2: One Pair
   if (rank === 2) {
@@ -880,12 +882,12 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
         else caseSum += 1; // Middle pocket pair
       }
     } else {
-      if (pairedRank === maxBoard) caseSum += 0; // Top Pair (Normalized)
+      if (pairedRank === maxBoard) {
+        if (kicker < 7) caseSum += 2; // Weak Kicker Penalty
+        else if (kicker >= 12) caseSum -= 1; // Ace/King Kicker Bonus
+      }
       else if (pairedRank === boardRanks[1]) caseSum += 1; // Middle Pair
       else caseSum += 2; // Bottom pair
-      // Kicker sensitivity
-      if (kicker < 7) caseSum += 2; // Weak Kicker Penalty
-      else if (kicker >= 12) caseSum -= 1; // Ace/King Kicker Bonus
     }
 
     // Final Mapping (User adjusted) - [FIX] Fixed mapping order to allow WEAK

@@ -1,5 +1,5 @@
 import { calculateEquity, createDeck } from './poker.js';
-import { getAIAction, chatAI, } from './aiEngine.js';
+import { getAIAction, chatAI, } from './aiEngine.v2.js';
 import { getAdvancedAIAction } from './aiEngineAdvanced.js';
 import { CLASSES_PARTNER } from './persona.js'
 import { audioManager } from './audioManager.js';
@@ -496,8 +496,8 @@ export class GameEngine {
         }
         if (p.isDrunken) {
           p.class.AF += 1;
-          p.class.vPIP += 0.2;
-          p.class.WTSD += 0.2;
+          p.class.vPIP += 0.15;
+          p.class.WTSD += 0.15;
         }
       }
       if (!p.isEliminated) recordPlayStatsSession(p, PLAY_RECORD_STATS_TYPE.HANDS_PLAYED);
@@ -1004,22 +1004,23 @@ export class GameEngine {
         const suspicionGainPenalty = me.born_villain * 0.25;
         gainSuspicion(this.locationId, suspicionGainBase * (1.0 - suspicionGainPenalty));
       }
-    }
 
-    // Mentor Tutorial Feedback
-    if (this.isTutorial && this.mentor && this.mentor.isFolded && me && !me.isFolded && Math.random() < 0.3) {
-      const netProfit = (meResult ? meResult.amountWon : 0) - me.totalWagered;
-      if (netProfit > 0) {
-        // Player Profited
-        const isHugeWin = netProfit > (this.bb * 20);
-        if (Math.random() < 0.5 && this.street !== 'PREFLOP') chatAI(this.mentor, isHugeWin ? CHAT_TRIGGERS.WIN_HUGE_FOR_PLAYER : CHAT_TRIGGERS.WIN_SMALL_FOR_PLAYER, "", 0, this);
-      } else if (netProfit < 0) {
-        // Player Lost Money (either lost entirely, or chop/side pot refund was less than wagered)
-        const isHugeLoss = me.totalWagered > (this.bb * 20);
-        if (Math.random() < 0.5 && this.street !== 'PREFLOP') chatAI(this.mentor, isHugeLoss ? CHAT_TRIGGERS.LOSE_HUGE_FOR_PLAYER : CHAT_TRIGGERS.LOSE_SMALL_FOR_PLAYER, "", 0, this);
-      } else {
-        // Even break (Chop)
-        if (Math.random() < 0.5) chatAI(this.mentor, CHAT_TRIGGERS.CHOP, "", 0, this);
+      // Mentor Tutorial Feedback
+      if (this.isTutorial && this.mentor && this.mentor.isFolded && !me.isFolded && Math.random() < 0.3) {
+        const meResult = meResults[0];
+        const netProfit = meResult.amountWon - me.totalWagered;
+        if (netProfit > 0) {
+          // Player Profited
+          const isHugeWin = netProfit > (this.bb * 20);
+          if (Math.random() < 0.5 && this.street !== 'PREFLOP') chatAI(this.mentor, isHugeWin ? CHAT_TRIGGERS.WIN_HUGE_FOR_PLAYER : CHAT_TRIGGERS.WIN_SMALL_FOR_PLAYER, "", 0, this);
+        } else if (netProfit < 0) {
+          // Player Lost Money (either lost entirely, or chop/side pot refund was less than wagered)
+          const isHugeLoss = me.totalWagered > (this.bb * 20);
+          if (Math.random() < 0.5 && this.street !== 'PREFLOP') chatAI(this.mentor, isHugeLoss ? CHAT_TRIGGERS.LOSE_HUGE_FOR_PLAYER : CHAT_TRIGGERS.LOSE_SMALL_FOR_PLAYER, "", 0, this);
+        } else {
+          // Even break (Chop)
+          if (Math.random() < 0.5) chatAI(this.mentor, CHAT_TRIGGERS.CHOP, "", 0, this);
+        }
       }
     }
     const bestWinner = this.players.find(p => p.id === result.winnerId);

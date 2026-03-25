@@ -1,15 +1,15 @@
 import fs from 'fs';
 import { createDeck } from './poker.js';
 import { CLASSES_ENEMY as D1, CLASSES_PARTNER as D2 } from './persona.js'
-import { getAIAction } from './aiEngine.js';
+import { getAIAction } from './aiEngine.v2.js';
 import { getUnifiedAction as getAdvancedAIAction } from './aiEngine/aiBrainHub.js';
 import { PotManager } from './PotManager.js';
 
 const CLASSES_ENEMY = [...D2, ...D1]
 export async function runSimulation() {
-  const opp1 = 'Florence'
-  const opp2 = 'gangster'
-  const opp3 = 'shark'
+  const opp1 = 'gangster'
+  const opp2 = 'Max'
+  const opp3 = 'maniac'
   console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
   const logHeader = `Simulation Log - ${new Date().toLocaleString()}\n\n`;
   fs.writeFileSync('hand_history.log', logHeader, 'utf8');

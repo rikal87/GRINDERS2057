@@ -79,6 +79,7 @@ export const EventData = [
         body_en: `Your level has reached ${unlockLevel}. A new AI agent [${modelId}] is now available. Check it out at the habitat terminal.`,
         get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
         get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+        timer: 1,
         condition() { return store.level >= unlockLevel; },
         func() {
           sendMessage(MESSAGE_TYPE.REWARD, this.title, this.body);

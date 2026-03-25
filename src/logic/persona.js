@@ -80,7 +80,7 @@ export const CLASSES_PARTNER = [
 
 export const CLASSES_ENEMY = [
   {
-    id: 'Max', name: 'Max(Mentor)', philosophy: 'LAG', vPIP: .3, AF: 4, WTSD: .29, W$SD: 0.53, chipMultiply: 1.5,
+    id: 'Max', name: 'Max(Mentor)', philosophy: 'LAG', vPIP: .28, AF: 4, WTSD: .28, W$SD: 0.53, chipMultiply: 1.5,
     canContracts: [],
     schedule: [],
     isAdvanced: false,
