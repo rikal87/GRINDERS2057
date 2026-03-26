@@ -49,154 +49,123 @@
     /* margin-bottom: 20px; */
   }
 }
-/* @media (max-width: 450px) {
-  .poker-table {
-    height: 75vh;
-    border-radius: 60px;
-    margin-top: 10px;
+
+@media (max-width: 768px) {
+  /* 1. 레이아웃 재구성 */
+  .v5-body {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    padding: 10px !important;
+    height: auto !important;
+    overflow-y: auto !important;
   }
-  .player-seat {
-    width: 85px;
-    min-height: 85px;
+
+  /* 2. 모바일 내비게이션 (탭) */
+  .v5-mobile-nav {
+    display: flex !important;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--panel-border);
+    margin-bottom: 15px;
+    z-index: 100;
   }
-  .player-info {
-    width: 85px;
-    font-size: 0.7rem;
-    padding: 4px;
+  .v5-mobile-nav button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px 5px;
+    color: #506070;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 2px solid transparent;
   }
-  .cards .poker-card {
-    width: 32px !important;
-    height: 44px !important;
-    font-size: 0.7rem !important;
+  .v5-mobile-nav button.active {
+    color: var(--neon-cyan);
+    border-bottom-color: var(--neon-cyan);
+    background: rgba(0, 240, 255, 0.05);
+  }
+
+  /* 3. 컬럼 가시성 제어 */
+  .v5-side-col,
+  .v5-main-col,
+  .v5-msg-col {
+    display: none !important;
+    /* 기본적으로 숨김 */
+    width: 100% !important;
+    padding: 0 !important;
+    height: auto !important;
     margin: 0 !important;
   }
 
-  .seat-0 {
-    width: 140px !important;
+  /* 활성화된 탭만 표시 */
+  .v5-side-col.mobile-show,
+  .v5-main-col.mobile-show,
+  .v5-msg-col.mobile-show {
+    display: flex !important;
   }
-  .seat-0 .player-info {
-    width: 120px !important;
-    font-size: 0.8rem;
+
+  /* 4. 내부 요소 최적화 */
+  .v5-panel-inner {
+    padding: 15px !important;
   }
-  .seat-0 .cards .poker-card {
-    width: 60px !important;
-    height: 85px !important;
-  }
-  .seat-0 .cards .poker-card :deep(.rank) {
+
+  .v5-class-title {
     font-size: 1.5rem !important;
-  }
-  .seat-0 .cards .poker-card :deep(.suit) {
-    font-size: 2rem !important;
+    letter-spacing: 2px !important;
   }
 
-  .board-cards .poker-card,
-  .card-placeholder {
-    width: 60px !important;
-    height: 85px !important;
-    margin: 0 !important;
-  }
-  .board-cards .poker-card :deep(.rank) {
-    font-size: 1.5rem !important;
-  }
-  .board-cards .poker-card :deep(.suit) {
-    font-size: 2rem !important;
+  /* 파트너 그리드 최적화 */
+  .partner-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
   }
 
-  .dialogue-bubble {
-    font-size: 0.6rem;
-  }
-  .neural-insight {
-    width: 110px;
-    font-size: 0.5rem;
+  /* 아이템 그리드 최적화 */
+  .items-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
   }
 
-  .center-area {
-    width: 320px;
-    min-height: 180px;
-  }
-  .board-cards {
-    gap: 4px;
-    margin-bottom: 5px;
+  /* 메시지 리스트 최적화 */
+  .v5-msg-list {
+    height: auto !important;
+    max-height: 50vh !important;
   }
 
-  .dealer-btn {
-    width: 16px;
-    height: 16px;
-    font-size: 0.6rem;
-    right: -5px;
-    top: -5px;
+  .v5-msg-h-reader {
+    max-height: 40vh !important;
+    overflow-y: auto !important;
+    padding: 15px !important;
+  }
+  .v5-msg-h-reader>p {
+    margin-top: 0;
+  }
+  /* QHD 전용 요소 숨김 */
+  .qhd-only {
+    display: none !important;
   }
 
-  .ram-meter {
-    height: 3px;
-  }
-  .status-overlay {
-    font-size: 0.7rem;
-    padding: 1px 4px;
+  /* 스킬/태스크 목록 버튼 크기 조정 */
+  .v5-slot-item {
+    height: 4rem !important;
+    padding: 10px !important;
   }
 
-  .max9.seat-0 {
-    bottom: -10px;
+  .btn-container {
+    flex-direction: row !important;
+    gap: 10px !important;
   }
-  .max9.seat-1 {
-    bottom: 20%;
-  }
-  .max9.seat-2 {
-    bottom: 35%;
-  }
-  .max9.seat-3 {
-    top: 35%;
-  }
-  .max9.seat-4 {
-    top: 15%;
-  }
-  .max9.seat-5 {
-    top: -15px;
-  }
-  .max9.seat-6 {
-    top: 15%;
-    right: 0%;
-  }
-  .max9.seat-7 {
-    top: 35%;
-    right: 0%;
-  }
-  .max9.seat-8 {
-    bottom: 35%;
-    right: 0%;
+  .btn-container button {
+    flex: 1 !important;
+    padding: 10px !important;
   }
 
-  .max6.seat-0 {
-    bottom: 0;
+  /* 5. 뱅크롤 차트 높이 조정 */
+  .net-worth-sparkline {
+    height: 60px !important;
   }
-  .max6.seat-1 {
-    bottom: 20%;
-  }
-  .max6.seat-1 .chip-stack {
-    top: 25%;
-  }
-  .max6.seat-2 {
-    top: 25%;
-  }
-
-  .max6.seat-3 {
-    top: 0;
-    left: 25%;
-  }
-
-  .max6.seat-4 {
-    top: 35%;
-    right: 0;
-  }
-  .max6.seat-5 {
-    bottom: 20%;
 }
-
-.max2.seat-bottom {
-  bottom: 0;
-}
-.max2.seat-top {
-  top: 25%;
-}
-}
-*/

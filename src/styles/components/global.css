@@ -432,6 +432,7 @@ button:active {
 }
 
 .card-header {
+  width: -webkit-fill-available;
   display: flex;
   justify-content: space-between;
   margin-bottom: 1rem;
