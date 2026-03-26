@@ -53,8 +53,10 @@
   letter-spacing: 2px;
   color: var(--neon-yellow);
   font-weight: 900;
-  text-shadow: 0 0 10px rgba(204, 255, 0, 0.3);
+  text-shadow: 0 0 10px rgba(248, 239, 0, 0.3);
+  box-shadow: var(--neon-shadow-yellow);
 }
+
 
 .v5-area-tag {
   font-size: 0.65rem;
@@ -78,7 +80,9 @@
   padding: 4px 12px;
   letter-spacing: 1px;
   cursor: pointer;
+  box-shadow: var(--neon-shadow-cyan);
 }
+
 
 .v5-digital-clock {
   font-size: 0.8rem;
@@ -275,7 +279,9 @@
 .v5-badge-mini.active {
   border-color: var(--neon-cyan);
   color: var(--neon-cyan);
+  box-shadow: var(--neon-shadow-cyan);
 }
+
 .v5-badge-mini.red {
   border-color: var(--neon-red);
   color: var(--neon-red);
@@ -325,7 +331,7 @@
 .v5-progress-fill {
   height: 100%;
   background: var(--neon-cyan);
-  /* box-shadow: 0 0 10px var(--neon-cyan); */
+  box-shadow: var(--neon-shadow-cyan);
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: absolute;
   top: 0;
@@ -489,11 +495,15 @@ input[type="range"].v5-stamina-range::-webkit-slider-thumb {
 }
 .v5-item-h-card:hover {
   border-color: rgba(0, 240, 255, 0.35);
+  box-shadow: var(--neon-shadow-cyan);
 }
+
 .v5-item-h-card.equipped {
   border-color: var(--neon-cyan);
   background: rgba(0, 240, 255, 0.05);
+  box-shadow: var(--neon-shadow-cyan);
 }
+
 
 .v5-item-icon-box {
   width: 90px;
@@ -611,6 +621,7 @@ input[type="range"].v5-stamina-range::-webkit-slider-thumb {
 }
 .v5-msg-card:hover {
   border-color: rgba(0, 240, 255, 0.4);
+  box-shadow: var(--neon-shadow-cyan);
   background: rgba(0, 240, 255, 0.03);
 }
 .v5-msg-card.active {

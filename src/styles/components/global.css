@@ -36,6 +36,18 @@
   --neon-purple: #a340ff;
   --neon-blue: #4946d6dc;
   
+  /* ── Missing Persona Colors (Restored) ── */
+  --neon-forest: #2e8b57;
+  --neon-shine-gold: #d4af37;
+  --neon-grey: #808080;
+  --neon-brown: #ad5110;
+  --neon-gold: #d4af37;
+  --neon-pink: #ff00aa;
+  --neon-marine: #009c9c;
+  --neon-indigo: #475aff;
+  --neon-violet: #da0000;
+  --neon-orange: #ff5100;
+  
   /* ── Accent Aliases ── */
   --accent-red: #ff0055;
   --accent-cyan: #00f0ff;
@@ -88,6 +100,14 @@
 .text-neon-magenta { color: var(--neon-magenta); text-shadow: 0 0 5px rgba(255, 0, 60, 0.5); }
 .text-neon-yellow { color: var(--neon-yellow); text-shadow: 0 0 5px rgba(248, 239, 0, 0.5); }
 .text-neon-red { color: var(--neon-red); text-shadow: 0 0 5px rgba(255, 0, 0, 0.5); }
+
+/* ── Persona & Philosophy Utilities ── */
+.aggressive { color: var(--neon-red) !important; }
+.neutral { color: var(--neon-cyan) !important; }
+.tight { color: var(--neon-yellow) !important; }
+.loose { color: var(--neon-magenta) !important; }
+.passive { color: var(--neon-green) !important; }
+
 
 /* ──────────────────────────────────────────────────────────
    COMMON ANIMATIONS
