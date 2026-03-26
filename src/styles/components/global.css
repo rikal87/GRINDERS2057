@@ -23,32 +23,36 @@
 
 
 :root {
-  --card-bg: rgba(10, 20, 28, 0.8);
-  --glass-border: rgba(0, 240, 255, 0.2);
-  --neon-forest: #2e8b57;
+  /* ── Core Colors ── */
   --deep-dark: #050a0e;
+  --panel-bg: rgba(13, 19, 25, 0.9);
+  --card-bg: rgba(10, 20, 28, 0.8);
+  
   --neon-cyan: #00f0ff;
   --neon-magenta: #ff003c;
   --neon-yellow: #f8ef00;
   --neon-red: #ff0000e1;
   --neon-green: #39ff14;
+  --neon-purple: #a340ff;
+  --neon-blue: #4946d6dc;
+  
+  /* ── Accent Aliases ── */
   --accent-red: #ff0055;
   --accent-cyan: #00f0ff;
   --accent-yellow: #ccff00;
   --accent-green: #39ff14;
   --accent-magenta: #ff00aa;
-  --neon-shine-gold: #d4af37;
-  --neon-grey: #808080;
-  --neon-purple: #a340ff;
-  --neon-blue: #4946d6dc;
-  --neon-brown: #ad5110;
-  --neon-gold: #d4af37;
-  --neon-pink: #ff00aa;
-  --neon-marine: #009c9c;
-  --neon-indigo: #475aff;
-  --neon-violet: #da0000;
-  --neon-orange: #ff5100;
-  /* Alias for magenta or distinct red if needed */
+
+  /* ── Neon Glow Tokens (Common Base) ── */
+  --neon-shadow-cyan: 0 0 10px rgba(0, 240, 255, 0.4);
+  --neon-shadow-red: 0 0 10px rgba(255, 0, 85, 0.4);
+  --neon-shadow-magenta: 0 0 10px rgba(255, 0, 255, 0.4);
+  --neon-shadow-yellow: 0 0 10px rgba(248, 239, 0, 0.4);
+  --neon-shadow-green: 0 0 10px rgba(57, 255, 20, 0.4);
+  
+  /* ── Layout & Borders ── */
+  --glass-border: rgba(0, 240, 255, 0.2);
+  --panel-border: rgba(255, 255, 255, 0.05);
 
   font-family: 'Share Tech Mono', 'Pretendard Std', monospace;
   line-height: 1.6;
@@ -57,15 +61,60 @@
   color-scheme: dark;
   color: #e0e6ed;
   background-color: var(--deep-dark);
-  background-image:
-    radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.05) 0%, transparent 50%),
-    linear-gradient(to bottom, #050a0e 0%, #0d1218 100%);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+
+/* ──────────────────────────────────────────────────────────
+   COMMON UTILITIES (BASE)
+   ────────────────────────────────────────────────────────── */
+.glass-panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(4px);
+  position: relative;
+}
+
+.neon-border-cyan { border: 1px solid var(--neon-cyan); box-shadow: var(--neon-shadow-cyan); }
+.neon-border-red { border: 1px solid var(--neon-red); box-shadow: var(--neon-shadow-red); }
+.neon-border-magenta { border: 1px solid var(--neon-magenta); box-shadow: var(--neon-shadow-magenta); }
+
+/* ── Neon Text Utilities ── */
+.text-neon-cyan { color: var(--neon-cyan); text-shadow: 0 0 5px rgba(0, 240, 255, 0.5); }
+.text-neon-magenta { color: var(--neon-magenta); text-shadow: 0 0 5px rgba(255, 0, 60, 0.5); }
+.text-neon-yellow { color: var(--neon-yellow); text-shadow: 0 0 5px rgba(248, 239, 0, 0.5); }
+.text-neon-red { color: var(--neon-red); text-shadow: 0 0 5px rgba(255, 0, 0, 0.5); }
+
+/* ──────────────────────────────────────────────────────────
+   COMMON ANIMATIONS
+   ────────────────────────────────────────────────────────── */
+@keyframes scanline-move {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+@keyframes v5-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes boot-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes v5-panel-boot {
+  0% { filter: brightness(1) contrast(1); }
+  10% { filter: brightness(2) contrast(1.5); }
+  20% { filter: brightness(0); }
+  30% { filter: brightness(1.5) contrast(1.2); }
+  100% { filter: brightness(1) contrast(1); }
+}
+
+
 h1,
 h2,
 h3,

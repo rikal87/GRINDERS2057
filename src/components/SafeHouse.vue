@@ -354,7 +354,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-          }} UNREAD]</small>
+              }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">
@@ -668,60 +668,8 @@ const getNetWorthChartPath = (partner) => {
   }).join(" ");
 };
 </script>
-<style></style>
-<style scoped src="../styles/components/SafeHouse.css"></style>
-<style scoped>
-.v5-mobile-nav {
-  display: none;
-}
-.boot-btn {
-  background: var(--neon-cyan);
-  color: #000;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.boot-loading {
-  width: 14px;
-  height: 14px;
-  border: 2px solid #000;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: boot-spin 0.8s linear infinite;
-}
-
-@keyframes boot-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.is-booting {
-  animation: v5-panel-boot 2s ease-in-out;
-}
-
-@keyframes v5-panel-boot {
-  0% {
-    filter: brightness(1) contrast(1);
-  }
-  10% {
-    filter: brightness(2) contrast(1.5);
-  }
-  20% {
-    filter: brightness(0);
-  }
-  30% {
-    filter: brightness(1.5) contrast(1.2);
-  }
-  100% {
-    filter: brightness(1) contrast(1);
-  }
-}
-
-.offline {
-  background: rgba(255, 0, 60, 0.2);
-  color: var(--neon-red);
-  border: 1px solid var(--neon-red);
-}
+<style lang="css">
+@import "../styles/components/SafeHouse.css";
+@import "../styles/components/SafeHouse-layout-desktop.css";
+@import "../styles/components/SafeHouse-layout-mobile.css";
 </style>

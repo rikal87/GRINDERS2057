@@ -1,0 +1,46 @@
+/* =============================================
+   SAFEHOUSE - MOBILE LAYOUT (Screen < 1024px)
+   ============================================= */
+
+@media screen and (max-width: 1023px) {
+  .v5-body {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 10px;
+    margin: 0;
+  }
+
+  /* Column Stacking */
+  .v5-side-col,
+  .v5-main-col,
+  .v5-msg-col {
+    display: none; /* Hide all by default, handled by mobile-show classes */
+    width: 100%;
+    padding: 0 !important;
+  }
+
+  /* Handle Tabbed Visibility */
+  .v5-side-col.mobile-show,
+  .v5-main-col.mobile-show,
+  .v5-msg-col.mobile-show {
+    display: flex !important;
+  }
+
+  /* Tablet Adjustments (768px - 1023px) */
+  @media screen and (min-width: 768px) {
+    .v5-body {
+      padding: 20px;
+      gap: 30px;
+    }
+  }
+
+  /* Mobile Navigation Visibility */
+  .v5-mobile-nav {
+    display: flex !important;
+    justify-content: space-around;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+    margin-bottom: 20px;
+  }
+}
