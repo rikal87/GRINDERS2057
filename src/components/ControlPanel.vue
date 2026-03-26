@@ -570,8 +570,9 @@ button {
   color: #fff;
 }
 
-.slider-area {
-  margin-bottom: 20px;
+.shortcuts button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--neon-cyan);
 }
 
 .bet-display {
@@ -975,11 +976,10 @@ button:disabled {
     font-size: 0.8rem;
   }
 
-  .bet-display .value {
-    font-size: 1.2rem;
-  }
-
-  .actions {
+  .skill-panel {
+    flex: 1.5;
+    max-width: 500px;
+    display: grid;
     grid-template-columns: 1fr 1fr;
     /* Stack actions better */
     gap: 8px;
