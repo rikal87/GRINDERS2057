@@ -31,6 +31,11 @@
     justify-content: center;
   }
 
+  .btn-lobby:active {
+    box-shadow: var(--neon-shadow-cyan);
+    transform: scale(0.98);
+  }
+
   /* 로비 버튼 크기 조정 */
   .lobby-nav button,
   .lobby-actions button {
