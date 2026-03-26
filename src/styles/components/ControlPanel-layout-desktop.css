@@ -1,0 +1,36 @@
+/* =============================================
+   CONTROLPANEL - DESKTOP LAYOUT
+   ============================================= */
+
+/* 데스크톱에서만 모바일 전용 요소를 숨김 */
+@media (min-width: 769px) {
+  .mobile-swipe-container,
+  .swipe-dots {
+    display: none;
+  }
+}
+
+@media (min-width: 1200px) {
+  .control-panel {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px;
+    background: rgba(5, 10, 14, 0.8);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--glass-border);
+  }
+
+  .betting-interface {
+    flex: 2;
+    max-width: 600px;
+  }
+  .permanent-hud {
+    /* flex: 1.5; */
+    max-width: 500px;
+  }
+  .skill-panel {
+    flex: 1.5;
+    max-width: 500px;
+  }
+}

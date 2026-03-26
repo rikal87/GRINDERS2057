@@ -1,0 +1,110 @@
+/* =============================================
+   CONTROLPANEL - MOBILE LAYOUT
+   ============================================= */
+
+/* 모바일에서는 데스크톱 전용 요소를 숨김 */
+@media screen and (max-width: 1023px) {
+  .desktop-only {
+    display: none !important;
+  }
+}
+
+/* --- Mobile Portrait Optimizations (412x915) --- */
+
+@media (max-width: 450px) {
+  .control-panel {
+    gap: 10px;
+    padding-bottom: 20px;
+  }
+
+  aside.inbox-panel {
+    height: 100px;
+    min-height: 100px;
+  }
+
+  .betting-interface {
+    padding: 10px;
+  }
+
+  .shortcuts {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+
+  .shortcuts button {
+    padding: 12px 5px;
+    /* Larger touch target */
+    font-size: 0.8rem;
+  }
+
+  .skill-panel {
+    flex: 1.5;
+    max-width: 500px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Stack actions better */
+    gap: 8px;
+  }
+
+  .btn-fold {
+    grid-column: span 1;
+    padding: 15px;
+  }
+  .btn-call {
+    grid-column: span 1;
+    padding: 15px;
+  }
+  .btn-raise {
+    grid-column: span 2;
+    padding: 15px;
+    margin-top: 5px;
+  }
+
+  .skill-panel {
+    grid-template-columns: 1fr;
+    /* Vertical stack for skills on mobile */
+    gap: 8px;
+  }
+
+  .skill-btn {
+    padding: 12px;
+  }
+
+  .skill-name {
+    font-size: 0.9rem;
+  }
+  .skill-cost {
+    font-size: 1rem;
+  }
+}
+
+/* --- Mobile Swipe Container Logic (Preserving Functionality) --- */
+@media screen and (max-width: 1023px) {
+  .mobile-swipe-container {
+    display: flex !important;
+    width: 100%;
+    height: 200px;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+    touch-action: pan-x;
+  }
+  .mobile-swipe-container::-webkit-scrollbar {
+    display: none;
+  }
+  .swipe-panel {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .dot.active {
+    background: var(--neon-cyan);
+    box-shadow: var(--neon-shadow-cyan);
+    transform: scale(1.3);
+  }
+}

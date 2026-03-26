@@ -1,0 +1,53 @@
+/* =============================================
+   POKERTABLE - DESKTOP LAYOUT (Original Elliptical)
+   ============================================= */
+
+@media screen and (min-width: 1024px) {
+  .poker-table {
+    border-radius: 999px; /* Complete Ellipse */
+  }
+
+  /* Wide Screen / FHD Optimization */
+  @media (min-width: 1200px) {
+    .poker-table {
+      height: 60vh;
+      border-width: 4px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 100px rgba(0, 240, 255, 0.05);
+    }
+  }
+
+  /* --- Seating Distribution Logic (Desktop/Large Screen) --- */
+  
+  /* 9-Player Distribution (Professional Elliptical) */
+  .max9.seat-0 { bottom: 0; left: 50%; transform: translateX(-50%); }
+  .max9.seat-1 { left: 20%; bottom: 0; }
+  .max9.seat-2 { left: 5%; bottom: 25%; }
+  .max9.seat-3 { left: 5%; top: 20%; }
+  .max9.seat-4 { left: 25%; top: 0%; }
+  .max9.seat-5 { top: 0%; right: 25%; }
+  .max9.seat-6 { right: 5%; top: 20%; }
+  .max9.seat-7 { right: 5%; bottom: 25%; }
+  .max9.seat-8 { right: 20%; bottom: 0; }
+
+  /* 6-Player Distribution (Professional 6-Max Layout) */
+  .max6.seat-0 { bottom: 0; left: 50%; transform: translateX(-50%); }
+  .max6.seat-1 { bottom: 20%; left: 10%; }
+  .max6.seat-2 { top: 10%; left: 10%; }
+  .max6.seat-3 { top: -5%; left: 50%; transform: translateX(-50%); }
+  .max6.seat-4 { top: 10%; right: 10%; }
+  .max6.seat-5 { bottom: 20%; right: 10%; }
+
+  /* Vertical 2-Max Distribution */
+  .max2.seat-bottom { bottom: 0; left: 50%; transform: translateX(-50%); }
+  .max2.seat-top { top: 10%; left: 50%; transform: translateX(-50%); }
+
+  /* Chip Stacks positioning for Desktop */
+  .max9.seat-0 .chip-stack, .max9.seat-1 .chip-stack, .max9.seat-2 .chip-stack,
+  .max9.seat-7 .chip-stack, .max9.seat-8 .chip-stack { bottom: 105%; }
+  .max9.seat-3 .chip-stack, .max9.seat-4 .chip-stack, .max9.seat-5 .chip-stack,
+  .max9.seat-6 .chip-stack { bottom: -60%; }
+  
+  .max6.seat-0 .chip-stack { bottom: 105%; }
+  .max6.seat-1 .chip-stack, .max6.seat-2 .chip-stack, .max6.seat-3 .chip-stack,
+  .max6.seat-4 .chip-stack, .max6.seat-5 .chip-stack { top: 105%; }
+}

@@ -26,26 +26,15 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  /* height: 50vh; */
   background: radial-gradient(circle, #1a1a2e 0%, #0d0d1b 100%);
   border: 2px solid var(--glass-border);
-  border-radius: 999px;
-  /* Elliptical shape */
   margin-bottom: 20px;
   overflow: visible;
   transition: all 0.3s ease;
 }
 
-@media (min-width: 1200px) {
-  .poker-table {
-    height: 60vh;
-    border-width: 4px;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 100px rgba(0, 240, 255, 0.05);
-    /* Note: Table body shadow might stay hybrid for depth, but internal glows will use tokens where possible */
-}
-
-}
 .replay-trigger {
+
   position: absolute;
   top: 0px;
   left: 15px;

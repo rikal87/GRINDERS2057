@@ -377,8 +377,10 @@ const isTimeCritical = (p, idx) => {
 };
 </script>
 
-<style scoped>
+<style lang="css">
 @import '../styles/components/PokerTable.css';
+@import '../styles/components/PokerTable-layout-desktop.css';
+@import '../styles/components/PokerTable-layout-mobile.css';
 
 .effect-hud {
   /* position: absolute; */
