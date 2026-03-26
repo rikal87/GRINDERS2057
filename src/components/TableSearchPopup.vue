@@ -541,4 +541,68 @@ const confirmJoin = () => {
 .stat-row:last-child {
   margin-bottom: 0;
 }
+
+/* ── 모바일: nav 버튼을 카드 아래로 이동 ── */
+@media (max-width: 768px) {
+  .search-popup {
+    padding: 1rem;
+    width: 100%;
+  }
+
+  /* 브라우저를 세로 컬럼으로 변경 */
+  .location-browser {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* location-display 전체 너비 */
+  .location-display {
+    width: 100%;
+    height: 55vh;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  /* 헤더는 전체 너비 유지 */
+  .location-header {
+    grid-column: 1 / -1;
+  }
+
+  /* nav 버튼 2개를 가로로 나란히 하단 배치 */
+  .nav-btn.prev,
+  .nav-btn.next {
+    order: 1; /* location-display 뒤로 */
+  }
+
+  /* flex로 버튼 2개 행 만들기 */
+  .location-browser {
+    position: relative;
+  }
+
+  /* prev/next를 하단에 flex row로 모으기 위한 래퍼 역할 */
+  .nav-btn {
+    flex: 1;
+    height: 44px; /* 터치 타겟 확보 */
+    font-size: 1.2rem;
+  }
+
+  /* location 이름 폰트 모바일 축소 */
+  .location-name {
+    font-size: 1.3rem;
+  }
+
+  /* 설명 텍스트 폰트 축소 */
+  .location-info .desc {
+    font-size: 0.9rem;
+  }
+
+  /* house-status 태그 좌측 정렬 */
+  .house-status {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+}
 </style>

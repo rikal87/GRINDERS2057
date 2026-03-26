@@ -1,0 +1,121 @@
+/* ──────────────────────────────────────────────────────────
+   SAFEHOUSE MOBILE OVERRIDES (mobile-home.css)
+   ────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  /* 1. 레이아웃 재구성 */
+  .v5-body {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    padding: 10px !important;
+    height: auto !important;
+    overflow-y: auto !important;
+  }
+
+  /* 2. 모바일 내비게이션 (탭) */
+  .v5-mobile-nav {
+    display: flex !important;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--panel-border);
+    margin-bottom: 15px;
+    z-index: 100;
+  }
+  .v5-mobile-nav button {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 12px 5px;
+    color: #506070;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 2px solid transparent;
+  }
+  .v5-mobile-nav button.active {
+    color: var(--neon-cyan);
+    border-bottom-color: var(--neon-cyan);
+    background: rgba(0, 240, 255, 0.05);
+  }
+
+  /* 3. 컬럼 가시성 제어 */
+  .v5-side-col,
+  .v5-main-col,
+  .v5-msg-col {
+    display: none !important; /* 기본적으로 숨김 */
+    width: 100% !important;
+    padding: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+  }
+
+  /* 활성화된 탭만 표시 */
+  .v5-side-col.mobile-show,
+  .v5-main-col.mobile-show,
+  .v5-msg-col.mobile-show {
+    display: flex !important;
+  }
+
+  /* 4. 내부 요소 최적화 */
+  .v5-panel-inner {
+    padding: 15px !important;
+  }
+
+  .v5-class-title {
+    font-size: 1.5rem !important;
+    letter-spacing: 2px !important;
+  }
+
+  /* 파트너 그리드 최적화 */
+  .partner-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+
+  /* 아이템 그리드 최적화 */
+  .items-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* 메시지 리스트 최적화 */
+  .v5-msg-list {
+    height: auto !important;
+    max-height: 50vh !important;
+  }
+
+  .v5-msg-h-reader {
+    height: auto !important;
+    max-height: 40vh !important;
+    overflow-y: auto !important;
+    padding: 15px !important;
+  }
+
+  /* QHD 전용 요소 숨김 */
+  .qhd-only {
+    display: none !important;
+  }
+
+  /* 스킬/태스크 목록 버튼 크기 조정 */
+  .v5-slot-item {
+    height: 4rem !important;
+    padding: 10px !important;
+  }
+
+  .btn-container {
+    flex-direction: row !important;
+    gap: 10px !important;
+  }
+  .btn-container button {
+    flex: 1 !important;
+    padding: 10px !important;
+  }
+
+  /* 5. 뱅크롤 차트 높이 조정 */
+  .net-worth-sparkline {
+    height: 60px !important;
+  }
+}

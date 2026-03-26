@@ -671,9 +671,6 @@ const getNetWorthChartPath = (partner) => {
 <style></style>
 <style scoped src="../styles/components/SafeHouse.css"></style>
 <style scoped>
-.v5-mobile-nav {
-  display: none;
-}
 .boot-btn {
   background: var(--neon-cyan);
   color: #000;

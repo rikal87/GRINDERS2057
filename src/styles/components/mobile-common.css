@@ -1,0 +1,138 @@
+/* ================================================
+   MOBILE COMMON STYLES
+   대상: App.vue 네비바, 오버레이, 팝업 공통 요소
+   브레이크포인트: max-width: 768px (모바일)
+                   max-width: 480px (소형폰)
+   ================================================ */
+
+@media (max-width: 768px) {
+  /* ── #app 최소 너비 해제 ── */
+  #app {
+    min-width: 320px;
+  }
+
+  /* ── 네비바 (App.vue header.navbar) ── */
+  .navbar {
+    padding: 4px 10px;
+  }
+
+  .header-main .row {
+    flex-wrap: wrap;
+  }
+
+  /* 로고 축소 */
+  h1.logo {
+    font-size: 1.1rem;
+    letter-spacing: 0;
+    margin-bottom: 0;
+  }
+
+  /* 게임 날짜/시간 폰트 축소 */
+  .status-group .status-value {
+    font-size: 0.65rem;
+  }
+
+  /* SETTINGS 버튼 소형화 */
+  .btn-audio {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
+  /* ── Settings Overlay ── */
+  .settings-overlay .terminal-msg {
+    max-width: 95%;
+    padding: 1.5rem 1rem;
+  }
+
+  .settings-list {
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .setting-item {
+    padding: 0.75rem;
+  }
+
+  .setting-item .label {
+    font-size: 0.75rem;
+  }
+
+  .setting-item button {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  /* ── 공통 Overlay 박스 ── */
+  .terminal-msg {
+    max-width: 92%;
+    padding: 1.5rem 1rem;
+  }
+
+  .terminal-msg h2 {
+    font-size: 1.1rem;
+  }
+
+  .terminal-msg p {
+    font-size: 0.8rem;
+  }
+
+  /* ── 공통 버튼 ── */
+  .btn-reboot {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+  }
+
+  /* ── 아이템 그리드 (공통) ── */
+  .items-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── Sleep Modal ── */
+  .sleep-overlay .v5-modal {
+    width: 92vw;
+    padding: 1.5rem 1rem;
+  }
+
+  /* ── 게임 레이아웃 최적화 ── */
+  .game-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 2vh;
+  }
+
+  /* ── 스캔라인 배경 숨김 (성능 절약) ── */
+  .scanline-bg {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  h1.logo {
+    font-size: 1.1rem;
+  }
+
+  .navbar {
+    padding: 6px 8px;
+  }
+
+  /* 날짜/시간 숨김 (너무 작은 화면) */
+  .status-group {
+    display: none;
+  }
+
+  .btn-audio {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+}

@@ -1,0 +1,124 @@
+/* ================================================
+   MOBILE LOBBY STYLES
+   대상: Lobby.vue, TableSearchPopup.vue, HistoryPopup.vue
+   브레이크포인트: max-width: 768px, max-width: 480px
+   ================================================ */
+
+@media (max-width: 768px) {
+  /* ── Lobby 컨테이너 ── */
+  /* Lobby 내 그리드가 있을 경우 단일 컬럼으로 */
+  .lobby-container,
+  .lobby-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  /* 존/테이블 카드 - 전체 너비 */
+  .zone-card,
+  .table-card,
+  .location-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* 네비게이션 버튼 영역 */
+  .lobby-nav,
+  .lobby-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  /* 로비 버튼 크기 조정 */
+  .lobby-nav button,
+  .lobby-actions button {
+    font-size: 0.75rem;
+    padding: 0.6em 1.2em;
+    min-width: 80px;
+  }
+
+  /* 존 정보 텍스트 */
+  .zone-name,
+  .location-name {
+    font-size: 0.85rem;
+  }
+
+  .zone-desc,
+  .location-desc {
+    font-size: 0.7rem;
+  }
+
+  /* 소지금 / 바이인 등 숫자 표시 */
+  .bankroll-display,
+  .stat-value {
+    font-size: 1rem;
+  }
+
+  /* ── TableSearchPopup ── */
+  .table-search-popup,
+  .search-popup-inner {
+    width: 95vw;
+    max-width: 95vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  /* 테이블 목록 행 */
+  .table-row,
+  .search-result-row {
+    font-size: 0.7rem;
+    padding: 8px 5px;
+  }
+
+  /* 테이블 헤더 텍스트 */
+  .table-header th,
+  .search-header th {
+    font-size: 0.65rem;
+    padding: 5px 3px;
+  }
+
+  /* ── HistoryPopup ── */
+  .history-popup,
+  .history-popup-inner {
+    width: 95vw;
+    max-width: 95vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  .history-row {
+    font-size: 0.65rem;
+  }
+
+  /* 팝업 닫기 버튼 */
+  .popup-close-btn {
+    font-size: 0.75rem;
+    padding: 5px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* 로비 버튼 전체 너비 (소형폰) */
+  .lobby-nav button,
+  .lobby-actions button {
+    flex: 1;
+    min-width: 70px;
+    font-size: 0.65rem;
+    padding: 0.5em 0.8em;
+  }
+
+  /* 테이블 검색: 일부 컬럼 숨김 */
+  .table-col-rake,
+  .table-col-players {
+    display: none;
+  }
+
+  /* history: 날짜 컬럼 숨김 */
+  .history-col-date {
+    display: none;
+  }
+}

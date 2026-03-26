@@ -1,0 +1,225 @@
+/* ──────────────────────────────────────────────────────────
+   BLACK MARKET (SHOP) MOBILE OVERRIDES (mobile-shop.css)
+   ────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .black-market-container {
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  .market-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+  }
+
+  /* 1. CCTV 상단 패널 (Dealer & Header) */
+  .dealer-panel {
+    width: 100% !important;
+    height: 48vh !important; /* 화면의 절반 가량 차지 */
+    border-right: none !important;
+    border-bottom: 2px solid var(--neon-cyan) !important;
+    padding: 15px !important;
+    flex-shrink: 0 !important;
+    position: relative !important;
+    background: linear-gradient(180deg, #050a0e 0%, #0d1319 100%) !important;
+    display: block !important; /* 순서 재배치를 위해 블록 */
+  }
+
+  /* CCTV 노이즈 효과 레이어 */
+  .dealer-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyIiBoZWlnaHQ9IjIiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=');
+    pointer-events: none;
+    opacity: 0.1;
+  }
+
+  .market-header {
+    margin-bottom: 10px !important;
+    text-align: left !important;
+  }
+  .market-title {
+    font-size: 1.2rem !important;
+    letter-spacing: 1px !important;
+  }
+  .sub-title {
+    font-size: 0.5rem !important;
+  }
+
+  .dealer-visual {
+    display: flex !important;
+    flex-direction: row !important; /* 딜러와 대화창 가로 배치 */
+    align-items: flex-start !important;
+    gap: 15px !important;
+    margin-top: 5px !important;
+  }
+
+  .dealer-silhouette {
+    width: 80px !important;
+    height: 80px !important;
+    margin-bottom: 0 !important;
+    border: 2px solid var(--neon-cyan) !important;
+    box-shadow: 0 0 10px var(--neon-cyan) !important;
+    flex-shrink: 0 !important;
+  }
+  .eye-glow {
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  .dealer-dialogue {
+    flex: 1 !important;
+    padding: 8px !important;
+    min-height: 50px !important;
+    border-color: rgba(0, 240, 255, 0.3) !important;
+    height: 80px !important;
+    overflow-y: auto !important;
+  }
+  .dialogue-text {
+    font-size: 0.75rem !important;
+  }
+
+  /* 모바일용 리프레시/지갑 하단 배치 */
+  .refresh-section {
+    border-top: none !important;
+    padding-top: 5px !important;
+    display: flex !important;
+    gap: 10px !important;
+    align-items: center !important;
+  }
+  .refresh-info {
+    margin-bottom: 0 !important;
+    font-size: 0.6rem !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .btn-refresh {
+    padding: 8px !important;
+    font-size: 0.7rem !important;
+    max-width: 150px !important;
+  }
+
+  .player-wallet {
+    position: absolute !important;
+    top: 15px !important;
+    right: 15px !important;
+    padding: 5px 10px !important;
+    border-left: 2px solid #ffd700 !important;
+    margin: 0 !important;
+    background: rgba(0,0,0,0.5) !important;
+  }
+  .player-wallet .value {
+    font-size: 1rem !important;
+  }
+  .player-wallet .label {
+    font-size: 0.5rem !important;
+  }
+
+  .control-actions {
+    position: absolute !important;
+    bottom: 10px !important;
+    right: 15px !important;
+    flex-direction: row !important;
+    gap: 10px !important;
+  }
+  .btn-catalog, .btn-leave {
+    margin: 0 !important;
+    padding: 6px 15px !important;
+    font-size: 0.65rem !important;
+  }
+  .btn-leave {
+    background: var(--neon-red) !important;
+    color: #fff !important;
+  }
+
+  /* 2. 상품 패널 (Item List) */
+  .merch-panel {
+    flex: 1 !important;
+    padding: 10px !important;
+    background: #020202 !important;
+  }
+
+  .items-grid {
+    grid-template-columns: 1fr !important; /* 무조건 1열 */
+    gap: 10px !important;
+    padding-bottom: 20px !important;
+  }
+
+  /* 아이템 카드: 가로 압축형 */
+  .item-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 8px !important;
+    min-height: 90px !important;
+    overflow: hidden !important;
+  }
+
+  .item-icon {
+    width: 60px !important;
+    height: 60px !important;
+    font-size: 2rem !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+  }
+
+  .item-details {
+    flex: 1 !important;
+    text-align: left !important;
+  }
+  .item-details .name {
+    font-size: 0.9rem !important;
+    margin-bottom: 2px !important;
+    color: #fff !important;
+  }
+  .price-mobile-inline {
+    display: block !important;
+    font-size: 0.8rem !important;
+    color: var(--neon-cyan) !important;
+    font-weight: bold !important;
+    margin-bottom: 4px !important;
+  }
+
+  .item-details .desc {
+    font-size: 0.7rem !important;
+    line-height: 1.2 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  /* 효과 숨김 (터치 시 보이면 좋겠지만 일단 압축을 위해 제거/축소) */
+  .effects-mini {
+    display: none !important;
+  }
+
+  /* 원래 가격표 레이아웃 제거/조정 */
+  .item-price {
+    display: none !important; /* 인라인 가격 쓰므로 숨김 */
+  }
+
+  .buy-overlay {
+    opacity: 0.3 !important; /* 모바일은 항상 보게 해서 명시성 확보 */
+    background: transparent !important;
+    justify-content: flex-end !important;
+    align-items: flex-start !important;
+    padding: 5px !important;
+  }
+  .buy-overlay span {
+    font-size: 0.5rem !important;
+    padding: 2px 4px !important;
+    transform: none !important;
+    opacity: 0.7 !important;
+  }
+
+  .empty-stock h2 {
+    font-size: 1.2rem !important;
+  }
+}

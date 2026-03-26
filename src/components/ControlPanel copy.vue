@@ -1,5 +1,6 @@
 <template>
   <footer class="control-panel" v-if="engine">
+
     <!-- ══════════════════════════════════════════════
          MOBILE: 3-패널 스와이프 레이아웃
          [ INBOX ] [ BETTING(default) ] [ HUD/SKILLS ]
@@ -121,17 +122,6 @@
             </div>
           </div>
         </div>
-        <!-- Skills (Mobile list) -->
-        <div class="mobile-skills">
-          <button v-for="skillId in store.unlockedSkills" :key="skillId" class="skill-btn"
-            :disabled="store.stamina < store.getSkillCost(skillId)" @click="emit('skill', skillId)"
-            :class="{ 'disabled': store.stamina < store.getSkillCost(skillId) }">
-            <div class="skill-meta">
-              <span class="skill-name">{{ store.getSkillDisplayName(skillId) }}</span>
-            </div>
-            <span class="skill-cost">{{ store.getSkillCost(skillId) }} RAM</span>
-          </button>
-        </div>
       </div>
     </div>
 
@@ -146,9 +136,7 @@
          DESKTOP: 기존 3-컬럼 레이아웃 유지
     ══════════════════════════════════════════════ -->
     <aside class="inbox-panel desktop-only">
-      <div class="inbox-header">
-        SYS.COMM.LOG //
-      </div>
+      <div class="inbox-header">SYS.COMM.LOG //</div>
       <div class="message-list">
         <div v-for="msg in store.messages" :key="msg.id" class="message-item" :class="{ 'unread': !msg.isRead }">
           <span class="msg-indicator" v-if="!msg.isRead">*</span>
@@ -159,6 +147,28 @@
     </aside>
 
     <div class="betting-interface desktop-only">
+      <div class="actions">
+        <button class="btn-fold" :disabled="!isMyTurn || isProcessing"
+          @click="handleAction({ type: 'fold' })">FOLD</button>
+        <button class="btn-call" :disabled="!isMyTurn || isProcessing"
+          @click="handleAction({ type: callAmountRaw >= playerChips ? 'all_in' : 'call', amount: callAmountRaw + player.currentBet })">
+          <p>{{ callAmountRaw === 0 ? 'CHECK' : callAmountRaw >= playerChips ? 'ALL-IN' : 'CALL' }}</p>
+          <p>{{ formatUnit(callAmountRaw) }}</p>
+        </button>
+        <button class="btn-raise" :disabled="!isMyTurn || isProcessing || currentBetValue < minRaise"
+          @click="handleAction({ type: isAllInSelection ? 'all_in' : 'raise', amount: isAllInSelection ? playerTotalAvailable : currentBetValue })">
+          <p>{{ isAllInSelection ? 'ALL-IN' : 'RAISE' }}</p>
+          <p>{{ formatUnit(isAllInSelection ? playerTotalAvailable : currentBetValue) }}</p>
+        </button>
+      </div>
+      <div class="slider-area">
+        <input type="range" :min="minRaise" :max="playerTotalAvailable" step="1" v-model.number="currentBetValue"
+          class="bet-slider" />
+        <div class="bet-display">
+          <span class="value">{{ formatUnit(currentBetValue) }}</span>
+          <span class="label">SET CHARGE</span>
+        </div>
+      </div>
       <div class="shortcuts">
         <template v-if="engine.state === 'PREFLOP'">
           <button @click="setBet('min')">MIN</button>
@@ -173,35 +183,9 @@
           <button @click="setBet(1.2)">120%</button>
         </template>
       </div>
-      <div class="slider-area">
-        <input type="range" :min="minRaise" :max="playerTotalAvailable" step="1" v-model.number="currentBetValue"
-          class="bet-slider" />
-        <div class="bet-display">
-          <span class="value">{{ formatUnit(currentBetValue) }}</span>
-          <span class="label">SET CHARGE</span>
-        </div>
-      </div>
-      <div class="actions">
-        <button class="btn-fold" :disabled="!isMyTurn || isProcessing"
-          @click="handleAction({ type: 'fold' })">FOLD</button>
-        <button class="btn-call" :disabled="!isMyTurn || isProcessing"
-          @click="handleAction({ type: callAmountRaw >= playerChips ? 'all_in' : 'call', amount: callAmountRaw + player.currentBet })">
-          <p>{{ callAmountRaw === 0 ? 'CHECK' : callAmountRaw >= playerChips ? 'ALL-IN' : 'CALL' }}</p>
-          <p>{{ formatUnit(callAmountRaw) }}</p>
-        </button>
-        <button class="btn-raise" :disabled="!isMyTurn || isProcessing || currentBetValue < minRaise"
-          @click="handleAction({ type: isAllInSelection ? 'all_in' : 'raise', amount: isAllInSelection ? playerTotalAvailable : currentBetValue })">
-          <p>
-            {{ isAllInSelection ? 'ALL-IN' : 'RAISE' }}
-          </p>
-          <p>{{ formatUnit(isAllInSelection ? playerTotalAvailable : currentBetValue) }}</p>
-        </button>
-      </div>
     </div>
 
-    <!-- Gadget Panel -->
     <div class="skill-panel desktop-only">
-      <!-- [CASHOUT], [RESERVE EXIT]  -->
       <div class="status-row exit-controls" v-if="!engine.isDeathmatch">
         <button class="btn-cashout" :disabled="!player.isFolded" @click="handleCashout"
           :data-tooltip="cashoutTooltip">CASHOUT</button>
@@ -213,7 +197,6 @@
           {{ engine.exitReservationRounds >= 0 ? `EXIT IN ${engine.exitReservationRounds} ROUNDS` : 'RESERVE EXIT' }}
         </button>
       </div>
-      <!-- [MOVED] Protector Badge & Effects HUD -->
       <div class="status-row" v-if="player.item">
         <div class="protector-badge" :data-tooltip="player.item.desc">
           {{ player.item.icon }}
@@ -223,7 +206,6 @@
             :data-tooltip="getEffectDesc(eff)">
             <div class="effect-item" :class="{ 'cooldown': eff.cooldown > 0 }">
               <div class="eff-icon">{{ eff.icon }}</div>
-              <!-- Cooldown Gauge Overlay -->
               <div v-if="eff.cooldown > 0" class="cooldown-gauge"
                 :style="{ height: (eff.maxCooldown ? (eff.cooldown / eff.maxCooldown * 100) : 100) + '%' }">
               </div>
@@ -232,37 +214,36 @@
           </div>
         </div>
       </div>
-      <!-- Victory Condition Display -->
-      <div class="permanent-hud double">
-        <div class="hud-stat">
-          <span class="label">{{ getLanguage() === 'ko' ? '승리 조건' : 'WIN_CONDITION' }}:</span>
-          <span class="value" :class="victoryConditionChips >= acquiredChips ? 'yellow' : 'green'">
-            {{ formatUnit(acquiredChips) }} / {{ formatUnit(victoryConditionChips) }}
-          </span>
+      <div class="hud-strip">
+        <div class="permanent-hud double">
+          <div class="hud-stat">
+            <span class="label">{{ getLanguage() === 'ko' ? '승리 조건' : 'WIN_CONDITION' }}:</span>
+            <span class="value" :class="victoryConditionChips >= acquiredChips ? 'yellow' : 'green'">
+              {{ formatUnit(acquiredChips) }} / {{ formatUnit(victoryConditionChips) }}
+            </span>
+          </div>
+        </div>
+        <div class="permanent-hud">
+          <div class="hud-stat" :class="{ 'low-stamina': store.stamina < 25 }">
+            <span class="label">STAMINA:</span>
+            <span class="value" :style="{ color: getStaminaColor }">{{ Math.floor(store.stamina) }} / {{
+              getEffectiveMaxStamina() }}</span>
+          </div>
+        </div>
+        <div class="permanent-hud" v-if="isActiveHandHud()">
+          <div class="hud-stat">
+            <span class="label">HAND:</span>
+            <span class="value">{{ currentHandRank }}</span>
+          </div>
+        </div>
+        <div class="permanent-hud" v-if="isActiveSuspicionHud()">
+          <div class="hud-stat">
+            <span class="label">SUSPICION:</span>
+            <span class="value" :style="{ color: getSuspicionColorLabelClass(props.engine.zoneId) }">{{
+              getCurrentSuspicion(props.engine.zoneId) }}/100</span>
+          </div>
         </div>
       </div>
-      <!-- Permanent Stamina Display -->
-      <div class="permanent-hud">
-        <div class="hud-stat" :class="{ 'low-stamina': store.stamina < 25 }">
-          <span class="label">STAMINA:</span>
-          <span class="value" :style="{ color: getStaminaColor }">{{ Math.floor(store.stamina) }} / {{
-            getEffectiveMaxStamina() }}</span>
-        </div>
-      </div>
-      <div class="permanent-hud" v-if="isActiveHandHud()">
-        <div class="hud-stat">
-          <span class="label">HAND:</span>
-          <span class="value">{{ currentHandRank }}</span>
-        </div>
-      </div>
-      <div class="permanent-hud" v-if="isActiveSuspicionHud()">
-        <div class="hud-stat">
-          <span class="label">SUSPICION:</span>
-          <span class="value" :style="{ color: getSuspicionColorLabelClass(props.engine.zoneId) }">{{
-            getCurrentSuspicion(props.engine.zoneId) }}/100</span>
-        </div>
-      </div>
-      <!-- Skill Buttons -->
       <button v-for="skillId in store.unlockedSkills" :key="skillId" class="skill-btn"
         :disabled="store.stamina < store.getSkillCost(skillId)" @click="emit('skill', skillId)"
         :class="{ 'disabled': store.stamina < store.getSkillCost(skillId) }">
@@ -273,6 +254,7 @@
         <span class="skill-cost">{{ store.getSkillCost(skillId) }} RAM</span>
       </button>
     </div>
+
     <!-- Custom Cashout Modal -->
     <Transition name="fade">
       <div v-if="showCashoutModal" class="overlay">
@@ -292,7 +274,6 @@
         </div>
       </div>
     </Transition>
-    <!-- <p class="scanline">NEURAL LINK ESTABLISHED // ENCRYPTED TRAFFIC ONLY</p> -->
   </footer>
 </template>
 
@@ -494,22 +475,17 @@ const handleReserveExit = () => {
   font-size: 1.5rem;
   color: var(--neon-red);
 }
-
-/* 데스크톱에서만 모바일 전용 요소를 숨김 */
-@media (min-width: 769px) {
-  .mobile-swipe-container,
-  .swipe-dots {
-    display: none;
-  }
-}
-
 .control-panel {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
-  z-index: 1;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(5, 10, 14, 0.8);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--glass-border);
+  z-index: 10;
   position: relative;
-  /* Ensure z-index works */
 }
 
 /* Ensure buttons pop over scanlines */
@@ -517,29 +493,40 @@ button {
   backface-visibility: hidden;
   transform: translateZ(0);
 }
-@media (min-width: 1200px) {
-  .control-panel {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-    padding: 20px;
-    background: rgba(5, 10, 14, 0.8);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--glass-border);
-  }
 
-  .betting-interface {
-    flex: 2;
-    max-width: 600px;
-  }
-  .permanent-hud {
-    /* flex: 1.5; */
-    max-width: 500px;
-  }
-  .skill-panel {
-    flex: 1.5;
-    max-width: 500px;
-  }
+/* ══════════════════════════════════════════════
+   MOBILE-ONLY 요소 / DESKTOP-ONLY 요소
+══════════════════════════════════════════════ */
+.mobile-swipe-container,
+.swipe-dots {
+  display: none;
+  /* 모바일에서만 표시 */
+}
+.desktop-only {
+  display: flex;
+  /* 데스크톱에서만 표시 */
+}
+aside.inbox-panel.desktop-only {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 154px;
+  min-height: 154px;
+}
+
+/* ══════════════════════════════════════════════
+   DESKTOP: 기존 3-컬럼 레이아웃
+══════════════════════════════════════════════ */
+.betting-interface {
+  flex: 2;
+  max-width: 600px;
+}
+.permanent-hud {
+  max-width: 500px;
+}
+.skill-panel {
+  flex: 1.5;
+  max-width: 500px;
 }
 
 .betting-interface {
@@ -563,8 +550,8 @@ button {
 }
 
 .shortcuts button {
-  padding: 8px;
-  font-size: 0.7rem;
+  padding: 12px 8px;
+  font-size: 0.8rem;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
@@ -583,7 +570,6 @@ button {
 
 .bet-display .value {
   font-size: 1.5rem;
-
   color: var(--neon-yellow);
 }
 
@@ -920,20 +906,27 @@ aside.inbox-panel {
 button:disabled {
   cursor: not-allowed;
 }
+.btn-fold,
+.btn-call,
+.btn-raise {
+  padding: 12px 20px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
 .btn-fold {
   background: #333;
   border-left: unset;
 }
-.btn-call {
-  background: var(--neon-cyan);
-  color: #000;
-}
+
 .btn-call {
   background: var(--neon-cyan);
   color: #000;
   font-weight: 900;
   text-shadow: none;
 }
+
 .btn-raise {
   background: var(--neon-magenta);
   color: #000;
@@ -948,73 +941,177 @@ button:disabled {
   font-size: 1.2rem;
 }
 
-/* --- Mobile Portrait Optimizations (412x915) --- */
-@media (max-width: 450px) {
-  .control-panel {
-    gap: 10px;
-    padding-bottom: 20px;
+/* ══════════════════════════════════════════════
+   MOBILE: 스와이프 슬라이드 레이아웃
+   max-width: 768px 이하에서 활성화
+══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* 데스크톱 전용 요소 숨김 */
+  .desktop-only {
+    display: none !important;
   }
 
-  aside.inbox-panel {
-    height: 100px;
-    min-height: 100px;
+  /* 모바일 전용 요소 표시 */
+  .mobile-swipe-container {
+    display: flex;
+    width: 100%;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* 패널 전환 부드럽게 */
+    scroll-behavior: smooth;
+  }
+  .mobile-swipe-container::-webkit-scrollbar {
+    display: none;
   }
 
-  .betting-interface {
-    padding: 10px;
+  /* 각 패널 공통 */
+  .swipe-panel {
+    flex: 0 0 100%;
+    width: 100%;
+    scroll-snap-align: start;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 0;
   }
 
-  .shortcuts {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 5px;
+  /* 패널 0: INBOX */
+  .panel-inbox {
+    background: rgba(0, 0, 0, 0.4);
+    border-right: 1px solid rgba(0, 240, 255, 0.15);
+  }
+  .panel-label {
+    font-size: 0.6rem;
+    color: var(--neon-cyan);
+    letter-spacing: 1px;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .panel-inbox .message-list {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
   }
 
-  .shortcuts button {
-    padding: 12px 5px;
-    /* Larger touch target */
-    font-size: 0.8rem;
+  /* 패널 1: BETTING */
+  .panel-betting {
+    background: rgba(0, 240, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
   }
-
-  .bet-display .value {
-    font-size: 1.2rem;
+  .panel-betting .shortcuts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-bottom: 2px;
   }
-
-  .actions {
-    grid-template-columns: 1fr 1fr;
-    /* Stack actions better */
-    gap: 8px;
+  .panel-betting .shortcuts button {
+    padding: 4px 2px;
+    font-size: 0.7rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
   }
-
-  .btn-fold {
-    grid-column: span 1;
-    padding: 15px;
-  }
-  .btn-call {
-    grid-column: span 1;
-    padding: 15px;
-  }
-  .btn-raise {
-    grid-column: span 2;
-    padding: 15px;
-    margin-top: 5px;
-  }
-
-  .skill-panel {
-    grid-template-columns: 1fr;
-    /* Vertical stack for skills on mobile */
-    gap: 8px;
-  }
-
-  .skill-btn {
-    padding: 12px;
-  }
-
-  .skill-name {
-    font-size: 0.9rem;
-  }
-  .skill-cost {
+  .panel-betting .bet-display .value {
     font-size: 1rem;
   }
+  .panel-betting .slider-area {
+    margin-bottom: 2px;
+  }
+  .panel-betting .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.2fr;
+    gap: 4px;
+  }
+  .panel-betting .btn-fold {
+    grid-column: unset;
+    padding: 4px;
+  }
+  .panel-betting .btn-call {
+    grid-column: unset;
+    padding: 4px;
+  }
+  .panel-betting .btn-raise {
+    grid-column: unset;
+    padding: 4px;
+    margin-top: 0px;
+  }
+
+  /* 패널 2: HUD */
+  .panel-hud {
+    background: rgba(0, 0, 0, 0.5);
+    border-left: 1px solid rgba(0, 240, 255, 0.15);
+    overflow-y: auto;
+  }
+  /* HUD 패널 내 hud-strip: 세로 스택 */
+  .panel-hud .hud-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .panel-hud .permanent-hud {
+    margin-top: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .panel-hud .permanent-hud.double {
+    grid-column: unset;
+  }
+  /* skill-panel 스타일은 panel-hud 내부에 있으므로 조정 */
+  .panel-hud .skill-panel {
+    display: block;
+  }
+
+  /* ── DOT 인디케이터 ── */
+  .swipe-dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+    flex-shrink: 0;
+  }
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(0, 240, 255, 0.2);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .dot.active {
+    background: var(--neon-cyan);
+    box-shadow: 0 0 4px var(--neon-cyan);
+    transform: scale(1.2);
+  }
+
+  /* control-panel 자체 레이아웃 */
+  .control-panel {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+    padding-bottom: 2px;
+    background: rgba(5, 10, 14, 0.95);
+    border-top: 1px solid var(--glass-border);
+  }
+}
+
+/* ── HUD Strip 기본(데스크톱): 래퍼 투명화 ── */
+.hud-strip {
+  display: contents;
+  /* 자식이 부모 grid에 직접 참여 → 기존 레이아웃 그대로 */
 }
 
 /* Stamina Glitch & Visuals */

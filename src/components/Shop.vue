@@ -7,7 +7,7 @@
     <div class="bg-grid"></div>
 
     <div class="market-layout">
-      <!-- LEFT PANEL: Dealer & Controls -->
+      <!-- LEFT PANEL: Dealer & Controls (Mobile: Top CCTV Header) -->
       <aside class="dealer-panel glass-panel">
         <header class="market-header">
           <h1 class="market-title" data-text="BLACK_MARKET">BLACK_MARKET</h1>
@@ -61,6 +61,7 @@
 
             <div class="item-details">
               <h3 class="name">{{ item.name }}</h3>
+              <div class="price-mobile-inline">{{ item.price.toLocaleString() }} CR</div>
               <p class="desc">{{ item.desc }}</p>
 
               <div class="effects-mini">
