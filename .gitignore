@@ -12,7 +12,8 @@ dist
 dist-ssr
 src-tauri/target/*
 *.local
-
+*.zip
+*.txt
 
 # Editor directories and files
 .vscode/*

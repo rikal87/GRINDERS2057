@@ -119,16 +119,17 @@ const closePopup = () => {
 defineExpose({
   open() {
     currentInviteId.value = null;
+    currentLocationIndex.value = 0; // Reset to start of filtered list
     showSearchPopup.value = true;
   },
   openWithLocation(locationId, inviteId = null) {
+    currentInviteId.value = inviteId; // Set first to reveal hidden location in flatLocations
     const idx = flatLocations.value.findIndex(loc => loc.id === locationId);
     if (idx !== -1) {
       currentLocationIndex.value = idx;
+      selectedSize.value = flatLocations.value[idx].tables.available[0];
     }
-    currentInviteId.value = inviteId;
     showSearchPopup.value = true;
-    selectedSize.value = flatLocations.value[idx].tables.available[0];
   },
 });
 // watch(currentLocation, (newLoc) => {
@@ -206,7 +207,8 @@ const flatLocations = computed(() => {
   const locs = [];
   zones.forEach(zone => {
     zone.locations.forEach(loc => {
-      // if (loc.isHidden && !currentInviteId.value) return true;
+      // [v16.1] Filter hidden locations unless invited
+      if (loc.isHidden && !currentInviteId.value) return;
       locs.push({
         ...loc,
         zoneName: zone.name,

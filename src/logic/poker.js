@@ -648,9 +648,27 @@ export const analyzeBoardTexture = (board) => {
 };
 export const getDrawCategory = (hand, board) => {
   const outsData = calculateOuts(hand, board);
-  if (outsData.outs >= 12) return 'DRAW_MONSTER';
-  if (outsData.outs >= 8) return 'DRAW_STRONG';
-  if (outsData.outs >= 4) return 'DRAW_WEAK';
+  const draws = outsData.draws.join('|');
+  const isFlushDraw = draws.includes('Flush Draw');
+  const isStraightDraw = draws.includes('Straight Draw') || draws.includes('Open-Ended');
+  const isOESD = draws.includes('Open-Ended');
+
+  // [v16.3] Combo-Based Monster Recognition
+  // Elite: Flush + OESD/Gutshot (Combo Draw) or 15+ raw outs
+  if ((isFlushDraw && isStraightDraw) || outsData.outs >= 15) {
+    return 'DRAW_MONSTER';
+  }
+
+  // Strong: Any Flush Draw (9+) or OESD (8) or high combined outs
+  if (isFlushDraw || isOESD || outsData.outs >= 9) {
+    return 'DRAW_STRONG';
+  }
+
+  // Weak: Gutshot (4) or modest combined outs
+  if (isStraightDraw || outsData.outs >= 4) {
+    return 'DRAW_WEAK';
+  }
+
   return 'AIR';
 }
 /**

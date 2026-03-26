@@ -971,7 +971,7 @@ export class GameEngine {
           // Skip Humans, Folded players, and Eliminated players
           if (p.isHuman || p.isFolded || p.isEliminated) return;
 
-          const isBestWinner = result.winnerId === p.id;
+          const isBestWinner = bestWinnersList.includes(p.id);
           const chatPercentage = (isHuge ? 0.6 : 0.3) + (p.isDrunken ? 0.3 : 0.0);
 
           if (Math.random() < chatPercentage) {

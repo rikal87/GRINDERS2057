@@ -7,9 +7,9 @@ import { PotManager } from './PotManager.js';
 
 const CLASSES_ENEMY = [...D2, ...D1]
 export async function runSimulation() {
-  const opp1 = 'gangster'
+  const opp1 = 'nit'
   const opp2 = 'Max'
-  const opp3 = 'maniac'
+  const opp3 = 'fish'
   console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
   const logHeader = `Simulation Log - ${new Date().toLocaleString()}\n\n`;
   fs.writeFileSync('hand_history.log', logHeader, 'utf8');
