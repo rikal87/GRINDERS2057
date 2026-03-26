@@ -769,7 +769,7 @@ input[type="range"].v5-stamina-range::-webkit-slider-thumb {
   height: 30vh;
 }
 
-.nav-btn {
+/* .nav-btn {
   background: transparent;
   border: 1px solid var(--neon-cyan);
   color: var(--neon-cyan);
@@ -783,9 +783,9 @@ input[type="range"].v5-stamina-range::-webkit-slider-thumb {
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
-}
+} */
 
-.nav-btn:hover:not(:disabled) {
+/* .nav-btn:hover:not(:disabled) {
   background: var(--neon-cyan);
   color: #000;
   box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
@@ -795,7 +795,7 @@ input[type="range"].v5-stamina-range::-webkit-slider-thumb {
   border-color: #333;
   color: #333;
   cursor: not-allowed;
-}
+} */
 
 .agent-display {
   flex: 1;
@@ -940,7 +940,7 @@ input[type="range"].v5-stamina-range::-webkit-slider-thumb {
 
 .modal-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 15px;
 }
 

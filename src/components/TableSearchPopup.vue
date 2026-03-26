@@ -549,10 +549,12 @@ const confirmJoin = () => {
     width: 100%;
   }
 
-  /* 브라우저를 세로 컬럼으로 변경 */
+  /* 브라우저를 한 줄로 유지하고 버튼을 끝으로 배치 */
   .location-browser {
-    flex-direction: column;
-    gap: 0.5rem;
+    flex-direction: row;
+    position: relative;
+    gap: 0;
+    margin: 1rem 0;
   }
 
   /* location-display 전체 너비 */
@@ -562,29 +564,14 @@ const confirmJoin = () => {
     grid-template-columns: 1fr;
     gap: 0.75rem;
     padding: 1rem;
+    border-radius: 4px;
+    /* 패딩 추가로 버튼과 겹침 방지 */
+    margin: 0;
   }
 
   /* 헤더는 전체 너비 유지 */
   .location-header {
     grid-column: 1 / -1;
-  }
-
-  /* nav 버튼 2개를 가로로 나란히 하단 배치 */
-  .nav-btn.prev,
-  .nav-btn.next {
-    order: 1; /* location-display 뒤로 */
-  }
-
-  /* flex로 버튼 2개 행 만들기 */
-  .location-browser {
-    position: relative;
-  }
-
-  /* prev/next를 하단에 flex row로 모으기 위한 래퍼 역할 */
-  .nav-btn {
-    flex: 1;
-    height: 44px; /* 터치 타겟 확보 */
-    font-size: 1.2rem;
   }
 
   /* location 이름 폰트 모바일 축소 */
@@ -596,7 +583,9 @@ const confirmJoin = () => {
   .location-info .desc {
     font-size: 0.9rem;
   }
-
+  .popup-actions {
+    font-size: 0.8rem;
+  }
   /* house-status 태그 좌측 정렬 */
   .house-status {
     flex-direction: row;

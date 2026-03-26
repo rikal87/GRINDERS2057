@@ -1,16 +1,18 @@
 <template>
   <transition name="v4-fade">
-    <div class="v5-modal-overlay popup-overlay" @click.self="$emit('close')">
+
+    <div class="v5-modal-overlay popup-overlay">
+      <!-- Tab Navigation -->
+      <div class="btn-group">
+        <button v-for="tab in tabs" :key="tab.id" class="btn" :class="{ active: activeTab === tab.id }"
+          @click="activeTab = tab.id">
+          {{ tab.label }}
+        </button>
+      </div>
       <div class="v5-modal agent-selector popup-modal">
         <h2 class="glitch-text modal-title" data-text="TASK_ASSIGNMENT">TASK_ASSIGNMENT</h2>
 
-        <!-- Tab Navigation -->
-        <div class="btn-group">
-          <button v-for="tab in tabs" :key="tab.id" class="btn" :class="{ active: activeTab === tab.id }"
-            @click="activeTab = tab.id">
-            {{ tab.label }}
-          </button>
-        </div>
+
 
         <div class="agent-browser">
           <button class="nav-btn prev" @click="prevTask" :disabled="currentTaskIdx === 0">&lt;</button>
@@ -250,6 +252,8 @@ onMounted(() => {
 
 <style scoped>
 .popup-overlay {
+  display: flex;
+  flex-direction: column;
   z-index: 1000;
   /* Ensure it floats above SafeHouse and App */
   position: fixed;
@@ -285,8 +289,8 @@ onMounted(() => {
   padding: 25px;
 }
 .btn-group {
-  margin-top: 10px;
-  justify-content: center
+  justify-content: center;
+  margin-bottom: 10px;
 }
 
 .features li {
@@ -297,19 +301,16 @@ onMounted(() => {
 .slogan-container {
   background: #0d1319;
   border: 1px solid rgba(255, 0, 85, 0.25);
-  padding: 0 20px;
-  /* padding-right: 10px; */
-  margin-bottom: 20px;
+  padding: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
   position: relative;
-  /* color: var(--neon-cyan); */
 }
 .agent-display {
   /* width: 300px; */
   width: 100%;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--panel-border);
-  height: 40vh;
+  /* height: 40vh; */
   padding: 10px;
 }
 .agent-display h3 {
@@ -325,5 +326,29 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .agent-browser {
+    position: relative;
+    gap: 0;
+  }
+  .v5-modal {
+    height: 70vh !important;
+  }
+  /* Color Theme Override */
+
+  .btn-accept,
+  .btn-cancel {
+    min-width: 140px;
+    font-size: 0.8rem;
+  }
+
+  .modal-actions {
+    padding: 15px 5px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
 }
 </style>

@@ -274,26 +274,27 @@
       </button>
     </div>
     <!-- Custom Cashout Modal -->
-    <Transition name="fade">
-      <div v-if="showCashoutModal" class="overlay">
-        <div class="terminal-msg danger cyber-modal">
-          <h2 class="glitch-text" data-text="CASHOUT_WARNING">CASHOUT_WARNING</h2>
-          <h3 class="critical-msg">
-            Are you sure you want to cashout instantly?
-          </h3>
-          <p>
-            Leaving the table without prior notification is a violation of house rules, regardless of your current
-            standing
-          </p>
-          <div class="popup-actions">
-            <button class="btn-confirm btn-accept" @click="confirmCashout">CONFIRM</button>
-            <button class="btn-cancel btn-cancel" @click="showCashoutModal = false">CANCEL</button>
-          </div>
-        </div>
-      </div>
-    </Transition>
+
     <!-- <p class="scanline">NEURAL LINK ESTABLISHED // ENCRYPTED TRAFFIC ONLY</p> -->
   </footer>
+  <Transition name="fade">
+    <div v-if="showCashoutModal" class="overlay">
+      <div class="terminal-msg danger cyber-modal">
+        <h2 class="glitch-text" data-text="CASHOUT_WARNING">CASHOUT_WARNING</h2>
+        <h3 class="critical-msg">
+          Are you sure you want to cashout instantly?
+        </h3>
+        <p>
+          Leaving the table without prior notification is a violation of house rules, regardless of your current
+          standing
+        </p>
+        <div class="popup-actions">
+          <button class="btn-confirm btn-accept" @click="confirmCashout">CONFIRM</button>
+          <button class="btn-cancel btn-cancel" @click="showCashoutModal = false">CANCEL</button>
+        </div>
+      </div>
+    </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -494,6 +495,3 @@ const handleReserveExit = () => {
 @import '../styles/components/ControlPanel-layout-desktop.css';
 @import '../styles/components/ControlPanel-layout-mobile.css';
 </style>
-
-
-

@@ -45,7 +45,8 @@
   .v5-side-col,
   .v5-main-col,
   .v5-msg-col {
-    display: none !important; /* 기본적으로 숨김 */
+    display: none !important;
+    /* 기본적으로 숨김 */
     width: 100% !important;
     padding: 0 !important;
     height: auto !important;
@@ -88,12 +89,13 @@
   }
 
   .v5-msg-h-reader {
-    height: auto !important;
     max-height: 40vh !important;
     overflow-y: auto !important;
     padding: 15px !important;
   }
-
+  .v5-msg-h-reader>p {
+    margin-top: 0;
+  }
   /* QHD 전용 요소 숨김 */
   .qhd-only {
     display: none !important;

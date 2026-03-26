@@ -5,7 +5,7 @@
       <!-- <div class="streak-container">
         <div v-for="n in 28" :key="n" class="glitch-streak" :style="getStreakStyle(n)"></div>
       </div> -->
-      <h1 class="logo static-logo" data-text="GRINDERS 2057">GRINDERS 2057</h1>
+      <h1 class="static-logo" data-text="GRINDERS 2057">GRINDERS 2057</h1>
     </div>
     <div class="menu-list">
       <button class="menu-btn glitch-hover" data-text="INITIALIZE_LINK" @click="$emit('start', 'new')"

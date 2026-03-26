@@ -3,8 +3,12 @@
    ============================================= */
 
 @media screen and (max-width: 1023px) {
+  .safe-house.v5 {
+    justify-content: flex-start;
+  }
   .v5-body {
     display: grid;
+    width: -webkit-fill-available;
     grid-template-columns: 1fr;
     gap: 20px;
     padding: 10px;
@@ -40,9 +44,9 @@
   .v5-mobile-nav {
     display: flex !important;
     justify-content: space-around;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(0, 240, 255, 0.2);
-    margin-bottom: 20px;
+    /* padding: 10px 0; */
+    /* border-bottom: 1px solid rgba(0, 240, 255, 0.2); */
+    /* margin-bottom: 20px; */
   }
 }
 /* @media (max-width: 450px) {

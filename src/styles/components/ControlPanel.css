@@ -86,7 +86,8 @@ button {
   background: #1a1a1a;
   border: 1px solid var(--neon-cyan);
   outline: none;
-  touch-action: none; /* Prevent swipe while sliding */
+  touch-action: none;
+  /* Prevent swipe while sliding */
 }
 
 .bet-slider::-webkit-slider-thumb {
@@ -342,6 +343,7 @@ aside.inbox-panel {
   display: flex;
   align-items: center;
   text-align: left;
+  max-width: 30rem;
 }
 
 .message-item.unread {

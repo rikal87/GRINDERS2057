@@ -10,8 +10,13 @@
     width: 98% !important;
     margin: 10px auto;
     background: radial-gradient(circle at center, #1a1a2e 0%, #0d0d1b 100%);
+    z-index: -1;
   }
   /* Community Card Scaling for Mobile */
+  /* HUD Winner Hand Display (Bottom) */
+  .hud-winner-hand {
+    top: 45%;
+  }
   .cards .poker-card,
   .board-cards .poker-card,
   .card-placeholder {
@@ -23,10 +28,10 @@
     top: -15px;
   }
   .board-cards .poker-card :deep(.rank) {
-    font-size: 2rem !important;
+    font-size: 1.75rem !important;
   }
   .board-cards .poker-card :deep(.suit) {
-    font-size: 2rem !important;
+    font-size: 1.75rem !important;
   }
   .cards {
     margin-bottom: -15px;
@@ -34,6 +39,7 @@
   .player-seat {
     width: 85px;
     min-height: 80px;
+    z-index: 0;
   }
   .player-info {
     width: 85px;

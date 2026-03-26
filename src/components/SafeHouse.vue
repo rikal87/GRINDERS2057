@@ -2,27 +2,13 @@
   <div class="safe-house v5">
     <div class="v5-bg-scan"></div>
 
-    <!-- NOT USED-->
-    <!-- <header class="v5-top-bar">
-      <div class="v5-logo-side">
-        <div class="v5-area-tag">SECURE_LOCATION // SECTOR_07</div>
-        <h1>SAFEHOUSE_V.5</h1>
-      </div>
-
-      <div class="v5-time-side">
-        <div class="v5-digital-clock">{{ formatGameTime(store.gameTime) }}</div>
-        <button class="v5-btn-settings" @click="$emit('back')">LOBBY_RETURN</button>
-      </div>
-    </header> -->
-
+    <!-- MOBILE ONLY: TAB NAVIGATION -->
+    <nav class="v5-mobile-nav">
+      <button :class="{ active: mobileActiveTab === 'status' }" @click="mobileActiveTab = 'status'">STATUS</button>
+      <button :class="{ active: mobileActiveTab === 'manage' }" @click="mobileActiveTab = 'manage'">MANAGE</button>
+      <button :class="{ active: mobileActiveTab === 'comms' }" @click="mobileActiveTab = 'comms'">COMMS</button>
+    </nav>
     <div class="v5-body">
-      <!-- MOBILE ONLY: TAB NAVIGATION -->
-      <nav class="v5-mobile-nav">
-        <button :class="{ active: mobileActiveTab === 'status' }" @click="mobileActiveTab = 'status'">STATUS</button>
-        <button :class="{ active: mobileActiveTab === 'manage' }" @click="mobileActiveTab = 'manage'">MANAGE</button>
-        <button :class="{ active: mobileActiveTab === 'comms' }" @click="mobileActiveTab = 'comms'">COMMS</button>
-      </nav>
-
       <!-- LEFT COLUMN: STATUS & SETUP -->
       <section class="v5-side-col" :class="{ 'mobile-show': mobileActiveTab === 'status' }">
         <!-- Core Vitality -->
@@ -354,7 +340,7 @@
 
           <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
-              }} UNREAD]</small>
+          }} UNREAD]</small>
           </div>
           <!-- Message Reader Integrated -->
           <div v-if="selectedMessage" class="v5-msg-h-reader">

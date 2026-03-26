@@ -20,14 +20,16 @@
   /* 1. CCTV 상단 패널 (Dealer & Header) */
   .dealer-panel {
     width: 100%;
-    height: 48vh; /* 화면의 절반 가량 차지 */
+    height: 48vh;
+    /* 화면의 절반 가량 차지 */
     border-right: none;
     border-bottom: 2px solid var(--neon-cyan, #00f0ff);
     padding: 15px;
     flex-shrink: 0;
     position: relative;
     background: linear-gradient(180deg, #050a0e 0%, #0d1319 100%);
-    display: block; /* 가로 가로 배치를 위해 블록 */
+    display: block;
+    /* 가로 가로 배치를 위해 블록 */
   }
 
   /* CCTV 노이즈 효과 레이어 */
@@ -35,7 +37,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyIiBoZWlnaHQ9IjIiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=');
+    /* background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyIiBoZWlnaHQ9IjIiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4='); */
     pointer-events: none;
     opacity: 0.1;
   }
@@ -54,7 +56,8 @@
 
   .dealer-visual {
     display: flex;
-    flex-direction: row; /* 딜러와 대화창 가로 배치 */
+    flex-direction: row;
+    /* 딜러와 대화창 가로 배치 */
     align-items: flex-start;
     gap: 15px;
     margin-top: 5px;
@@ -112,7 +115,7 @@
     padding: 5px 10px;
     border-left: 2px solid #ffd700;
     margin: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
   }
   .player-wallet .value {
     font-size: 1rem;
@@ -128,7 +131,8 @@
     flex-direction: row;
     gap: 10px;
   }
-  .btn-catalog, .btn-leave {
+  .btn-catalog,
+  .btn-leave {
     margin: 0;
     padding: 6px 15px;
     font-size: 0.65rem;
@@ -165,6 +169,9 @@
   .item-icon {
     width: 60px;
     height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-size: 2rem;
     margin: 0;
     flex-shrink: 0;
@@ -203,11 +210,13 @@
   }
 
   .item-price {
-    display: none; /* 인라인 가격 쓰므로 숨김 */
+    display: none;
+    /* 인라인 가격 쓰므로 숨김 */
   }
 
   .buy-overlay {
-    opacity: 0.3; /* 모바일은 항상 보게 해서 명시성 확보 */
+    opacity: 0.3;
+    /* 모바일은 항상 보게 해서 명시성 확보 */
     background: transparent;
     justify-content: flex-end;
     align-items: flex-start;

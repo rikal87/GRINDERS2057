@@ -25,6 +25,10 @@
   .cards.is-human {
     margin-bottom: 0;
   }
+  /* HUD Winner Hand Display (Bottom) */
+  .hud-winner-hand {
+    top: 50%;
+  }
   /* --- Seating Distribution Logic (Desktop/Large Screen) --- */
 
   /* 9-Player Distribution (Professional Elliptical) */

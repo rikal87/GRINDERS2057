@@ -428,6 +428,19 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
+@media (max-width: 768px) {
+  .lobby-content {
+    padding: unset;
+    left: unset;
+    transform: unset;
+    bottom: 10%;
+  }
+  .menu-grid {
+    gap: 5px;
+  }
+}
+
+
 /* --- Minimap Animations --- */
 .crosshair.targeting {
   animation: target-lock 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;

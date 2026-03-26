@@ -211,4 +211,33 @@ const confirmPurchase = () => {
   padding: 1rem 0;
   text-align: center;
 }
+
+@media (max-width: 768px) {
+  .agent-browser {
+    position: relative;
+    margin-top: 10px;
+  }
+
+  /* Plan Grid to 1-column on mobile */
+  .plan-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px !important;
+  }
+
+  .plan-card {
+    padding: 12px !important;
+  }
+
+  .modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+    min-width: unset;
+  }
+}
 </style>

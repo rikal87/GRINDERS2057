@@ -513,7 +513,6 @@
 /* HUD Winner Hand Display (Bottom) */
 .hud-winner-hand {
   position: fixed;
-  top: 50%;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(5, 10, 14, 0.95);
@@ -524,7 +523,7 @@
   gap: 12px;
   align-items: center;
   box-shadow: var(--neon-shadow-yellow);
-  z-index: 150;
+  z-index: 999;
 }
 
 
