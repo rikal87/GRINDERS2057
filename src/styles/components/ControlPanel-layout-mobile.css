@@ -27,16 +27,15 @@
   }
 
   .shortcuts {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 5px;
   }
 
   .shortcuts button {
-    padding: 12px 5px;
+    padding: 5px 5px;
     /* Larger touch target */
     font-size: 0.8rem;
   }
-
   .skill-panel {
     flex: 1.5;
     max-width: 500px;
@@ -47,15 +46,12 @@
   }
 
   .btn-fold {
-    grid-column: span 1;
     padding: 15px;
   }
   .btn-call {
-    grid-column: span 1;
     padding: 15px;
   }
   .btn-raise {
-    grid-column: span 2;
     padding: 15px;
     margin-top: 5px;
   }
@@ -101,6 +97,7 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
+    padding: 5px;
   }
   .dot.active {
     background: var(--neon-cyan);

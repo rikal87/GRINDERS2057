@@ -1,0 +1,227 @@
+/* ──────────────────────────────────────────────────────────
+   SHOP - MOBILE LAYOUT (Shop-layout-mobile.css)
+   Target: Width <= 768px
+   ────────────────────────────────────────────────────────── */
+
+@media screen and (max-width: 768px) {
+  .black-market-container {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .market-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    margin: 0;
+  }
+
+  /* 1. CCTV 상단 패널 (Dealer & Header) */
+  .dealer-panel {
+    width: 100%;
+    height: 48vh; /* 화면의 절반 가량 차지 */
+    border-right: none;
+    border-bottom: 2px solid var(--neon-cyan, #00f0ff);
+    padding: 15px;
+    flex-shrink: 0;
+    position: relative;
+    background: linear-gradient(180deg, #050a0e 0%, #0d1319 100%);
+    display: block; /* 가로 가로 배치를 위해 블록 */
+  }
+
+  /* CCTV 노이즈 효과 레이어 */
+  .dealer-panel::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyIiBoZWlnaHQ9IjIiPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=');
+    pointer-events: none;
+    opacity: 0.1;
+  }
+
+  .market-header {
+    margin-bottom: 10px;
+    text-align: left;
+  }
+  .market-title {
+    font-size: 1.25rem;
+    letter-spacing: 1px;
+  }
+  .sub-title {
+    font-size: 0.55rem;
+  }
+
+  .dealer-visual {
+    display: flex;
+    flex-direction: row; /* 딜러와 대화창 가로 배치 */
+    align-items: flex-start;
+    gap: 15px;
+    margin-top: 5px;
+  }
+
+  .dealer-silhouette {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0;
+    border: 2px solid var(--neon-cyan, #00f0ff);
+    box-shadow: 0 0 10px var(--neon-cyan, #00f0ff);
+    flex-shrink: 0;
+  }
+  .eye-glow {
+    width: 15px;
+    height: 15px;
+  }
+
+  .dealer-dialogue {
+    flex: 1;
+    padding: 8px;
+    min-height: 50px;
+    border-color: rgba(0, 240, 255, 0.3);
+    height: 80px;
+    overflow-y: auto;
+  }
+  .dialogue-text {
+    font-size: 0.75rem;
+  }
+
+  /* 모바일용 리프레시/지갑 하단 배치 */
+  .refresh-section {
+    border-top: none;
+    padding-top: 5px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .refresh-info {
+    margin-bottom: 0;
+    font-size: 0.6rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .btn-refresh {
+    padding: 8px;
+    font-size: 0.7rem;
+    max-width: 150px;
+  }
+
+  .player-wallet {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 5px 10px;
+    border-left: 2px solid #ffd700;
+    margin: 0;
+    background: rgba(0,0,0,0.5);
+  }
+  .player-wallet .value {
+    font-size: 1rem;
+  }
+  .player-wallet .label {
+    font-size: 0.5rem;
+  }
+
+  .control-actions {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    flex-direction: row;
+    gap: 10px;
+  }
+  .btn-catalog, .btn-leave {
+    margin: 0;
+    padding: 6px 15px;
+    font-size: 0.65rem;
+  }
+  .btn-leave {
+    background: var(--neon-red, #ff003c);
+    color: #fff;
+    border: none;
+  }
+
+  /* 2. 상품 패널 (Item List) */
+  .merch-panel {
+    flex: 1;
+    padding: 10px;
+    background: #020202;
+  }
+
+  .items-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding-bottom: 20px;
+  }
+
+  .item-card {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    min-height: 90px;
+    overflow: hidden;
+  }
+
+  .item-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .item-details {
+    flex: 1;
+    text-align: left;
+  }
+  .item-details .name {
+    font-size: 0.95rem;
+    margin-bottom: 2px;
+    color: #fff;
+  }
+  .price-mobile-inline {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--neon-cyan, #00f0ff);
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+
+  .item-details .desc {
+    font-size: 0.75rem;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* 효과 숨김 */
+  .effects-mini {
+    display: none;
+  }
+
+  .item-price {
+    display: none; /* 인라인 가격 쓰므로 숨김 */
+  }
+
+  .buy-overlay {
+    opacity: 0.3; /* 모바일은 항상 보게 해서 명시성 확보 */
+    background: transparent;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: 5px;
+  }
+  .buy-overlay span {
+    font-size: 0.5rem;
+    padding: 2px 4px;
+    transform: none;
+    opacity: 0.7;
+  }
+
+  .empty-stock h2 {
+    font-size: 1.5rem;
+    color: #333;
+  }
+}

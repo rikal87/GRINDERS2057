@@ -13,20 +13,68 @@
   }
 
   /* 2560px QHD Optimization */
-  @media screen and (min-width: 1921px) {
-    .v5-body {
-      max-width: 1600px;
-      border-left: 1px solid rgba(255, 255, 255, 0.05);
-      border-right: 1px solid rgba(255, 255, 255, 0.05);
-    }
+  .v5-body {
+    max-width: 1600px;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   /* Column Specifics (Desktop Only) */
   .v5-side-col {
     padding-right: 10px;
   }
-  
+
   .v5-msg-col {
     padding-left: 10px;
   }
+  /* Hero */
+  .max6.seat-0 {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .max6.seat-1 {
+    bottom: 20%;
+    left: 10%;
+  }
+
+  /* Mid-Left */
+  .max6.seat-2 {
+    top: 10%;
+    left: 10%;
+  }
+
+  /* Top-Left */
+  .max6.seat-3 {
+    top: -5%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Top-Center */
+  .max6.seat-4 {
+    top: 10%;
+    right: 10%;
+  }
+
+  /* Top-Right */
+  .max6.seat-5 {
+    bottom: 20%;
+    right: 10%;
+  }
+
+  /* Vertical 2-Max Distribution (Portrait) */
+  .max2.seat-bottom {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .max2.seat-top {
+    /* top: 20%; */
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
 }

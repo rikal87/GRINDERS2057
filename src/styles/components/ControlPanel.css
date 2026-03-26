@@ -86,6 +86,7 @@ button {
   background: #1a1a1a;
   border: 1px solid var(--neon-cyan);
   outline: none;
+  touch-action: none; /* Prevent swipe while sliding */
 }
 
 .bet-slider::-webkit-slider-thumb {
@@ -486,6 +487,3 @@ button:disabled {
     opacity: 1;
   }
 }
-
-
-/* Mobile swipe logic moved to layout-mobile.css */

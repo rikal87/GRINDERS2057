@@ -11,7 +11,51 @@
     margin: 10px auto;
     background: radial-gradient(circle at center, #1a1a2e 0%, #0d0d1b 100%);
   }
+  /* Community Card Scaling for Mobile */
+  .cards .poker-card,
+  .board-cards .poker-card,
+  .card-placeholder {
+    width: 45px;
+    height: 65px;
+  }
+  .dealer-btn {
+    right: -15px;
+    top: -15px;
+  }
+  .board-cards .poker-card :deep(.rank) {
+    font-size: 2rem !important;
+  }
+  .board-cards .poker-card :deep(.suit) {
+    font-size: 2rem !important;
+  }
+  .cards {
+    margin-bottom: -15px;
+  }
+  .player-seat {
+    width: 85px;
+    min-height: 80px;
+  }
+  .player-info {
+    width: 85px;
+    font-size: 0.7rem;
+    padding: 4px;
+  }
+  .dialogue-bubble {
+    font-size: 0.6rem;
+  }
+  .neural-insight {
+    width: 110px;
+    font-size: 0.5rem;
+  }
 
+  .center-area {
+    width: 320px;
+    min-height: 180px;
+  }
+  .board-cards {
+    gap: 4px;
+    margin-bottom: 5px;
+  }
   /* 2. Vertical U-Shape Seat Mapping (9-Max) */
   /* Top Row */
   .max9.seat-4 {
@@ -61,32 +105,33 @@
   }
 
   /* 3. 6-Max Staggered Optimization (Cleaner Vertical) */
-  .max6.seat-3 {
-    top: -2%;
+  .max6.seat-0 {
+    bottom: 0%;
     left: 50%;
     transform: translateX(-50%);
   }
+  .max6.seat-1 {
+    left: 5%;
+    bottom: 20%;
+  }
   .max6.seat-2 {
-    top: 15%;
+    top: 25%;
     left: 5%;
   }
   .max6.seat-4 {
-    top: 15%;
+    top: 25%;
     right: 5%;
   }
-  .max6.seat-1 {
-    top: 45%;
-    left: 5%;
-  }
-  .max6.seat-5 {
-    top: 45%;
-    right: 5%;
-  }
-  .max6.seat-0 {
-    bottom: -5%;
+  .max6.seat-3 {
+    top: 5%;
     left: 50%;
     transform: translateX(-50%);
   }
+  .max6.seat-5 {
+    right: 5%;
+    bottom: 20%;
+  }
+
 
   /* 4. Common Elements in Stadium */
   .center-area {
@@ -101,16 +146,24 @@
     font-size: 0.6rem;
   }
 
-  .hud-player-hand { display: none; }
+  .hud-player-hand {
+    display: none;
+  }
 
   .hud-winner-hand {
     padding: 8px 16px;
     gap: 8px;
     box-shadow: var(--neon-shadow-yellow);
   }
-  .winner-label { font-size: 0.7rem; }
-  .winner-name { font-size: 0.85rem; }
-  .winner-hand { font-size: 0.9rem; }
+  .winner-label {
+    font-size: 0.7rem;
+  }
+  .winner-name {
+    font-size: 0.85rem;
+  }
+  .winner-hand {
+    font-size: 0.9rem;
+  }
 
   .dialogue-bubble {
     font-size: 0.6rem;
@@ -126,21 +179,6 @@
   .pot-display {
     margin-bottom: 5px;
     font-size: 0.9rem;
-  }
-
-
-  /* Community Card Scaling for Mobile */
-  .board-cards .poker-card {
-    width: 50px !important;
-    height: 70px !important;
-    font-size: 1.2rem !important;
-  }
-
-  /* Hero Cards Visibility */
-  .seat-0 .cards .poker-card {
-    width: 70px !important;
-    height: 100px !important;
-    font-size: 1.6rem !important;
   }
 
   /* Stack positioning adjustments for Stadium edges */

@@ -27,7 +27,7 @@
   --deep-dark: #050a0e;
   --panel-bg: rgba(13, 19, 25, 0.9);
   --card-bg: rgba(10, 20, 28, 0.8);
-  
+
   --neon-cyan: #00f0ff;
   --neon-magenta: #ff003c;
   --neon-yellow: #f8ef00;
@@ -35,7 +35,7 @@
   --neon-green: #39ff14;
   --neon-purple: #a340ff;
   --neon-blue: #4946d6dc;
-  
+
   /* ── Missing Persona Colors (Restored) ── */
   --neon-forest: #2e8b57;
   --neon-shine-gold: #d4af37;
@@ -47,7 +47,7 @@
   --neon-indigo: #475aff;
   --neon-violet: #da0000;
   --neon-orange: #ff5100;
-  
+
   /* ── Accent Aliases ── */
   --accent-red: #ff0055;
   --accent-cyan: #00f0ff;
@@ -61,7 +61,7 @@
   --neon-shadow-magenta: 0 0 10px rgba(255, 0, 255, 0.4);
   --neon-shadow-yellow: 0 0 10px rgba(248, 239, 0, 0.4);
   --neon-shadow-green: 0 0 10px rgba(57, 255, 20, 0.4);
-  
+
   /* ── Layout & Borders ── */
   --glass-border: rgba(0, 240, 255, 0.2);
   --panel-border: rgba(255, 255, 255, 0.05);
@@ -91,47 +91,99 @@
   position: relative;
 }
 
-.neon-border-cyan { border: 1px solid var(--neon-cyan); box-shadow: var(--neon-shadow-cyan); }
-.neon-border-red { border: 1px solid var(--neon-red); box-shadow: var(--neon-shadow-red); }
-.neon-border-magenta { border: 1px solid var(--neon-magenta); box-shadow: var(--neon-shadow-magenta); }
+.neon-border-cyan {
+  border: 1px solid var(--neon-cyan);
+  box-shadow: var(--neon-shadow-cyan);
+}
+.neon-border-red {
+  border: 1px solid var(--neon-red);
+  box-shadow: var(--neon-shadow-red);
+}
+.neon-border-magenta {
+  border: 1px solid var(--neon-magenta);
+  box-shadow: var(--neon-shadow-magenta);
+}
 
 /* ── Neon Text Utilities ── */
-.text-neon-cyan { color: var(--neon-cyan); text-shadow: 0 0 5px rgba(0, 240, 255, 0.5); }
-.text-neon-magenta { color: var(--neon-magenta); text-shadow: 0 0 5px rgba(255, 0, 60, 0.5); }
-.text-neon-yellow { color: var(--neon-yellow); text-shadow: 0 0 5px rgba(248, 239, 0, 0.5); }
-.text-neon-red { color: var(--neon-red); text-shadow: 0 0 5px rgba(255, 0, 0, 0.5); }
+.text-neon-cyan {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 5px rgba(0, 240, 255, 0.5);
+}
+.text-neon-magenta {
+  color: var(--neon-magenta);
+  text-shadow: 0 0 5px rgba(255, 0, 60, 0.5);
+}
+.text-neon-yellow {
+  color: var(--neon-yellow);
+  text-shadow: 0 0 5px rgba(248, 239, 0, 0.5);
+}
+.text-neon-red {
+  color: var(--neon-red);
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
 
 /* ── Persona & Philosophy Utilities ── */
-.aggressive { color: var(--neon-red) !important; }
-.neutral { color: var(--neon-cyan) !important; }
-.tight { color: var(--neon-yellow) !important; }
-.loose { color: var(--neon-magenta) !important; }
-.passive { color: var(--neon-green) !important; }
+.aggressive {
+  color: var(--neon-red) !important;
+}
+.neutral {
+  color: var(--neon-cyan) !important;
+}
+.tight {
+  color: var(--neon-yellow) !important;
+}
+.loose {
+  color: var(--neon-magenta) !important;
+}
+.passive {
+  color: var(--neon-green) !important;
+}
 
 
 /* ──────────────────────────────────────────────────────────
    COMMON ANIMATIONS
    ────────────────────────────────────────────────────────── */
 @keyframes scanline-move {
-  0% { top: 0; }
-  100% { top: 100%; }
+  0% {
+    top: 0;
+  }
+  100% {
+    top: 100%;
+  }
 }
 
 @keyframes v5-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 @keyframes boot-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes v5-panel-boot {
-  0% { filter: brightness(1) contrast(1); }
-  10% { filter: brightness(2) contrast(1.5); }
-  20% { filter: brightness(0); }
-  30% { filter: brightness(1.5) contrast(1.2); }
-  100% { filter: brightness(1) contrast(1); }
+  0% {
+    filter: brightness(1) contrast(1);
+  }
+  10% {
+    filter: brightness(2) contrast(1.5);
+  }
+  20% {
+    filter: brightness(0);
+  }
+  30% {
+    filter: brightness(1.5) contrast(1.2);
+  }
+  100% {
+    filter: brightness(1) contrast(1);
+  }
 }
 
 
@@ -555,7 +607,7 @@ button:active {
   margin: auto;
   padding: 15px 5px;
   max-width: 1600px;
-  width: 100%;
+  width: -webkit-fill-available;
   flex-direction: column;
   text-align: left;
 }
@@ -928,16 +980,13 @@ footer {
 @media (max-width: 450px) {
   :root {
     font-size: 14px;
-    /* Global scale down */
   }
 
   body {
     place-items: start;
-    /* Don't center vertically on tall mobile screens */
   }
 
   #app {
-    /* padding: 10px; */
     width: 100%;
     max-width: 100vw;
   }
@@ -950,7 +999,7 @@ footer {
 
   .game-container {
     max-width: 100%;
-    padding: 5px;
+    padding: 0px;
     gap: 10px;
   }
 

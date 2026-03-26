@@ -36,7 +36,7 @@
         </div>
         <div class="slider-area">
           <input type="range" :min="minRaise" :max="playerTotalAvailable" step="1" v-model.number="currentBetValue"
-            class="bet-slider" />
+            class="bet-slider" @touchstart.stop @touchmove.stop @touchend.stop />
           <div class="bet-display">
             <span class="value">{{ formatUnit(currentBetValue) }}</span>
             <span class="label">SET CHARGE</span>
@@ -175,7 +175,7 @@
       </div>
       <div class="slider-area">
         <input type="range" :min="minRaise" :max="playerTotalAvailable" step="1" v-model.number="currentBetValue"
-          class="bet-slider" />
+          class="bet-slider" @touchstart.stop @touchmove.stop @touchend.stop />
         <div class="bet-display">
           <span class="value">{{ formatUnit(currentBetValue) }}</span>
           <span class="label">SET CHARGE</span>
