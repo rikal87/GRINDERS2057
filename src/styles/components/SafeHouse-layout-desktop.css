@@ -15,8 +15,6 @@
   /* 2560px QHD Optimization */
   .v5-body {
     max-width: 1600px;
-    border-left: 1px solid rgba(255, 255, 255, 0.05);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   /* Column Specifics (Desktop Only) */

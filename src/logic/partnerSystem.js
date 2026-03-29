@@ -328,15 +328,15 @@ export const simulatePartnersBehavior = () => {
 
 }
 export const simulatePartnersNetWorth = (partner) => {
-  // 1. Simulated living & rake expenses / consumption (prevents infinite wealth accumulation)
-  // Deduct 1% of bankroll every simulation cycle (approx. 1 in-game hour)
-  if (partner.bankroll > 0) {
-    const expenses = Math.max(Math.ceil(partner.bankroll * 0.01), 1000);
-    gainPartnerBankroll(partner, -expenses, TYPE_CHANGE_BANKROLL.OTHER);
-  }
-
-  // 2. Gambling simulation logic (Old logic preserved)
-  if (partner.status === PARTNER_STATUS.GAMBLING) {
+  // 1. Simulated living expenses / consumption (prevents infinite wealth accumulation)
+  // Deduct 0.2% of bankroll every simulation cycle (approx. 1 in-game hour)
+  if (partner.status !== PARTNER_STATUS.GAMBLING) {
+    if (partner.bankroll > 0) {
+      const expenses = Math.max(Math.ceil(partner.bankroll * 0.002), 500);
+      gainPartnerBankroll(partner, -expenses, TYPE_CHANGE_BANKROLL.OTHER);
+    }
+  } else if (partner.status === PARTNER_STATUS.GAMBLING) {
+    // 2. Gambling simulation logic (Old logic preserved)
     // 잔고가 0 이하(파산)인 경우 도박 종료
     if (partner.bankroll <= 0) {
       partner.status = PARTNER_STATUS.IDLE;
@@ -354,7 +354,7 @@ export const simulatePartnersNetWorth = (partner) => {
       let netWorthChange = 0;
       // 승리 시
       if (Math.random() < partner.W$SD) {
-        netWorthChange = Math.ceil(100 * volatility);
+        netWorthChange = Math.ceil(95 * volatility); // rake
       } else { // 패배 시
         netWorthChange = -Math.ceil(100 * volatility);
       }

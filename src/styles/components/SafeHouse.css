@@ -199,6 +199,7 @@
   font-size: 0.65rem;
   letter-spacing: 2px;
   color: var(--neon-cyan);
+  margin-top: 12px;
   margin-bottom: 12px;
   display: flex;
   align-items: center;
