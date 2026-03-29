@@ -272,7 +272,8 @@ onMounted(() => {
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between
+  overflow: hidden;
+  /* Important for internal scrolling */
 }
 
 .empty-state {
@@ -307,11 +308,9 @@ onMounted(() => {
   position: relative;
 }
 .agent-display {
-  /* width: 300px; */
   width: 100%;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--panel-border);
-  /* height: 40vh; */
   padding: 10px;
 }
 .agent-display h3 {
@@ -322,20 +321,69 @@ onMounted(() => {
   min-width: 200px;
 }
 .agent-browser {
+  flex: 1;
+  /* Take all available space */
+  min-height: 0;
+  /* Important for flex child scroll */
   margin-top: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
+  overflow-y: auto;
+  /* Scrollable content */
+}
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 20px 0;
+  max-height: 70vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 10px;
 }
 
+.stats-section {
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  margin-top: 15px;
+  position: relative;
+}
+
+.stats-section .section-label {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: #0d1117;
+  padding: 0 8px;
+  font-size: 0.7rem;
+  color: var(--neon-cyan);
+  letter-spacing: 2px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 4px;
+}
 @media (max-width: 768px) {
   .agent-browser {
     position: relative;
     gap: 0;
   }
   .v5-modal {
-    height: 70vh !important;
+    height: auto !important;
+    max-height: 85vh !important;
   }
   /* Color Theme Override */
 
