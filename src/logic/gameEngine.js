@@ -834,7 +834,36 @@ export class GameEngine {
 
   async nextStreet() {
     if (this.exited) return;
-    this.currentPlayerIndex = -1; // Block actions during sleep
+    this.currentPlayerIndex = -1; // Block actions during transition
+
+    // 1. Return Uncalled Bets (Excess portions of all-in bets)
+    const uncalledResult = this.potManager.returnUncalledBets(this.players);
+    if (uncalledResult) {
+      // 1.1 Record in Hand History
+      if (this.currentHandHistory && this.currentHandHistory.actions[this.state]) {
+        this.currentHandHistory.actions[this.state].push({
+          player: uncalledResult.player.name,
+          type: 'uncalled_return',
+          amount: uncalledResult.amount,
+          playerChips: uncalledResult.player.chips,
+          pot: this.potManager.pot
+        });
+      }
+      // 1.2 Record in Action History (for AI/Stats)
+      this.actionHistory.push({
+        playerId: uncalledResult.player.id,
+        street: this.state,
+        action: 'uncalled_return',
+        amount: uncalledResult.amount,
+        potSize: this.potManager.pot
+      });
+
+      eventAdaptor.uncalledBetReturned(uncalledResult);
+      // Synchronize reactive pot immediate update
+      this.pot = this.potManager.pot;
+      await sleep(1500); // Visual pause for UI update
+    }
+
     await sleep(1000);
     this.players.forEach(p => p.currentBet = 0);
     this.potManager.currentRoundBet = 0; // Reset for new street
@@ -1024,7 +1053,7 @@ export class GameEngine {
       }
     }
     const bestWinner = this.players.find(p => p.id === result.winnerId);
-    this.checkBankruptcy(bestWinner);
+    this.checkBusted(bestWinner);
     this.potManager.pot = 0;
     this.pot = 0; // [FIX] Sync reactive pot immediately
     // Reset interaction flags for next hand
@@ -1034,7 +1063,7 @@ export class GameEngine {
     // this.street = 'ROUND_END';
     eventAdaptor.roundEnd({ players: this.players, bestWinner, street: this.street });
     const sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000;
-    saveStore();
+    // saveStore();
     await sleep(sleepTime)
     if (this.suspicion >= 40 && this.checkTriggerCasinoInvestigation()) return;
     this.calculationInProgress = false;
@@ -1108,7 +1137,7 @@ export class GameEngine {
     audioManager.play();
   }
 
-  async checkBankruptcy(bestWinner, isConfiscation = false) {
+  async checkBusted(bestWinner, isConfiscation = false) {
     // 1. Bankrupt Players
     this.players.forEach((p, index) => {
       if (p.isEliminated === true && !p.isHuman && Math.random() < 0.3) {
@@ -1121,6 +1150,9 @@ export class GameEngine {
       }
       if (p.chips <= 0 && !p.isEliminated) {
         console.log(`[GAME] ${p.name} eliminated.`);
+
+        // Handle Generic Bust Event (Stats, Item Effects)
+        eventAdaptor.bust(p, bestWinner, this.locationId, this.inviteId);
 
         // [AI CHAT] Self Elimination
         if (p.isHuman) {
@@ -1144,7 +1176,6 @@ export class GameEngine {
             window.dispatchEvent(new CustomEvent('trigger-game-over', { detail: { winnerId: this.winnerId } }));
           }
         }
-        eventAdaptor.playerBankrupt(p, bestWinner, this.locationId, this.inviteId);
       }
     });
 
@@ -1221,6 +1252,33 @@ export class GameEngine {
 
     if (activePlayers.length > 1 && playersWithChips.length <= 1 && allMatched) {
       console.log('[GAME] All-In Condition Met. Starting Runout.');
+
+      // Return Uncalled portion BEFORE runout starts
+      const uncalledResult = this.potManager.returnUncalledBets(this.players);
+      if (uncalledResult) {
+        // Record in Hand History
+        if (this.currentHandHistory && this.currentHandHistory.actions[this.state]) {
+          this.currentHandHistory.actions[this.state].push({
+            player: uncalledResult.player.name,
+            type: 'uncalled_return',
+            amount: uncalledResult.amount,
+            playerChips: uncalledResult.player.chips,
+            pot: this.potManager.pot
+          });
+        }
+        this.actionHistory.push({
+          playerId: uncalledResult.player.id,
+          street: this.state,
+          action: 'uncalled_return',
+          amount: uncalledResult.amount,
+          potSize: this.potManager.pot
+        });
+
+        eventAdaptor.uncalledBetReturned(uncalledResult);
+        this.pot = this.potManager.pot;
+        await sleep(1500);
+      }
+
       await this.startAllInShowdown();
     }
   }

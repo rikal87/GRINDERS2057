@@ -4,7 +4,6 @@
       <div class="catalog-modal">
         <div class="catalog-header">
           <h2 class="glitch-text" data-text="ITEM_CATALOG">ITEM_CATALOG</h2>
-          <button class="btn-cancel" @click="$emit('close')">CLOSE</button>
         </div>
         <div class="catalog-body">
           <div v-for="tier in tiers" :key="tier" class="tier-section">
@@ -20,6 +19,7 @@
             </div>
           </div>
         </div>
+        <button class="btn-cancel" @click="$emit('close')">CLOSE</button>
       </div>
     </div>
   </transition>
@@ -138,12 +138,13 @@ const hideTooltip = () => {
 .catalog-modal {
   border: 2px solid var(--neon-cyan);
   background: rgba(10, 15, 25, 0.97);
-  padding: 2rem;
+  /* padding: 2rem; */
   /* border-radius: 12px; */
   width: min(90vw, 780px);
   max-height: 80vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
   box-shadow: 0 0 40px rgba(0, 240, 255, 0.1);
 }
 .catalog-header {

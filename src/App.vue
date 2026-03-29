@@ -49,7 +49,7 @@ const confiscationMessage = computed(() => {
 
 const handleQuitApp = async () => {
   try {
-    saveStore(); // Save before exiting
+    await saveStore(); // Save before exiting
     if (window.__TAURI_INTERNALS__) {
       const { exit } = await import('@tauri-apps/plugin-process');
       await exit(0);
@@ -204,9 +204,9 @@ onMounted(() => {
   window.addEventListener('keydown', resumeAudio);
 
   // Background Auto-Save (Fallback for non-poker events)
-  setInterval(() => {
-    saveStore();
-  }, 60000);
+  // setInterval(() => {
+  //   saveStore();
+  // }, 60000);
 });
 
 // --- Reboot Logic (Hold 3s) ---
@@ -254,6 +254,9 @@ const handleStart = (mode) => {
   startTimeSystem();
 };
 const handleJoinTable = async (payload) => {
+  // Save current state before entering a poker session to allow rollback if interrupted
+  await saveStore();
+
   const { inviteId, size, buyIn, rake, rakeCap, isAdvanced, sb, bb, locationId, locationLV, buyInLimit, isMonitoring, isDeathmatch } = payload;
   // [CLEANUP] Ensure previous engine is destroyed
   if (engine.value) {
@@ -321,7 +324,6 @@ const handleAction = async (payload) => {
       showInvestigationResultOverlay.value = false;
       showGameOverOverlay.value = false;
       audioManager.pause();
-      audioManager.playSFX('paybill');
       audioManager.playSFX('end-session')
       showStatsModal.value = true;
       applySessionExit();
@@ -450,8 +452,9 @@ watch(currentView, (newView) => {
 </script>
 
 <template>
+  <div class="v5-bg-scan"></div>
   <div class="app-shell" :class="{ 'in-settings': isSettingsOpen }">
-    <div class="scanline-bg"></div>
+    <!-- <div class="scanline-bg"></div> -->
     <Transition name="fade" mode="out-in" class="layout-container">
       <div v-if="isAppLoading" class="loading-screen">
       </div>
@@ -468,7 +471,7 @@ watch(currentView, (newView) => {
             <div class="row">
               <div class="status-group">
                 <span class="status-value">{{ formatGameDate(store.gameTime) }} ({{ formatGameDayOfWeek(store.gameTime)
-                }})</span>
+                  }})</span>
                 <span class="status-divider"></span>
                 <span class="status-value">{{ formatGameTime(store.gameTime) }}</span>
               </div>

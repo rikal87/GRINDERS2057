@@ -1,13 +1,15 @@
 {
   "name": "grinders_2057",
   "private": true,
-  "version": "0.3.2",
+  "version": "0.3.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "harness": "node harness/index.js",
+    "simulate": "node harness/legacy/scripts/simulate_ai_match.js"
   },
   "dependencies": {
     "idb-keyval": "^6.2.2",

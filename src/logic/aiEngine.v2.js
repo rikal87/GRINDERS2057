@@ -39,7 +39,8 @@ export const chatAI = (player, trigger = CHAT_TRIGGERS.FOLD_WEAK, insight = "", 
 export const getAIAction = (player, engine) => {
   let decision = getProbabilisticAction(player, engine);
   const action = {
-    type: decision.action || 'fold',
+    action: decision.action || 'fold',
+    type: decision.action || 'fold', // Legacy support
     amount: decision.amount || 0,
     delay: decision.delay || 1000,
     insight: decision.insight || "",
@@ -101,7 +102,16 @@ function getProbabilisticAction(player, engine) {
     handRank = (player.chips <= 30 * (engine.bb || 10) || alivePlayers <= 2)
       ? getStartingHandRankHeadsup(player.hand)
       : getStartingHandRank96Max(player.hand);
-    // vPIP Fold Check
+
+    // Safety Fallback: If rank is worst (169) but we have a pair or AK, something is wrong with lookup
+    if (handRank >= 160) {
+      const r1 = player.hand[0][0];
+      const r2 = player.hand[1][0];
+      if (r1 === r2 || (r1 === 'A' || r2 === 'A')) {
+        // Force a better rank for obvious premiums if lookup failed
+        handRank = (r1 === r2) ? 50 : 80;
+      }
+    }
 
     estimatedEquity = 1 - (handRank / 169);
     // Explicit Tiers for consistency
@@ -196,14 +206,14 @@ function getProbabilisticAction(player, engine) {
     }
   } else {
     // [v15] Simplified Protection Model
-    const perceivedEq = estimatedEquity + (WTSD - 0.33) * 0.8;
+    const perceivedEq = estimatedEquity + (WTSD - 0.2) * 0.8;
 
     // Linear Interaction (Unified 1.5x scaling, minimal 0.1 base)
     continueProb = 0.1 + (perceivedEq * 1.5);
 
     // Protection Floor (The "Life Line" for Top Pair+)
     if (estimatedEquity >= 0.45) {
-      const baseProt = (street === 'FLOP' ? 0.90 : 0.70);
+      const baseProt = (street === 'FLOP' ? 0.70 : 0.35);
       const pressure = Math.min(0.5, potOdds) * 0.6;
       continueProb = Math.max(continueProb, baseProt - pressure);
     }
@@ -253,10 +263,9 @@ function getProbabilisticAction(player, engine) {
 
     continueProb = Math.max(continueProb, oddsBasedProb);
 
-    if (estimatedEquity < potOdds) continueProb *= 0.8; // v15.2 Tightened from 0.8
+    // if (estimatedEquity < potOdds) continueProb *= 0.8; // v15.2 Tightened from 0.8
   }
-
-  continueProb = Math.min(0.96, continueProb); // Strict realistic cap
+  continueProb = Math.min(1.0, Math.min(estimatedEquity + WTSD - 0.1, continueProb)); // Strict realistic cap
 
   // Strategy Bias
   if (strategy === "DONK_AVOIDER") {
@@ -278,7 +287,7 @@ function getProbabilisticAction(player, engine) {
   }
   // [v15.8] Multi-bet penalty for raiseProb (steeper for preflop)
   // const raiseDecayBase = 0.8;
-  raiseProb *= Math.pow(street === 'PREFLOP' ? 0.8 : 0.6, raises);
+  raiseProb *= Math.pow(['PREFLOP', 'RIVER'].includes(street) ? 0.8 : 0.6, raises);
   raiseProb = Math.max(0, Math.min(1.0, raiseProb));
 
   // Final Action Logic
@@ -288,18 +297,28 @@ function getProbabilisticAction(player, engine) {
   const isAggressive = AF >= 3.0;
   const bbPos = (dealerIdx + 2) % playerCount;
   const isBBOption = (street === 'PREFLOP' && raises === 0 && playerIdx === bbPos);
+  // [v5.6] Improved Pot-Committed Detection
+  // 1. 3BB or less is a short-stack emergency
+  // 2. If stack is < 15% of the total pot (after call), we are mathematically committed
   const isVirtuallyCommitted = callAmt > 0 && (
-    (player.chips <= ((engine.bb || 10) * 2)) ||
-    (player.chips / (Number(pot) + Number(player.chips)) < 0.1)
+    (player.chips <= ((engine.bb || 10) * 3)) ||
+    (player.chips / (Number(pot) + Number(callAmt)) < 0.15)
   );
+
   if (isVirtuallyCommitted) {
-    if (estimatedEquity >= 0.3 || streetsLeft > 0) {
-      continueProb = 1;
+    // Street-specific "No Hope" escape hatch
+    // River: Never fold if committed. Turn: Need ~15% Eq. Flop: Need ~25% Eq or meaningful potential.
+    const commitFloor = (street === 'FLOP' ? 0.25 : (street === 'TURN' ? 0.15 : 0.05));
+
+    if (estimatedEquity >= commitFloor) {
+      // continueProb = 1.0; // Stay in!
+      estimatedEquity = 1.0;
       raiseProb = 0;
-      insight += " [V-Committed]";
+      insight += ` [V-Committed: ${street}]`;
     } else {
-      // Fold complete trash (AIR) even if committed
-      insight += " [V-Committed-Fold]";
+      // Even if committed, don't throw away the last chips with 0% hope on the flop/turn
+      continueProb *= 0.4; // Return to probabilistic logic, heavily biased towards fold
+      insight += ` [V-Committed-Fold-Escape: Eq ${estimatedEquity.toFixed(2)}]`;
     }
   }
   if (callAmt === 0) {
@@ -326,7 +345,7 @@ function getProbabilisticAction(player, engine) {
         action = 'raise'; insight += ` (Isolate: LAG)`;
       } else {
         action = 'call';
-        const totalCallProb = continueProb * (1 - raiseProb);
+        const totalCallProb = continueProb * (1 - continueProb);
         insight += ` (Prob-Call: ${(totalCallProb * 100).toFixed(0)}%)`;
       }
     } else {

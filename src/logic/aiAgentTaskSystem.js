@@ -13,43 +13,6 @@ import { TYPE_CHANGE_BANKROLL } from './constants.js'
 // Probability 10% per hour = ~0.17% per minute.
 
 /**
- * checkSubscription: Handle AI Agent subscription expiration and auto-renewal.
- */
-export const checkSubscription = () => {
-  const agent = getAgent();
-  if (!agent) return;
-  if (store.gameTime < agent.subscriptionExpireAt) return; // Not expired yet
-
-  // If expired or not set (0), try to renew
-  const modelId = agent.name;
-  const planIdx = agent.price_plan_idx;
-  const modelData = AI_AGENT_MODEL_AND_PLAN_DATA[modelId];
-  const plan = modelData?.price_plan[planIdx];
-
-  if (plan && plan.cost > 0) {
-    if (getCurrentBankroll() >= plan.cost) {
-      // Auto-renew for 7 days
-      gainBankroll(-plan.cost, TYPE_CHANGE_BANKROLL.AI_AGENT_SUBSCRIPTION);
-      // 7 days in ms = 7 * 24 * 60 * 60 * 1000
-      const duration = 7 * 24 * 60 * 60 * 1000;
-      agent.subscriptionExpireAt = store.gameTime + duration;
-
-      sendMessage(MESSAGE_TYPE.FINANCE, 'Subscription Renewed', `${modelId} [${planIdx}] has been auto-renewed for 7 days.`, [], 'System');
-      return;
-    } else {
-      // Insufficient funds -> Fallback to Vanguard Free
-      sendMessage(MESSAGE_TYPE.FINANCE, 'Subscription Expired', `Insufficient funds to renew ${modelId}. Systems downgraded to VANGUARD [FREE].`, [], 'System');
-      agent.name = AI_AGENT_MODEL_ENUM.VANGUARD;
-      agent.model = AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD];
-      agent.price_plan_idx = 0;
-      agent.subscriptionExpireAt = 0;
-      // Handle task constraints
-      validateTaskSlots();
-    }
-  }
-};
-
-/**
  * validateTaskSlots: Ensure active tasks fit in the current agent's slots.
  */
 export const validateTaskSlots = () => {
@@ -74,8 +37,8 @@ export const validateTaskSlots = () => {
  * processAiTasks: Should be called every game minute.
  */
 export const processAiTasks = () => {
-  // 1. Subscription Lifecycle Check
-  checkSubscription();
+  // 1. Subscription Lifecycle Check (DEPRECATED: Permanent Upgrade System)
+  // checkSubscription();
 
   // Update HUD Active status
   store.isActiveHud = !!store.activeBoosts.find(b => b.effect.type === TASK_EFFECT_TYPE.HUD_ACTIVE);
@@ -85,12 +48,11 @@ export const processAiTasks = () => {
   // Use model/plan data from store
   const agent = store.aiAgent;
   if (!agent) {
-    // Basic LT regen even without agent?
-    // Let's stick to 0 regen if no agent to incentivize booting.
     return;
   }
-  const planIdx = agent.price_plan_idx;
-  const planData = agent.model?.price_plan[planIdx] || { maxLt: 100 };
+  const modelId = agent.name;
+  const planIdx = store.aiAgentTiers[modelId] || 0;
+  const planData = AI_AGENT_MODEL_AND_PLAN_DATA[modelId]?.price_plan[planIdx] || { maxLt: 100 };
   const maxLt = planData.maxLt;
   const regenMultiplier = planData.lt_regen_bonus_rate || 1.0;
   const probBonus = planData.probability_bonus || 0;
@@ -181,8 +143,14 @@ export const processAiTasks = () => {
           if (Math.random() < probPerMin) {
             const bankrollEff = taskDef.effect?.find(e => e.type === 'add_bankroll');
             if (bankrollEff) {
-              gainBankroll(bankrollEff.amount, TYPE_CHANGE_BANKROLL.AGENT_TASK);
-              sendMessage(MESSAGE_TYPE.REWARD, 'Agent Work Profit', `[${taskDef.name}] Generated ${bankrollEff.amount} CR.`, [], 'System', 60);
+              let finalAmount = bankrollEff.amount;
+              if (bankrollEff.maxMultiple && bankrollEff.maxMultiple > 1) {
+                const min = bankrollEff.amount;
+                const max = bankrollEff.amount * bankrollEff.maxMultiple;
+                finalAmount = Math.floor(Math.random() * (max - min + 1)) + min;
+              }
+              gainBankroll(finalAmount, TYPE_CHANGE_BANKROLL.AGENT_TASK);
+              sendMessage(MESSAGE_TYPE.REWARD, 'Agent Work Profit', `[${taskDef.name}] Generated ${finalAmount.toLocaleString()} CR.`, [], 'System', 60);
             }
           }
         } else {
@@ -318,7 +286,9 @@ const triggerRiskDetection = (index, effDef, taskName) => {
     const taskDef = AI_TASK_DATA.find(t => t.id === taskState.taskId);
     if (taskDef && taskDef.cooldown > 0) {
       const agent = store.aiAgent;
-      const planData = agent.model?.price_plan[agent.price_plan_idx];
+      const modelId = agent.name;
+      const planIdx = store.aiAgentTiers[modelId] || 0;
+      const planData = AI_AGENT_MODEL_AND_PLAN_DATA[modelId]?.price_plan[planIdx];
       const cooldownBonus = planData?.cooldown_bonus || 0;
 
       taskState.status = 'COOLDOWN';
@@ -361,7 +331,9 @@ export const startTask = (taskId) => {
     sendMessage(MESSAGE_TYPE.SYSTEM, 'System Offline', 'Please boot your AI Agent before starting tasks.', [], 'System', 24 * 60);
     return false;
   }
-  const planData = agent.model?.price_plan[agent.price_plan_idx] || { slot: ['T1'] };
+  const modelId = agent.name;
+  const planIdx = store.aiAgentTiers[modelId] || 0;
+  const planData = AI_AGENT_MODEL_AND_PLAN_DATA[modelId]?.price_plan[planIdx] || { slot: ['T1'] };
   const availableSlots = planData.slot;
 
   // Identify occupied slot indices
@@ -418,5 +390,62 @@ export const startTask = (taskId) => {
   });
 
   // sendMessage('SYSTEM', 'Task Started', `${taskDef.name} is now in progress...`);
+  return true;
+};
+
+/**
+ * upgradeAgentModel: Sequential upgrade for a specific model.
+ */
+export const upgradeAgentModel = (modelId) => {
+  const currentTier = store.aiAgentTiers[modelId];
+  if (currentTier === undefined) return false;
+
+  const modelData = AI_AGENT_MODEL_AND_PLAN_DATA[modelId];
+  const nextTier = currentTier + 1;
+  const nextPlan = modelData.price_plan[nextTier];
+
+  if (!nextPlan) {
+    sendMessage(MESSAGE_TYPE.SYSTEM, 'Max Upgrade', `${modelId} is already at its maximum potential.`, [], 'System', 60);
+    return false;
+  }
+
+  if (getCurrentBankroll() < nextPlan.cost) {
+    sendMessage(MESSAGE_TYPE.FINANCE, 'Insufficient Funds', `Need ${nextPlan.cost} CR to upgrade ${modelId}.`, [], 'System', 60);
+    return false;
+  }
+
+  // Deduct cost and upgrade
+  gainBankroll(-nextPlan.cost, TYPE_CHANGE_BANKROLL.AI_AGENT_UPGRADE);
+  store.aiAgentTiers[modelId] = nextTier;
+
+  // If this is the active agent, update its reference (optional since we read from tiers, but good for internal consistency)
+  if (store.aiAgent && store.aiAgent.name === modelId) {
+    store.aiAgent.price_plan_idx = nextTier;
+  }
+
+  sendMessage(MESSAGE_TYPE.SYSTEM, 'System Upgrade Complete', `${modelId} has been upgraded to Tier ${nextTier}.`, [], 'System', 24 * 60);
+  return true;
+};
+
+/**
+ * switchAgentModel: Switch active model while preserving tiers.
+ */
+export const switchAgentModel = (modelId) => {
+  const modelData = AI_AGENT_MODEL_AND_PLAN_DATA[modelId];
+  if (!modelData) return false;
+
+  const tier = store.aiAgentTiers[modelId] || 0;
+
+  store.aiAgent = {
+    name: modelId,
+    model: modelData,
+    price_plan_idx: tier,
+    subscriptionExpireAt: 0
+  };
+
+  sendMessage(MESSAGE_TYPE.SYSTEM, 'Agent Switched', `Active model set to ${modelId} (Tier ${tier}).`, [], 'System', 24 * 60);
+
+  // Validate tasks after switching to handle slot changes
+  validateTaskSlots();
   return true;
 };

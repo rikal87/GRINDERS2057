@@ -89,7 +89,6 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
   // Process Action Logic
   switch (action.actionType) {
     case MESSAGE_ACTION_TYPE.RECEIVE:
-      audioManager.playSFX('paybill');
       gainBankroll(action.payload.amount, TYPE_CHANGE_BANKROLL.RECEIVE)
       sendMessage('SYSTEM', 'Receive Successful', `You received ${action.payload.amount.toLocaleString()} ${action.payload.currency} from ${action.payload.sender}.`);
       deleteMessage(msgId); // Remove bill after payment
@@ -99,7 +98,6 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
     case MESSAGE_ACTION_TYPE.PAY_FINE:
       const amount = action.payload.amount;
       if (store.bankroll >= amount) {
-        audioManager.playSFX('paybill');
         gainBankroll(-amount, action.actionType)
         if (action.actionType === MESSAGE_ACTION_TYPE.PAY_RENT && store.missedPayments) {
           store.missedPayments.rent_bill = Math.max(0, store.missedPayments.rent_bill - 1);
@@ -119,7 +117,6 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
         console.info('p.id', p.id, p.amount)
         const result = debtRepayment(p.id, p.amount, false, true);
         if (result) {
-          audioManager.playSFX('paybill');
           sendMessage(MESSAGE_TYPE.FINANCE, 'Transaction Successful', `Successfully transferred ${(p.amount || 0).toLocaleString()} CR.to ${p.to}.`);
           deleteMessage(msgId);
           if (p.nextEvent) scheduleEvent(p.nextEvent, 5 + Math.random() * 12);
@@ -139,7 +136,6 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
       if (p.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT) {
         const result = transferBankroll(p.id, p.amount, false);
         if (result.success) {
-          audioManager.playSFX('paybill');
           sendMessage(MESSAGE_TYPE.FINANCE, 'Transaction Successful', `Successfully transferred ${(p.amount || 0).toLocaleString()} CR.to ${p.to}.`);
           deleteMessage(msgId);
           if (p.nextEvent) scheduleEvent(p.nextEvent, 5 + Math.random() * 12);
@@ -157,7 +153,6 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
     case MESSAGE_ACTION_TYPE.PAY_INCOME_TAX:
       const taxAmount = action.payload.amount;
       if (store.bankroll >= taxAmount) {
-        audioManager.playSFX('paybill');
         gainBankroll(-taxAmount, action.actionType)
         // Update the high water mark for the next cycle
         store.latest_pay_income_base_amount = store.bankroll;

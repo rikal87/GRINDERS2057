@@ -842,13 +842,13 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
 
     if (isBoardPaired) {
       if (isPocketPair) {
-        if (holeVal[0] > boardHigh1) caseSum -= 2; // Overpair to the board
-        else if (holeVal[0] > boardHigh2) caseSum -= 1; // Middle pocket pair
-        else caseSum += 3; // Underpair counterfeited (v5: Severe Penalty)
+        if (holeVal[0] > boardHigh1) caseSum -= 2; // Overpair to the entire board (Strong)
+        else if (holeVal[0] > boardHigh2) caseSum += 1; // [v5.0] Middle pocket pair with Overcard (Marginalized)
+        else caseSum += 4; // Underpair counterfeited (v5: Severe Penalty)
       } else {
         if (hole1) caseSum -= 1; // Top Pair + Board Pair
-        else if (hole2) caseSum += 1; // 2nd Pair + Board Pair
-        else caseSum += 3; // Weak Pair + Board Pair (v5: Severe Penalty)
+        else if (hole2) caseSum += 2; // [v5.0] 2nd Pair + Board Pair (Downgraded)
+        else caseSum += 4; // Weak Pair + Board Pair (v5: Severe Penalty)
       }
     } else {
       // Normal Two Pair (No board pair)

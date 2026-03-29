@@ -20,7 +20,7 @@
                   Math.floor(animatedStats.max_win_pot).toLocaleString() }} CR</span></div>
                 <div class="stat-entry"><span class="label">MAX_LOSE_POT:</span> <span class="val white">{{
                   Math.floor(animatedStats.max_lose_pot).toLocaleString() }} CR</span></div>
-                <div class="stat-entry"><span class="label">NET_SHARE(Partner):</span> <span class="val"
+                <div class="stat-entry"><span class="label">NET_SHARE:</span> <span class="val"
                     :class="animatedStats.net_share >= 0 ? 'green' : 'red'">{{
                       Math.floor(animatedStats.net_share).toLocaleString() }} CR</span></div>
                 <div class="stat-entry"><span class="label">ITEM_EFFECT:</span> <span class="val"
@@ -53,9 +53,8 @@
             <div class="stats-section" v-if="showLuck">
               <div class="section-label">LUCK_AND_PEAKS</div>
               <div class="stats-grid">
-                <div class="stat-entry" v-if="!isSession"><span class="label">BANKRUPTCY:</span> <span
-                    class="val red">{{
-                      Math.floor(animatedStats.bankruptcy_count) }}</span></div>
+                <div class="stat-entry"><span class="label">BUST:</span> <span class="val red">{{
+                  Math.floor(animatedStats.bust) }}</span></div>
                 <div class="stat-entry"><span class="label">MAX_STREAK (WIN):</span> <span class="val green">{{
                   Math.floor(animatedStats.max_win_streak) }}</span></div>
                 <div class="stat-entry"><span class="label">MAX_STREAK (LOSE):</span> <span class="val red">{{
@@ -81,7 +80,7 @@
           </Transition>
         </div>
         <div class="modal-actions" style="margin-top:20px">
-          <button @click="handleClose" :disabled="isProcessing" class="btn cyan">CLOSE_REPORT</button>
+          <button @click="handleClose" :disabled="isProcessing" class="btn btn-cancel">CLOSE_REPORT</button>
         </div>
       </div>
     </div>
@@ -137,7 +136,7 @@ const animatedStats = ref({
   pfr: 0,
   wtsd: 0,
   wsd: 0,
-  bankruptcy_count: 0,
+  bust: 0,
   max_win_streak: 0,
   max_lose_streak: 0,
   max_lose_equity: 0,
@@ -203,7 +202,7 @@ watch(() => props.show, (newVal) => {
 
     setTimeout(() => {
       showLuck.value = true;
-      animateValue('bankruptcy_count', currentStats.value.bankruptcy_count || 0, 1000);
+      animateValue('bust', currentStats.value.bust || 0, 1000);
       animateValue('max_win_streak', currentStats.value.max_win_streak || 0, 1000);
       animateValue('max_lose_streak', currentStats.value.max_lose_streak || 0, 1000);
       animateValue('max_lose_equity', currentStats.value.max_lose_equity || 0, 1000);
@@ -274,8 +273,50 @@ const handleClose = () => {
 </script>
 
 <style scoped>
-@import '../styles/components/SafeHouse.css';
+/* @import '../styles/components/SafeHouse.css'; */
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 20px 0;
+  max-height: 70vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-right: 10px;
+}
 
+.stats-section {
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  margin-top: 15px;
+  position: relative;
+}
+
+.stats-section .section-label {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: #0d1117;
+  padding: 0 8px;
+  font-size: 0.7rem;
+  color: var(--neon-cyan);
+  letter-spacing: 2px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 4px;
+}
 .v5-modal-overlay {
   z-index: 1000;
 }
@@ -388,6 +429,11 @@ const handleClose = () => {
     transform: scale(1) translateY(0);
     filter: blur(0);
     text-shadow: 0 0 15px currentColor, 0 0 5px currentColor;
+  }
+}
+@media (max-width: 450px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

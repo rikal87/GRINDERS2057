@@ -46,10 +46,14 @@ import { PARTNER_ID, LOCATION_ID } from './constants.js'
  * @property {string} MAIN_STORY_3_0_WARN_BIG_DADDY
  * @property {string} MAIN_STORY_3_2_CHALLENGE_HBD_ACCEPT_FLORENCE
  * @property {string} MAIN_STORY_3_2_CHALLENGE_HBD_REFUSE_FLORENCE
- * @property {string} MAIN_STORY_3_2_BIG_DADDY_WIN
- * @property {string} MAIN_STORY_3_2_BIG_DADDY_LOSE
  * @property {string} RICH_GUY_HUNTER
  * @property {string} RICH_GUY_HUNTER_REFUSE
+ * @property {string} ELIMINATED
+ * @property {string} PLAYER_ELIMINATED
+ * @property {string} WIN_FLORENCE
+ * @property {string} WIN_PLAYER
+ * @property {string} PLAYER_LEAVE
+ * @property {string} BAILOUT_FOR_PLAYER
  */
 /** @type {FlorenceEvents} */
 export const EVENT_FLORENCE = new Proxy({}, {
@@ -58,6 +62,84 @@ export const EVENT_FLORENCE = new Proxy({}, {
 const SENDER_EN = 'Florence';
 const SENDER_KO = '플로렌스';
 export const EventData = [
+  {
+    id: EVENT_FLORENCE.ELIMINATED,
+    scenario: '플로렌스가 게임중 버스트 당했습니다.',
+    title_ko: '분산의 통제 실패',
+    title_en: 'Failure to Control Variance',
+    body_ko: '분산의 끝자락이 제 계산 범위를 벗어났네요. 이번 런아웃은 정말... 비합리적이었어요. 전 먼저 퇴근할게요. 파트너, 남은 테이블의 기대수익은 이제 온전히 당신의 몫이에요. 저 무례한 리스크들을 전부 청산해 주세요.',
+    body_en: 'The variance tail ended up outside my calculated bounds. That runout was... irrational. I\'m heading out first. Partner, the rest of the table\'s EV is all yours now. Please liquidate those disrespectful risks for me.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
+  {
+    id: EVENT_FLORENCE.PLAYER_ELIMINATED,
+    scenario: '플레이어가 플로렌스보다 먼저 패배했을 때',
+    title_ko: '부적절한 리스크 관리',
+    title_en: 'Inadequate Risk Management',
+    body_ko: '리스크 관리가 전혀 되지 않았군요. 그렇게 이른 시점에 파산하는 건 제 포트폴리오에 없던 시나리오예요. 라운지에서 기다리세요. 남은 수익은 제가 최대한 확보한 뒤에 나중에 얘기하죠.',
+    body_en: 'Your risk management was completely inadequate. Busting that early was a scenario my portfolio never accounted for. Wait for me in the lounge. I\'ll secure the remaining returns and we\'ll talk later.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
+  {
+    id: EVENT_FLORENCE.WIN_FLORENCE,
+    scenario: '게임 종료 시 플로렌스의 칩이 플레이어보다 많을 때',
+    title_ko: '안정적인 수익 곡선',
+    title_en: 'Stable Profit Curve',
+    body_ko: '계획대로군요. 시장의 변동성을 잘 제어해서 목표 포지션을 달성했어요. 당신도 제 보조를 맞추느라 고생 많았어요. 오늘 정산 데이터는 꽤 긍정적이겠네요.',
+    body_en: 'Just as planned. I controlled the market volatility well and achieved the target position. You did a good job keeping pace with me. Today\'s settlement data should be quite positive.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
+  {
+    id: EVENT_FLORENCE.WIN_PLAYER,
+    scenario: '게임 종료 시 플레이어의 칩이 플로렌스보다 많을 때',
+    title_ko: '기대 이상의 퍼포먼스',
+    title_en: 'Performance Beyond Expectations',
+    body_ko: '놀랍네요. 당신의 결정들이 제가 예상했던 확률적 기댓값보다 훨씬 높은 성과를 냈어요. 인정하죠, 이번만큼은 당신의 직관이 제 계산보다 우수했습니다. 정말 훌륭한 게임이었어요.',
+    body_en: 'Surprising. Your decisions yielded results far beyond the probabilistic expectations I projected. I\'ll admit, this time your intuition was superior to my calculations. That was an excellent game.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
+  {
+    id: EVENT_FLORENCE.PLAYER_LEAVE,
+    scenario: '플레이어가 먼저 자리를 뜰 때',
+    title_ko: '유동성 계획의 변경',
+    title_en: 'Change in Liquidity Plan',
+    body_ko: '벌써 철수하시는 건가요? 아직 테이블의 기대수익이 충분히 높은 상태인데 말이죠. 뭐, 각자의 스케줄 관리가 있을 테니까요. 조심히 들어가세요. 정산은 나중에 하죠.',
+    body_en: 'Are you withdrawing already? The table\'s expected value is still quite high. Well, I suppose everyone has their own schedule management. Get home safe. We\'ll settle up later.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
+  {
+    id: EVENT_FLORENCE.BAILOUT_FOR_PLAYER,
+    scenario: '플레이어가 파산했고 플로렌스가 자금을 지원했습니다.',
+    title_ko: '긴급 수혈 서비스',
+    title_en: 'Emergency Liquidity Injection',
+    body_ko: '이런, 리스크 관리에 실패하셨군요. 하지만 걱정 마세요, 파트너. 제가 가진 유동성을 동원해서 당신의 포지션을 복구해 드릴게요. 비즈니스에서 가장 중요한 건 기회를 잃지 않는 법이니까요. 물론 이 채무는 나중에 정확히 정산해 주셔야 해요.',
+    body_en: 'Oh dear, it seems your risk management failed. But don\'t worry, partner. I\'ll mobilize my liquidity to restore your position. The most important thing in business is not losing the opportunity. Of course, this debt must be settled precisely later.',
+    get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
+    get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
+    func() {
+      sendMessage(MESSAGE_TYPE.SOCIAL, this.title, this.body, [], getLanguage() === 'en' ? SENDER_EN : SENDER_KO)
+    },
+  },
   {
 
     id: EVENT_FLORENCE.RESOLVED_DEBT,

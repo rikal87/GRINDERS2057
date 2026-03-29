@@ -19,7 +19,7 @@
 
   /* 1. CCTV 상단 패널 (Dealer & Header) */
   .dealer-panel {
-    height: 30vh;
+    height: 32vh;
     border-bottom: 2px solid var(--neon-cyan, #00f0ff);
     padding: 10px;
     background: linear-gradient(180deg, #050a0e 0%, #0d1319 100%);

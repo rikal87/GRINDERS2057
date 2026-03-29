@@ -108,8 +108,7 @@ const suitIcon = computed(() => {
   line-height: 1;
 }
 .suit {
-  font-size: 1.8rem;
   line-height: 1;
-  margin-top: -2px;
+
 }
 </style>

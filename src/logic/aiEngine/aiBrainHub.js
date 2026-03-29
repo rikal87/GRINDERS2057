@@ -18,10 +18,11 @@ export function getUnifiedAction(player, engine) {
   // [v18] Normalize for Simulation Compatibility
   // The simulation expects 'type' but Brain system uses 'action'.
   return {
-    type: decision.action || 'fold', // Legacy-Simulation compatibility
-    action: decision.action || 'fold', // Brain system consistency
+    type: decision.action || 'fold', 
+    action: decision.action || 'fold', 
     amount: decision.amount || 0,
     insight: decision.insight || "No Insight",
+    delay: decision.delay || (1000 + Math.random() * 1500), 
     isBluffCatch: !!decision.isBluffCatch,
     exploitTrigger: decision.exploitTrigger || null
   };

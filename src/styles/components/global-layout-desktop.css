@@ -1,0 +1,12 @@
+/* Wide Screen / FHD Optimization */
+@media (min-width: 1200px) {
+  .game-container {
+    max-width: 1600px;
+  }
+}
+
+@media (max-width: 2559px) {
+  .qhd-only {
+    display: none !important;
+  }
+}

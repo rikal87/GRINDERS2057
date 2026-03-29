@@ -240,17 +240,14 @@ export const ITEM_EFFECT_DATA = [
     rarity: 'Uncommon',
     maxCooldown: 300,
     cooldown: 0,
-    trigger: ['bankrupt'],
+    trigger: ['bust'],
     editable: false,
     get desc() {
       return getLanguage() === 'en'
-        ? `Gain +${this.valueCalc} Bankroll when bankrupt (Effect increases as level goes up, Cooldown: ${this.maxCooldown} rounds)`
-        : `파산 시 뱅크롤 +${this.valueCalc} (효과는 레벨이 올라갈수록 증가, 쿨타임: ${this.maxCooldown} 라운드)`;
+        ? `Recover +${(this.value * 100).toFixed(0)}% of initial Buy-in on Bust (Cooldown: ${this.maxCooldown} rounds)`
+        : `파산 시 최초 바이인의 ${(this.value * 100).toFixed(0)}% 만큼 환급 (쿨타임: ${this.maxCooldown} 라운드)`;
     },
-    get valueCalc() {
-      return getCurrentLevel() * this.value;
-    },
-    value: 1000,
+    value: .25,
     isStackable: true
   },
   {

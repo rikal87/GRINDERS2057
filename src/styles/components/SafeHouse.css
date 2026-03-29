@@ -16,18 +16,7 @@
   font-size: 1.5rem;
   color: var(--neon-yellow);
 }
-/* Base Terminal Decor */
-.v5-bg-scan {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
-    linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
-  background-size: 100% 3px, 3px 100%;
-  z-index: 50;
-  opacity: 0.3;
-}
+
 
 /* ──────────────────────────────────────────────────────────
    1. TOP NAVIGATION & HEADER
@@ -749,10 +738,11 @@ input[type="range"].v5-stamina-range::-webkit-slider-thumb {
 /* Agent Selector Modal */
 .agent-selector {
   width: 900px;
-  max-width: 95vw;
+  max-width: 90vw;
   display: flex;
   flex-direction: column;
   gap: 10px;
+
 }
 .agent-selector h2 {
   margin: 1rem;
@@ -769,34 +759,6 @@ input[type="range"].v5-stamina-range::-webkit-slider-thumb {
   height: 30vh;
 }
 
-/* .nav-btn {
-  background: transparent;
-  border: 1px solid var(--neon-cyan);
-  color: var(--neon-cyan);
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 900;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-} */
-
-/* .nav-btn:hover:not(:disabled) {
-  background: var(--neon-cyan);
-  color: #000;
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-}
-
-.nav-btn:disabled {
-  border-color: #333;
-  color: #333;
-  cursor: not-allowed;
-} */
-
 .agent-display {
   flex: 1;
   height: 100%;
@@ -805,7 +767,10 @@ input[type="range"].v5-stamina-range::-webkit-slider-thumb {
   display: flex;
   flex-direction: column;
   /* grid-template-rows: auto 1fr; */
-  padding: 25px;
+  padding: 12px;
+  height: auto;
+  min-height: 30vh;
+  overflow-y: visible;
 }
 
 .agent-header {

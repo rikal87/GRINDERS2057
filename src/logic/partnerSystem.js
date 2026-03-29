@@ -234,8 +234,7 @@ const triggerRelationshipChange = (partner) => {
       debtRepayment(partner.id, finalAmount, true);
     }
     const hasBenefitContract = partner.contracts.find((c) => c.type === CONTRACT_TYPE.BENEFIT_SHARE && c.active);
-    let shareAmount = 0;
-    if (hasBenefitContract) shareAmount = shareBenefit(partner, partner.sessionNetWorth, hasBenefitContract);
+    if (hasBenefitContract) shareBenefit(partner, partner.sessionNetWorth, hasBenefitContract);
   }
   partner.sessionNetWorth = 0; // RESET
   // partner is how thinking about contract and debt
@@ -329,12 +328,15 @@ export const simulatePartnersBehavior = () => {
 
 }
 export const simulatePartnersNetWorth = (partner) => {
-  // simulate partner's net worth logic
-  if (partner.status === PARTNER_STATUS.GAMBLING) {
-    // for Testing
-    // partner.bankroll = -99999;
-    // partner.debt = -10000;
+  // 1. Simulated living & rake expenses / consumption (prevents infinite wealth accumulation)
+  // Deduct 1% of bankroll every simulation cycle (approx. 1 in-game hour)
+  if (partner.bankroll > 0) {
+    const expenses = Math.max(Math.ceil(partner.bankroll * 0.01), 1000);
+    gainPartnerBankroll(partner, -expenses, TYPE_CHANGE_BANKROLL.OTHER);
+  }
 
+  // 2. Gambling simulation logic (Old logic preserved)
+  if (partner.status === PARTNER_STATUS.GAMBLING) {
     // 잔고가 0 이하(파산)인 경우 도박 종료
     if (partner.bankroll <= 0) {
       partner.status = PARTNER_STATUS.IDLE;

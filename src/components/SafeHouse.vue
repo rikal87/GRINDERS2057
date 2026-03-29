@@ -1,119 +1,121 @@
 <template>
   <div class="safe-house v5">
-    <div class="v5-bg-scan"></div>
+    <!-- <div class="v5-bg-scan"></div> -->
 
     <!-- MOBILE ONLY: TAB NAVIGATION -->
     <nav class="v5-mobile-nav">
-      <button :class="{ active: mobileActiveTab === 'status' }" @click="mobileActiveTab = 'status'">STATUS</button>
-      <button :class="{ active: mobileActiveTab === 'manage' }" @click="mobileActiveTab = 'manage'">MANAGE</button>
-      <button :class="{ active: mobileActiveTab === 'comms' }" @click="mobileActiveTab = 'comms'">COMMS</button>
+      <button :class="{ active: mobileActiveTab === 'status' }" @click="scrollToTab('status')">STATUS</button>
+      <button :class="{ active: mobileActiveTab === 'manage' }" @click="scrollToTab('manage')">MANAGE</button>
+      <button :class="{ active: mobileActiveTab === 'comms' }" @click="scrollToTab('comms')">COMMS</button>
     </nav>
-    <div class="v5-body">
+    <div class="v5-body" ref="swipeContainer" @scroll.passive="onSwipeScroll">
       <!-- LEFT COLUMN: STATUS & SETUP -->
       <section class="v5-side-col" :class="{ 'mobile-show': mobileActiveTab === 'status' }">
-        <!-- Core Vitality -->
-        <div class="v5-panel v5-core-vitality">
-          <div class="v5-panel-label">
-            <span class="label">CORE_STATUS</span>
-            <button class="stats-btn" @click="$emit('open-stats-modal')">STATS</button>
-          </div>
-          <div class="v5-panel-inner">
-            <div class=" v5-stat-row">
-              <div class="v5-stat-group">
-                <span class="label">BANKROLL</span>
-                <span class="bankroll">{{ store.bankroll.toLocaleString() }} <small>CR</small></span>
-              </div>
+        <div class="v5-side-scroll-container">
+          <!-- Core Vitality -->
+          <div class="v5-panel v5-core-vitality">
+            <div class="v5-panel-label">
+              <span class="label">CORE_STATUS</span>
+              <button class="stats-btn" @click="$emit('open-stats-modal')">STATS</button>
             </div>
-            <div class="v5-stat-row">
-            </div>
-            <div class="v5-xp-box">
-              <div class="v5-xp-text">
-                <span class="label">LEVEL</span>
-                <span class="val highlight">LV.{{ store.level }}</span>
-              </div>
-              <div class="v5-xp-text">
-                <span>EXPERIENCE_GAINED</span>
-                <span>{{ store.xp }} / {{ getNextLevelThreshold() }}</span>
-              </div>
-              <div class="v5-progress-track">
-                <div class="v5-progress-fill" :style="{ width: xpPercent + '%' }"></div>
-              </div>
-              <div class="v5-xp-text sleep-info">
-                <span>STAMINA: <span class="highlight">+{{ sleepDuration }} HR</span></span>
-                <span>{{ Math.floor(currentStaminaPercent) }} / {{ getEffectiveMaxStamina() }}</span>
-              </div>
-              <div class="v5-progress-track stamina-track">
-                <!-- Interactive Slider Overlay -->
-                <input type="range" class="v5-stamina-range" min="0.5" max="24.0" step="0.5"
-                  v-model.number="sleepDuration">
-                <!-- Current Stamina -->
-                <div class="v5-progress-fill"
-                  :style="{ width: currentStaminaPercent + '%', backgroundColor: getStaminaColor }"></div>
-                <!-- Sleep Recovery Preview -->
-                <div class="v5-progress-fill preview" :style="{ width: targetStaminaPercent + '%' }"></div>
-              </div>
-            </div>
-            <div class="btn-container">
-              <button class="btn-cancel" @click="$emit('back')">LEAVE</button>
-              <button class="btn-accept" @click="$emit('sleep', sleepDuration)">SLEEP</button>
-            </div>
-          </div>
-        </div>
-        <!-- Program Setup -->
-        <!-- Ai Agent Template -->
-        <div class="v5-panel v5-neural-template">
-          <div class="v5-panel-label">
-            <span>AI_AGENT</span>
-            <button class="set-up-agent-btn" @click="$emit('open-agent-modal')" v-if="store.aiAgent">SETUP</button>
-            <button class="boot-up-agent-btn" @click="bootAgentClick" :disabled="isBooting" v-else>
-              <span v-if="isBooting" class="boot-loading"></span>
-              {{ isBooting ? 'BOOTING...' : 'BOOT' }}
-            </button>
-          </div>
-          <div class="v5-panel-inner" :class="{ 'is-booting': isBooting }">
-            <div class="v5-neural-hero">
-              <span class="v5-class-title">{{ store.aiAgent ? store.aiAgent.name : (isBooting ? 'INITIALIZING' :
-                'OFFLINE') }}</span>
-              <p class="v5-class-desc qhd-only">
-                {{ store.aiAgent ? store.aiAgent.model?.slogan : (isBooting ? 'LOADING_CORE_SYSTEMS' :
-                  'SYSTEM_READY_FOR_BOOT') }}
-              </p>
-              <div class="v5-stat-row">
+            <div class="v5-panel-inner">
+              <div class=" v5-stat-row">
                 <div class="v5-stat-group">
-                  <span class="label">LUDUS_TOKENS</span>
-                  <span class="val cyan">{{ Math.floor(store.ludusTokens).toLocaleString() }}
-                    <small>LT</small></span>
+                  <span class="label">BANKROLL</span>
+                  <span class="bankroll">{{ store.bankroll.toLocaleString() }} <small>CR</small></span>
                 </div>
               </div>
-              <div class="v5-status-badges qhd-only" v-if="store.aiAgent">
-                <span class="v5-badge-mini" v-if="store.gameTime < store.aiAgent.subscriptionExpireAt">SYS_ACTIVE</span>
-                <span class="v5-badge-mini" v-else style="color:var(--neon-red)">SYS_EXPIRED</span>
-                <span class="v5-badge-mini">XK254015</span>
-                <span class="v5-badge-mini">RAID_X</span>
+              <div class="v5-stat-row">
               </div>
-              <div class="v5-status-badges qhd-only" v-else>
-                <span class="v5-badge-mini offline">OFFLINE</span>
+              <div class="v5-xp-box">
+                <div class="v5-xp-text">
+                  <span class="label">LEVEL</span>
+                  <span class="val highlight">LV.{{ store.level }}</span>
+                </div>
+                <div class="v5-xp-text">
+                  <span>EXPERIENCE_GAINED</span>
+                  <span>{{ store.xp }} / {{ getNextLevelThreshold() }}</span>
+                </div>
+                <div class="v5-progress-track">
+                  <div class="v5-progress-fill" :style="{ width: xpPercent + '%' }"></div>
+                </div>
+                <div class="v5-xp-text sleep-info">
+                  <span>STAMINA: <span class="highlight">+{{ sleepDuration }} HR</span></span>
+                  <span>{{ Math.floor(currentStaminaPercent) }} / {{ getEffectiveMaxStamina() }}</span>
+                </div>
+                <div class="v5-progress-track stamina-track">
+                  <!-- Interactive Slider Overlay -->
+                  <input type="range" class="v5-stamina-range" min="0.5" max="24.0" step="0.5" @touchstart.stop
+                    @touchmove.stop @touchend.stop v-model.number="sleepDuration">
+                  <!-- Current Stamina -->
+                  <div class="v5-progress-fill"
+                    :style="{ width: currentStaminaPercent + '%', backgroundColor: getStaminaColor }"></div>
+                  <!-- Sleep Recovery Preview -->
+                  <div class="v5-progress-fill preview" :style="{ width: targetStaminaPercent + '%' }"></div>
+                </div>
+              </div>
+              <div class="btn-container">
+                <button class="btn-cancel" @click="$emit('back')">LEAVE</button>
+                <button class="btn-accept" @click="$emit('sleep', sleepDuration)">SLEEP</button>
               </div>
             </div>
-            <div class="v5-slot-list">
-              <div v-for="(slot, idx) in taskSlots" :key="idx" class="v5-slot-item" :class="{ locked: slot.isLocked }"
-                @click="!slot.isLocked && !slot.task && openTaskSelector(idx)"
-                @mousedown="!slot.isLocked && slot.task && startLongPress(idx)" @mouseup="cancelLongPress"
-                @mouseleave="cancelLongPress" @touchstart="!slot.isLocked && slot.task && startLongPress(idx)"
-                @touchend="cancelLongPress">
+          </div>
 
-                <div class="v5-slot-meta">
-                  <span class="v5-slot-tier-tag"> {{ slot.tier }}</span>
-                  <span class="name">{{ slot.task ? slot.task.name : (slot.isLocked ? 'LOCKED' :
-                    'CLICK_TO_ASSIGN') }}</span>
-                  <div class="v5-slot-status" :class="getTaskStatusClass(slot)">
-                    {{ slot.statusText }}
+          <!-- Ai Agent Template -->
+          <div class="v5-panel v5-neural-template">
+            <div class="v5-panel-label">
+              <span>AI_AGENT</span>
+              <button class="set-up-agent-btn" @click="$emit('open-agent-modal')" v-if="store.aiAgent">SETUP</button>
+              <button class="boot-up-agent-btn" @click="bootAgentClick" :disabled="isBooting" v-else>
+                <span v-if="isBooting" class="boot-loading"></span>
+                {{ isBooting ? 'BOOTING...' : 'BOOT' }}
+              </button>
+            </div>
+            <div class="v5-panel-inner" :class="{ 'is-booting': isBooting }">
+              <div class="v5-neural-hero">
+                <span class="v5-class-title">{{ store.aiAgent ? store.aiAgent.name : (isBooting ? 'INITIALIZING' :
+                  'OFFLINE') }}</span>
+                <p class="v5-class-desc qhd-only">
+                  {{ store.aiAgent ? store.aiAgent.model?.slogan : (isBooting ? 'LOADING_CORE_SYSTEMS' :
+                    'SYSTEM_READY_FOR_BOOT') }}
+                </p>
+                <div class="v5-stat-row">
+                  <div class="v5-stat-group">
+                    <span class="label">LUDUS_TOKENS</span>
+                    <span class="val cyan">{{ Math.floor(store.ludusTokens).toLocaleString() }}
+                      <small>LT</small></span>
                   </div>
                 </div>
+                <div class="v5-status-badges qhd-only" v-if="store.aiAgent">
+                  <span class="v5-badge-mini"
+                    v-if="store.gameTime < store.aiAgent.subscriptionExpireAt">SYS_ACTIVE</span>
+                  <span class="v5-badge-mini" v-else style="color:var(--neon-red)">SYS_EXPIRED</span>
+                  <span class="v5-badge-mini">XK254015</span>
+                  <span class="v5-badge-mini">RAID_X</span>
+                </div>
+                <div class="v5-status-badges qhd-only" v-else>
+                  <span class="v5-badge-mini offline">OFFLINE</span>
+                </div>
+              </div>
+              <div class="v5-slot-list">
+                <div v-for="(slot, idx) in taskSlots" :key="idx" class="v5-slot-item" :class="{ locked: slot.isLocked }"
+                  @click="!slot.isLocked && !slot.task && openTaskSelector(idx)"
+                  @mousedown="!slot.isLocked && slot.task && startLongPress(idx)" @mouseup="cancelLongPress"
+                  @mouseleave="cancelLongPress" @touchstart="!slot.isLocked && slot.task && startLongPress(idx)"
+                  @touchend="cancelLongPress">
 
-                <!-- Progress bar for long press -->
-                <div v-if="longPressIdx === idx" class="long-press-progress"
-                  :style="{ width: longPressProgress + '%' }"></div>
+                  <div class="v5-slot-meta">
+                    <span class="v5-slot-tier-tag"> {{ slot.tier }}</span>
+                    <span class="name">{{ slot.task ? slot.task.name : (slot.isLocked ? 'LOCKED' :
+                      'CLICK_TO_ASSIGN') }}</span>
+                    <div class="v5-slot-status" :class="getTaskStatusClass(slot)">
+                      {{ slot.statusText }}
+                    </div>
+                  </div>
+                  <!-- Progress bar for long press -->
+                  <div v-if="longPressIdx === idx" class="long-press-progress"
+                    :style="{ width: longPressProgress + '%' }"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -201,8 +203,8 @@
                           {{ partner.debt.toLocaleString() }}
                           <small>CR</small></span>
                         <p>
-                          <input type="range" min="0" :max="-partner.debt" step="1"
-                            v-model.number="repaymentAmounts[partner.id]">
+                          <input type="range" min="0" :max="-partner.debt" step="1" @touchstart.stop @touchmove.stop
+                            @touchend.stop v-model.number="repaymentAmounts[partner.id]">
                           <label class="label text-align-right">
                             {{ Math.ceil(repaymentAmounts[partner.id] || 0).toLocaleString() }} CR
                             <button class="set-up-agent-btn"
@@ -239,7 +241,7 @@
                             <label class="ratio-group">
                               <span class="label">PARTNER</span>
                               <input type="range" min="0.1" max="0.9" step="0.1" value="0.5" :disabled="contract.active"
-                                v-model="contract.ratio">
+                                @touchstart.stop @touchmove.stop @touchend.stop v-model="contract.ratio">
                               <span class="label">YOU</span>
                             </label>
                             <label class="label"> {{ Math.round((1 - contract.ratio) * 10) }} : {{
@@ -464,6 +466,30 @@ const checkDisableContractSign = (partner, contract, isClick = false) => {
 }
 const emit = defineEmits(['sleep', 'back', 'open-task-selector', 'open-agent-modal', 'open-skill-selector', 'open-stats-modal']);
 const mobileActiveTab = ref('status');
+const swipeContainer = ref(null);
+
+const tabToIndex = { 'status': 0, 'manage': 1, 'comms': 2 };
+const indexToTab = ['status', 'manage', 'comms'];
+
+const scrollToTab = (tabId) => {
+  if (!swipeContainer.value) return;
+  const panelWidth = swipeContainer.value.clientWidth;
+  const index = tabToIndex[tabId];
+  swipeContainer.value.scrollTo({ left: panelWidth * index, behavior: 'smooth' });
+  mobileActiveTab.value = tabId;
+};
+
+const onSwipeScroll = () => {
+  if (!swipeContainer.value) return;
+  const panelWidth = swipeContainer.value.clientWidth;
+  if (panelWidth === 0) return;
+  const scrollLeft = swipeContainer.value.scrollLeft;
+  const index = Math.round(scrollLeft / panelWidth);
+  if (indexToTab[index]) {
+    mobileActiveTab.value = indexToTab[index];
+  }
+};
+
 const sleepDuration = ref(8.0);
 const mainTab = ref('hardware');
 const isBooting = ref(false);
@@ -486,7 +512,6 @@ const selectedMessage = ref(null);
 const repaymentAmounts = ref({});
 const sendDebtRepayment = (partner, amount) => {
   if (debtRepayment(partner.id, amount, false)) {
-    audioManager.playSFX('paybill');
     repaymentAmounts.value[partner.id] = 0;
   }
 };

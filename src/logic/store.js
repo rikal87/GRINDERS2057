@@ -9,6 +9,7 @@ import { deleteMessage } from './messageSystem';
 import { zones } from './zone.js';
 import { scheduleEvent, EVENT_ID } from './eventSystem.js';
 import { LOCATION_ID, PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js'
+import { audioManager } from './audioManager.js';
 const SAVE_KEY = 'cyberpoker_save_v1';
 
 const getDefaultState = () => ({
@@ -89,6 +90,7 @@ const getDefaultState = () => ({
   //   subscriptionExpireAt: 0,
   // },
   aiAgent: null,
+  aiAgentTiers: {}, // Track permanent tier per AI model (e.g. { VANGUARD: 0, ARIES: 1 })
   onWorkTasks: [
     {
       taskId: 'hand_hud',
@@ -230,13 +232,17 @@ export const getCurrentBankroll = () => {
 }
 
 export const getCurrentAgent = () => {
-  return store.aiAgent ? store.aiAgent.model : AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD];
+  if (!store.aiAgent) return AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD];
+  const modelId = store.aiAgent.name;
+  const tier = store.aiAgentTiers[modelId] || 0;
+  return AI_AGENT_MODEL_AND_PLAN_DATA[modelId]; // Returns full model data
 }
 export const getEffectiveMaxLT = () => {
   const agent = store.aiAgent;
   if (!agent) return 50; // Default LT when no agent
-  const planIdx = agent.price_plan_idx;
-  const baseMax = agent.model?.price_plan[planIdx]?.maxLt || 100;
+  const modelId = agent.name;
+  const planIdx = store.aiAgentTiers[modelId] !== undefined ? store.aiAgentTiers[modelId] : agent.price_plan_idx;
+  const baseMax = AI_AGENT_MODEL_AND_PLAN_DATA[modelId]?.price_plan[planIdx]?.maxLt || 100;
   const bonus = store.equippedItem?.effects?.reduce((sum, e) => (e.id === 'lt_max_plus') ? sum + e.value : sum, 0) || 0;
   return baseMax + bonus;
 }
@@ -392,12 +398,19 @@ export const unregisterCompletedEvent = (eventId) => {
 }
 
 export const bootAgent = () => {
+  // Initialize tiers if empty
+  if (Object.keys(store.aiAgentTiers).length === 0) {
+    Object.keys(AI_AGENT_MODEL_ENUM).forEach(modelId => {
+      store.aiAgentTiers[modelId] = 0;
+    });
+  }
+
   if (store.aiAgent) return;
   store.aiAgent = {
     model: AI_AGENT_MODEL_AND_PLAN_DATA[AI_AGENT_MODEL_ENUM.VANGUARD],
     name: AI_AGENT_MODEL_ENUM.VANGUARD,
     price_plan_idx: 0,
-    subscriptionExpireAt: 0,
+    subscriptionExpireAt: 0, // Legacy support, no longer used for recurring fees
   };
   hydrateStoreItems(); // Re-read items if necessary
 }
@@ -420,6 +433,8 @@ export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
 
   store.session_net_history.push({ amount: intAmount, type, timestamp: Date.now() });
   if (store.session_net_history.length > 200) store.session_net_history.shift();
+  if (amount < 0) audioManager.playSFX('paybill');
+  else audioManager.playSFX('ATM');
   recordPlayStatsSessionForPlayer(type, { amount });
 }
 

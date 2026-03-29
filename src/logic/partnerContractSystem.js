@@ -231,9 +231,10 @@ export const triggerBankruptcyRelief = (partner = null, ratio = 0.3, contract = 
     }
     scheduleEvent(EVENT_ID.SYSTEM_PLAYER_BAILOUT_FOR_PARTNER, 2, { partnerName: partner.fullName, amount })
   } else {
-    // EVENT_ID.MAX.BAILOUT_FOR_PLAYER is only for Max
-    if (partner.id === PARTNER_ID.MAX) {
-      scheduleEvent(EVENT_ID.MAX.BAILOUT_FOR_PLAYER, 15);
+    // Trigger partner-specific bailout event if defined
+    const partnerEventId = EVENT_ID[partner.id.toUpperCase()]?.BAILOUT_FOR_PLAYER;
+    if (partnerEventId) {
+      scheduleEvent(partnerEventId, 15);
     }
     scheduleEvent(EVENT_ID.SYSTEM_PARTNER_BAILOUT_FOR_PLAYER, 2, { partnerName: partner.fullName, amount })
   }

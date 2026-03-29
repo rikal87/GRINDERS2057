@@ -100,12 +100,12 @@ export class EventAdaptor {
     });
   }
 
-  playerBankrupt(player, bestWinner, locationId, inviteId) {
+  bust(player, bestWinner, locationId, inviteId) {
     recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.BUST);
     const effects = player.item?.effects || [];
     effects.forEach(e => {
       if (typeof e !== 'object' || !e.trigger) return;
-      if (e.trigger.includes('bankrupt')) {
+      if (e.trigger.includes('bust')) {
         this.executeItemEffect(player, e, {});
       }
     });
@@ -146,6 +146,16 @@ export class EventAdaptor {
     console.info('playerLeaveTable', player.name, locationId, inviteId);
     if (!player.isMe) return;
     // cleanupInvites(locationId);
+  }
+
+  uncalledBetReturned({ player, amount }) {
+    console.info(`[Event] Uncalled bet returned to ${player.name}: ${amount}`);
+    // This will trigger UI feedback to show chips returning to stack
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('uncalled-bet-returned', {
+        detail: { playerId: player.id, amount }
+      }));
+    }
   }
 
   raise({ player, amount, pot, street }) {
@@ -284,21 +294,7 @@ export class EventAdaptor {
       }
     });
   }
-  bankruptcy({ player }) {
-    console.info('bankruptcy', player.item);
-    if (player.isMe) {
-      store.play_stats.bankruptcy_count++;
-    }
-    const effects = player.item?.effects || [];
-    effects.forEach(e => {
-      if (typeof e !== 'object' || !e.trigger) return;
-      if (e.trigger.includes('bankrupt')) {
-        this.executeItemEffect(player, e, {});
-      }
-    });
 
-    // store.xp = 0;
-  }
   action({ player, type, street, amount, preflopRaises }) {
     switch (type) {
       case 'FOLD':
@@ -389,8 +385,9 @@ export class EventAdaptor {
         });
         break;
       case ITEM_EFFECT_ID.EMERGENCY_FUND:
-        gainBankroll(effect.valueCalc, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
-        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: effect.valueCalc })
+        const recoverBankroll = Math.floor(effect.value * player.initialChips);
+        gainBankroll(recoverBankroll, TYPE_CHANGE_BANKROLL.ITEM_EFFECT);
+        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.ITEM_EFFECT, { amount: recoverBankroll })
         effect.cooldown = effect.maxCooldown;
         break;
       case ITEM_EFFECT_ID.SMOKE_BREAK:

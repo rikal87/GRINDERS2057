@@ -93,6 +93,10 @@
   justify-content: flex-end;
   transition: all 0.3s;
   min-height: 100px;
+
+  /* Perspective & Scale System */
+  transform: var(--seat-transform, ) scale(var(--base-scale, 1));
+  transform-origin: center bottom;
 }
 
 .player-info.active {
@@ -229,19 +233,23 @@
 
 .cards .poker-card,
 .board-cards .poker-card {
-  font-size: 1.8rem;
+  /* font-size: 1.8rem; */
   margin: 0;
 }
 @media (min-width: 1200px) {
   .cards .poker-card,
   .board-cards .poker-card,
   .card-placeholder {
+    font-size: 1.8rem;
     width: 3.6rem !important;
     /* ~65px on QHD, ~54px on FHD */
     height: 5rem !important;
     /* ~90px on QHD, ~75px on FHD */
   }
-
+  .suit {
+    margin-top: -2px;
+    font-size: 1.8rem;
+  }
   .cards .poker-card :deep(.rank),
   .board-cards .poker-card :deep(.rank) {
     font-size: 1.8rem !important;
@@ -600,4 +608,74 @@
   z-index: 2;
   transition: height 0.3s linear;
   pointer-events: none;
+}
+.effect-hud {
+  /* position: absolute; */
+  /* right: -40px; */
+  display: flex;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.effect-item {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+}
+
+.eff-icon {
+  font-size: 0.8rem;
+}
+
+.eff-stack {
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: #ff003c;
+  color: #fff;
+  font-size: 0.5rem;
+  font-weight: 800;
+  padding: 1px 3px;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+
+.time-bank {
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  height: 4px;
+  border-radius: 2px;
+}
+
+.time-bar {
+  height: 100%;
+  background: #ffcc00;
+  /* Yellow warning color? or Cyan? */
+  background: linear-gradient(90deg, #00f0ff, #fff);
+  box-shadow: 0 0 5px #00f0ff;
+  transition: width 1s linear;
+}
+
+.time-text {
+  position: absolute;
+  top: -16px;
+  right: 0;
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: #00f0ff;
+  text-shadow: 0 0 2px #00f0ff;
 }

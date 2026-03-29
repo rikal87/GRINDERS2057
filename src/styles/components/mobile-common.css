@@ -115,6 +115,12 @@
   .scanline-bg {
     display: none;
   }
+  .v5-modal {
+    width: 95%;
+    padding: 15px;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
 }
 
 @media (max-width: 480px) {

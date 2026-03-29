@@ -1,15 +1,15 @@
 import fs from 'fs';
-import { createDeck } from './poker.js';
-import { CLASSES_ENEMY as D1, CLASSES_PARTNER as D2 } from './persona.js'
-import { getAIAction } from './aiEngine.v2.js';
-import { getUnifiedAction as getAdvancedAIAction } from './aiEngine/aiBrainHub.js';
-import { PotManager } from './PotManager.js';
+import { createDeck } from '../../../src/logic/poker.js';
+import { CLASSES_ENEMY as D1, CLASSES_PARTNER as D2 } from '../../../src/logic/persona.js'
+import { getAIAction } from '../../../src/logic/aiEngine.v2.js';
+import { getUnifiedAction as getAdvancedAIAction } from '../../../src/logic/aiEngine/aiBrainHub.js';
+import { PotManager } from '../../../src/logic/PotManager.js';
 
 const CLASSES_ENEMY = [...D2, ...D1]
 export async function runSimulation() {
-  const opp1 = 'nit'
+  const opp1 = 'rich_guy'
   const opp2 = 'Max'
-  const opp3 = 'fish'
+  const opp3 = 'gangster'
   console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
   const logHeader = `Simulation Log - ${new Date().toLocaleString()}\n\n`;
   fs.writeFileSync('hand_history.log', logHeader, 'utf8');
@@ -141,15 +141,14 @@ export async function runSimulation() {
         attempts++;
 
         // CHECK TERMINATION CONDITION
-        // Round ends if:
-        // 1. Every non-folded player has acted at least once this street AND
-        // 2. Every non-folded player has matched the currentRoundBet (or is All-In)
         const activePlayers = players.filter(p => !p.isFolded);
-        const missingAction = activePlayers.find(p => p.chips > 0 && !p.actedThisStreet);
-        const missingMatch = activePlayers.find(p => p.chips > 0 && p.currentBet !== potManager.currentRoundBet);
+        const playersWithChips = activePlayers.filter(p => p.chips > 0);
 
-        if (!missingAction && !missingMatch) break;
-        if (activePlayers.length <= 1) break;
+        // If everyone is all-in or folded, force next street
+        if (activePlayers.length <= 1 || playersWithChips.length === 0) break;
+
+        const missingAction = playersWithChips.find(p => !p.actedThisStreet || p.currentBet < potManager.currentRoundBet);
+        if (!missingAction) break;
 
         const p = players[actingIdx];
 
@@ -197,8 +196,11 @@ export async function runSimulation() {
 
               const totalBetOnStreet = p.currentBet + amount;
               const isActualRaise = totalBetOnStreet > potManager.currentRoundBet;
-              engine.handHistory.push(`[${street}] ${p.name}: Raises to ${totalBetOnStreet}${rangeEst}${expTrigger} - <${action.insight}>`);
-              engine.actionHistory.push({ playerId: p.id, street, action: isActualRaise ? 'raise' : 'bet', amount: totalBetOnStreet });
+              const isAllIn = p.chips <= 0 || action.type === 'all_in';
+              const actionLabel = isAllIn ? 'All-In' : (isActualRaise ? 'Raises to' : 'Bets');
+
+              engine.handHistory.push(`[${street}] ${p.name}: ${actionLabel} ${totalBetOnStreet}${rangeEst}${expTrigger} - <${action.insight}>`);
+              engine.actionHistory.push({ playerId: p.id, street, action: isAllIn ? 'all_in' : (isActualRaise ? 'raise' : 'bet'), amount: totalBetOnStreet });
 
               if (isActualRaise) {
                 engine.currentStreetRaises++;
@@ -252,6 +254,14 @@ export async function runSimulation() {
 
         actingIdx = (actingIdx + 1) % players.length;
       }
+
+      // [NEW] Return uncalled bets at the end of every betting round
+      const uncalled = potManager.returnUncalledBets(players);
+      if (uncalled) {
+        engine.handHistory.push(`[${street}] PotManager: Returned uncalled bet of ${uncalled.amount} to ${uncalled.player.name}`);
+        engine.actionHistory.push({ playerId: uncalled.player.id, street, action: 'uncalled_return', amount: uncalled.amount });
+      }
+
       players.forEach(p => p.currentBet = 0);
       potManager.currentRoundBet = 0;
     };
@@ -289,6 +299,10 @@ export async function runSimulation() {
     if (activeAtEnd.length > 1) activeAtEnd.forEach(p => p.stats.showdownCount++);
 
     const result = potManager.resolveShowdown(players, engine.board, engine.board.length === 0);
+
+    // Log the uncalled return if it happened during resolveShowdown (as a safety measure)
+    // In our manual loop above it should have happened already, but PotManager.resolveShowdown also calls it.
+
     if (result.winnerId) {
       const winner = players.find(p => p.id === result.winnerId);
       if (winner) {

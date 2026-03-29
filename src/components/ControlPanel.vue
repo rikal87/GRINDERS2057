@@ -48,12 +48,12 @@
           <button class="btn-call" :disabled="!isMyTurn || isProcessing"
             @click="handleAction({ type: callAmountRaw >= playerChips ? 'all_in' : 'call', amount: callAmountRaw + player.currentBet })">
             <p>{{ callAmountRaw === 0 ? 'CHECK' : callAmountRaw >= playerChips ? 'ALL-IN' : 'CALL' }}</p>
-            <p>{{ formatUnit(callAmountRaw) }}</p>
+            <!-- <p>{{ formatUnit(callAmountRaw) }}</p> -->
           </button>
           <button class="btn-raise" :disabled="!isMyTurn || isProcessing || currentBetValue < minRaise"
             @click="handleAction({ type: isAllInSelection ? 'all_in' : 'raise', amount: isAllInSelection ? playerTotalAvailable : currentBetValue })">
             <p>{{ isAllInSelection ? 'ALL-IN' : 'RAISE' }}</p>
-            <p>{{ formatUnit(isAllInSelection ? playerTotalAvailable : currentBetValue) }}</p>
+            <!-- <p>{{ formatUnit(isAllInSelection ? playerTotalAvailable : currentBetValue) }}</p> -->
           </button>
         </div>
       </div>
@@ -187,14 +187,14 @@
         <button class="btn-call" :disabled="!isMyTurn || isProcessing"
           @click="handleAction({ type: callAmountRaw >= playerChips ? 'all_in' : 'call', amount: callAmountRaw + player.currentBet })">
           <p>{{ callAmountRaw === 0 ? 'CHECK' : callAmountRaw >= playerChips ? 'ALL-IN' : 'CALL' }}</p>
-          <p>{{ formatUnit(callAmountRaw) }}</p>
+          <!-- <p>{{ formatUnit(callAmountRaw) }}</p> -->
         </button>
         <button class="btn-raise" :disabled="!isMyTurn || isProcessing || currentBetValue < minRaise"
           @click="handleAction({ type: isAllInSelection ? 'all_in' : 'raise', amount: isAllInSelection ? playerTotalAvailable : currentBetValue })">
           <p>
             {{ isAllInSelection ? 'ALL-IN' : 'RAISE' }}
           </p>
-          <p>{{ formatUnit(isAllInSelection ? playerTotalAvailable : currentBetValue) }}</p>
+          <!-- <p>{{ formatUnit(isAllInSelection ? playerTotalAvailable : currentBetValue) }}</p> -->
         </button>
       </div>
     </div>
@@ -418,7 +418,7 @@ const handleAction = (payload) => {
   emit('action', payload);
   // Safety timeout in case the turn change doesn't happen fast enough
   setTimeout(() => {
-    isProcessing.value = false;
+    isProcessing.value = !['PREFLOP', 'FLOP', 'TURN', 'RIVER'].includes(props.engine.state);
   }, 500);
 };
 

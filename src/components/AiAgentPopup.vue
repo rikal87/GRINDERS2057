@@ -1,9 +1,8 @@
 <template>
   <transition name="v4-fade">
-    <div v-if="show" class="v5-modal-overlay" @click.self="$emit('close')">
+    <div v-if="show" class="v5-modal-overlay">
       <div class="v5-modal agent-selector">
-        <h2 class="glitch-text">AGENT_DESCRIPTION</h2>
-
+        <h2 class="glitch-text">AI AGENT</h2>
         <div class="agent-browser">
           <button class="nav-btn prev" @click="prevAgent" :disabled="currentModelIdx === 0">&lt;</button>
 
@@ -36,42 +35,88 @@
             :disabled="currentModelIdx === availableModelIds.length - 1">&gt;</button>
         </div>
 
-        <div v-if="selectedModelId && !isModelLocked" class="plan-selector">
-          <div class="v4-label">SELECT_SUBSCRIPTION_PLAN</div>
-          <div class="plan-grid">
-            <div v-for="(plan, idx) in AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId]?.price_plan" :key="idx"
-              class="plan-card"
-              :class="{ current: isCurrentPlan(selectedModelId, idx), selected: selectedPlanIdx === idx }"
-              @click="selectedPlanIdx = idx">
-              <div class="plan-header">
-                <span class="level">LEVEL {{ idx }}</span>
-                <span class="cost">{{ plan.cost.toLocaleString() }} CR</span>
+        <div v-if="selectedModelId && !isModelLocked" class="comparison-view">
+          <!-- CURRENT RANK -->
+          <div class="tier-column current" :class="{ 'not-owned': !currentTierPlan }">
+            <div class="v4-label">CURRENT</div>
+            <div class="rank-card" v-if="currentTierPlan">
+              <div class="rank-header">
+                <span class="level">{{ maxTierReached === 0 ? 'BASIC' : 'TIER ' + maxTierReached }}</span>
               </div>
-              <div class="plan-stats">
-                <div>TOKENS_CAPACITY: <span style="color:var(--neon-cyan)">{{ plan.maxLt.toLocaleString() }}</span>
+              <div class="rank-stats">
+                <div class="stat-item">
+                  <span class="label">CAPACITY:</span>
+                  <span class="value cyan">{{ currentTierPlan.maxLt.toLocaleString() }} LT</span>
                 </div>
-                <div>SLOTS:
-                  <span v-for="(slot, idx) in plan.slot" :key="idx" :class="slot">[{{ slot }}]</span>
+                <div class="stat-item">
+                  <span class="label">SLOTS:</span>
+                  <div class="slots-list">
+                    <span v-for="(slot, idx) in currentTierPlan.slot" :key="idx" :class="slot">[{{ slot }}]</span>
+                  </div>
                 </div>
-                <span v-if="plan.cooldown_bonus" style="color:var(--neon-magenta)">COOLDOWN_BONUS: +{{
-                  (plan.cooldown_bonus * 100).toFixed(0) }}%</span>
-                <span v-if="plan.duration_bonus" style="color:var(--neon-yellow)">DURATION_BONUS: +{{
-                  (plan.duration_bonus * 100).toFixed(0) }}%</span>
-                <span v-if="plan.probability_bonus" style="color:var(--neon-green)">PROB_BONUS: +{{
-                  (plan.probability_bonus * 100).toFixed(0) }}%</span>
-                <span v-if="plan.lt_regen_bonus_rate" style="color:var(--neon-cyan)">REGEN_MUL: {{
-                  plan.lt_regen_bonus_rate }}x</span>
+                <div class="extra-bonuses" v-if="hasAnyBonus(currentTierPlan)">
+                  <span v-if="currentTierPlan.cooldown_bonus" class="bonus magenta">COOLDOWN +{{
+                    (currentTierPlan.cooldown_bonus * 100).toFixed(0) }}%</span>
+                  <span v-if="currentTierPlan.duration_bonus" class="bonus yellow">DURATION +{{
+                    (currentTierPlan.duration_bonus * 100).toFixed(0) }}%</span>
+                  <span v-if="currentTierPlan.probability_bonus" class="bonus green">PROB +{{
+                    (currentTierPlan.probability_bonus * 100).toFixed(0) }}%</span>
+                  <span v-if="currentTierPlan.lt_regen_bonus_rate" class="bonus cyan">REGEN {{
+                    currentTierPlan.lt_regen_bonus_rate }}x</span>
+                </div>
               </div>
-              <div v-if="isCurrentPlan(selectedModelId, idx)" class="status-tag">ACTIVE</div>
+            </div>
+            <div class="rank-card empty" v-else>
+              <div class="empty-text">NOT_OWNED</div>
             </div>
           </div>
-        </div>
-
-        <div class="modal-actions">
-          <button class="btn" :disabled="!canPurchase" @click="confirmPurchase">
-            {{ purchaseBtnText }}
-          </button>
-          <button class="btn" @click="$emit('close')">CLOSE</button>
+          <!-- TRANSITION INDICATOR -->
+          <div class="tier-separator" v-if="nextTierPlan">
+            <div class="arrow">>></div>
+          </div>
+          <!-- NEXT RANK -->
+          <div class="tier-column next" v-if="nextTierPlan">
+            <div class="v4-label">UPGRADE</div>
+            <div class="rank-card upgrade">
+              <div class="rank-header">
+                <span class="level">TIER {{ maxTierReached + 1 }}</span>
+                <span class="cost" v-if="nextTierPlan.cost > 0">{{ nextTierPlan.cost.toLocaleString() }} CR</span>
+              </div>
+              <div class="rank-stats">
+                <div class="stat-item">
+                  <span class="label">CAPACITY:</span>
+                  <span class="value cyan">{{ nextTierPlan.maxLt.toLocaleString() }} LT</span>
+                </div>
+                <div class="stat-item">
+                  <span class="label">SLOTS:</span>
+                  <div class="slots-list">
+                    <span v-for="(slot, idx) in nextTierPlan.slot" :key="idx" :class="slot">[{{ slot }}]</span>
+                  </div>
+                </div>
+                <div class="extra-bonuses" v-if="hasAnyBonus(nextTierPlan)">
+                  <span v-if="nextTierPlan.cooldown_bonus" class="bonus magenta">COOLDOWN +{{
+                    (nextTierPlan.cooldown_bonus * 100).toFixed(0) }}%</span>
+                  <span v-if="nextTierPlan.duration_bonus" class="bonus yellow">DURATION +{{
+                    (nextTierPlan.duration_bonus * 100).toFixed(0) }}%</span>
+                  <span v-if="nextTierPlan.probability_bonus" class="bonus green">PROB +{{
+                    (nextTierPlan.probability_bonus * 100).toFixed(0) }}%</span>
+                  <span v-if="nextTierPlan.lt_regen_bonus_rate" class="bonus cyan">REGEN {{
+                    nextTierPlan.lt_regen_bonus_rate }}x</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="btn-accept" :disabled="!canInstall" @click="handleInstall">
+              <span v-if="isCurrentModelActive">CURRENT</span>
+              <span v-else-if="maxTierReached >= 0">ACTIVATE</span>
+              <span v-else>NOT PURCHASED</span>
+            </button>
+            <button class="btn-upgrade" :disabled="!canUpgrade" @click="handleUpgrade" v-if="nextTierPlan">
+              {{ maxTierReached === -1 ? 'INITIAL_BUY' : 'UPGRADE' }} ({{ nextTierPlan.cost.toLocaleString() }} CR)
+            </button>
+            <button class="btn-cancel" @click="$emit('close')">CLOSE</button>
+          </div>
         </div>
       </div>
     </div>
@@ -117,10 +162,81 @@ const isModelLocked = computed(() => {
   return store.level < getRequiredLevel(selectedModelId.value);
 });
 
+// Permanent Tier System
+const maxTierReached = computed(() => {
+  const storedTier = store.aiAgentTiers[selectedModelId.value];
+  if (storedTier !== undefined) return storedTier;
+  // If model is not locked by level, they automatically own Tier 0 (BASIC)
+  if (!isModelLocked.value) return 0;
+  return -1;
+});
+
+const isCurrentModelActive = computed(() => store.aiAgent?.name === selectedModelId.value);
+
+const currentTierPlan = computed(() => {
+  if (maxTierReached.value === -1) return null;
+  return AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value].price_plan[maxTierReached.value];
+});
+
+const nextTierPlan = computed(() => {
+  return AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value].price_plan[maxTierReached.value + 1] || null;
+});
+
+const canInstall = computed(() => {
+  if (isModelLocked.value) return false;
+  if (isCurrentModelActive.value) return false;
+  return maxTierReached.value >= 0;
+});
+
+const canUpgrade = computed(() => {
+  if (isModelLocked.value) return false;
+  if (!nextTierPlan.value) return false;
+  return store.bankroll >= nextTierPlan.value.cost;
+});
+
+const hasAnyBonus = (plan) => {
+  return plan.cooldown_bonus || plan.duration_bonus || plan.probability_bonus || plan.lt_regen_bonus_rate;
+};
+
+const handleInstall = () => {
+  if (!canInstall.value) return;
+
+  store.aiAgent = {
+    name: selectedModelId.value,
+    model: AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value],
+    price_plan_idx: maxTierReached.value
+  };
+
+  audioManager.playSFX('ui-click');
+  emit('close');
+  validateTaskSlots();
+};
+
+const handleUpgrade = () => {
+  if (!canUpgrade.value) return;
+  audioManager.playSFX('electric-boom');
+  const plan = nextTierPlan.value;
+  gainBankroll(-plan.cost, TYPE_CHANGE_BANKROLL.AI_AGENT_SUBSCRIPTION);
+
+  // Update permanent tier record
+  const newTier = maxTierReached.value + 1;
+  store.aiAgentTiers[selectedModelId.value] = newTier;
+
+  // Auto activate upon purchase/upgrade
+  store.aiAgent = {
+    name: selectedModelId.value,
+    model: AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value],
+    price_plan_idx: newTier
+  };
+
+  audioManager.playSFX('ui-click');
+  emit('close');
+  validateTaskSlots();
+};
+
 const nextAgent = () => {
   if (currentModelIdx.value < availableModelIds.value.length - 1) {
     selectedModelId.value = availableModelIds.value[currentModelIdx.value + 1];
-    selectedPlanIdx.value = 0; // Reset to level 0 plan when changing models
     audioManager.playSFX('ui-click');
   }
 };
@@ -128,57 +244,8 @@ const nextAgent = () => {
 const prevAgent = () => {
   if (currentModelIdx.value > 0) {
     selectedModelId.value = availableModelIds.value[currentModelIdx.value - 1];
-    selectedPlanIdx.value = 0;
     audioManager.playSFX('ui-click');
   }
-};
-
-const isCurrentPlan = (modelId, idx) => {
-  return store.aiAgent?.name === modelId && store.aiAgent?.price_plan_idx === idx;
-};
-
-const canPurchase = computed(() => {
-  if (selectedPlanIdx.value === null) return false;
-  if (isModelLocked.value) return false;
-  const plan = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value]?.price_plan[selectedPlanIdx.value];
-  if (!plan) return false;
-  if (isCurrentPlan(selectedModelId.value, selectedPlanIdx.value)) return false;
-  return store.bankroll >= plan.cost;
-});
-
-const purchaseBtnText = computed(() => {
-  if (!selectedModelId.value) return 'SELECT AGENT';
-  if (isModelLocked.value) return `LEVEL ${getRequiredLevel(selectedModelId.value)} REQUIRED`;
-  if (isCurrentPlan(selectedModelId.value, selectedPlanIdx.value)) return 'CURRENT PLAN';
-  const plan = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value]?.price_plan[selectedPlanIdx.value];
-  if (!plan) return 'N/A';
-  if (store.bankroll < plan.cost) return 'INSUFFICIENT FUNDS';
-  return `PURCHASE ( ${plan.cost.toLocaleString()} CR )`;
-});
-
-const confirmPurchase = () => {
-  const plan = AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value].price_plan[selectedPlanIdx.value];
-  if (store.bankroll < plan.cost) return;
-
-  gainBankroll(-plan.cost, TYPE_CHANGE_BANKROLL.AI_AGENT_SUBSCRIPTION)
-  const agentUpdate = {
-    name: selectedModelId.value,
-    model: AI_AGENT_MODEL_AND_PLAN_DATA[selectedModelId.value],
-    price_plan_idx: selectedPlanIdx.value,
-    subscriptionExpireAt: store.gameTime + (30 * 24 * 60 * 60 * 1000)
-  };
-
-  if (!store.aiAgent) {
-    store.aiAgent = agentUpdate;
-  } else {
-    Object.assign(store.aiAgent, agentUpdate);
-  }
-
-  audioManager.playSFX('action-confirm');
-  emit('close');
-
-  // Clean up invalid tasks if slots decreased
-  validateTaskSlots();
 };
 </script>
 
@@ -210,6 +277,131 @@ const confirmPurchase = () => {
   font-size: 0.9rem;
   padding: 1rem 0;
   text-align: center;
+}
+
+.comparison-view {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 20px;
+  margin: 1.5rem 0;
+  min-height: 180px;
+}
+
+.tier-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tier-separator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neon-cyan);
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.rank-card {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--neon-cyan);
+  padding: 1rem;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.1);
+}
+
+.rank-card.upgrade {
+  border-color: var(--neon-magenta);
+  box-shadow: 0 0 10px rgba(255, 0, 96, 0.1);
+}
+
+.rank-card.empty {
+  border-color: #333;
+  justify-content: center;
+  align-items: center;
+  color: #666;
+}
+
+.rank-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+  padding-bottom: 0.5rem;
+}
+
+.rank-card.upgrade .rank-header {
+  border-bottom-color: rgba(255, 0, 96, 0.2);
+}
+
+.rank-header .level {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  color: var(--neon-cyan);
+  font-size: 1.1rem;
+}
+
+.rank-card.upgrade .level {
+  color: var(--neon-magenta);
+}
+
+.rank-header .cost {
+  color: var(--neon-yellow);
+  font-size: 0.9rem;
+}
+
+.rank-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.stat-item .label {
+  color: #888;
+}
+
+.slots-list {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.extra-bonuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+  padding-top: 0.4rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.bonus {
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+
+
+@media (max-width: 768px) {
+  .comparison-view {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .tier-separator {
+    transform: rotate(90deg);
+  }
 }
 
 @media (max-width: 768px) {

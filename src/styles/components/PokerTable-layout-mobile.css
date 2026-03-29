@@ -3,14 +3,20 @@
    ============================================= */
 
 @media screen and (max-width: 1023px) {
+  .game-container>main {
+    padding: 2vh 2vh 0;
+    gap: 0;
+  }
   /* 1. Rectangle Table Shape (Space optimization) */
   .poker-table {
     border-radius: 999px;
-    height: 70vh !important;
-    width: 98% !important;
+    height: 90vh;
+    width: 98%;
     margin: 10px auto;
     background: radial-gradient(circle at center, #1a1a2e 0%, #0d0d1b 100%);
     z-index: -1;
+    transform: perspective(245vh) rotateX(20deg);
+    transform-origin: bottom;
   }
   /* Community Card Scaling for Mobile */
   /* HUD Winner Hand Display (Bottom) */
@@ -20,21 +26,25 @@
   .cards .poker-card,
   .board-cards .poker-card,
   .card-placeholder {
-    width: 45px;
-    height: 65px;
+    font-size: 1.5rem;
+    width: 40px;
+    height: 60px;
   }
   .dealer-btn {
     right: -15px;
     top: -15px;
   }
-  .board-cards .poker-card :deep(.rank) {
-    font-size: 1.75rem !important;
+  .suit {
+    font-size: 1.5rem;
+  }
+  /* .board-cards .poker-card :deep(.rank) {
+    font-size: 1rem !important;
   }
   .board-cards .poker-card :deep(.suit) {
-    font-size: 1.75rem !important;
-  }
+    font-size: 1rem !important;
+  } */
   .cards {
-    margin-bottom: -15px;
+    margin-bottom: -20px;
   }
   .player-seat {
     width: 85px;
@@ -55,6 +65,7 @@
   }
 
   .center-area {
+    top: 70%;
     width: 320px;
     min-height: 180px;
   }
@@ -71,13 +82,13 @@
   .max9.seat-5 {
     top: -2%;
     left: 50%;
-    transform: translateX(-50%);
+    --seat-transform: translateX(-50%);
+    --base-scale: 0.8;
   }
   .max9.seat-6 {
     top: 2%;
     right: 15%;
   }
-
   /* Mid-Left Side */
   .max9.seat-3 {
     top: 25%;
@@ -87,7 +98,6 @@
     top: 50%;
     left: 2%;
   }
-
   /* Mid-Right Side */
   .max9.seat-7 {
     top: 25%;
@@ -97,12 +107,12 @@
     top: 50%;
     right: 2%;
   }
-
   /* Bottom Row */
   .max9.seat-0 {
     bottom: -5%;
     left: 50%;
-    transform: translateX(-50%);
+    --seat-transform: translateX(-50%);
+    --base-scale: 1.1;
     z-index: 100;
   }
   .max9.seat-1 {
@@ -114,31 +124,59 @@
   .max6.seat-0 {
     bottom: 0%;
     left: 50%;
-    transform: translateX(-50%);
+    --seat-transform: translateX(-50%);
   }
   .max6.seat-1 {
     left: 5%;
-    bottom: 20%;
+    bottom: 40%;
   }
   .max6.seat-2 {
-    top: 25%;
+    top: 20%;
     left: 5%;
   }
   .max6.seat-4 {
-    top: 25%;
+    top: 20%;
     right: 5%;
   }
   .max6.seat-3 {
     top: 5%;
     left: 50%;
-    transform: translateX(-50%);
+    --seat-transform: translateX(-50%);
   }
   .max6.seat-5 {
     right: 5%;
-    bottom: 20%;
+    bottom: 40%;
   }
 
-
+  /* Dynamic Depth Scaling for remaining seats */
+  .max9.seat-4,
+  .max9.seat-6 {
+    --base-scale: 0.85;
+  }
+  .max9.seat-3,
+  .max9.seat-7 {
+    --base-scale: 0.95;
+  }
+  .max9.seat-1,
+  .max9.seat-2,
+  .max9.seat-8 {
+    --base-scale: 1.05;
+  }
+  /* 6max */
+  .max6.seat-0 {
+    --base-scale: 1;
+  }
+  .max6.seat-1,
+  .max6.seat-5 {
+    --base-scale: 0.9;
+  }
+  .max6.seat-2,
+  .max6.seat-4 {
+    --base-scale: 0.8;
+  }
+  .max6.seat-3 {
+    --base-scale: 0.75;
+  }
   /* 4. Common Elements in Stadium */
   .center-area {
     width: 90%;
@@ -175,6 +213,7 @@
     font-size: 0.6rem;
     padding: 6px 8px;
     min-width: 80px;
+    max-height: 100px;
   }
 
   .neural-insight {

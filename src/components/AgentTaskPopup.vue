@@ -237,6 +237,7 @@ const taskInitiateBtnText = computed(() => {
 });
 
 const initiateTask = () => {
+  audioManager.playSFX('bootup');
   if (startTask(currentTaskDef.value.id)) {
     emit('close');
     audioManager.playSFX('action-confirm');

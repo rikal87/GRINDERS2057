@@ -15,23 +15,33 @@ export class PotManager {
   }
 
   placeBet(player, amount) {
-    amount = Math.floor(amount); // [FIX] Enforce integer bets
+    amount = Math.floor(amount);
     if (amount > player.chips) amount = player.chips;
     player.chips -= amount;
     player.currentBet += amount;
-    player.totalWagered = (player.totalWagered || 0) + amount; // 이번 핸드에서 플레이어가 총 베팅으로 넣은 전체 금액입니다.
+    player.totalWagered = (player.totalWagered || 0) + amount;
     this.pot += amount;
 
+    // A raise only occurs if the player's total currentBet EXCEEDS the previous high.
+    // An "all-in for less" call does not count as a raise.
     if (player.currentBet > this.currentRoundBet) {
+      const isCleanRaise = amount > (this.currentRoundBet - (player.currentBet - amount));
+      if (!isCleanRaise) {
+        console.log(`[PotManager] All-In for less: Player ${player.id} chips: ${player.chips}`);
+      }
       this.currentRoundBet = player.currentBet;
-      return true; // Indicates a raise occurred
+      return isCleanRaise;
     }
     return false;
   }
-  // apply rake only if flop is dealt
-  resolveShowdown(players, board, isNoFlopNoDrop = false) {
-    // 1. Identify uncalled bets (portion of highest wager exceeding second highest)
+  /**
+   * Identifies uncalled bets (portion of highest wager exceeding second highest)
+   * and returns them to the player immediately.
+   * @returns {Object|null} { player, amount } if a return happened, otherwise null
+   */
+  returnUncalledBets(players) {
     const sortedByWager = [...players].sort((a, b) => (b.totalWagered || 0) - (a.totalWagered || 0));
+    
     if (sortedByWager.length > 1 && (sortedByWager[0].totalWagered || 0) > (sortedByWager[1].totalWagered || 0)) {
       const topWager = sortedByWager[0].totalWagered || 0;
       const secondWager = sortedByWager[1].totalWagered || 0;
@@ -41,8 +51,17 @@ export class PotManager {
       console.log(`[PotManager] Returning uncalled bet: ${uncalled} to Player ${player.id}`);
       player.chips += uncalled;
       player.totalWagered -= uncalled;
-      this.pot -= uncalled; // Keep internal tracker consistent
+      this.pot -= uncalled;
+      
+      return { player, amount: uncalled };
     }
+    return null;
+  }
+
+  // apply rake only if flop is dealt
+  resolveShowdown(players, board, isNoFlopNoDrop = false) {
+    // 1. Identify uncalled bets (Pre-showdown return - safety check)
+    this.returnUncalledBets(players);
 
     // 2. Identify all players involved (not folded)
     let activePlayers = players.filter(p => !p.isFolded);
@@ -67,10 +86,8 @@ export class PotManager {
         let diff = wager - lastWagered;
         let contributors = players.filter(pl => (pl.totalWagered || 0) >= wager);
         let potAmount = diff * contributors.length;
-
         // Check if any active player is involved in this slice
         let eligibleActivePlayers = activePlayers.filter(ap => (ap.totalWagered || 0) >= wager);
-
         if (eligibleActivePlayers.length > 0) {
           pots.push({
             amount: potAmount,
@@ -250,19 +267,20 @@ export class PotManager {
           const isMainInNew = pot.name.includes('Main Pot');
           const isReturnedInGroup = currentGroup.name.includes('Returned');
           const isReturnedInNew = pot.name.includes('Returned');
+          const isSideInGroup = currentGroup.name.includes('Side Pot');
 
           if (isMainInGroup || isMainInNew) {
-            // If merging Main Pot with Returned -> Main Pot
-            if (isReturnedInGroup || isReturnedInNew) {
+            if (isReturnedInGroup || isReturnedInNew || activePlayers.length <= 2) {
+              // 1:1 situation or a returned amount should always result in a single "Main Pot"
               currentGroup.name = 'Main Pot';
-            } else {
-              // Merging Main Pot with actual Side Pots
+            } else if (isSideInGroup || pot.name.includes('Side Pot')) {
               currentGroup.name = 'Main Pot & Side Pots';
+            } else {
+              currentGroup.name = 'Main Pot';
             }
           } else if (isReturnedInGroup && isReturnedInNew) {
             currentGroup.name = 'Returned';
           } else {
-            // Side Pot + Side Pot = Side Pots
             currentGroup.name = 'Side Pots';
           }
         } else {
@@ -300,7 +318,8 @@ export class PotManager {
 
     let bestWinner = bestWinners.length > 0 ? bestWinners[0] : null;
     // [v18] Fix Remainder-Chop Bug: If multiple winners tied in hand value in any pot, consider it a chop for history.
-    let isChop = bestWinners.length > 1 || (detailedPots.length > 0 && detailedPots.some(p => p.winners.length > 1 && p.name === 'Main Pot'));
+    // [FIX] Use includes('Main Pot') to handle merged names like 'Main Pot & Side Pots'
+    let isChop = bestWinners.length > 1 || (detailedPots.length > 0 && detailedPots.some(p => p.winners.length > 1 && p.name.includes('Main Pot')));
 
     // Fallback: If nobody made profit (e.g. all equal loss due to rake?), use raw winnings
     // But usually someone makes profit in poker unless rake > 100%.
