@@ -81,6 +81,8 @@ export const CHAT_TRIGGERS = {
 export const PARTNER_ID = {
   MAX: 'Max',
   FLORENCE: 'Florence',
+  KATE: 'Kate',
+  SLOAN: 'Sloan',
 };
 
 export const PARTNER_STATUS = {

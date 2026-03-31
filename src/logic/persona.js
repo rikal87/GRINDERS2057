@@ -182,13 +182,13 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'old_lion',
-    name: 'Old_Lion', philosophy: 'TAG', vPIP: .25, AF: 2.5, WTSD: .25, chipMultiply: 1.5, isAdvanced: true,
+    name: 'Old_Lion', philosophy: 'TAG', vPIP: .23, AF: 2.75, WTSD: .27, chipMultiply: 1.75, isAdvanced: true,
     note_ko: '전성기는 지났지만 여전히 날카로운 노장입니다. 그가 참전했다는 건 이미 덫을 다 깔아두었다는 뜻이니, 함부로 덤비지 마세요.',
     note_en: 'His prime has passed, but he is still a sharp veteran. If he has entered the game, it means he has already laid all the traps, so don\'t mess with him carelessly.',
   },
   {
     id: 'shark',
-    name: 'Shark', philosophy: 'TAG', vPIP: .22, AF: 3.5, WTSD: .25, chipMultiply: 1.5, isAdvanced: true, isBoss: true,
+    name: 'Shark', philosophy: 'TAG', vPIP: .22, AF: 3.5, WTSD: .25, chipMultiply: 2, isAdvanced: true, isBoss: true,
     note_ko: '가장 무서운 건 이 친구의 패가 아니라, 이 친구의 인내심입니다.',
     note_en: 'The most frightening thing is not his hand, but his patience.',
 

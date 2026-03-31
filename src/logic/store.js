@@ -169,6 +169,9 @@ export const MISSED_PAYMENT_TYPE = {
 export const getEnemyBustCount = (enemyId) => {
   return store.play_stats.bust_enemy[enemyId] || 0;
 }
+export const getEnemyMetCount = (enemyId) => {
+  return store.play_stats.met_enemy[enemyId] || 0;
+}
 export const getPlayStatsCount = (type) => {
   return store.play_stats[type] ? store.play_stats[type] : 0;
 }
@@ -517,19 +520,19 @@ export const processMissionResult = (player, result, engine) => {
     if (result.indexOf('WIN') !== -1) {
       if (client.chips > player.chips) {
         gainRelationship(client.id, 100);
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN_MAX, 45);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN_MAX, 15);
       } else {
         gainRelationship(client.id, 50);
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 45);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_WIN, 15);
       }
     } else if (result.indexOf('LOSE') !== -1) {
       if (!client.isEliminated) {
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_PLAYER, 60);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LOSE_PLAYER, 15);
       }
-      scheduleEvent(EVENT_ID.MAX.TUTORIAL_THEN_LOSE_RETRY, 60);
+      scheduleEvent(EVENT_ID.MAX.TUTORIAL_THEN_LOSE_RETRY, 15);
     } else {
       if (store.completedEvents.includes(EVENT_ID.MAX.TUTORIAL_LEAVE)) {
-        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE_AGAIN, 45);
+        scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE_AGAIN, 60);
       } else {
         scheduleEvent(EVENT_ID.MAX.TUTORIAL_LEAVE, 45);
       }
@@ -542,22 +545,22 @@ export const processMissionResult = (player, result, engine) => {
     if (result.indexOf('WIN') !== -1) {
       gainRelationship(client.id, 50);
       if (client.chips > player.chips) {
-        scheduleEvent(EVENT_ID.MAX.WIN_PLAYER, 30);
+        scheduleEvent(EVENT_ID.MAX.WIN_PLAYER, 15);
       } else {
-        scheduleEvent(EVENT_ID.MAX.WIN_MAX, 30);
+        scheduleEvent(EVENT_ID.MAX.WIN_MAX, 15);
       }
     } else if (result.indexOf('LOSE') !== -1) {
       if (!client.isEliminated) {
         scheduleEvent(EVENT_ID.MAX.PLAYER_ELIMINATED, 15);
       }
     } else {
-      scheduleEvent(EVENT_ID.MAX.PLAYER_LEAVE, 30);
+      scheduleEvent(EVENT_ID.MAX.PLAYER_LEAVE, 60);
     }
   }
   if (locationId === LOCATION_ID.LOW_NEON_LOUNGE) {
     // timer: 3 * 60,
     if ([GAME_RESULT_CODE.WIN_BIG, GAME_RESULT_CODE.WIN_MEDIUM].includes(result)) {
-      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_MEET_AT_CLUB, 2 * 60);
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_MEET_AT_CLUB, 160);
     }
   }
   // Mission LOW_UNDERGROUND_CLUB_MEET_MAX
@@ -565,9 +568,9 @@ export const processMissionResult = (player, result, engine) => {
     const client = engine.players.find(p => p.id === PARTNER_ID.MAX);
     if (result.indexOf('WIN') !== -1) {
       gainRelationship(client.id, 50);
-      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 30);
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 15);
     } else {
-      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_FAILED, 30);
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_FAILED, 15);
     }
   }
   if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_VIP_ROOM) {
@@ -581,10 +584,10 @@ export const processMissionResult = (player, result, engine) => {
   }
   if (locationId === LOCATION_ID.MIDDLE_KBT_VIP_ROOM) {
     if (result.indexOf('WIN') !== -1) {
-      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_3_2_BIG_DADDY_WIN, 60);
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_3_2_BIG_DADDY_WIN, 15);
       scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_3_2_BIG_DADDY_WIN, 60);
     } else {
-      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_3_2_BIG_DADDY_LOSE, 60);
+      scheduleEvent(EVENT_ID.MAX.MAIN_STORY_3_2_BIG_DADDY_LOSE, 35);
       scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_3_2_BIG_DADDY_LOSE, 120);
     }
   }

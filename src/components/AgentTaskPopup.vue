@@ -99,7 +99,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { store, getLanguage, getEnemyBustCount, getPlayStatsCount } from '../logic/store';
+import { store, getLanguage, getEnemyBustCount, getEnemyMetCount, getPlayStatsCount } from '../logic/store';
 import { AI_TASK_DATA, } from '../logic/aiAgentTaskData';
 import { isTaskUnlocked, startTask } from '../logic/aiAgentTaskSystem';
 import { audioManager } from '../logic/audioManager';
@@ -107,12 +107,12 @@ import { PLAY_RECORD_STATS_TYPE, PLAY_RECORD_STATS_DESC } from '../logic/playRec
 
 const getRecordStatsDesc = (type) => {
   if (!type) return;
-  console.info('PLAY_RECORD_STATS_DESC[]', PLAY_RECORD_STATS_DESC[type], type)
   return PLAY_RECORD_STATS_DESC[type][getLanguage()];
 }
 const getRecordStatsCurrentCount = (type, id) => {
   switch (type) {
     case PLAY_RECORD_STATS_TYPE.BUST_ENEMY: return getEnemyBustCount(id) || 0;
+    case PLAY_RECORD_STATS_TYPE.MET_ENEMY: return getEnemyMetCount(id) || 0;
     default: return getPlayStatsCount(type) || 0;
   }
 }
@@ -237,7 +237,7 @@ const taskInitiateBtnText = computed(() => {
 });
 
 const initiateTask = () => {
-  audioManager.playSFX('bootup');
+  audioManager.playSFX('install');
   if (startTask(currentTaskDef.value.id)) {
     emit('close');
     audioManager.playSFX('action-confirm');
@@ -330,6 +330,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 10px;
+  overflow-x: hidden;
   overflow-y: auto;
   /* Scrollable content */
 }

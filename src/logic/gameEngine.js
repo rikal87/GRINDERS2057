@@ -71,6 +71,7 @@ export class GameEngine {
     this.playersPools = [];
     this.isMonitoring = isMonitoring;
     this.isDeathmatch = isDeathmatch;
+    this.myTurn = false;
     // [FIX] Initialize players after all properties are set
     this.players = this.initializePlayers(playerClass, tableSize);
     // this.partners = [];
@@ -438,8 +439,6 @@ export class GameEngine {
         get aggressionFactor() { return this.calls > 0 ? this.aggressiveActions / this.calls : (this.aggressiveActions > 0 ? 10 : 0); }
       },
     };
-
-
     return aiPlayer;
   }
 
@@ -522,12 +521,20 @@ export class GameEngine {
     // this.checkSkillTriggers('round_start');
     // this.checkSkillTriggers('preflop_start');
     if (isFirstHand) {
-      const players = this.players.filter(p => !p.isMe);
-      let pickOne = players.find((p) => p.name === 'Max(Mentor)');
+      const opponents = this.players.filter(p => !p.isMe);
+      const me = this.players.find(p => p.isMe);
+      if (me) {
+        opponents.forEach(p => {
+          if (p.class && p.class.id) {
+            recordPlayStatsSession(me, PLAY_RECORD_STATS_TYPE.MET_ENEMY, { enemyClass: p.class.id });
+          }
+        });
+      }
+      let pickOne = opponents.find((p) => p.name === 'Max(Mentor)');
       if (pickOne) {
         chatAI(pickOne, CHAT_TRIGGERS.GAME_START, "", 0, this)
       } else {
-        pickOne = players[Math.floor(Math.random() * players.length)];
+        pickOne = opponents[Math.floor(Math.random() * opponents.length)];
         console.info('pickOne', pickOne)
         chatAI(pickOne, CHAT_TRIGGERS.GAME_START, "", 0, this)
       }
@@ -1053,7 +1060,7 @@ export class GameEngine {
       }
     }
     const bestWinner = this.players.find(p => p.id === result.winnerId);
-    this.checkBusted(bestWinner);
+
     this.potManager.pot = 0;
     this.pot = 0; // [FIX] Sync reactive pot immediately
     // Reset interaction flags for next hand
@@ -1064,7 +1071,8 @@ export class GameEngine {
     eventAdaptor.roundEnd({ players: this.players, bestWinner, street: this.street });
     const sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000;
     // saveStore();
-    await sleep(sleepTime)
+    await sleep(sleepTime);
+    await this.checkBusted(bestWinner);
     if (this.suspicion >= 40 && this.checkTriggerCasinoInvestigation()) return;
     this.calculationInProgress = false;
     this.startNewHand();
@@ -1145,6 +1153,12 @@ export class GameEngine {
         if (!newPlayer) return;
         this.players.splice(index, 1, newPlayer);
         p = newPlayer; // update local reference
+
+        const me = this.players.find(pl => pl.isMe);
+        if (me && p.class && p.class.id) {
+          recordPlayStatsSession(me, PLAY_RECORD_STATS_TYPE.MET_ENEMY, { enemyClass: p.class.id });
+        }
+
         console.log(`[GAME] Empty seat filled by ${p.name}`);
         chatAI(p, CHAT_TRIGGERS.GAME_START); // Say hi
       }
@@ -1372,7 +1386,10 @@ export class GameEngine {
       // share benefit
       const share = shareBenefitForPartners(netWinnings);
       recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
-      saveStore();
+      await saveStore();
+      audioManager.pause();
+      if (result === GAME_RESULT_CODE.WIN_BIG) audioManager.playSFX('end-session-bigwin');
+      else audioManager.playSFX('end-session')
       window.dispatchEvent(new CustomEvent('trigger-cashout', { detail: { isForceExit } }));
     } else console.warn('[GAME] cashOut failed');
   }
@@ -1396,9 +1413,10 @@ export class GameEngine {
     if (player.isHuman) {
       // Human turn: Waiting for UI input
       console.log(`[TURN] Waiting for Human Input...`);
+      this.myTurn = true;
       this.startTurnTimer(player);
       return;
-    }
+    } else this.myTurn = false;
     player.lastDialogue = null
     player.lastThought = null
     // AI Turn
@@ -1430,7 +1448,6 @@ export class GameEngine {
     }
     if (this.checkSkipAction() || this.runoutInProgress) return;
     await this.handlePlayerAction(player, action);
-
   }
   checkSkipAction() {
     return this.gameOver || this.state === 'SHOWDOWN' || this.exited

@@ -8,8 +8,8 @@ import { PotManager } from '../../../src/logic/PotManager.js';
 const CLASSES_ENEMY = [...D2, ...D1]
 export async function runSimulation() {
   const opp1 = 'rich_guy'
-  const opp2 = 'Max'
-  const opp3 = 'gangster'
+  const opp2 = 'gangster'
+  const opp3 = 'maniac'
   console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
   const logHeader = `Simulation Log - ${new Date().toLocaleString()}\n\n`;
   fs.writeFileSync('hand_history.log', logHeader, 'utf8');

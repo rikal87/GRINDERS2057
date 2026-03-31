@@ -36,10 +36,10 @@ export const AI_TASK_DATA = [
     name_en: "Hand Overlay",
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     type: 'AGENT_WORK',
-    desc_ko: `테이블에서 자신이 현재 완성한 족보를 실시간으로 확인 할 수 있는 인터페이스를 활성화 합니다.`,
-    desc_en: `HUD is activated.`,
+    desc_ko: `자신이 현재 완성한 족보를 실시간으로 확인 할 수 있는 오버레이를 활성화 합니다.`,
+    desc_en: `Activates an overlay to check the poker hand you've made in real-time.`,
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    desc_detail_ko: '자신이 현재 완성한 족보가 무엇인지 조차 모르는 초짜들한테 유용합니다!',
+    desc_detail_ko: '자신이 무슨 족보를 만들었는지 조차 모르는 초짜들한테 유용합니다!',
     desc_detail_en: 'Perfect for rookies who can\'t tell a Straight from a Flush. Stop guessing and start grinding.',
     get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
     cost: 0,
@@ -74,7 +74,7 @@ export const AI_TASK_DATA = [
     name_ko: "익명성",
     name_en: "Low Profile",
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    type: 'HACKING',
+    type: 'BOOST',
     desc_ko: `해당 효과가 활성화 되어 있는 동안 생성되는 의심도가 50% 감소합니다.`,
     desc_en: `While this effect is active, the suspicion generated is reduced by 50%.`,
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
@@ -267,26 +267,7 @@ export const AI_TASK_DATA = [
     effect: [{ id: 'micro', type: TASK_EFFECT_TYPE.RAKE_DISCOUNT_RND_MUL, amount: 0.5 }],
     unlock: { type: 'paid_rake', amount: 5000 }
   },
-  {
-    id: 'fish_finder',
-    tier: 2,
-    type: 'NETWORKING',
-    name_ko: 'Fish Finder',
-    name_en: 'Fish Finder',
-    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    desc_ko: `테이블 내 [Fish] 성향 플레이어의 등장 확률이 2배 증가합니다.`,
-    desc_en: `Doubles the spawn rate of [Fish] players at your table.`,
-    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
-    desc_detail_ko: '호구들이 많이 모이는 장소를 파악하여 은밀히 정보를 수집합니다!',
-    desc_detail_en: 'Secretly gathers information to locate where the fish gather the most!',
-    get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
-    cost: 5,
-    probability: 0.1,
-    duration: 4 * 60,
-    cooldown: 12 * 60,
-    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'fish', amount: 2 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'fish', count: 10 }
-  },
+
   {
     id: 'rake_discount_low',
     tier: 2,
@@ -310,7 +291,7 @@ export const AI_TASK_DATA = [
   {
     id: 'mr_call_attractor',
     tier: 2,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'MR_CALL Attractor',
     name_en: 'MR_CALL Attractor',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -325,12 +306,12 @@ export const AI_TASK_DATA = [
     duration: 4 * 60,
     cooldown: 12 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'mr_call', amount: 2 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'mr_call', count: 10 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.MET_ENEMY, id: 'mr_call', count: 25 }
   },
   {
     id: 'broke_attractor',
     tier: 2,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'Broke Attractor',
     name_en: 'Broke Attractor',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -345,12 +326,12 @@ export const AI_TASK_DATA = [
     duration: 4 * 60,
     cooldown: 12 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'broke', amount: 2 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'broke', count: 10 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.MET_ENEMY, id: 'broke', count: 25 }
   },
   {
     id: 'gambler_attractor',
     tier: 2,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'Gambler Attractor',
     name_en: 'Gambler Attractor',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -365,7 +346,7 @@ export const AI_TASK_DATA = [
     duration: 4 * 60,
     cooldown: 12 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'gambler', amount: 2 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gambler', count: 10 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.MET_ENEMY, id: 'gambler', count: 25 }
   },
   {
     id: 'hand_review_2',
@@ -410,7 +391,7 @@ export const AI_TASK_DATA = [
   {
     id: 'rich_guy_hunter',
     tier: 3,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'Rich Guy Hunter',
     name_en: 'Rich Guy Hunter',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -425,12 +406,12 @@ export const AI_TASK_DATA = [
     duration: 4 * 60,
     cooldown: 12 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'rich_guy', amount: 2 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 5 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.MET_ENEMY, id: 'rich_guy', count: 25 }
   },
   {
     id: 'maniac_attractor',
     tier: 3,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'Maniac Attractor',
     name_en: 'Maniac Attractor',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -445,7 +426,7 @@ export const AI_TASK_DATA = [
     duration: 4 * 60,
     cooldown: 12 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'maniac', amount: 3 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 10 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.MET_ENEMY, id: 'maniac', count: 25 }
   },
   {
     id: 'hand_strategy_plan',
@@ -473,7 +454,7 @@ export const AI_TASK_DATA = [
     name_ko: 'Mad Max',
     name_en: 'Mad Max',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    type: 'BOOST',
+    type: 'NETWORKING',
     desc_ko: `입장한 테이블에 [Maniac] 성향 플레이어의 등장 확률이 6배 증가합니다.`,
     desc_en: `Increases the spawn rate of [Maniac] players at your table by 6 times.`,
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
@@ -485,7 +466,27 @@ export const AI_TASK_DATA = [
     duration: 4 * 60,
     cooldown: 72 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'maniac', amount: 6 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 50 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 25 }
+  },
+  {
+    id: 'fish_finder',
+    tier: 2,
+    type: 'NETWORKING',
+    name_ko: 'Fish Finder',
+    name_en: 'Fish Finder',
+    get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
+    desc_ko: `테이블 내 [Fish] 성향 플레이어의 등장 확률이 2배 증가합니다.`,
+    desc_en: `Doubles the spawn rate of [Fish] players at your table.`,
+    get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
+    desc_detail_ko: '호구들이 많이 모이는 장소를 파악하여 은밀히 정보를 수집합니다!',
+    desc_detail_en: 'Secretly gathers information to locate where the fish gather the most!',
+    get desc_detail() { return store.settings.language === 'en' ? this.desc_detail_en : this.desc_detail_ko; },
+    cost: 5,
+    probability: 0.1,
+    duration: 4 * 60,
+    cooldown: 12 * 60,
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'fish', amount: 2 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.MET_ENEMY, id: 'fish', count: 25 }
   },
   {
     id: 'fish_finder_2',
@@ -493,7 +494,7 @@ export const AI_TASK_DATA = [
     name_ko: 'Fish Finder II',
     name_en: 'Fish Finder II',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    type: 'BOOST',
+    type: 'NETWORKING',
     desc_ko: `[Fish] 성향 확률이 4배 증가하지만, 항상 [Quant_Pro] 플레이어가 1명 난입합니다.`,
     desc_en: `Quadruples [Fish] spawn rate, but 1 [Quant_Pro] player will always intrude.`,
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
@@ -504,13 +505,13 @@ export const AI_TASK_DATA = [
     probability: 0.05,
     duration: 4 * 60,
     cooldown: 12 * 60,
-    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'fish', amount: 4 }, { type: TASK_EFFECT_TYPE.SPAWN, id: 'Quant_Pro', amount: 1 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'fish', count: 50 }
+    effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'fish', amount: 4 }, { type: TASK_EFFECT_TYPE.SPAWN, id: 'quant_pro', amount: 1 }],
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'fish', count: 25 }
   },
   {
     id: 'enhance_security',
     tier: 4,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: '보안 강화',
     name_en: 'Enhance Security',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -525,12 +526,12 @@ export const AI_TASK_DATA = [
     duration: 24 * 60,
     cooldown: 72 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'gangster', amount: 0.5 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gangster', count: 50 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.MET_ENEMY, id: 'gangster', count: 25 }
   },
   {
     id: 'gambler_attractor_2',
     tier: 4,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'No Gamble, No Future',
     name_en: 'No Gamble, No Future',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -545,12 +546,12 @@ export const AI_TASK_DATA = [
     duration: 24 * 60,
     cooldown: 72 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'gambler', amount: 4 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gambler', count: 50 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'gambler', count: 10 }
   },
   {
     id: 'rich_guy_hunter_2',
     tier: 4,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'Someone with a nose for money',
     name_en: 'Someone with a nose for money',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -565,7 +566,7 @@ export const AI_TASK_DATA = [
     duration: 24 * 60,
     cooldown: 3 * 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'rich_guy', amount: 3 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 25 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'rich_guy', count: 10 }
   },
   {
     id: 'grinders_mindset',
@@ -590,7 +591,7 @@ export const AI_TASK_DATA = [
   {
     id: 'maniac_attractor_3',
     tier: 5,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'Furiosa',
     name_en: 'Furiosa',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -605,7 +606,7 @@ export const AI_TASK_DATA = [
     duration: 24 * 60,
     cooldown: 3 * 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'maniac', amount: 3 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 100 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'maniac', count: 50 }
   },
 
   {
@@ -614,7 +615,7 @@ export const AI_TASK_DATA = [
     name_ko: 'Rake Discount [High]',
     name_en: 'Rake Discount [High]',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    type: 'NETWORKING',
+    type: 'BOOST',
     desc_ko: `3일 동안 [하이 스테이크] 카지노 중 무작위 한 곳의 레이크가 50% 할인됩니다.`,
     desc_en: `For 3 days, applies a 50% rake discount to one random [High Stakes] casino.`,
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
@@ -634,7 +635,7 @@ export const AI_TASK_DATA = [
     name_ko: 'A bunch of Vagabonds',
     name_en: 'A bunch of Vagabonds',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    type: 'BOOST',
+    type: 'NETWORKING',
     desc_ko: '자신이 입장하는 테이블에 무조건 [Broke] 성향 플레이어가 3명 따라붙습니다.',
     desc_en: 'Three [Broke] players will unconditionally trail you to the table you enter.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
@@ -651,7 +652,7 @@ export const AI_TASK_DATA = [
   {
     id: 'heavy_security',
     tier: 5,
-    type: 'BOOST',
+    type: 'NETWORKING',
     name_ko: 'Heavy Security Protocol',
     name_en: 'Heavy Security Protocol',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
@@ -666,7 +667,7 @@ export const AI_TASK_DATA = [
     duration: 4 * 60,
     cooldown: 3 * 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'gangster', amount: 0 }, { type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'the_don', amount: 0 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'the_don', count: 25 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'the_don', count: 10 }
   },
   {
     id: 'rich_guy_hunter_3',
@@ -674,7 +675,7 @@ export const AI_TASK_DATA = [
     name_ko: 'Money-scenter',
     name_en: 'Money-scenter',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    type: 'BOOST',
+    type: 'NETWORKING',
     desc_ko: `입장하는 테이블에 [Rich_Guy] 2명과 [Shark] 1명이 무조건 난입합니다.`,
     desc_en: `Two [Rich_Guy] and one [Shark] players will unconditionally intrude the table you enter.`,
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
@@ -693,7 +694,7 @@ export const AI_TASK_DATA = [
     name_ko: 'Shark Rival',
     name_en: 'Shark Rival',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    type: 'BOOST',
+    type: 'NETWORKING',
     desc_ko: '자신이 입장하는 테이블에 무조건 [Shark] 성향 플레이어가 1명 난입합니다.',
     desc_en: 'One [Shark] player will unconditionally intrude the table you enter.',
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
@@ -705,7 +706,7 @@ export const AI_TASK_DATA = [
     duration: 4 * 60,
     cooldown: 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN, id: 'shark', amount: 1 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'shark', count: 25 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'shark', count: 10 }
   },
   {
     id: 'shark_cage',
@@ -714,8 +715,8 @@ export const AI_TASK_DATA = [
     name_en: "Shark's Cage",
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     type: 'NETWORKING',
-    desc_ko: "하이 스테이크 샤크들과의 스페셜 딥스택 게임을 개최합니다.\n(바이인 2.5M / SB 5k / BB 10k)",
-    desc_en: "Host a special deep-stack game with High Stakes Sharks.\n(Buy-in 2.5M / SB 5k / BB 10k)",
+    desc_ko: "하이 스테이크 샤크들과의 스페셜 딥스택 게임을 개최합니다.",
+    desc_en: "Host a special deep-stack game with High Stakes Sharks.",
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
     desc_detail_ko: '이 피비린내 나는 곳의 유일한 규칙은 "살아남아라" 뿐입니다.',
     desc_detail_en: 'The only rule in this blood-soaked place is "Survive".',
@@ -736,7 +737,7 @@ export const AI_TASK_DATA = [
     name_ko: 'Whale Hunter',
     name_en: 'Whale Hunter',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
-    type: 'BOOST',
+    type: 'NETWORKING',
     desc_ko: `입장한 테이블에 [Whale] 성향 플레이어의 등장 확률이 2배 증가합니다.`,
     desc_en: `Doubles the spawn rate of [Whale] players at your table.`,
     get desc() { return store.settings.language === 'en' ? this.desc_en : this.desc_ko; },
@@ -748,7 +749,7 @@ export const AI_TASK_DATA = [
     duration: 4 * 60,
     cooldown: 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.SPAWN_RATE_MUL, id: 'whale', amount: 2 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'whale', count: 25 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.MET_ENEMY, id: 'whale', count: 25 }
   },
   {
     id: 'house_always_wins',
@@ -787,7 +788,7 @@ export const AI_TASK_DATA = [
     probability: 0.03,
     duration: 4 * 24 * 60,
     cooldown: 14 * 24 * 60,
-    unlock: { type: PLAY_RECORD_STATS_TYPE.BUST_ENEMY, id: 'name_pro', count: 50 },
+    unlock: { type: PLAY_RECORD_STATS_TYPE.MET_ENEMY, id: 'name_pro', count: 25 },
     action: {
       type: TASK_ACTION_TYPE.ACCEPT_INVITE, zone: 'high', location_id: 'war_of_the_gods', available: 6 // only 6max
     },
@@ -795,7 +796,7 @@ export const AI_TASK_DATA = [
   {
     id: 'becoming_a_legend',
     tier: 6,
-    name_ko: 'Legend: 전설의 시작',
+    name_ko: '전설이 되다',
     name_en: 'Becoming a Legend',
     get name() { return store.settings.language === 'en' ? this.name_en : this.name_ko; },
     type: 'BOOST',

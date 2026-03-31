@@ -9,7 +9,6 @@ import { isJoinedPartner } from './partnerSystem.js'
 import { CONTRACT_SIGN_PREVENT_REASON, CONTRACT_SIGN_PREVENT_REASON_DESC } from './partnerContractSystem.js'
 import { getCurrentBankroll } from './store.js'
 import { MESSAGE_ACTION_RESOLVE_TYPE } from './messageSystem.js'
-import { UNLOCK_RULES } from "./achievementManager.js";
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 const pay_rent_bill = 5000;
 
@@ -108,8 +107,8 @@ export const EventData = [
     id: EVENT_MAX.MAIN_STORY_3_1_CHALLENGE_KBT_LEADER,
     title_ko: '준비는 끝났나?',
     title_en: 'Are you ready?',
-    body_ko: "말했던 판돈은 챙겼나? 장소는 준비됐으니 빨리 오라고. 알다시피 '빅대디'는 기다리는 걸 제일 싫어하거든.\n(이 이벤트는 스토리의 핵심 분기점입니다. 수락하거나 거절할시 돌이킬 수 없는 결과로 이어질 수 있습니다.)",
-    body_en: "Have you gathered the buy-in? The venue is ready, so get over here. You know 'Big Daddy' isn't famous for his patience.\n(This event is a critical story branching point. Accepting or refusing will lead to irreversible consequences.)",
+    body_ko: "말했던 판돈은 챙겼나? 장소는 준비됐으니 빨리 오라고. 알다시피 '빅대디'는 기다리는 걸 제일 싫어하거든.",
+    body_en: "Have you gathered the buy-in? The venue is ready, so get over here. You know 'Big Daddy' isn't famous for his patience.",
     get title() { return store.settings.language === 'en' ? this.title_en : this.title_ko; },
     get body() { return store.settings.language === 'en' ? this.body_en : this.body_ko; },
     get accept_label() { return store.settings.language === 'en' ? 'Accept' : '수락하기'; },

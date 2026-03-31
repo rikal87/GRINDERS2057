@@ -13,6 +13,8 @@ import imgMiddleCasinoHotel from '../assets/image/zone/middle_casino_hotel.png';
 import imgHighProHouse from '../assets/image/zone/high_pro_house.png'; // Used for Royal Private Cardroom
 import imgHighGrandCasino from '../assets/image/zone/high_grand_casino.png';
 import imgSpecialOrbitLounge from '../assets/image/zone/special_orbit_lounge.png';
+import imgHighSharkCage from '../assets/image/zone/high_shark_cage.jpg';
+import imgHighWarOfGod from '../assets/image/zone/high_war_of_god.jpg';
 import { TRACK_ENUM } from './audioTracks.js';
 import { LOCATION_ID } from './constants.js'
 export const zones = [
@@ -469,7 +471,6 @@ export const zones = [
         },
         'bgMusic': [TRACK_ENUM.Alexgrohl_OneStepAHead, TRACK_ENUM.DreamVector, TRACK_ENUM.EvgenyBardyuzha_PasswordInfinity]
       },
-
       {
         "id": LOCATION_ID.HIGH_GRAND_CASINO,
         "name_ko": "대형 카지노 호텔",
@@ -495,10 +496,37 @@ export const zones = [
         'bgMusic': [TRACK_ENUM.EvgenyBardyuzha_PasswordInfinity, TRACK_ENUM.Penguinmusic_FutureDesign, TRACK_ENUM.Penguinmusic_Mellow, TRACK_ENUM.Tunetank_Chill]
       },
       {
-        "id": "war_of_the_gods",
+        "id": LOCATION_ID.HIGH_SHARK_CAGE,
+        "name_ko": "더 샤크 케이지",
+        "name_en": "The Shark Cage",
+        "imgSrc": imgHighSharkCage,
+        "description_ko": "실력자들로 가득한 곳에서 살아남으세요.",
+        "description_en": "Survive the sharks.",
+        "atmosphere": "긴장감, 생존",
+        "requirements": null,
+        "isHidden": true,
+        "level": 0,
+        "npcs": [
+          "Shark"
+        ],
+        "tables": {
+          isMonitoring: true,
+          amount: 10000000, amount_fmt: '10M', amount_min_fmt: '5M', sb: 25000, bb: 50000, available: [
+            6
+          ], baseRake: 0.0, rakeCap: 0
+        },
+        "theme": {
+          "background": "radial-gradient(circle, #190036ff 0%, #001a33ff 100%)",
+          "borderColor": "#66010aff",
+          "boxShadow": "0 0 30px rgba(0, 33, 59, 0.4)"
+        },
+        'bgMusic': [TRACK_ENUM.Grainders2057, TRACK_ENUM.VelvetShadows, TRACK_ENUM.Nightscape, TRACK_ENUM.DreamVector]
+      },
+      {
+        "id": LOCATION_ID.HIGH_WAR_OF_GODS,
         "name_ko": "신들의 전쟁",
         "name_en": "War of the Gods",
-        "imgSrc": null,
+        "imgSrc": imgHighWarOfGod,
         "description_ko": "진정한 전설들을 초대하였습니다.",
         "description_en": "Invited the true legends.",
         "atmosphere": "엔드 게임을 위한 시작",
@@ -506,7 +534,7 @@ export const zones = [
         "isHidden": true,
         "level": 0,
         "npcs": [
-          "Shark"
+          "Named_Pro"
         ],
         "tables": {
           isMonitoring: true,

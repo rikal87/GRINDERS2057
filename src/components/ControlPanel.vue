@@ -354,9 +354,7 @@ const reserveExitTooltip = computed(() => {
 });
 const player = computed(() => props.engine.players[0]);
 const isMyTurn = computed(() => {
-  return props.engine.currentPlayerIndex === 0 &&
-    !props.engine.calculationInProgress &&
-    !props.engine.runoutInProgress;
+  return props.engine.myTurn && !props.engine.calculationInProgress && !props.engine.runoutInProgress;
 });
 const playerChips = computed(() => player.value.chips);
 const playerTotalAvailable = computed(() => player.value.chips + player.value.currentBet);
@@ -413,12 +411,12 @@ watch(minRaise, (newVal) => {
 });
 
 const handleAction = (payload) => {
-  if (!isMyTurn.value || isProcessing.value) return;
+  if (isProcessing.value) return;
   isProcessing.value = true;
   emit('action', payload);
   // Safety timeout in case the turn change doesn't happen fast enough
   setTimeout(() => {
-    isProcessing.value = !['PREFLOP', 'FLOP', 'TURN', 'RIVER'].includes(props.engine.state);
+    isProcessing.value = false;
   }, 500);
 };
 

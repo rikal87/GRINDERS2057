@@ -329,10 +329,10 @@ export const simulatePartnersBehavior = () => {
 }
 export const simulatePartnersNetWorth = (partner) => {
   // 1. Simulated living expenses / consumption (prevents infinite wealth accumulation)
-  // Deduct 0.2% of bankroll every simulation cycle (approx. 1 in-game hour)
+  // Deduct 0.15% of bankroll every simulation cycle (approx. 1 in-game hour)
   if (partner.status !== PARTNER_STATUS.GAMBLING) {
     if (partner.bankroll > 0) {
-      const expenses = Math.max(Math.ceil(partner.bankroll * 0.002), 500);
+      const expenses = Math.max(Math.ceil(partner.bankroll * 0.0015), 100);
       gainPartnerBankroll(partner, -expenses, TYPE_CHANGE_BANKROLL.OTHER);
     }
   } else if (partner.status === PARTNER_STATUS.GAMBLING) {

@@ -112,7 +112,6 @@ function getProbabilisticAction(player, engine) {
         handRank = (r1 === r2) ? 50 : 80;
       }
     }
-
     estimatedEquity = 1 - (handRank / 169);
     // Explicit Tiers for consistency
     if (handRank <= 2) estimatedEquity = 0.9;
@@ -192,11 +191,16 @@ function getProbabilisticAction(player, engine) {
     const inRange = handPercentile <= vPIP;
     rangePower = inRange ? 1.0 : Math.max(0, 1.0 - (handPercentile - vPIP) * 20);
 
-    // Facing raises shrinks the effective play probability (Intensity)
-    // raises=0 (Open): 0.9, raises=1 (Call/3B): 0.6, raises>=2 (4B+): 0.35
-    // Passive players (low AF) call more against a single raise (loose-passive style)
-    const raiseCallIntensity = AF >= 3.0 ? 0.65 : Math.min(0.90, 0.65 + (3.0 - AF) * 0.15);
-    const intensity = (raises >= 3) ? 0.25 : (raises >= 2 ? 0.45 : (raises >= 1 ? raiseCallIntensity : 0.95));
+    // [v16.6] Facing 3-Bets+ shrinks the effective play probability (Exponential Intensity)
+    // Only apply when raises >= 2 (Facing a 3-bet or 4-bet, not just a standard open raise)
+    const personalityBonus = (AF * 0.05) + (vPIP * 0.2);
+
+    let intensity = 1.0;
+    if (raises >= 2) {
+      // Adjusted so a 3-bet (raises = 2) applies the first level of exponential decay
+      intensity = Math.pow(0.7, raises - 1) + personalityBonus;
+      intensity = Math.max(0.2, Math.min(0.95, intensity));
+    }
     continueProb = rangePower * intensity;
     // [v15.8] Garbage Raise Mitigation: Couple raiseProb with rangePower
 
@@ -205,30 +209,49 @@ function getProbabilisticAction(player, engine) {
       continueProb = Math.max(continueProb, 0.92);
     }
   } else {
-    // [v15] Simplified Protection Model
-    const perceivedEq = estimatedEquity + (WTSD - 0.2) * 0.8;
+    // [v16.9] Pure Equity + WTSD Personality Scaling
+    let wtsdBonus = (WTSD - 0.2) * 2; // Tight bots (<0.25) get negative/zero, Stations get huge bonus
+    // Calculate how 'decent' the hand is.
+    // 0.0 for Garbage (Eq <= 0.25), 1.0 for Decent (Eq >= 0.45)
+    const decentHandFactor = Math.max(0, Math.min(1, (estimatedEquity - 0.1) / 0.10));
 
-    // Linear Interaction (Unified 1.5x scaling, minimal 0.1 base)
-    continueProb = 0.1 + (perceivedEq * 1.5);
+    // Apply the factor
+    wtsdBonus *= decentHandFactor;
+
+    // Direct mapping to true equity, no 1.5x artificial inflation
+    continueProb = estimatedEquity + wtsdBonus;
+
+    // Universal Pot Odds Pressure (Only apply if facing a bet)
+    if (callAmt > 0) {
+      let universalPressure = potOdds * 0.5; // Scaled down penalty
+      if (estimatedEquity >= 0.5) universalPressure *= 0.5; // Half pressure for decent hands
+      continueProb = Math.max(0.05, continueProb - universalPressure);
+    }
 
     // Protection Floor (The "Life Line" for Top Pair+)
-    if (estimatedEquity >= 0.45) {
-      const baseProt = (street === 'FLOP' ? 0.70 : 0.35);
-      const pressure = Math.min(0.5, potOdds) * 0.6;
-      continueProb = Math.max(continueProb, baseProt - pressure);
+    if (estimatedEquity >= 0.1) {
+      // [v16.10] WTSD +12% Goal: Add a strong stickiness boost specifically for decent hands
+      // Flop gets the most leeway (+0.30), Turn (+0.20), River (+0.10)
+      const baseProt = (streetsLeft + 1) * 0.1 + estimatedEquity;
+      // Higher equity = lower pressure intimidation (Halved for decent hands to increase stickiness!)
+      // const pressureMult = Math.max(0.1, (1.0 - estimatedEquity) * 0.5);
+      const pressureMult = Math.max(0.1, (1.0 - estimatedEquity) * (1.0 - wtsdBonus));
+      const floorPressure = Math.min(0.5, potOdds) * pressureMult;
+      continueProb = Math.max(continueProb, baseProt - floorPressure);
     }
   }
 
   // Common Adjustments
-  raiseProb = Math.min(0.95, (AF + afMod - 2) * (street === 'PREFLOP' ? 0.1 : 0.05) + estimatedEquity);
+  let baseAF = (AF + afMod - 2.5) * 0.05; // Restored afMod so 'draw bonuses' still trigger aggression
+  raiseProb = Math.min(0.95, estimatedEquity + (street === 'PREFLOP' ? baseAF * 2 : baseAF));
   if (street === 'PREFLOP') {
     if (estimatedEquity >= 0.55) raiseProb *= 1.2;
-    else if (estimatedEquity >= 0.3 && raises > 2) raiseProb = 0;
+    else if (estimatedEquity >= 0.3 && raises > 1) raiseProb = 0;
     else if (estimatedEquity < 0.3) raiseProb = 0;
   } else {
     // [v16.0] Deep Stack (High SPR) Value Building
     // If SPR is high and we have equity, we should build the pot more aggressively
-    if ((estimatedEquity >= 0.5 && isAggressor) || (estimatedEquity >= 0.6 && !isAggressor)) {
+    if ((estimatedEquity >= 0.6 && isAggressor) || (estimatedEquity >= 0.7 && !isAggressor)) {
       const potBuildBoost = Math.min(spr * 0.05, 0.3);
       raiseProb += potBuildBoost;
       insight += ` [SPR-Build: +${potBuildBoost.toFixed(2)}]`;
@@ -244,9 +267,9 @@ function getProbabilisticAction(player, engine) {
     if (isAggressor && street === 'FLOP') {
       raiseProb += (highCardCount * 2) - (boardRanks.length * .05);
     } else if (!isAggressor && boardAnalysis.type === 'WET') {
-      raiseProb += 0.05;
+      raiseProb += 0.2;
     }
-    if (street === 'RIVER' && estimatedEquity < 0.6) raiseProb *= 0.66;
+    if (street === 'RIVER' && estimatedEquity < 0.6) raiseProb *= 0.5;
   }
 
   // Pot Odds Pressure (v15.1 Floor Erosion)
@@ -265,7 +288,10 @@ function getProbabilisticAction(player, engine) {
 
     // if (estimatedEquity < potOdds) continueProb *= 0.8; // v15.2 Tightened from 0.8
   }
-  continueProb = Math.min(1.0, Math.min(estimatedEquity + WTSD - 0.1, continueProb)); // Strict realistic cap
+
+  // 수학적 확률 오류(> 100%)로 비정상적인 로그(음수 확률 등)가 나오는 것을 막는 안전장치
+  continueProb = Math.min(1.0, Math.max(0.0, continueProb));
+
 
   // Strategy Bias
   if (strategy === "DONK_AVOIDER") {
@@ -276,7 +302,6 @@ function getProbabilisticAction(player, engine) {
   } else if (strategy === "RESPONSE" && estimatedEquity >= 0.85 && street === 'FLOP') {
     if (Math.random() <= 0.65 || raises >= 2) raiseProb = 0; // Trap
   }
-
 
   // Multi-way penalty
   const alivePlayers = engine.players.filter(p => !p.isFolded || p.chips >= engine.bb * 20).length;
@@ -412,7 +437,7 @@ function getProbabilisticAction(player, engine) {
   const equityDiff = Math.abs(estimatedEquity - continueProb);
 
   if (estimatedEquity >= raiseProb + 0.15) {
-    if (Math.random() < 0.3) delay = 600; else delay = 2000 + Math.random() * 1500;
+    delay = 1000 + Math.random() * 2000;
   } else if (equityDiff < 0.10) {
     delay = 2000 + Math.random() * 3000;
   } else if (action === 'fold' && estimatedEquity < continueProb - 0.20) {

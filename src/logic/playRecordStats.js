@@ -45,6 +45,7 @@ export const PLAY_RECORD_STATS_TYPE = {
   MAX_LOSE_EQUITY: 'max_lose_equity',
   MAX_WIN_EQUITY: 'max_win_equity',
   BUST_ENEMY: 'bust_enemy',
+  MET_ENEMY: 'met_enemy',
   NET_SHARE: 'net_share',
   NET_WINNING: 'net_winning',
   ITEM_EFFECT: 'item_effect',
@@ -150,7 +151,8 @@ export const PLAY_RECORD_STATS_DESC = {
   [PLAY_RECORD_STATS_TYPE.MAX_WIN_POT]: { ko: '최대 수익 팟', en: 'Max Win Pot' },
   [PLAY_RECORD_STATS_TYPE.MAX_LOSE_EQUITY]: { ko: '최악의 배드비트', en: 'Max Lose Equity' },
   [PLAY_RECORD_STATS_TYPE.MAX_WIN_EQUITY]: { ko: '최대 승리 에퀴티', en: 'Max Win Equity' },
-  [PLAY_RECORD_STATS_TYPE.BUST_ENEMY]: { ko: '제거한 라이벌', en: 'Total Rivals Busted' },
+  [PLAY_RECORD_STATS_TYPE.BUST_ENEMY]: { ko: '해당 적 파산 횟수', en: 'Total Rivals Busted' },
+  [PLAY_RECORD_STATS_TYPE.MET_ENEMY]: { ko: '해당 적 조우 횟수', en: 'Total Rivals Met' },
   [PLAY_RECORD_STATS_TYPE.NET_SHARE]: { ko: '수익 배분', en: 'Net Share' },
   [PLAY_RECORD_STATS_TYPE.NET_WINNING]: { ko: '최종 순이익', en: 'Net Winning' },
   [PLAY_RECORD_STATS_TYPE.COST_LT]: { ko: '소모한 LT', en: 'Cost LT' },
@@ -195,9 +197,15 @@ const STAT_OVERRIDES = {
   [PLAY_RECORD_STATS_TYPE.MIN_WIN_EQUITY]: 0.0,
   // Object - 적 유형별 bust 카운트
   [PLAY_RECORD_STATS_TYPE.BUST_ENEMY]: {
-    'Fish': 0, 'Broke': 0, 'MR_CALL': 0, 'Gambler': 0, 'Rich_Guy': 0,
-    'Maniac': 0, 'Gangster': 0, 'Nit': 0, 'Quant_Pro': 0, 'The_Don': 0,
-    'Shark': 0, 'Old_Lion': 0, 'Named_Pro': 0, 'Musk_V': 0, 'KBT_Leader': 0,
+    'fish': 0, 'broke': 0, 'mr_call': 0, 'gambler': 0, 'rich_guy': 0,
+    'maniac': 0, 'gangster': 0, 'nit': 0, 'quant_pro': 0, 'the_don': 0,
+    'shark': 0, 'old_lion': 0, 'named_pro': 0, 'musk_v': 0, 'kbt_leader': 0,
+    'Max': 0, 'Florence': 0
+  },
+  [PLAY_RECORD_STATS_TYPE.MET_ENEMY]: {
+    'fish': 0, 'broke': 0, 'mr_call': 0, 'gambler': 0, 'rich_guy': 0,
+    'maniac': 0, 'gangster': 0, 'nit': 0, 'quant_pro': 0, 'the_don': 0,
+    'shark': 0, 'old_lion': 0, 'named_pro': 0, 'musk_v': 0, 'kbt_leader': 0,
     'Max': 0, 'Florence': 0
   },
   [PLAY_RECORD_STATS_TYPE.LEVEL_REACHED]: 1,
@@ -361,6 +369,10 @@ export const recordPlayStatsSessionForPlayer = (action, payload) => {
     case PLAY_RECORD_STATS_TYPE.BUST_ENEMY:
       totalStats.bust_enemy[payload.enemyClass || 'fish']++;
       if (sessionStats) sessionStats.bust_enemy[payload.enemyClass || 'fish']++;
+      break;
+    case PLAY_RECORD_STATS_TYPE.MET_ENEMY:
+      totalStats.met_enemy[payload.enemyClass || 'fish']++;
+      if (sessionStats) sessionStats.met_enemy[payload.enemyClass || 'fish']++;
       break;
     default: {
       // Generic handler for all simple numeric increments/additions

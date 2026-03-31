@@ -130,7 +130,7 @@ onMounted(() => {
   });
 
   window.addEventListener('trigger-game-over', (e) => {
-    audioManager.playSFX('glitch-reboot');
+    audioManager.playSFX('busted');
     showGameOverOverlay.value = true;
   });
 
@@ -248,7 +248,7 @@ const cancelReboot = () => {
 
 const handleStart = (mode) => {
   if (mode === 'new') resetStore();
-  audioManager.playSFX('bootup')
+  audioManager.playSFX('riser')
   currentView.value = 'lobby';
   audioManager.play();
   startTimeSystem();
@@ -298,6 +298,7 @@ const handleAction = async (payload) => {
   if (type === 'main_menu') {
     currentView.value = 'intro';
   } else if (type === 'hard_reset') {
+    audioManager.playSFX('gameover');
     resetStore().then(() => {
       window.location.reload();
     });
@@ -323,8 +324,6 @@ const handleAction = async (payload) => {
       showInvestigationOverlay.value = false;
       showInvestigationResultOverlay.value = false;
       showGameOverOverlay.value = false;
-      audioManager.pause();
-      audioManager.playSFX('end-session')
       showStatsModal.value = true;
       applySessionExit();
       break;

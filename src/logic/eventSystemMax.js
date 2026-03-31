@@ -347,7 +347,7 @@ export const EventData = [
     label_ko: '참가하기',
     label_en: 'Join',
     get label() { return store.settings.language === 'en' ? this.label_en : this.label_ko; },
-    timer: 32,
+    timer: 120,
     condition: () => {
       return isEventCompleted(EVENT_MAX.MAIN_STORY_1_MEET_AT_CLUB) && new Date(store.gameTime).getHours() >= 22;
     },

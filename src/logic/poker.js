@@ -911,7 +911,7 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
     // Final Mapping (User adjusted) - [FIX] Fixed mapping order to allow WEAK
     if (caseSum <= -2) return 'STRONG';
     else if (caseSum <= 0) return 'GOOD';
-    else if (caseSum === 1) return 'MARGINAL';
+    else if (caseSum <= 2) return 'MARGINAL';
     return 'WEAK';
   }
 
