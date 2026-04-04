@@ -747,8 +747,6 @@ export class GameEngine {
             });
           }
         }
-      } else {
-        this.aggressor = null;
       }
     }
 
@@ -765,6 +763,7 @@ export class GameEngine {
 
     // [NEW] Store AI-calculated odds/equity for showdown triggers (Hero Call / Bluff Caught)
     if (!player.isHuman) {
+      player.lastActionType = action.type;
       player.lastActionPotOdds = action.potOdds || 0;
       player.lastActionEquity = action.estimatedEquity || 0;
     }
@@ -891,10 +890,17 @@ export class GameEngine {
     await sleep(1000);
     this.players.forEach(p => p.currentBet = 0);
     this.potManager.currentRoundBet = 0; // Reset for new street
+    const streetAggressorWasPresent = this.currentStreetRaises > 0;
+    this.players.forEach(p => p.hasFacedFlopBet = false);
+
+    // [MOD] If no one raised/bet this street, the 'Initative' or Aggressor status expires.
+    // This prevents AI from being stuck in DONK_AVOIDER mode for streets where the old aggressor checked.
+    if (!streetAggressorWasPresent) {
+      this.aggressor = null;
+    }
+
     this.currentStreetRaises = 0;
     this.playersActedCount = 0;
-    // this.pressureActive = false; // Reset pressure skill effect each street
-    this.players.forEach(p => p.hasFacedFlopBet = false);
 
     const activePlayers = this.players.filter(p => !p.isFolded && !p.isEliminated);
     if (activePlayers.length === 1) {
@@ -1029,14 +1035,17 @@ export class GameEngine {
         // [NEW] Check for WIN_HERO_CALL and BLUFF_CAUGHT
         let specificTrigger = null;
         if (this.state === 'SHOWDOWN' && !withoutShowdownEvent) {
-          // 1. WIN_HERO_CALL: NPC called on river with low equity vs pot odds and won
-          if (isBestWinner && p.lastActionStreet === 'RIVER' && p.lastActionPotOdds > 0) {
+          const isAggressiveAction = ['raise', 'bet', 'all_in'].includes(p.lastActionType);
+          const isCallAction = p.lastActionType === 'call';
+
+          // 1. WIN_HERO_CALL: NPC called on river and won with low equity
+          if (isBestWinner && p.lastActionStreet === 'RIVER' && isCallAction && p.lastActionPotOdds > 0) {
             if (p.lastActionEquity < p.lastActionPotOdds) {
               specificTrigger = CHAT_TRIGGERS.WIN_HERO_CALL;
             }
           }
-          // 2. BLUFF_CAUGHT: NPC was aggressor on river with low equity and lost
-          if (!isBestWinner && p.id === this.aggressor && p.lastActionStreet === 'RIVER' && p.lastActionEquity <= 0.3) {
+          // 2. BLUFF_CAUGHT: NPC was aggressor on river (actually bet/raised) and lost with low equity
+          if (!isBestWinner && p.id === this.aggressor && p.lastActionStreet === 'RIVER' && isAggressiveAction && p.lastActionEquity <= 0.3) {
             specificTrigger = CHAT_TRIGGERS.BLUFF_CAUGHT;
           }
         }
@@ -1444,7 +1453,7 @@ export class GameEngine {
       this.resolveShowdown(true);
       return;
     }
-
+    this.checkEnteredBigPotTension();
     const player = this.players[this.currentPlayerIndex];
     if (!player) return;
 
