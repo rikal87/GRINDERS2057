@@ -1,6 +1,7 @@
 // aiEngineAdvanced.js is now a delegation wrapper for aiBrainHub.js
 // and handles final action normalization and timing tells for Advanced AI players.
-
+import { getUnifiedAction } from './aiBrainHub.js';
+import { getAIChatDialogue } from './AIChatSystem.js';
 export const getAdvancedAIAction = (player, engine) => {
   // [v10] Delegate to the new modular Brain Hub
   const decision = getUnifiedAction(player, engine);
@@ -40,7 +41,10 @@ export const getAdvancedAIAction = (player, engine) => {
     action.type = 'all_in';
   }
 
-  if (Math.random() < 0.25) action.dialogue = getAIChatDialogue(action.type, player.name, action.insight);
+  const activePlayersCount = engine.players.filter(p => !p.isFolded && !p.isEliminated).length;
+  const isHeadsUp = activePlayersCount === 2;
+
+  if (isHeadsUp && Math.random() < 0.25) action.dialogue = getAIChatDialogue(action.type, player.name, action.insight);
 
   let delay = 1000 + Math.random() * 3000;
   if (action.type === 'fold') delay = 1500 + Math.random() * 3500;

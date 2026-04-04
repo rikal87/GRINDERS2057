@@ -438,13 +438,6 @@ const showVictoryOverlay = ref(false);
 const now = ref(new Date().toLocaleTimeString())
 setInterval(() => now.value = new Date().toLocaleTimeString(), 1000)
 
-const staminaBlur = computed(() => {
-  const s = store.stamina;
-  if (s >= 25) return 0;
-  // Below 25%, blur increases from 0 to 5px
-  return ((25 - s) / 25) * 5;
-});
-
 watch(currentView, (newView) => {
   window.isAtTable = (newView === 'table');
 });
@@ -482,7 +475,7 @@ watch(currentView, (newView) => {
         <!-- Intro View(main-menu) -->
         <Intro v-else-if="currentView === 'intro'" @start="handleStart" @calibrate="toggleSettings"
           @quit="handleQuitApp" />
-        <section v-else class="game-container" :style="{ filter: `blur(${staminaBlur}px)` }">
+        <section v-else class="game-container">
           <!-- Lobby View -->
           <Lobby v-if="currentView === 'lobby'" @join="handleJoinTable" @view="handleView"
             @openSearch="searchPopupRef?.open()" />

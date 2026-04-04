@@ -21,13 +21,6 @@ export const TASK_EFFECT_TYPE = {
 export const TASK_ACTION_TYPE = {
   ACCEPT_INVITE: 'ACCEPT_INVITE',
 };
-// export const UNLOCK_TYPE = {
-//   HANDS_PLAYED: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED,
-//   BUST_ENEMY: PLAY_RECORD_STATS_TYPE.BUST_ENEMY,
-//   COST_LT: PLAY_RECORD_STATS_TYPE.COST_LT_TOTAL,
-//   PAID_RAKE: PLAY_RECORD_STATS_TYPE.PAID_RAKE,
-// }
-
 export const AI_TASK_DATA = [
   {
     id: 'hand_hud',
@@ -366,7 +359,7 @@ export const AI_TASK_DATA = [
     duration: 1 * 24 * 60,
     cooldown: 1 * 24 * 60,
     effect: [{ type: TASK_EFFECT_TYPE.XP_BOOST, amount: 0.20 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 1000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 500 }
   },
   {
     id: 'rake_discount_mid',
@@ -446,7 +439,7 @@ export const AI_TASK_DATA = [
     duration: 3 * 24 * 60,
     cooldown: 0,
     effect: [{ type: TASK_EFFECT_TYPE.XP_BOOST, amount: 0.3 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 10000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 1500 }
   },
   {
     id: 'maniac_attractor_2',
@@ -586,7 +579,7 @@ export const AI_TASK_DATA = [
     duration: 1 * 24 * 60,
     cooldown: 0,
     effect: [{ type: TASK_EFFECT_TYPE.MAX_STAMINA_BOOST, amount: 25 }],
-    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 25000 }
+    unlock: { type: PLAY_RECORD_STATS_TYPE.HANDS_PLAYED, count: 5000 }
   },
   {
     id: 'maniac_attractor_3',

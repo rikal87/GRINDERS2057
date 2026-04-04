@@ -429,11 +429,9 @@ export const gainClearedZoneCount = (locationId) => {
 }
 // CAN USE NAGATIVE AMOUNT
 export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
-  console.log(`[BANKROLL] Gained ${amount} bankroll.`);
   if (Number.isNaN(amount)) return;
   const intAmount = Math.ceil(amount);
   store.bankroll = Math.max(0, store.bankroll + intAmount);
-
   store.session_net_history.push({ amount: intAmount, type, timestamp: Date.now() });
   if (store.session_net_history.length > 200) store.session_net_history.shift();
   if (amount < 0) audioManager.playSFX('paybill');

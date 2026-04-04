@@ -10,7 +10,7 @@
           <Transition name="slide-fade">
             <div class="stats-section" v-if="showEcon">
               <div class="section-label">ECONOMIC_METRICS</div>
-              <div class="stats-grid">
+              <div class="stats-grid mobile-wide">
                 <div class="stat-entry"><span class="label">NET_WINNING:</span> <span class="val"
                     :class="animatedStats.net_winning >= 0 ? 'green' : 'red'">{{
                       Math.floor(animatedStats.net_winning).toLocaleString() }} CR</span></div>
@@ -432,7 +432,7 @@ const handleClose = () => {
   }
 }
 @media (max-width: 450px) {
-  .stats-grid {
+  .stats-grid.mobile-wide {
     grid-template-columns: 1fr;
   }
 }

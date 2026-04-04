@@ -7,7 +7,7 @@ import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
 import { getPartner, getJoinedPartners } from './partnerSystem.js';
 import { shareBenefitForPartners, shareCollusion } from './partnerContractSystem.js';
-import { isFastFoward, getListPlayStatsSession, gainInfamy, gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion, getCurrentSuspicion, getCurrentInfamy, gainXP, gainClearedZoneCount, gainClearReward, processMissionResult } from './store.js';
+import { getListPlayStatsSession, gainInfamy, gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion, getCurrentSuspicion, getCurrentInfamy, gainXP, gainClearedZoneCount, gainClearReward, processMissionResult } from './store.js';
 import { LOCATION_ID, CONTRACT_TYPE, CHAT_TRIGGERS, TYPE_CHANGE_BANKROLL } from './constants.js'
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
 import { zones } from './zone.js';
@@ -72,9 +72,10 @@ export class GameEngine {
     this.isMonitoring = isMonitoring;
     this.isDeathmatch = isDeathmatch;
     this.myTurn = false;
-    // [FIX] Initialize players after all properties are set
-    this.players = this.initializePlayers(playerClass, tableSize);
+    this.waitingTriggered = false; // [NEW] Track if waiting dialogue already triggered this turn
+    this.bigPotTensionTriggered = false; // [NEW] Track if big pot tension already triggered this hand
     // this.partners = [];
+    this.players = this.initializePlayers(playerClass, tableSize);
   }
 
   // Getter for backward compatibility / easier access
@@ -461,7 +462,8 @@ export class GameEngine {
     this.board = [];
     this.potManager.resetHand();
     this.playersActedCount = 0;
-    this.preflopRaises = 0;
+    this.waitingTriggered = false;
+    this.bigPotTensionTriggered = false;
     this.currentStreetRaises = 0; // [FIX] Reset raises for new hand
     this.aggressor = null;
     this.actionHistory = []; // [v3.0] Reset history for new hand
@@ -637,6 +639,11 @@ export class GameEngine {
         eventAdaptor.call({ player, amount, pot: this.pot, street: this.state });
       }
     }
+    // [NEW] Store last action info for showdown analysis (especially for Hero Call / Bluff check)
+    player.lastActionStreet = this.state;
+    player.lastActionEquity = player.currentEquity || 0; // Set by aiEngine or gameEngine
+    // player.lastActionPotOdds = (engine && engine.pot > 0) ? (amount / (engine.pot + amount)) : 0;
+
     return raised;
   }
 
@@ -662,9 +669,11 @@ export class GameEngine {
     if (player.isHuman) {
       this.stopTurnTimer();
     }
-    // this.mentor
+    const activePlayersCount = this.players.filter(p => !p.isFolded && !p.isEliminated).length;
+    const isHeadsUp = activePlayersCount === 2;
+
     if (action.type === 'fold') {
-      if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.FOLD_FOR_PLAYER, "", 0, this)
+      if (player.isMe && this.mentor && this.mentor.isFolded && isHeadsUp && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.FOLD_FOR_PLAYER, "", 0, this)
       player.isFolded = true;
 
       eventAdaptor.fold({ player, amount: player.totalWagered, pot: this.pot, board: this.board, street: this.state, players: this.players });
@@ -676,18 +685,18 @@ export class GameEngine {
       if (diff > 0) {
         action.type = 'call';
         audioManager.playSFX('puti-n-chip');
-        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CALL_FOR_PLAYER, "", 0, this);
+        if (player.isMe && this.mentor && this.mentor.isFolded && isHeadsUp && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CALL_FOR_PLAYER, "", 0, this);
       } else {
         action.type = 'check';
         audioManager.playSFX('check');
-        if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CHECK_FOR_PLAYER, "", 0, this);
+        if (player.isMe && this.mentor && this.mentor.isFolded && isHeadsUp && Math.random() < 0.3) chatAI(this.mentor, CHAT_TRIGGERS.CHECK_FOR_PLAYER, "", 0, this);
       }
 
     } else if (action.type === 'raise' || action.type === 'bet' || action.type === 'all_in') {
       const diff = action.amount - player.currentBet;
       const raised = this.placeBet(player, diff);
       // [FIX] Ensure stats exist
-      if (player.isMe && this.mentor && this.mentor.isFolded && Math.random() < 0.3) {
+      if (player.isMe && this.mentor && this.mentor.isFolded && isHeadsUp && Math.random() < 0.3) {
         if (action.type === 'all_in') {
           chatAI(this.mentor, CHAT_TRIGGERS.ALL_IN_FOR_PLAYER);
         } else {
@@ -753,6 +762,13 @@ export class GameEngine {
 
     player.lastDialogue = action.dialogue || displayAction + '.';
     player.lastThought = action.insight;
+
+    // [NEW] Store AI-calculated odds/equity for showdown triggers (Hero Call / Bluff Caught)
+    if (!player.isHuman) {
+      player.lastActionPotOdds = action.potOdds || 0;
+      player.lastActionEquity = action.estimatedEquity || 0;
+    }
+
     if (player.dialogueTimeoutId) {
       clearTimeout(player.dialogueTimeoutId);
     }
@@ -798,6 +814,7 @@ export class GameEngine {
       preflopRaises: this.preflopRaises
     });
     if (!this.runoutInProgress) {
+      this.waitingTriggered = false; // Reset waiting trigger for next player
       await this.moveToNextPlayer();
       // processTurns is called inside moveToNextPlayer
     }
@@ -1002,27 +1019,41 @@ export class GameEngine {
     } else {
       const isHuge = this.pot > (this.bb * 40);
       // Process AI reactions and Tilt (Tilt only changes if they chat)
-      if (this.street !== 'PREFLOP') {
-        this.players.forEach(p => {
-          // Skip Humans, Folded players, and Eliminated players
-          if (p.isHuman || p.isFolded || p.isEliminated) return;
+      this.players.forEach(p => {
+        // Skip Humans, Folded players, and Eliminated players
+        if (p.isHuman || p.isFolded || p.isEliminated) return;
 
-          const isBestWinner = bestWinnersList.includes(p.id);
-          const chatPercentage = (isHuge ? 0.6 : 0.3) + (p.isDrunken ? 0.3 : 0.0);
+        const isBestWinner = bestWinnersList.includes(p.id);
+        const chatPercentage = (isHuge ? 0.6 : 0.3) + (p.isDrunken ? 0.3 : 0.0);
 
-          if (Math.random() < chatPercentage) {
-            if (isBestWinner) {
-              chatAI(p, isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL, "", 0, this);
-              // Decrease tilt based on how much they actually won
-              p.tilt = Math.max(0, p.tilt - Math.round(maxWinAmount / this.bb));
-            } else {
-              chatAI(p, isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL, "", 0, this);
-              // Increase tilt based on the total pot they lost out on
-              p.tilt = Math.min(100, p.tilt + Math.round(this.pot / this.bb * 0.5));
+        // [NEW] Check for WIN_HERO_CALL and BLUFF_CAUGHT
+        let specificTrigger = null;
+        if (this.state === 'SHOWDOWN' && !withoutShowdownEvent) {
+          // 1. WIN_HERO_CALL: NPC called on river with low equity vs pot odds and won
+          if (isBestWinner && p.lastActionStreet === 'RIVER' && p.lastActionPotOdds > 0) {
+            if (p.lastActionEquity < p.lastActionPotOdds) {
+              specificTrigger = CHAT_TRIGGERS.WIN_HERO_CALL;
             }
           }
-        });
-      }
+          // 2. BLUFF_CAUGHT: NPC was aggressor on river with low equity and lost
+          if (!isBestWinner && p.id === this.aggressor && p.lastActionStreet === 'RIVER' && p.lastActionEquity <= 0.3) {
+            specificTrigger = CHAT_TRIGGERS.BLUFF_CAUGHT;
+          }
+        }
+
+        if (specificTrigger || Math.random() < chatPercentage) {
+          const trigger = specificTrigger || (isBestWinner ? (isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL) : (isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL));
+          chatAI(p, trigger, "", 0, this);
+
+          if (isBestWinner) {
+            // Decrease tilt based on how much they actually won
+            p.tilt = Math.max(0, p.tilt - Math.round(maxWinAmount / this.bb));
+          } else {
+            // Increase tilt based on the total pot they lost out on
+            p.tilt = Math.min(100, p.tilt + Math.round(this.pot / this.bb * 0.5));
+          }
+        }
+      });
     }
 
     // Process Human Player Results (XP, Suspicion)
@@ -1145,29 +1176,25 @@ export class GameEngine {
     audioManager.play();
   }
 
-  async checkBusted(bestWinner, isConfiscation = false) {
+  async checkBusted(bestWinner) {
     // 1. Bankrupt Players
     this.players.forEach((p, index) => {
       if (p.isEliminated === true && !p.isHuman && Math.random() < 0.3) {
         const newPlayer = this.createAIPlayer(p.id);
         if (!newPlayer) return;
         this.players.splice(index, 1, newPlayer);
+        console.log(`[GAME] Empty seat filled by ${newPlayer.name}`);
+        chatAI(newPlayer, CHAT_TRIGGERS.GAME_START); // Say hi
         p = newPlayer; // update local reference
-
         const me = this.players.find(pl => pl.isMe);
         if (me && p.class && p.class.id) {
           recordPlayStatsSession(me, PLAY_RECORD_STATS_TYPE.MET_ENEMY, { enemyClass: p.class.id });
         }
-
-        console.log(`[GAME] Empty seat filled by ${p.name}`);
-        chatAI(p, CHAT_TRIGGERS.GAME_START); // Say hi
       }
       if (p.chips <= 0 && !p.isEliminated) {
         console.log(`[GAME] ${p.name} eliminated.`);
-
         // Handle Generic Bust Event (Stats, Item Effects)
         eventAdaptor.bust(p, bestWinner, this.locationId, this.inviteId);
-
         // [AI CHAT] Self Elimination
         if (p.isHuman) {
           const buyInSuccess = this.processBuyIn(p, true);
@@ -1177,12 +1204,12 @@ export class GameEngine {
           }
         } else {
           eventAdaptor.bustEnemy(p, bestWinner);
-          chatAI(p, CHAT_TRIGGERS.SELF_ELIMINATED);
+          chatAI(p, CHAT_TRIGGERS.ELIMINATED_SELF);
         }
         p.isEliminated = true;
         if (bestWinner && !bestWinner.isMe) chatAI(bestWinner, CHAT_TRIGGERS.ELIMINATED_ENEMY);
         // Handle Human Bankruptcy
-        if (p.isHuman && !this.isConfiscation) { // only popup when you normally lose
+        if (p.isHuman) { // only popup when you normally lose
           this.gameOver = true;
           audioManager.enableTensionMode();
           this.winnerId = bestWinner ? bestWinner.id : 'cpu';
@@ -1192,7 +1219,6 @@ export class GameEngine {
         }
       }
     });
-
     // 3. Check for Victory (Only Human Remains)
     const lastSurvior = this.players.filter(p => !p.isEliminated)
     if (lastSurvior.length === 1) {
@@ -1245,16 +1271,31 @@ export class GameEngine {
     this.board.push(this.deck.pop());
     this.state = 'TURN';
     audioManager.playSFX('card-dealt&fold');
-    // eventAdaptor.startStreet(this.state); // Moved to nextStreet
+
   }
   dealRiver() {
     this.deck.pop();
     this.board.push(this.deck.pop());
     this.state = 'RIVER';
     audioManager.playSFX('card-dealt&fold');
-    // eventAdaptor.startStreet(this.state); // Moved to nextStreet
   }
+  checkEnteredBigPotTension() {
+    if (this.bigPotTensionTriggered) return;
 
+    if (this.pot > this.bb * 100) {
+      this.bigPotTensionTriggered = true;
+      audioManager.enableTensionMode();
+
+      const activePlayers = this.players.filter(p => !p.isFolded && !p.isEliminated);
+      if (activePlayers.length === 2) {
+        const activeNPCs = activePlayers.filter(p => !p.isHuman);
+        if (activeNPCs.length > 0) {
+          const picker = activeNPCs[Math.floor(Math.random() * activeNPCs.length)];
+          chatAI(picker, CHAT_TRIGGERS.BIG_POT_TENSION, "", 0, this);
+        }
+      }
+    }
+  }
   // --- All-In Showdown Logic ---
 
   async checkAllInCondition() {
@@ -1307,7 +1348,7 @@ export class GameEngine {
       }
     });
 
-    audioManager.enableTensionMode();
+
     calculateEquity(this.players, this.board);
     // Notify System/UI
     // EventAdaptor.allInModeActivated(); // If exists
@@ -1317,11 +1358,12 @@ export class GameEngine {
   async runNextStep() {
     if (this.checkSkipAction()) return;
     await sleep(1500); // 1.5s delay
+
     console.log(`[RUNOUT] Step processing... State: ${this.state}`);
 
     // If we are still in runout mode
     if (!this.runoutInProgress) return;
-
+    this.checkEnteredBigPotTension();
     if (this.state === 'PREFLOP') {
       eventAdaptor.endStreet(this.state);
       this.dealFlop();
@@ -1389,6 +1431,7 @@ export class GameEngine {
       await saveStore();
       audioManager.pause();
       if (result === GAME_RESULT_CODE.WIN_BIG) audioManager.playSFX('end-session-bigwin');
+      else if (result === GAME_RESULT_CODE.WIN_MEDIUM) audioManager.playSFX('end-session-midwin');
       else audioManager.playSFX('end-session')
       window.dispatchEvent(new CustomEvent('trigger-cashout', { detail: { isForceExit } }));
     } else console.warn('[GAME] cashOut failed');
@@ -1466,6 +1509,18 @@ export class GameEngine {
       }
 
       player.timeBankRemaining -= 0.1;
+
+      // [NEW] WAITING Trigger: Play takes > 10s and only 2 players left in pot
+      if (!this.waitingTriggered && player.isHuman && player.timeBankRemaining < (player.maxTimeBank - 10)) {
+        const activePlayers = this.players.filter(p => !p.isFolded && !p.isEliminated);
+        if (activePlayers.length === 2) {
+          const npc = activePlayers.find(p => !p.isHuman);
+          if (npc) {
+            chatAI(npc, CHAT_TRIGGERS.WAITING, "", 0, this);
+            this.waitingTriggered = true;
+          }
+        }
+      }
 
       if (player.timeBankRemaining <= 0) {
         this.handleTimeout(player);

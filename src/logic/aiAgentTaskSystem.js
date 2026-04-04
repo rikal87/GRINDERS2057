@@ -1,10 +1,11 @@
 
-import { store, getPlayStatsCount, gainBankroll, getCurrentLT, gainLT, getCurrentBankroll, getAgent, getLocalizedText } from './store';
+import { store, getPlayStatsCount, gainBankroll, getCurrentLT, gainLT, getCurrentBankroll, getAgent, getLocalizedText, getEnemyBustCount, getEnemyMetCount, } from './store';
 import { sendMessage, MESSAGE_TYPE } from './messageSystem';
 import { AI_TASK_DATA, TASK_EFFECT_TYPE } from './aiAgentTaskData';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
 import { zones } from './zone';
 import { TYPE_CHANGE_BANKROLL } from './constants.js'
+import { PLAY_RECORD_STATS_TYPE } from './playRecordStats';
 // Task Definitions
 // Logic to process tasks every game tick (e.g. hourly)
 // Actually we can process minutely, but probability is per hour.
@@ -150,7 +151,7 @@ export const processAiTasks = () => {
                 finalAmount = Math.floor(Math.random() * (max - min + 1)) + min;
               }
               gainBankroll(finalAmount, TYPE_CHANGE_BANKROLL.AGENT_TASK);
-              sendMessage(MESSAGE_TYPE.REWARD, 'Agent Work Profit', `[${taskDef.name}] Generated ${finalAmount.toLocaleString()} CR.`, [], 'System', 60);
+              sendMessage(MESSAGE_TYPE.FINANCE, 'Agent Work Profit', `[${taskDef.name}] Generated ${finalAmount.toLocaleString()} CR.`, [], 'System', 60);
             }
           }
         } else {
@@ -312,9 +313,12 @@ const canTaskFitInSlot = (taskTier, slotType) => {
 
 export const isTaskUnlocked = (taskDef) => {
   if (!taskDef.unlock) return true; // No requirement, implicitly unlocked
-
   const { type, count, id, amount, credit } = taskDef.unlock;
   switch (type) {
+    case PLAY_RECORD_STATS_TYPE.BUST_ENEMY:
+      return getEnemyBustCount(id) >= (amount || count);
+    case PLAY_RECORD_STATS_TYPE.MET_ENEMY:
+      return getEnemyMetCount(id) >= (amount || count);
     default: return getPlayStatsCount(type) >= (amount || count);
   }
 };

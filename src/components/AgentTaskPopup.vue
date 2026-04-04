@@ -168,6 +168,11 @@ const durationBonus = computed(() => {
   const planData = agent.model?.price_plan[agent.price_plan_idx];
   return planData?.duration_bonus || 0;
 });
+const cooldownBonus = computed(() => {
+  const agent = store.aiAgent;
+  const planData = agent.model?.price_plan[agent.price_plan_idx];
+  return planData?.cooldown_bonus || 0;
+});
 
 const formatMinutes = (mins) => {
   if (!mins) return 'NONE';

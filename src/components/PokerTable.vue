@@ -2,7 +2,7 @@
   <div v-for="(p, idx) in engine.players" :key="p.id" class="player-seat" :class="[`max${engine.tableSize}`, getSeatClass(idx), {
     // 'folded': p.isFolded,
     'winner-glow': showShowdown && isWinner(p.id)
-  }]">
+  }]" :style="{ filter: staminaBlur > 0 ? `blur(${staminaBlur}px)` : '' }">
 
     <div class="dealer-btn" v-if="engine.dealerIndex === idx">D</div>
     <!-- <div class="chip-stack"> -->
@@ -89,7 +89,7 @@
       <span class="prefix">>></span> {{ p.lastThought }}
     </div>
   </div>
-  <div class="poker-table" v-if="engine" :style="tableStyle">
+  <div class="poker-table" v-if="engine" :style="tableStyleWithBlur">
     <!-- Pot Display (Center) -->
     <div class="center-area">
       <div class="pot-display">
@@ -134,7 +134,7 @@
   </div>
 
   <!-- Move replay-trigger here to ensure it's on top of everything -->
-  <div class="replay-trigger" @click="$emit('openHistory')">
+  <div class="replay-trigger" @click="$emit('openHistory')" :style="{ filter: staminaBlur > 0 ? `blur(${staminaBlur}px)` : '' }">
     <span class="icon">🗘</span>
     <span class="label">HISTORY</span>
   </div>
@@ -338,6 +338,20 @@ const tableStyle = computed(() => {
     };
   }
   return {}; // Use CSS defaults
+});
+
+const staminaBlur = computed(() => {
+  const s = store.stamina;
+  if (s >= 25) return 0;
+  return ((25 - s) / 25) * 5;
+});
+
+const tableStyleWithBlur = computed(() => {
+  const style = { ...tableStyle.value };
+  if (staminaBlur.value > 0) {
+    style.filter = `blur(${staminaBlur.value}px)`;
+  }
+  return style;
 });
 
 // [MOVED] getEffectDesc to ControlPanel

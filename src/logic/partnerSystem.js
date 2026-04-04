@@ -332,7 +332,7 @@ export const simulatePartnersNetWorth = (partner) => {
   // Deduct 0.15% of bankroll every simulation cycle (approx. 1 in-game hour)
   if (partner.status !== PARTNER_STATUS.GAMBLING) {
     if (partner.bankroll > 0) {
-      const expenses = Math.max(Math.ceil(partner.bankroll * 0.0015), 100);
+      const expenses = Math.ceil(partner.bankroll * 0.0015);
       gainPartnerBankroll(partner, -expenses, TYPE_CHANGE_BANKROLL.OTHER);
     }
   } else if (partner.status === PARTNER_STATUS.GAMBLING) {
@@ -354,7 +354,7 @@ export const simulatePartnersNetWorth = (partner) => {
       let netWorthChange = 0;
       // 승리 시
       if (Math.random() < partner.W$SD) {
-        netWorthChange = Math.ceil(95 * volatility); // rake
+        netWorthChange = Math.ceil(97 * volatility); // rake
       } else { // 패배 시
         netWorthChange = -Math.ceil(100 * volatility);
       }

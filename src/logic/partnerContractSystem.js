@@ -131,6 +131,12 @@ export const breakContract = (partnerId, type) => {
   contract.active = false;
   contract.profitTotal = 0; // reset profit total
   contract.cooldown = contract.initCooldown;
+  if (contract.type === CONTRACT_TYPE.BAILOUT) {
+    partner.debt += contract.debt;
+    contract.debt = 0;
+    contract.activeRepaymentPeriod = false;
+    contract.debtRepaymentDue = 0;
+  }
   return true;
 }
 export const createContractObject = (type, ratio) => {
@@ -205,6 +211,7 @@ export const triggerDebtRepaymentDue = (partner = null, contract = null) => {
   if (contract.debtRepaymentDue > 0) contract.debtRepaymentDue--
   else {
     partner.debt += contract.debt;
+    contract.debt = 0;
     contract.activeRepaymentPeriod = false;
   }
 }
@@ -222,7 +229,6 @@ export const triggerBankruptcyRelief = (partner = null, ratio = 0.3, contract = 
   contract.debt = toPlayer ? -amount : amount
   gainBankroll(amount, TYPE_CHANGE_BANKROLL.DEBT_REPAYMENT);
   gainPartnerBankroll(partner, -amount, TYPE_CHANGE_BANKROLL.CONTRACT);
-  console.info('partner', partner)
   audioManager.playSFX('ATM');
   if (!toPlayer) {
     const getEvent = EVENT_ID[partner.id.toUpperCase()]['BANKRUPT_ACCEPT_RESCUE' + (partner.relationship < 200 ? '_LOW_RELATIONSHIPSHIP' : '')]

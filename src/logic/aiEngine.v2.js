@@ -46,6 +46,7 @@ export const getAIAction = (player, engine) => {
     insight: decision.insight || "",
     dialogue: decision.dialogue || ""
   };
+  player.currentEquity = decision.estimatedEquity || 0; // [NEW] Store for showdown reaction logic
 
   // Safety Layer
   if (action.type === 'raise') {
@@ -64,16 +65,37 @@ export const getAIAction = (player, engine) => {
     action.type = 'all_in';
   }
 
-  if (Math.random() < 0.25 + (player.isDrunken ? 0.25 : 0)) {
+  const activePlayersCount = engine.players.filter(p => !p.isFolded && !p.isEliminated).length;
+  const isHeadsUp = activePlayersCount === 2;
+
+  if (isHeadsUp && Math.random() < 0.25 + (player.isDrunken ? 0.25 : 0)) {
     let dialogueTrigger = action.type.toUpperCase();
     if (dialogueTrigger === 'CALL' && (engine.currentRoundBet - player.currentBet) === 0) dialogueTrigger = 'CHECK';
-    action.dialogue = getAIChatDialogue(dialogueTrigger, player.name, action.insight);
+
+    const eq = decision.estimatedEquity || 0;
+    const raises = decision.raises || 0;
+
+    if (dialogueTrigger === 'CALL') {
+      if (eq < 0.4) dialogueTrigger = 'CALL_WEAK';
+      else if (eq >= 0.7) dialogueTrigger = 'CALL_GOOD';
+    } else if (dialogueTrigger === 'RAISE') {
+      // raises is engine.currentStreetRaises
+      if (raises > 1) dialogueTrigger = 'RERAISE'; // 4-bet+
+      else if (raises === 1) dialogueTrigger = 'RAISE'; // 3-bet or raise over bet
+      else if (engine.currentStreet !== 'PREFLOP') dialogueTrigger = 'BET'; // First bet
+    } else if (dialogueTrigger === 'FOLD') {
+      if (eq >= 0.6) dialogueTrigger = 'FOLD_STRONG';
+    } else if (dialogueTrigger === 'CHECK') {
+      if (decision.isIP) dialogueTrigger = 'CHECK_GOOD';
+    }
+
+    action.dialogue = getAIChatDialogue(dialogueTrigger, player.class?.id || player.name, action.insight);
   }
   if (engine.state === 'PREFLOP') action.delay /= 2;
   return action;
 };
 
-const getRankVal = c => '23456789TJQKA'.indexOf(c[0]);
+
 
 function getProbabilisticAction(player, engine) {
   const street = (engine.state || '').toUpperCase()
@@ -160,12 +182,19 @@ function getProbabilisticAction(player, engine) {
   const totalPotAfterCall = pot + callAmt;
   const potOdds = callAmt > 0 ? (callAmt / totalPotAfterCall) : 0;
 
-  // --- 2.5 Strategy Selection (Ported from v1) ---
+  // --- 2.5 Position & Strategy Selection ---
+  const getRelativePos = (idx) => {
+    const pos = (idx - dealerIdx + playerCount) % playerCount;
+    return pos === 0 ? playerCount : pos;
+  };
+  const lastActiveIdx = engine.players.reduce((maxIdx, p, idx) => {
+    if (p.isEliminated || p.isFolded) return maxIdx;
+    const pPos = getRelativePos(idx);
+    const maxPos = (maxIdx === -1) ? -1 : getRelativePos(maxIdx);
+    return pPos > maxPos ? idx : maxIdx;
+  }, -1);
+  const isIP = (playerIdx === lastActiveIdx);
   const isAggressor = (player.id === engine.aggressor);
-  const aggressorIdx = engine.players.findIndex(p => p.id === engine.aggressor);
-  const myPos = (playerIdx - dealerIdx + playerCount - 1) % playerCount;
-  const aggPos = (aggressorIdx - dealerIdx + playerCount - 1) % playerCount;
-  const isIP = myPos > aggPos;
 
   let strategy = "OPENER";
   if (callAmt > 0) {
@@ -453,6 +482,10 @@ function getProbabilisticAction(player, engine) {
     action,
     amount: action === 'raise' ? amount : (action === 'call' ? engine.currentRoundBet : 0),
     insight,
-    delay
+    delay,
+    estimatedEquity,
+    potOdds: potOdds,
+    isIP,
+    raises
   };
 }
