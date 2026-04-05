@@ -54,9 +54,7 @@ export const sendMessage = (type, title, body, actions = [], sender = 'System', 
     actions, // [{ label, actionType, payload }]
     expireAt: expireMinutes ? store.gameTime + (expireMinutes * 60 * 1000) : null // Treat expireMinutes as relative minutes
   };
-
   store.messages.unshift(msg);
-
   // Play notification sound if not spam (Debounced to prevent loud bursts)
   const now = Date.now();
   // Use a static property on sendMessage to track time across calls

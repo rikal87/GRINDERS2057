@@ -1,10 +1,10 @@
-
-import { store, gainBankroll, gainLT } from './store.js';
-import { evaluateHand } from './poker.js';
+import { evaluateHand, getSimpleHandCategory, analyzeBoardTexture, getStartingHandRank } from './poker.js';
 import { recoverStamina } from './staminaSystem.js';
 import { scheduleEvent, EVENT_ID } from './eventSystem.js';
+import { sendMessage, MESSAGE_TYPE } from './messageSystem.js';
+import { getLanguage, store, gainBankroll, gainLT, getGameTime } from './store.js';
 import { recordPlayStatsSession, PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
-import { PARTNER_ID, TYPE_CHANGE_BANKROLL, ITEM_EFFECT_ID, LOCATION_ID } from './constants.js';
+import { PARTNER_ID, TYPE_CHANGE_BANKROLL, ITEM_EFFECT_ID, LOCATION_ID, CONTRACT_TYPE } from './constants.js';
 
 const HAND_RANK_TO_STAT = {
   1: PLAY_RECORD_STATS_TYPE.WIN_WITH_HIGH_CARD,
@@ -90,7 +90,7 @@ export class EventAdaptor {
     console.info('gameOver', winnerId);
   }
   bustEnemy(player, bestWinner) {
-    recordPlayStatsSession(bestWinner, PLAY_RECORD_STATS_TYPE.BUST_ENEMY, { enemyClass: player.class.id });
+    recordPlayStatsSession(bestWinner, PLAY_RECORD_STATS_TYPE.BUST_ENEMY, { enemyClass: player.personaId });
     const effects = player.item?.effects || [];
     effects.forEach(e => {
       if (typeof e !== 'object' || !e.trigger) return;
@@ -110,10 +110,10 @@ export class EventAdaptor {
       }
     });
     // An NPC went bankrupt
-    if (player.id === PARTNER_ID.MAX) {
+    if (player.personaId === PARTNER_ID.MAX) {
       scheduleEvent(EVENT_ID.MAX.ELIMINATED, 5);
     }
-    if (player.id === PARTNER_ID.FLORENCE) {
+    if (player.personaId === PARTNER_ID.FLORENCE) {
       scheduleEvent(EVENT_ID.FLORENCE.ELIMINATED, 5);
     }
   }
@@ -323,11 +323,13 @@ export class EventAdaptor {
             player.isJoinPot = true;
           }
           recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.PFR);
-          if (preflopRaises === 2) {
+          if (preflopRaises === 2 && !player._d3b) {
             recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE._3BET);
+            player._d3b = true;
           }
-          if (preflopRaises >= 3) {
+          if (preflopRaises >= 3 && !player._d4b) {
             recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE._4BET_OR_MORE);
+            player._d4b = true;
           }
         }
         break;

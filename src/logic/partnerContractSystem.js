@@ -53,8 +53,8 @@ export const CONTRACT_TYPE_DESC_FIELD = {
 }
 export const CONTRACT_TYPE_DESC = {
   [CONTRACT_TYPE.COLLUSION]: {
-    desc_ko: '파트너와 사전에 계약된 비율로 수익을 나누기로 협의하고 같은 테이블에서 플레이합니다',
-    desc_en: 'You and your partner will share the profits according to the agreed-upon ratio. You can play together at the same table.',
+    desc_ko: '파트너와 사전에 계약된 비율로 세션 수익을 나누기로 협의하고 같은 테이블에서 플레이합니다',
+    desc_en: 'You and your partner will share the session profits according to the agreed-upon ratio. You can play together at the same table.',
     note_ko: '이 행위는 불법으로, 적발될 가능성이 있습니다. 적발시 가진 모든 바이인이 몰수됩니다.',
     note_en: 'This action is illegal and may be detected. If caught, all your buy-ins will be confiscated.',
   },
@@ -155,21 +155,23 @@ export const shareCollusion = (partnerId = null, yourNetWinnings = 0, partnerNet
   if (partner) {
     const contract = partner.contracts.find(c => c.type === CONTRACT_TYPE.COLLUSION && c.active);
     console.info('shareCollusion', partner, contract)
-    let yourShare = 0;
-    let partnerShare = 0;
-    if (isEvent) {
-      yourShare = partnerNetWinnings * 0.5;
-      partnerShare = yourNetWinnings * 0.5;
-      diffShare = Math.floor(partnerShare - yourShare); // if +: partner gain, if -: you gain
-    } else {
-      if (!contract) return 0;
-      yourShare = partnerNetWinnings * contract.ratio;
-      partnerShare = yourNetWinnings * contract.ratio;
-      diffShare = Math.floor(partnerShare - yourShare); // if +: partner gain, if -: you gain
-      contract.profitTotal += diffShare;
+    let myShareOfPartnerProfit = 0;
+    let partnerShareOfYourProfit = 0;
+    const ratio = isEvent ? 0.5 : (contract ? contract.ratio : 0);
+
+    if (isEvent || contract) {
+      myShareOfPartnerProfit = partnerNetWinnings * ratio;
+      partnerShareOfYourProfit = yourNetWinnings * ratio;
+      // [FIX] Sign alignment: Positive represents amount player GIVES to partner.
+      diffShare = Math.floor(partnerShareOfYourProfit - myShareOfPartnerProfit);
+      if (contract) {
+        contract.profitTotal += diffShare;
+      }
     }
-    gainBankroll(yourShare, TYPE_CHANGE_BANKROLL.COLLUSION);
-    gainPartnerBankroll(partner, partnerShare, TYPE_CHANGE_BANKROLL.COLLUSION);
+
+    // [FIX] Symmetrical transfer: diffShare is player's loss (partner's gain)
+    gainBankroll(-diffShare, TYPE_CHANGE_BANKROLL.COLLUSION);
+    gainPartnerBankroll(partner, diffShare, TYPE_CHANGE_BANKROLL.COLLUSION);
   };
   return diffShare;
 }
@@ -180,8 +182,7 @@ export const shareBenefitForPartners = (amount = 0) => {
   targetPartners.forEach((partner) => {
     partner.contracts.forEach((contract) => {
       if (contract.type === CONTRACT_TYPE.BENEFIT_SHARE && contract.active) {
-        const finalAmount = Math.floor(amount * contract.ratio);
-        sum += shareBenefit(partner, finalAmount, contract, false)
+        sum += shareBenefit(partner, amount, contract, false)
       }
     });
   });
@@ -193,7 +194,6 @@ export const shareBenefit = (partner = null, amount = 0, contract = null, toPlay
   gainPartnerBankroll(partner, finalAmount, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
   gainBankroll(-finalAmount, TYPE_CHANGE_BANKROLL.PARTNER_BENEFIT);
   contract.profitTotal += finalAmount;
-  console.log(`${partner.id} PARTNER_BENEFIT: ${finalAmount}`);
   partner.netWorthHistory.push({ time: getGameTime(), netWorth: partner.bankroll + finalAmount });
   return finalAmount;
 }

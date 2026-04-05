@@ -434,8 +434,10 @@ export const gainBankroll = (amount = 0, type = TYPE_CHANGE_BANKROLL.OTHER) => {
   store.bankroll = Math.max(0, store.bankroll + intAmount);
   store.session_net_history.push({ amount: intAmount, type, timestamp: Date.now() });
   if (store.session_net_history.length > 200) store.session_net_history.shift();
-  if (amount < 0) audioManager.playSFX('paybill');
-  else audioManager.playSFX('ATM');
+  if (![TYPE_CHANGE_BANKROLL.OTHER, TYPE_CHANGE_BANKROLL.BRIBE_DEALER].includes(type)) {
+    if (amount < 0) audioManager.playSFX('paybill');
+    else audioManager.playSFX('ATM');
+  }
   recordPlayStatsSessionForPlayer(type, { amount });
 }
 
@@ -512,7 +514,7 @@ export const processMissionResult = (player, result, engine) => {
   // Mission FREE_STREET_SHOP_WITH_MAX
   deleteMessage(inviteId);
   if (locationId === LOCATION_ID.FREE_STREET_SHOP_WITH_MAX) {
-    const client = engine.players.find(p => p.id === PARTNER_ID.MAX);
+    const client = engine.players.find(p => p.personaId === PARTNER_ID.MAX);
     console.info('client', client)
     if (!client) return;
     if (result.indexOf('WIN') !== -1) {
@@ -537,7 +539,7 @@ export const processMissionResult = (player, result, engine) => {
     }
   }
   if (locationId === LOCATION_ID.MICRO_WAREHOUSE_WITH_MAX) {
-    const client = engine.players.find(p => p.id === PARTNER_ID.MAX);
+    const client = engine.players.find(p => p.personaId === PARTNER_ID.MAX);
     console.info('client', client)
     if (!client) return;
     if (result.indexOf('WIN') !== -1) {
@@ -563,7 +565,8 @@ export const processMissionResult = (player, result, engine) => {
   }
   // Mission LOW_UNDERGROUND_CLUB_MEET_MAX
   if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_MEET_MAX) {
-    const client = engine.players.find(p => p.id === PARTNER_ID.MAX);
+    const client = engine.players.find(p => p.personaId === PARTNER_ID.MAX);
+    if (!client) return;
     if (result.indexOf('WIN') !== -1) {
       gainRelationship(client.id, 50);
       scheduleEvent(EVENT_ID.MAX.MAIN_STORY_1_2_MEET_AT_CLUB_SUCCESS, 15);
@@ -572,7 +575,8 @@ export const processMissionResult = (player, result, engine) => {
     }
   }
   if (locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_VIP_ROOM) {
-    const client = engine.players.find(p => p.id === PARTNER_ID.FLORENCE);
+    const client = engine.players.find(p => p.personaId === PARTNER_ID.FLORENCE);
+    if (!client) return;
     if (result.indexOf('WIN') !== -1) {
       gainRelationship(client.id, 50);
       scheduleEvent(EVENT_ID.FLORENCE.MAIN_STORY_2_8_HBD_UNDERGROUND_SUCCESS, 30);
@@ -597,6 +601,16 @@ if (typeof window !== 'undefined') {
     addMoney: (amount) => {
       gainBankroll(amount);
       console.log(`[CHEAT] Added ${amount} CR. Total: ${store.bankroll}`);
+    },
+    gainLevel: (level) => {
+      for (let i = 0; i < level; i++) {
+        const nextThreshold = getNextLevelThreshold();
+        gainXP({
+          isMe: true,
+          gainedXp: nextThreshold
+        });
+      }
+      console.log(`[CHEAT] Level set to ${level}`);
     },
     setLevel: (level) => {
       store.level = level;

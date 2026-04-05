@@ -1150,9 +1150,10 @@ footer {
   transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
   box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
   width: max-content;
-  max-width: 250px;
+  max-width: min(250px, 90vw);
   text-align: left;
   font-family: 'Share Tech Mono', 'Pretendard Std', monospace;
+  word-break: keep-all;
 }
 
 [data-tooltip]:hover::after {

@@ -1,4 +1,4 @@
-import { evaluateHand, getDrawCategory, analyzeBoardTexture, getHandCategory, getSimpleHandCategory, getStartingHandRankHeadsup, getStartingHandRank96Max } from './poker.js';
+import { evaluateHand, getDrawCategory, analyzeBoardTexture, getHandCategory, getSimpleHandCategory, getStartingHandRankHeadsup, getStartingHandRank96Max, getHandTierHeuristic } from './poker.js';
 
 export const getAIAction = (player, engine) => {
   let decision = getProbabilisticAction(player, engine);
@@ -110,14 +110,10 @@ function getProbabilisticAction(player, engine) {
     else if (handRank <= 55) estimatedEquity = 0.4;
     else if (handRank <= 80) estimatedEquity = 0.35;
     else if (handRank <= 100) estimatedEquity = 0.3;
-    else estimatedEquity = 0.25;
+    else estimatedEquity = 0.4; // NORMAL/WEAK base
 
-    if (isAdvanced) {
-      const distFromBtn = (dealerIdx - playerIdx + playerCount) % playerCount;
-      if (distFromBtn <= 1) estimatedEquity += 0.05;
-      else if (distFromBtn >= alivePlayers - 2) estimatedEquity -= 0.05;
-    }
-
+    player.handCategory = 'PRE_HAND';
+    player.handTier = getHandTierHeuristic(player.hand, [], 'PREFLOP');
   } else {
     const evaluation = evaluateHand([...player.hand, ...engine.board]);
     const handCategory = isAdvanced && street === 'RIVER' ? getHandCategory(player.hand, engine.board, evaluation).category : getSimpleHandCategory(player.hand, engine.board, evaluation);
@@ -132,15 +128,21 @@ function getProbabilisticAction(player, engine) {
     else if (handCategory === 'ACE_HIGH') estimatedEquity = .1;
     else if (handCategory === 'AIR') estimatedEquity = .05;
 
+    player.handCategory = handCategory;
+    player.handTier = getHandTierHeuristic(player.hand, engine.board, street, evaluation);
+
     const drawCategory = getDrawCategory(player.hand, engine.board);
     let drawBonus = 0;
     if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.7;
     else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.5;
     else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.3;
-    if (player.class.id.toUpperCase() === 'GAMBLER') drawBonus *= 1.2 // they like to draw bonus more 
+    if (player.personaId.toUpperCase() === 'GAMBLER') drawBonus *= 1.2 // they like to draw bonus more 
     if (AF >= 3) afMod = drawBonus;
     drawBonus *= (streetsLeft / 2);
     estimatedEquity = Math.max(estimatedEquity, drawBonus);
+
+    // Update tier if draw is strong
+    if (drawBonus >= 0.7) player.handTier = 'MONSTER_DRAW';
   }
 
   const totalPotAfterCall = pot + callAmt;
@@ -198,8 +200,8 @@ function getProbabilisticAction(player, engine) {
     // [v15.8] Garbage Raise Mitigation: Couple raiseProb with rangePower
 
     // Premium Safety (AK, JJ+ Protection)
-    if (estimatedEquity >= 0.7 && callAmt > 0 && raises <= 5) {
-      continueProb = Math.max(continueProb, 0.92);
+    if (estimatedEquity >= 0.7 && raises <= 5) {
+      continueProb = Math.max(continueProb, estimatedEquity >= 0.9 ? 1.0 : 0.98); 
     }
   } else {
     // [v16.9] Pure Equity + WTSD Personality Scaling
@@ -344,6 +346,9 @@ function getProbabilisticAction(player, engine) {
       // Aggressive persona: raise-or-fold only (no limping)
       if (rnd <= continueProb) {
         action = 'raise'; insight += ` (Raise: ${(raiseProb * 100).toFixed(0)}%)`;
+      } else if (['MONSTER', 'STRONG'].includes(player.handTier)) {
+        // [FIX] 강한 핸드인데 레이즈 확률에 실패했다면 최소한 콜(Limp)이라도 합니다 (폴드 방지)
+        action = 'call'; insight += ` (Fallback-Call: Strong)`;
       } else {
         action = 'fold'; insight += ` (Prob-Fold: ${((1 - continueProb) * 100).toFixed(0)}%)`;
       }
@@ -438,6 +443,8 @@ function getProbabilisticAction(player, engine) {
     estimatedEquity,
     potOdds: potOdds,
     isIP,
-    raises
+    raises,
+    handCategory: player.handCategory,
+    handTier: player.handTier
   };
 }

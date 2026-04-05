@@ -30,7 +30,7 @@
               <div class="btn-content">BRIBE_DEALER</div>
               <div class="btn-decoration">{{ getRefreshCost().toLocaleString() }} CR</div>
             </button>
-            <div class="bribe-level" v-if="store.shop.manualRefreshCount > 0">
+            <div class="bribe-level">
               BRIBE_LEVEL: <span class="level-val">{{ store.shop.manualRefreshCount }}</span>
             </div>
           </div>
@@ -239,4 +239,3 @@ const handleManualRefresh = () => {
 @import '../styles/components/Shop-layout-desktop.css';
 @import '../styles/components/Shop-layout-mobile.css';
 </style>
-

@@ -1,14 +1,20 @@
 import { calculateEquity, createDeck } from './poker.js';
 import { getAIAction } from './aiEngine.v2.js';
+import { applyPartnerCollusion, handlePartnerCollusionSignals, validateCollusionCompliance, initPartnerCollusion } from './collusionActionProcessor.js';
 import { chatAI } from './AIChatSystem.js';
 import { getAdvancedAIAction } from './aiEngineAdvanced.js';
 import { CLASSES_PARTNER } from './persona.js'
+import { PlayerFactory } from './playerFactory.js';
+import { HandHistoryManager } from './HandHistoryManager.js';
 import { audioManager } from './audioManager.js';
 import { PotManager } from './PotManager.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
-import { getPartner, getJoinedPartners } from './partnerSystem.js';
+import { getJoinedPartners } from './partnerSystem.js';
 import { shareBenefitForPartners, shareCollusion } from './partnerContractSystem.js';
-import { getListPlayStatsSession, gainInfamy, gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion, getCurrentSuspicion, getCurrentInfamy, gainXP, gainClearedZoneCount, gainClearReward, processMissionResult } from './store.js';
+import {
+  getListPlayStatsSession, gainInfamy, gainXPEstimate, store, saveStore, gainBankroll, gainSuspicion,
+  getCurrentSuspicion, getCurrentInfamy, gainXP, gainClearedZoneCount, gainClearReward, processMissionResult
+} from './store.js';
 import { LOCATION_ID, CONTRACT_TYPE, CHAT_TRIGGERS, TYPE_CHANGE_BANKROLL } from './constants.js'
 import { CLASSES, CLASSES_ENEMY, CLASSES_ENEMY_BOSS } from './persona.js';
 import { zones } from './zone.js';
@@ -55,9 +61,7 @@ export class GameEngine {
     this.lastTriggeredItem = null; // Visual feedback
     // NEW: Delegate money logic
     this.potManager = new PotManager(this.rake, this.rakeCap);
-    this.handHistory = [];
-    this.currentHandHistory = null;
-    this.actionHistory = []; // [v3.0] Structured history for AI analysis
+    this.historyManager = new HandHistoryManager();
     this.processingAI = false;
     this.locationLV = locationLV;
     this.turnTimer = null;
@@ -80,118 +84,15 @@ export class GameEngine {
   }
 
   // Getter for backward compatibility / easier access
-  // get pot() { return this.potManager.pot; } // Removed for direct property access
+  get handHistory() { return this.historyManager.handHistory; }
+  get currentHandHistory() { return this.historyManager.currentHandHistory; }
+  get actionHistory() { return this.historyManager.actionHistory; }
   get currentRoundBet() { return this.potManager.currentRoundBet; }
   // if (Math.random() < 0.25) chatAI(aiPlayer, CHAT_TRIGGERS.GAME_START, "", 0, this)
   initializePlayers(humanClass, size) {
     const players = [];
 
-    // [FIX] Calculate buy-in multiplier BEFORE object initialization to avoid NaN
-    const item = store.equippedItem;
-    const baseMultiplier = 1;
-    const itemBonus = (item && item.effects) ? item.effects.reduce((sum, e) => (e.id === 'buy_in_multiply') ? sum + e.value : sum, 0) : 0;
-    const buyInMultiply = baseMultiplier + itemBonus;
-
-    const YOU = {
-      id: 'player',
-      name: 'YOU',
-      class: CLASSES[humanClass],
-      hand: [],
-      chips: Math.floor(this.buyIn * buyInMultiply), // Will be validated against bankroll in constructor or UI
-      initialChips: Math.floor(this.buyIn * buyInMultiply),
-      currentBet: 0,
-      totalWagered: 0,
-      isFolded: false,
-      isHuman: true,
-      isMe: true,
-      // buyInMultiply: 1, // [FIX] Default multiplier for human
-      gainedXp: 0,
-      effectCooldowns: {},
-      item: store.equippedItem,
-      tempXPBonus: 0.0,
-      buyInLimit: this.buyInLimit,
-      totalBuyIn: 0,
-      stats: {
-        handsPlayed: 0,
-        vPIPCount: 0,
-        pfrCount: 0,
-        threeBetCount: 0,
-        threeBetOppCount: 0,
-        fourBetOrMoreCount: 0,
-        fourBetOppCount: 0,
-        facedFlopBet: 0,
-        foldedToFlopBet: 0,
-        aggressiveActions: 0, // Bet + Raise
-        calls: 0,
-        get vPIP() { return this.handsPlayed > 0 ? (this.vPIPCount / this.handsPlayed) * 100 : 0; },
-        get pfr() { return this.handsPlayed > 0 ? (this.pfrCount / this.handsPlayed) * 100 : 0; },
-        get threeBet() { return this.threeBetOppCount > 0 ? (this.threeBetCount / this.threeBetOppCount) * 100 : 0; },
-        get fourBetOrMore() { return this.fourBetOppCount > 0 ? (this.fourBetOrMoreCount / this.fourBetOppCount) * 100 : 0; },
-        get foldToFlop() { return this.facedFlopBet > 0 ? (this.foldedToFlopBet / this.facedFlopBet) * 100 : 0; },
-        get aggressionFactor() { return this.calls > 0 ? this.aggressiveActions / this.calls : (this.aggressiveActions > 0 ? 10 : 0); } // Infinite if no calls but has raises
-      },
-      get canReadSynapses() {
-        if (!this.item || !this.item.effects) return false;
-        // Fix: Find the effect object first, then check isActivated
-        const effect = this.item.effects.find(e => e.id === 'synapse_reading');
-        return effect ? effect.isActivated : false;
-      },
-      // get chipRounding() {
-      //   if (!this.item || !this.item.effects) return 1;
-      //   const bonus = this.item.effects.reduce((sum, e) => (e.id === 'chip_rounding') ? sum + e.value : sum, 0);
-      //   return Math.pow(10, bonus);
-      // },
-      get rakeReduction() {
-        if (!this.item || !this.item.effects) return 0;
-        const reductionEffect = this.item.effects.reduce((sum, e) => {
-          const effectObj = e.effect || (typeof e === 'object' ? e : null);
-          if (effectObj && effectObj.id === ITEM_EFFECT_ID.RAKE_REDUCTION) {
-            return sum + (effectObj.value || 0);
-          }
-          if (e === ITEM_EFFECT_ID.RAKE_REDUCTION) {
-            return sum + 0.25; // Default T2 reduction value
-          }
-          return sum;
-        }, 0);
-        return reductionEffect;
-      },
-      get infamy_boost() {
-        if (!this.item || !this.item.effects) return 0;
-        return this.item.effects.reduce((sum, e) => {
-          const id = e.id || (typeof e === 'string' ? e : null);
-          return (id === 'infamy_boost') ? sum + (e.value || 0.1) : sum;
-        }, 0);
-      },
-      get born_villain() {
-        if (!this.item || !this.item.effects) return 0;
-        return this.item.effects.reduce((sum, e) => {
-          const id = e.id || (typeof e === 'string' ? e : null);
-          return (id === 'born_villain') ? sum + (e.value || 0.1) : sum;
-        }, 0);
-      },
-      // get bonusXpToGoldRatio() {
-      // if (!this.item || !this.item.effects) return 0;
-      // const transGoldToXpRatio = this.item.effects.reduce((sum, e) => (e.id === 'golden_touch') ? sum + e.value : sum, 0);
-      // return Math.min(1, transGoldToXpRatio);
-      // },
-
-      get maxTimeBank() {
-        const base = 15; // Default 15 seconds
-        if (!this.item || !this.item.effects) return base;
-        const bonus = this.item.effects.reduce((sum, e) => (e.id === 'time_bank') ? sum + e.value : sum, 0);
-        return base + bonus;
-      },
-      get buyInMultiply() {
-        const base = 1; // Default x1
-        if (!this.item || !this.item.effects) return base;
-        const bonus = this.item.effects.reduce((sum, e) => (e.id === 'buy_in_multiply') ? sum + e.value : sum, 0);
-        return base + bonus;
-      },
-
-      timeBankRemaining: 15, // Initial value
-      isEliminated: false,
-      // Helper methods for skills
-    }
+    const YOU = PlayerFactory.createHumanPlayer(this, humanClass);
     this.processBuyIn(YOU)
     players.push(YOU)
 
@@ -230,7 +131,7 @@ export class GameEngine {
         const validContract = partner.contracts.find(contract => contract.type === CONTRACT_TYPE.COLLUSION && contract.active);
         const template = CLASSES_PARTNER.find(e => e.id === partner.id)
         if (template && validContract) {
-          enemiesToPlace.push({ ...template });
+          enemiesToPlace.push({ ...template, contracts: partner.contracts });
         } else {
           console.info(`[GAME] Partner ${partner.name} is not with you`);
         }
@@ -345,117 +246,11 @@ export class GameEngine {
   }
 
   createAIPlayerFromTemplate(villanTemplate, customId) {
-    const villan = { ...villanTemplate };
-    console.info('vt', villanTemplate)
-    console.info('villan', villan);
-
-    // Apply Infamy Modifiers
-    if (this.infamy >= 60) {
-      villan.chipMultiply = (villan.chipMultiply || 1) * 1.5;
-      villan.isAdvanced = true;
-    }
-
-    if (this.infamy >= 40) {
-      villan.vPIP = (villan.vPIP || 1) * 0.7;
-      villan.WTSD = (villan.WTSD || 1) * 0.7;
-      villan.initialVPIP = villan.vPIP;
-      villan.initialWTSD = villan.WTSD;
-    }
-
-    if (this.infamy >= 20) {
-      // NPC AF = ((3 - {NPC 초기 AF} ) * 0.5) + {NPC 초기 AF} 로 보정.
-      const baseAF = villan.AF || 1.0;
-      villan.AF = ((2.5 - baseAF) * 0.5) + baseAF;
-      villan.initialAF = villan.AF;
-    }
-    const chips = this.buyIn * villan.chipMultiply;
-    const genId = customId || `cpu_${Math.random().toString(36).substr(2, 5)}`;
-
-    const aiPlayer = {
-      id: villan.isPartner ? villan.id : genId,
-      name: `${villan.name}`,
-      tempXPBonus: 0,
-      class: villan,
-      hand: [],
-      chips: chips,
-      initialChips: chips,
-      initialVPIP: villan.vPIP,
-      initialWTSD: villan.WTSD,
-      initialAF: villan.initialAF,
-      currentBet: 0,
-      totalWagered: 0,
-      isFolded: false,
-      isHuman: false,
-      isPartner: villan.isPartner || false,
-      isAdvanced: villan.isAdvanced || false,
-      isBoss: villan.isBoss || false,
-      item: null,
-      maxTimeBank: 15,
-      showHoleCards: false,
-      timeBankRemaining: 15,
-      tilt: 0,
-      isDrunken: villan.isDrunken || false,
-      isEliminated: false,
-      stats: {
-        handsPlayed: 0,
-        vPIPCount: 0,
-        pfrCount: 0,
-        threeBetCount: 0,
-        threeBetOppCount: 0,
-        fourBetOrMoreCount: 0,
-        fourBetOppCount: 0,
-        facedFlopBet: 0,
-        foldedToFlopBet: 0,
-        aggressiveActions: 0,
-        calls: 0,
-        check: 0,
-        fold: 0,
-        all_in: 0,
-        win: 0,
-        lose: 0,
-        bust: 0,
-        bankrupt: 0,
-        currentWinStreak: 0,
-        currentLoseStreak: 0,
-        maxWinStreak: 0,
-        maxLoseStreak: 0,
-        max_win_equity: 0,
-        maxLoseEquity: 0,
-        maxLosePot: 0,
-        paid_rake: 0,
-        rake_saved: 0,
-        w$sd: 0,
-        wtsd: 0,
-        wsd: 0,
-        faced_raise: 0,
-        faced_3bet: 0,
-        faced_4bet_or_more: 0,
-        folded_to_raise: 0,
-        folded_to_3bet: 0,
-        folded_to_4bet_or_more: 0,
-        net_winning: 0,
-        get vPIP() { return this.handsPlayed > 0 ? (this.vPIPCount / this.handsPlayed) * 100 : 0; },
-        get pfr() { return this.handsPlayed > 0 ? (this.pfrCount / this.handsPlayed) * 100 : 0; },
-        get threeBet() { return this.threeBetOppCount > 0 ? (this.threeBetCount / this.threeBetOppCount) * 100 : 0; },
-        get fourBetOrMore() { return this.fourBetOppCount > 0 ? (this.fourBetOrMoreCount / this.fourBetOppCount) * 100 : 0; },
-        get foldToFlop() { return this.facedFlopBet > 0 ? (this.foldedToFlopBet / this.facedFlopBet) * 100 : 0; },
-        get aggressionFactor() { return this.calls > 0 ? this.aggressiveActions / this.calls : (this.aggressiveActions > 0 ? 10 : 0); }
-      },
-    };
-    return aiPlayer;
+    return PlayerFactory.createAIPlayerFromTemplate(this, villanTemplate, customId);
   }
 
   createAIPlayer(customId = null) {
-    let villanTemplate = null;
-    if (this.playersPools && this.playersPools.length > 0) {
-      villanTemplate = this.playersPools.pop();
-    } else if (this.getWeightedRandomEnemy) {
-      // Use the newly extracted probability logic when pool runs out
-      villanTemplate = this.getWeightedRandomEnemy();
-    } else {
-      return null;
-    }
-    return this.createAIPlayerFromTemplate(villanTemplate, customId);
+    return PlayerFactory.createAIPlayer(this, customId);
   }
   async startNewHand(isFirstHand = false) {
     if (this.exited) return;
@@ -468,7 +263,7 @@ export class GameEngine {
     this.bigPotTensionTriggered = false;
     this.currentStreetRaises = 0; // [FIX] Reset raises for new hand
     this.aggressor = null;
-    this.actionHistory = []; // [v3.0] Reset history for new hand
+    this.historyManager.actionHistory = []; // Keep local access clean
     if (this.exitReservationRounds > 0) {
       this.exitReservationRounds--;
     } else if (this.exitReservationRounds === 0) {
@@ -503,7 +298,13 @@ export class GameEngine {
           p.class.WTSD += 0.15;
         }
       }
-      if (!p.isEliminated) recordPlayStatsSession(p, PLAY_RECORD_STATS_TYPE.HANDS_PLAYED);
+      if (!p.isEliminated) {
+        recordPlayStatsSession(p, PLAY_RECORD_STATS_TYPE.HANDS_PLAYED);
+        p._f3b = false;
+        p._f4b = false;
+        p._d3b = false;
+        p._d4b = false;
+      }
       if (p.isMe) {
         const suitToStat = {
           'h': PLAY_RECORD_STATS_TYPE.DEALT_HANDS_HEART,
@@ -529,8 +330,8 @@ export class GameEngine {
       const me = this.players.find(p => p.isMe);
       if (me) {
         opponents.forEach(p => {
-          if (p.class && p.class.id) {
-            recordPlayStatsSession(me, PLAY_RECORD_STATS_TYPE.MET_ENEMY, { enemyClass: p.class.id });
+          if (p.personaId) {
+            recordPlayStatsSession(me, PLAY_RECORD_STATS_TYPE.MET_ENEMY, { enemyClass: p.personaId });
           }
         });
       }
@@ -547,24 +348,7 @@ export class GameEngine {
     }
     eventAdaptor.roundStart(this.players, { sb: this.sb, bb: this.bb });
     // Initialize history for new hand
-    this.currentHandHistory = {
-      id: Date.now(),
-      timestamp: new Date().toLocaleTimeString(),
-      players: this.players.map(p => ({ name: p.name, chips: p.chips, id: p.id })),
-      blinds: { sb: this.sb, bb: this.bb },
-      board: [],
-      actions: {
-        PREFLOP: [],
-        FLOP: [],
-        TURN: [],
-        RIVER: [],
-        SHOWDOWN: []
-      },
-      winner: null,
-      pot: 0,
-      detailedPots: [],
-      playerResults: []
-    };
+    this.historyManager.startNewHand(this.players, { sb: this.sb, bb: this.bb });
 
     this.runoutInProgress = false;
 
@@ -600,7 +384,6 @@ export class GameEngine {
       bbIndex = activePlayersIndices[(currentActiveDealerIdx + 2) % activeCount];
       firstToActIndex = activePlayersIndices[(currentActiveDealerIdx + 3) % activeCount];
     }
-
     this.placeBet(this.players[sbIndex], this.sb, true, this.bb);
     this.players[sbIndex].isBlind = true;
 
@@ -610,6 +393,11 @@ export class GameEngine {
     this.currentPlayerIndex = firstToActIndex;
     this.state = 'PREFLOP';
     eventAdaptor.startStreet('PREFLOP');
+
+    // [COLLUSION] Pre-flop coordination start
+    this.players.filter(p => p.isPartner).forEach(partner => {
+      initPartnerCollusion(partner, this);
+    });
 
     this.processTurns();
   }
@@ -670,6 +458,7 @@ export class GameEngine {
 
     if (player.isHuman) {
       this.stopTurnTimer();
+      validateCollusionCompliance(player, action, this);
     }
     const activePlayersCount = this.players.filter(p => !p.isFolded && !p.isEliminated).length;
     const isHeadsUp = activePlayersCount === 2;
@@ -735,16 +524,22 @@ export class GameEngine {
           if (this.currentStreetRaises === 1) {
             this.players.forEach(p => {
               if (p.id !== player.id && !p.isFolded && p.chips > 0) {
-                if (p.stats.threeBetOppCount === undefined) p.stats.threeBetOppCount = 0;
-                p.stats.threeBetOppCount++;
+                if (!p._f3b) {
+                  if (p.stats.threeBetOppCount === undefined) p.stats.threeBetOppCount = 0;
+                  p.stats.threeBetOppCount++;
+                  p._f3b = true;
+                }
               }
             });
           } else if (this.currentStreetRaises === 2) {
-            // Track 4-Bet+ Opportunities
+            // Track 4-Bet+ Opportunities (only on the first 3-bet)
             this.players.forEach(p => {
               if (p.id !== player.id && !p.isFolded && p.chips > 0) {
-                if (p.stats.fourBetOppCount === undefined) p.stats.fourBetOppCount = 0;
-                p.stats.fourBetOppCount++;
+                if (!p._f4b) {
+                  if (p.stats.fourBetOppCount === undefined) p.stats.fourBetOppCount = 0;
+                  p.stats.fourBetOppCount++;
+                  p._f4b = true;
+                }
               }
             });
           }
@@ -783,25 +578,8 @@ export class GameEngine {
       player.lastActionEquity = action.estimatedEquity || 0;
     }
 
-    // Record Action
-    if (this.currentHandHistory && this.currentHandHistory.actions[this.state]) {
-      this.currentHandHistory.actions[this.state].push({
-        player: player.name,
-        type: action.type,
-        amount: action.amount || 0,
-        playerChips: player.chips,
-        pot: this.pot
-      });
-    }
-
-    // [v3.0] Populate structured action history for AI engine
-    this.actionHistory.push({
-      playerId: player.id,
-      street: this.state,
-      action: action.type,
-      amount: action.amount || 0,
-      potSize: this.pot
-    });
+    // Record Action to History Manager
+    this.historyManager.recordAction(this.state, player, action.type, action.amount, this.pot);
 
     // [FIX] Do not increment acted count for Folds, because they are removed from activePlayers.
     // Otherwise we double-count (increment numerator AND decrement denominator).
@@ -869,23 +647,7 @@ export class GameEngine {
     const uncalledResult = this.potManager.returnUncalledBets(this.players);
     if (uncalledResult) {
       // 1.1 Record in Hand History
-      if (this.currentHandHistory && this.currentHandHistory.actions[this.state]) {
-        this.currentHandHistory.actions[this.state].push({
-          player: uncalledResult.player.name,
-          type: 'uncalled_return',
-          amount: uncalledResult.amount,
-          playerChips: uncalledResult.player.chips,
-          pot: this.potManager.pot
-        });
-      }
-      // 1.2 Record in Action History (for AI/Stats)
-      this.actionHistory.push({
-        playerId: uncalledResult.player.id,
-        street: this.state,
-        action: 'uncalled_return',
-        amount: uncalledResult.amount,
-        potSize: this.potManager.pot
-      });
+      this.historyManager.recordAction(this.state, uncalledResult.player, 'uncalled_return', uncalledResult.amount, this.potManager.pot);
 
       eventAdaptor.uncalledBetReturned(uncalledResult);
       // Synchronize reactive pot immediate update
@@ -925,12 +687,7 @@ export class GameEngine {
       attempts++;
     }
 
-    // Same safety check for nextStreet to avoid infinite loops there too
     if (attempts >= this.players.length) {
-      // If everyone is all_in, we just proceed with the street logic, 
-      // processTurns will handle the "no chips" check by skipping or checkAllInCondition will take over.
-      // But better to be explicit:
-      // Identify who can still act? No one.
       // Just let it proceed to checkAllInCondition.
     }
 
@@ -971,20 +728,8 @@ export class GameEngine {
     this.showdownResults = result;
     this.calculationInProgress = true
 
-    // [FAST_FOLD] Reduce showdown delay if player is folded and setting is ON
-
     // Finalize History
-    if (this.currentHandHistory) {
-      const winnerResult = result.results.find(res => res.id === result.winnerId);
-      this.currentHandHistory.winner = result.isChop ? `CHOP (${result.choppers.join(', ')})` : result.winnerId;
-      this.currentHandHistory.winnerHand = winnerResult ? winnerResult.hand.name : 'Unknown Hand';
-      this.currentHandHistory.pot = currentPot;
-      this.currentHandHistory.board = [...this.board];
-      this.currentHandHistory.detailedPots = result.detailedPots || [];
-      this.currentHandHistory.playerResults = result.results || [];
-      this.handHistory.unshift(this.currentHandHistory);
-      if (this.handHistory.length > 200) this.handHistory.pop(); // Keep last 200 hands
-    }
+    this.historyManager.finalizeHistory(result, currentPot, this.board);
 
     if (!withoutShowdownEvent) {
       this.state = 'SHOWDOWN';
@@ -996,20 +741,6 @@ export class GameEngine {
     // else eventAdaptor.win({ player: this.players[0], pot: this.pot });
     this.runoutInProgress = false; // Reset runout flag
     window.isFastFowardActive = false; // Rest fast fold flag
-    // if (isPlayerWinner) {
-    //   eventAdaptor.showdownWin({ winnerResult, pot: this.pot });
-    //   if (isAllIn) eventAdaptor.allinWin({ winnerResult, pot: currentPot });
-    // } else {
-    //   eventAdaptor.showdownLose({ winnerResult, pot: currentPot });
-    //   if (isAllIn) eventAdaptor.allinLose({ winnerResult, pot: currentPot });
-    // }
-    // Human XP Gain (Estimated)
-
-
-    // [IMPROVEMENT] Calculate and update XP/Level
-    // [AI CHAT] Showdown Result
-
-    // Use PotManager's pre-calculated winner data
     const bestWinnersList = result.choppers || [];
     // We still need maxWinAmount to scale the tilt change appropriately.
     let maxWinAmount = 0;
@@ -1202,8 +933,8 @@ export class GameEngine {
         chatAI(newPlayer, CHAT_TRIGGERS.GAME_START); // Say hi
         p = newPlayer; // update local reference
         const me = this.players.find(pl => pl.isMe);
-        if (me && p.class && p.class.id) {
-          recordPlayStatsSession(me, PLAY_RECORD_STATS_TYPE.MET_ENEMY, { enemyClass: p.class.id });
+        if (me && p.personaId) {
+          recordPlayStatsSession(me, PLAY_RECORD_STATS_TYPE.MET_ENEMY, { enemyClass: p.personaId });
         }
       }
       if (p.chips <= 0 && !p.isEliminated) {
@@ -1312,7 +1043,6 @@ export class GameEngine {
     }
   }
   // --- All-In Showdown Logic ---
-
   async checkAllInCondition() {
     if (this.state === 'SHOWDOWN' || this.runoutInProgress || this.gameOver) return;
 
@@ -1327,22 +1057,7 @@ export class GameEngine {
       const uncalledResult = this.potManager.returnUncalledBets(this.players);
       if (uncalledResult) {
         // Record in Hand History
-        if (this.currentHandHistory && this.currentHandHistory.actions[this.state]) {
-          this.currentHandHistory.actions[this.state].push({
-            player: uncalledResult.player.name,
-            type: 'uncalled_return',
-            amount: uncalledResult.amount,
-            playerChips: uncalledResult.player.chips,
-            pot: this.potManager.pot
-          });
-        }
-        this.actionHistory.push({
-          playerId: uncalledResult.player.id,
-          street: this.state,
-          action: 'uncalled_return',
-          amount: uncalledResult.amount,
-          potSize: this.potManager.pot
-        });
+        this.historyManager.recordAction(this.state, uncalledResult.player, 'uncalled_return', uncalledResult.amount, this.potManager.pot);
 
         eventAdaptor.uncalledBetReturned(uncalledResult);
         this.pot = this.potManager.pot;
@@ -1406,50 +1121,58 @@ export class GameEngine {
       if (this.checkTriggerCasinoInvestigation()) return;
     }
 
-    if (typeof window !== 'undefined') {
-      const player = this.players.find(p => p.isMe);
-      const netWinnings = (player.chips - player.totalBuyIn);
-      recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_WINNING, { amount: netWinnings })
-      const winBB = netWinnings / this.bb;
-      // infarmy Calc
-      let generatedInfamy = winBB * 0.2;
-      let baseBoostInfamy = (this.exitReservationRounds === -1 ? 1.0 : 0.5) + player.born_villain + player.infamy_boost;
-      if (generatedInfamy > 0) {
-        gainInfamy(this.locationId, generatedInfamy * baseBoostInfamy);
-      } else gainInfamy(this.locationId, generatedInfamy);
-      // game result Calc
-      const result = gameResult(winBB);
-      store.play_stats_session.msgCode = result
-      if (result === GAME_RESULT_CODE.WIN_BIG) gainClearReward(this.locationId);
-      if (result.indexOf('WIN') !== -1) {
-        gainClearedZoneCount(this.locationId);
-      }
-      // mission result
-      processMissionResult(player, result, this);
-      // gain xp and bankroll
-      const gainedXP = gainXP(player);
-      gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING); // returned chips
+    const player = this.players.find(p => p.isMe);
+    // [FIX] Use player.totalBuyIn for correct net winnings calculation
+    const netWinnings = (player.chips - player.totalBuyIn);
+    recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_WINNING, { amount: netWinnings })
+    const winBB = netWinnings / this.bb;
 
-      eventAdaptor.cashout(player, { gainedXP, netWinnings, stats: getListPlayStatsSession() });
-      const isFlorenceEvent = this.locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_VIP_ROOM;
-      // share collusion
-      const partners = this.players.filter(p => p.isPartner);
-      partners.forEach(partner => {
-        const partnerNetWinnings = partner.chips - partner.initialChips;
-        const share = shareCollusion(partner.id, netWinnings, partnerNetWinnings, isFlorenceEvent)
-        recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
-        // todo chips calculate to partner.bankroll
-      });
-      // share benefit
-      const share = shareBenefitForPartners(netWinnings);
+    // infarmy Calc
+    let generatedInfamy = winBB * 0.2;
+    let baseBoostInfamy = (this.exitReservationRounds === -1 ? 1.0 : 0.5) + (player.born_villain || 0) + (player.infamy_boost || 0);
+
+    if (generatedInfamy > 0) {
+      gainInfamy(this.locationId, generatedInfamy * baseBoostInfamy);
+    } else gainInfamy(this.locationId, generatedInfamy);
+
+    // game result Calc
+    const result = gameResult(winBB);
+    store.play_stats_session.msgCode = result
+    if (result === GAME_RESULT_CODE.WIN_BIG) gainClearReward(this.locationId);
+    if (result.indexOf('WIN') !== -1) {
+      gainClearedZoneCount(this.locationId);
+    }
+
+    // mission result
+    processMissionResult(player, result, this);
+
+    // gain xp and bankroll
+    const gainedXP = gainXP(player);
+    gainBankroll(player.chips, TYPE_CHANGE_BANKROLL.GAMBLING); // returned chips
+
+    eventAdaptor.cashout(player, { gainedXP, netWinnings, stats: getListPlayStatsSession() });
+
+    // [FIX] Consistently identify Florence Event
+    const isFlorenceSession = this.locationId === LOCATION_ID.LOW_UNDERGROUND_CLUB_VIP_ROOM;
+
+    // share collusion
+    const partners = this.players.filter(p => !p.isEliminated && p.isPartner);
+    partners.forEach(partner => {
+      // [FIX] Partner uses initialChips (no rebuy), Player uses totalBuyIn
+      const partnerNetWinnings = partner.chips - partner.initialChips;
+      console.info('partner.personaId', partner.personaId)
+      const share = shareCollusion(partner.personaId, netWinnings, partnerNetWinnings, isFlorenceSession)
       recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
-      await saveStore();
-      audioManager.pause();
-      if (result === GAME_RESULT_CODE.WIN_BIG) audioManager.playSFX('end-session-bigwin');
-      else if (result === GAME_RESULT_CODE.WIN_MEDIUM) audioManager.playSFX('end-session-midwin');
-      else audioManager.playSFX('end-session')
-      window.dispatchEvent(new CustomEvent('trigger-cashout', { detail: { isForceExit } }));
-    } else console.warn('[GAME] cashOut failed');
+    });
+    // share benefit
+    const share = shareBenefitForPartners(netWinnings);
+    recordPlayStatsSession(player, PLAY_RECORD_STATS_TYPE.NET_SHARE, { amount: -share })
+    await saveStore();
+    audioManager.pause();
+    if (result === GAME_RESULT_CODE.WIN_BIG) audioManager.playSFX('end-session-bigwin');
+    else if (result === GAME_RESULT_CODE.WIN_MEDIUM) audioManager.playSFX('end-session-midwin');
+    else audioManager.playSFX('end-session')
+    window.dispatchEvent(new CustomEvent('trigger-cashout', { detail: { isForceExit } }));
   }
 
   async processTurns() {
@@ -1473,6 +1196,9 @@ export class GameEngine {
       console.log(`[TURN] Waiting for Human Input...`);
       this.myTurn = true;
       this.startTurnTimer(player);
+      // [NEW] Check collusion signals when it's player's turn to provide guidance
+      const partner = this.players.find(p => p.isPartner);
+      if (partner) handlePartnerCollusionSignals(partner, { insight: '' }, this);
       return;
     } else this.myTurn = false;
     player.lastDialogue = null
@@ -1486,6 +1212,12 @@ export class GameEngine {
       action = getAdvancedAIAction(player, this);
     } else {
       action = getAIAction(player, this);
+    }
+
+    // [NEW] Collusion Strategy
+    if (player.isPartner) {
+      action = applyPartnerCollusion(player, this, action);
+      handlePartnerCollusionSignals(player, action, this);
     }
 
     const delay = (action.delay || (1000 + Math.random() * 1000)) * (window.isFastFowardActive ? 0.2 : 1);

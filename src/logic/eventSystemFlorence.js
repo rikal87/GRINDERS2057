@@ -59,6 +59,59 @@ import { PARTNER_ID, LOCATION_ID } from './constants.js'
 export const EVENT_FLORENCE = new Proxy({}, {
   get: (target, prop) => `FLORENCE_${prop}`
 });
+
+export const COLLUSION_SIGNALS = {
+  DOUBLE_MONSTER: {
+    ko: '[합동 공세] 둘 다 패가 좋아요. 상대가 있으면 같이 긁어봐요.',
+    en: '[Joint Offensive] We both have strong hands. Let\'s squeeze them together.'
+  },
+  PLAYER_STRONG: {
+    ko: '[팟 빌딩] 당신 패가 좋은거 알아요. 기회되면 제가 판을 키워줄게요.',
+    en: '[Pot Building] Your hand looks strong. I\'ll try to raise and build the pot.'
+  },
+  TEAM_SAVINGS: {
+    ko: '[라운드 절약] 우리끼리 치는게 의미 없어요, 체크로 넘기죠.',
+    en: '[Round Savings] No point fighting each other - let\'s check down.'
+  },
+  FOLD_ADVICE: {
+    ko: '[폴드 권고] 보드가 위험해요, 이번은 퇴각을 권해요.',
+    en: '[Fold Advice] The board is dangerous. I recommend folding.'
+  },
+  PARTNER_WEAK: {
+    ko: '[핸드 약함] 제 패가 좋지 않아서 물러날게요.',
+    en: '[Weak Hand] My hand isn\'t good enough - stepping back.'
+  },
+  PLAYER_WEAK: {
+    ko: '[폴드 권고] 패를 보니 이번은 내려놓는게 나을 것 같아요.',
+    en: '[Fold Advice] From what I can tell, folding is the better play here.'
+  },
+  SUPPORT_ME: {
+    ko: '[팟 빌딩] 제 패가 좋아요. 상황 보면서 레이즈로 판 키워주시겠어요?',
+    en: '[Pot Building] My hand is strong. Could you raise to help build the pot when you can?'
+  },
+  WATCHING_SUPPORT: {
+    ko: '[상황 주시] 당신 패 좋은 거 알아요. 제 패로 무리는 안 되지만 상황 보며 닦아볼게요.',
+    en: '[Watching] Your hand looks good. I can\'t push hard, but I\'ll help where I can.'
+  }
+};
+export const COLLUSION_FEEDBACK = {
+  IGNORE_ADVICE: {
+    ko: '[전략 무시] 제 분석보다 본인의 감을 더 믿으시는 건가요?',
+    en: '[Advice Ignored] Do you trust your gut more than my analysis?'
+  },
+  ATTACK_PARTNER: {
+    ko: '[팀 공격] 왜 저를 상대로 레이즈를 하시는 거죠?',
+    en: '[Team Attack] Why are you raising against me?'
+  },
+  RUINED_TRAP: {
+    ko: '[작전 실수] 너무 서두르셨어요.',
+    en: '[Joint Failure] You rushed it.'
+  },
+  FAILED_TO_SUPPORT: {
+    ko: '[신뢰 부족] 좋은 기회였는데... 조금 더 절 믿어보시는 건 어때요?',
+    en: '[Lack of Trust] That was a good chance... Why not trust me a bit more?'
+  }
+};
 const SENDER_EN = 'Florence';
 const SENDER_KO = '플로렌스';
 export const EventData = [

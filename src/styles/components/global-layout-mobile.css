@@ -100,4 +100,31 @@
     background: rgba(0, 0, 0, 0.4) !important;
   }
 
+  /* Tooltip cutoff fix for mobile: Fixed Bottom Bar approach */
+  [data-tooltip]::after {
+    position: fixed !important;
+    bottom: 30px !important; 
+    left: 15px !important;
+    right: 15px !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: translateY(10px) !important; /* Start slightly lower */
+    top: auto !important;
+    
+    background: rgba(5, 10, 14, 0.98) !important;
+    border: 1px solid var(--neon-cyan) !important;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.4) !important;
+    text-align: center !important;
+    padding: 15px !important;
+    font-size: 0.85rem !important;
+    border-radius: 4px !important;
+    z-index: 9999 !important;
+    /* transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important; */
+  }
+
+  [data-tooltip]:hover::after {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important; /* Slide up into view */
+  }
 }

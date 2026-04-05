@@ -15,7 +15,6 @@ export const getPartner = (partnerId = null) => {
 export const getJoinedPartners = () => {
   return store.partners.filter(p => p.isJoined);
 }
-
 export const getRelationship = (partnerId = null) => {
   if (!partnerId) return null;
   const partner = getPartners().find((p) => p.id === partnerId);

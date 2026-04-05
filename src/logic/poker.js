@@ -951,3 +951,33 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
   }
   return 'AIR';
 }
+
+/**
+ * [AI & COLLUSION Helper] 핸드의 잠재력과 현재 가치를 기반으로 등급을 판별합니다.
+ * @param {string[]} hand 홀 카드
+ * @param {string[]} board 보드 카드
+ * @param {string} state 게임 상태 (PREFLOP, FLOP...)
+ * @param {Object} evaluation 미리 계산된 핸드 결과 (옵션)
+ */
+export const getHandTierHeuristic = (hand, board = [], state = 'PREFLOP', evaluation = null) => {
+  const currentStreet = (state || 'PREFLOP').toUpperCase();
+  
+  if (currentStreet === 'PREFLOP') {
+    const rank = getStartingHandRank(hand);
+    if (rank <= 15) return 'MONSTER';
+    if (rank <= 40) return 'STRONG';
+    if (rank <= 80) return 'NORMAL';
+    return 'WEAK';
+  }
+
+  // Post-flop: Evaluate if not provided
+  const evalResult = evaluation || evaluateHand([...hand, ...board]);
+  const category = getSimpleHandCategory(hand, board, evalResult);
+  
+  if (['NUTS', 'MONSTER'].includes(category)) return 'MONSTER';
+  if (['STRONG', 'GOOD'].includes(category)) return 'STRONG';
+  if (['MARGINAL', 'NORMAL'].includes(category)) return 'NORMAL';
+  if (['WEAK', 'AIR', 'ACE_HIGH'].includes(category)) return 'WEAK';
+  
+  return 'NORMAL'; // Default fallback
+};
