@@ -1,5 +1,6 @@
 import { calculateEquity, createDeck } from './poker.js';
-import { getAIAction, chatAI, } from './aiEngine.v2.js';
+import { getAIAction } from './aiEngine.v2.js';
+import { chatAI } from './AIChatSystem.js';
 import { getAdvancedAIAction } from './aiEngineAdvanced.js';
 import { CLASSES_PARTNER } from './persona.js'
 import { audioManager } from './audioManager.js';
@@ -386,6 +387,7 @@ export class GameEngine {
       isFolded: false,
       isHuman: false,
       isPartner: villan.isPartner || false,
+      isAdvanced: villan.isAdvanced || false,
       isBoss: villan.isBoss || false,
       item: null,
       maxTimeBank: 15,
@@ -758,8 +760,21 @@ export class GameEngine {
       displayAction = 'BET';
     }
 
-    player.lastDialogue = action.dialogue || displayAction + '.';
-    player.lastThought = action.insight;
+    if (action.dialogueTrigger && !player.isHuman) {
+      chatAI(player, action.dialogueTrigger, action.insight, 3000, this);
+    } else {
+      player.lastDialogue = action.dialogue || displayAction + '.';
+      player.lastThought = action.insight;
+
+      if (player.dialogueTimeoutId) {
+        clearTimeout(player.dialogueTimeoutId);
+      }
+      player.dialogueTimeoutId = setTimeout(() => {
+        player.lastDialogue = null
+        player.lastThought = null
+        player.dialogueTimeoutId = null
+      }, 3000);
+    }
 
     // [NEW] Store AI-calculated odds/equity for showdown triggers (Hero Call / Bluff Caught)
     if (!player.isHuman) {
@@ -767,15 +782,6 @@ export class GameEngine {
       player.lastActionPotOdds = action.potOdds || 0;
       player.lastActionEquity = action.estimatedEquity || 0;
     }
-
-    if (player.dialogueTimeoutId) {
-      clearTimeout(player.dialogueTimeoutId);
-    }
-    player.dialogueTimeoutId = setTimeout(() => {
-      player.lastDialogue = null
-      player.lastThought = null
-      player.dialogueTimeoutId = null
-    }, 3000);
 
     // Record Action
     if (this.currentHandHistory && this.currentHandHistory.actions[this.state]) {
@@ -1475,8 +1481,8 @@ export class GameEngine {
     // [PHASE 3] Timing Tells
     // We get the action first to determine the delay (Thinking Time/Hollywooding)
     let action;
-    const isAdvanced = (player.class && player.class.isBoss);
-    if (isAdvanced) {
+    const isGTO = (player.class && player.class.isBoss);
+    if (isGTO) {
       action = getAdvancedAIAction(player, this);
     } else {
       action = getAIAction(player, this);
@@ -1559,14 +1565,5 @@ export class GameEngine {
     }
   }
 
-  // cleanup() {
-  //   this.stopTurnTimer();
-  //   audioManager.disableTensionMode();
-  //   // this.gameOver = true;
-  //   this.state = 'IDLE';
-  //   this = null;
-  //   // this.players = []; // [FIX] Don't wipe players yet to prevent UI crashes during transition
-  //   console.log('[GAME] Engine cleaned up.');
-  // }
 }
 

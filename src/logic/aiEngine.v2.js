@@ -1,40 +1,4 @@
 import { evaluateHand, getDrawCategory, analyzeBoardTexture, getHandCategory, getSimpleHandCategory, getStartingHandRankHeadsup, getStartingHandRank96Max } from './poker.js';
-import { getAIChatDialogue } from './AIChatSystem.js';
-import { CHAT_TRIGGERS } from './constants.js'
-
-/**
- * AI Decision Engine v2 (Probabilistic Stat-Correction)
- * Integrates persona stats (AF, WTSD, vPIP) directly into probabilistic decision trees.
- */
-export const chatAI = (player, trigger = CHAT_TRIGGERS.FOLD_WEAK, insight = "", duration = 0, engine = null) => {
-  let safeTrigger = trigger || 'FOLD';
-  if (safeTrigger.toUpperCase() === CHAT_TRIGGERS.CALL && engine) {
-    const callAmt = engine.currentRoundBet - player.currentBet;
-    if (callAmt === 0) {
-      safeTrigger = CHAT_TRIGGERS.CHECK;
-    }
-  }
-
-  const msg = getAIChatDialogue(safeTrigger.toUpperCase(), player.name.toUpperCase());
-
-  if (player.dialogueTimeoutId) {
-    clearTimeout(player.dialogueTimeoutId);
-  }
-
-  let displayDuration = duration > 0 ? duration : (2000 + (msg.length * 100));
-  displayDuration = Math.min(Math.max(displayDuration, 2000), 8000);
-
-  player.lastDialogue = msg;
-  player.lastThought = insight;
-
-  player.dialogueTimeoutId = setTimeout(() => {
-    player.lastDialogue = null;
-    player.lastThought = null;
-    player.dialogueTimeoutId = null;
-  }, displayDuration);
-
-  return msg;
-}
 
 export const getAIAction = (player, engine) => {
   let decision = getProbabilisticAction(player, engine);
@@ -89,7 +53,7 @@ export const getAIAction = (player, engine) => {
       if (decision.isIP) dialogueTrigger = 'CHECK_GOOD';
     }
 
-    action.dialogue = getAIChatDialogue(dialogueTrigger, player.class?.id || player.name, action.insight);
+    action.dialogueTrigger = dialogueTrigger;
   }
   if (engine.state === 'PREFLOP') action.delay /= 2;
   return action;
@@ -156,9 +120,9 @@ function getProbabilisticAction(player, engine) {
 
   } else {
     const evaluation = evaluateHand([...player.hand, ...engine.board]);
-    const handCategory = isAdvanced ? getHandCategory(player.hand, engine.board, evaluation) : getSimpleHandCategory(player.hand, engine.board, evaluation);
+    const handCategory = isAdvanced && street === 'RIVER' ? getHandCategory(player.hand, engine.board, evaluation).category : getSimpleHandCategory(player.hand, engine.board, evaluation);
 
-    if (handCategory === 'NUTS') estimatedEquity = 0.95;
+    if (handCategory === 'NUTS') estimatedEquity = 0.98;
     else if (handCategory === 'MONSTER') estimatedEquity = 0.85;
     else if (handCategory === 'STRONG') estimatedEquity = 0.7;
     else if (handCategory === 'GOOD') estimatedEquity = 0.6;
@@ -312,15 +276,19 @@ function getProbabilisticAction(player, engine) {
 
     // [v16.1] Junk Mitigation: Range-gate the pot-odds floor preflop
     if (street === 'PREFLOP') oddsBasedProb *= rangePower;
-
     continueProb = Math.max(continueProb, oddsBasedProb);
-
     // if (estimatedEquity < potOdds) continueProb *= 0.8; // v15.2 Tightened from 0.8
   }
 
   // 수학적 확률 오류(> 100%)로 비정상적인 로그(음수 확률 등)가 나오는 것을 막는 안전장치
   continueProb = Math.min(1.0, Math.max(0.0, continueProb));
-
+  // Multi-way penalty
+  const alivePlayers = engine.players.filter(p => !p.isFolded || p.chips >= engine.bb * 20).length;
+  if (alivePlayers > 2 && street === 'PREFLOP') {
+    const multiWayFactor = 0.05;
+    const penalty = (alivePlayers - 2) * multiWayFactor;
+    raiseProb -= penalty;
+  }
 
   // Strategy Bias
   if (strategy === "DONK_AVOIDER") {
@@ -328,16 +296,12 @@ function getProbabilisticAction(player, engine) {
     insight += " [Donk Avoid]";
   } else if (["C_BETTER", "OPENER"].includes(strategy) && street !== "PREFLOP") {
     raiseProb = Math.min(1.0, raiseProb + 0.15);
-  } else if (strategy === "RESPONSE" && estimatedEquity >= 0.85 && street === 'FLOP') {
-    if (Math.random() <= 0.65 || raises >= 2) raiseProb = 0; // Trap
-  }
-
-  // Multi-way penalty
-  const alivePlayers = engine.players.filter(p => !p.isFolded || p.chips >= engine.bb * 20).length;
-  if (alivePlayers > 2 && street === 'PREFLOP') {
-    const multiWayFactor = 0.05;
-    const penalty = (alivePlayers - 2) * multiWayFactor;
-    raiseProb -= penalty;
+  } else if (strategy === "RESPONSE") {
+    if (estimatedEquity >= 0.85 && street === 'FLOP') {
+      if (Math.random() <= 0.65 || raises >= 2) raiseProb = 0; // Trap
+      insight += " [Pot control]";
+    }
+    if (callAmt === 0 && isAdvanced) raiseProb *= 1.5; // if c-better or opener is not bet, raise more
   }
   // [v15.8] Multi-bet penalty for raiseProb (steeper for preflop)
   // const raiseDecayBase = 0.8;
@@ -387,20 +351,18 @@ function getProbabilisticAction(player, engine) {
       if (rnd <= raiseProb) {
         action = 'raise'; insight += ` (Raise: ${(raiseProb * 100).toFixed(0)}%)`;
       } else {
-        action = 'call'; insight += " (Check)";
+        action = 'call'; insight += ` (Prob-Call: ${(continueProb * 100).toFixed(0)}%)`;
       }
     }
   } else {
     if (rnd <= continueProb) {
       if (Math.random() <= raiseProb) {
-        action = 'raise'; insight += ` (Prob-Raise: ${(raiseProb * 100).toFixed(0)}%)`;
+        action = 'raise';
       } else if (street === 'PREFLOP' && raises === 0 && isAggressive) {
         // [v15.9] Aggressive Isolation: TAG/LAG should raise (isolate) instead of fold if in-range
         action = 'raise'; insight += ` (Isolate: LAG)`;
       } else {
-        action = 'call';
-        const totalCallProb = continueProb * (1 - continueProb);
-        insight += ` (Prob-Call: ${(totalCallProb * 100).toFixed(0)}%)`;
+        action = 'call'; insight += ` (Prob-Call: ${(continueProb * 100).toFixed(0)}%)`;
       }
     } else {
       action = 'fold'; insight += ` (Prob-Fold: ${((1 - continueProb) * 100).toFixed(0)}%)`;
@@ -433,41 +395,31 @@ function getProbabilisticAction(player, engine) {
         else amount = Math.round(openSize);
       }
     } else {
-      let potPct = 0.70;
-      potPct -= streetsLeft * .15;
-      if (boardAnalysis.type === 'DRY') potPct -= 0.15;
-
-      const rndS = Math.random()
-      const baseOnEq = estimatedEquity >= potOdds ? estimatedEquity : potOdds
-      if (baseOnEq >= 0.80 && rndS <= 0.3) {
-        potPct += estimatedEquity * (boardAnalysis.type === 'WET' ? 1 : 0.5);
-      } else if (estimatedEquity >= 0.70 && rndS <= 0.3) {
-        potPct += estimatedEquity - .55
-      }
-
-      if (street === 'FLOP') potPct = Math.max(0.6, potPct)
-
       if (callAmt > 0) {
-        let mult = Math.max(raises > 2 ? 9999 : 1) + Math.pow(2, raises);
-        amount = Math.floor(currentBet * (mult + potPct));
-        amount = Math.max(amount, currentBet * 2);
+        const mult = Math.max(raises > 2 ? 9999 : 2.2, 4.5 - raises);
+        amount = Math.floor(currentBet * mult);
       } else {
+        let potPct = 0.75;
+        potPct -= streetsLeft * .15;
+        if (boardAnalysis.type === 'DRY') potPct -= 0.15;
+        if (spr < 3) potPct -= 0.15;
+        if (street !== 'FLOP' && (estimatedEquity >= 0.8 || estimatedEquity <= 0.05)) {
+          const prob = Math.abs(estimatedEquity - 0.5);
+          if (isAdvanced && Math.random() <= prob) {
+            const boost = Math.min(1.2, Math.max(spr * 0.15, 0.6));
+            potPct += boost;
+            insight += ` [Overbet: ${(boost * 100).toFixed(0)}%]`;
+          } else if (boardAnalysis.type === 'WET') potPct += 0.25;
+        }
         amount = Math.floor(pot * potPct);
-        // [v16.1] Sizing Floor for Post-flop streets (Avoid tiny bets in large pots)
-        if (street === 'RIVER') amount = Math.max(amount, Math.floor(pot * 0.30));
-        else if (street === 'TURN') amount = Math.max(amount, Math.floor(pot * 0.25));
-        else if (street === 'FLOP') amount = Math.max(amount, Math.floor(pot * 0.20));
-        amount = Math.max(amount, (engine.bb || 10));
       }
     }
   }
   // --- 6. Timing Tells ---
   let delay = 1000 + Math.random() * 2000;
-  const equityDiff = Math.abs(estimatedEquity - continueProb);
+  const equityDiff = Math.abs(estimatedEquity - (isAggressor ? raiseProb : continueProb));
 
-  if (estimatedEquity >= raiseProb + 0.15) {
-    delay = 1000 + Math.random() * 2000;
-  } else if (equityDiff < 0.10) {
+  if (equityDiff < 0.10) {
     delay = 2000 + Math.random() * 3000;
   } else if (action === 'fold' && estimatedEquity < continueProb - 0.20) {
     delay = 500 + Math.random() * 300;

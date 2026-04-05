@@ -7,8 +7,8 @@ import { PotManager } from '../../../src/logic/PotManager.js';
 
 const CLASSES_ENEMY = [...D2, ...D1]
 export async function runSimulation() {
-  const opp1 = 'rich_guy'
-  const opp2 = 'gangster'
+  const opp1 = 'old_lion'
+  const opp2 = 'the_don'
   const opp3 = 'maniac'
   console.log(`Starting DB Simulation (${opp1} vs ${opp2} vs ${opp3})...`);
   const logHeader = `Simulation Log - ${new Date().toLocaleString()}\n\n`;
@@ -20,7 +20,7 @@ export async function runSimulation() {
   // ** don't edit this function **
   function getUnifiedAction(player, engine) {
 
-    if (player.class?.isBoss) {
+    if (player.useGTO) {
       return getAdvancedAIAction(player, engine);
     }
     return getAIAction(player, engine);
@@ -36,6 +36,8 @@ export async function runSimulation() {
     currentBet: 0,
     totalWagered: 0,
     isFolded: false,
+    isAdvanced: template.isAdvanced || false,
+    useGTO: template.isBoss || false,
     isHuman: false,
     hand: [],
     stats: {
@@ -164,7 +166,7 @@ export async function runSimulation() {
           let expTrigger = action.exploitTrigger ? ` [Exploit: ${action.exploitTrigger}]` : '';
 
           if (action.type === 'fold') {
-            engine.handHistory.push(`[${street}] ${p.name}: Folds${rangeEst}${expTrigger}`);
+            engine.handHistory.push(`[${street}] ${p.name}: Folds${rangeEst}${expTrigger} <${action.insight}>`);
             engine.actionHistory.push({ playerId: p.id, street, action: 'fold', amount: 0 });
             p.isFolded = true;
             if (engine.aggressor === p.id) engine.aggressor = null;
@@ -176,8 +178,7 @@ export async function runSimulation() {
             if (action.type === 'check' || action.type === 'call') {
               amount = callAmt;
               if (engine.aggressor === p.id) engine.aggressor = null;
-
-              engine.handHistory.push(`[${street}] ${p.name}: ${action.type === 'check' ? 'Checks' : 'Calls ' + amount}${rangeEst}${expTrigger} - <${action.insight}>`);
+              engine.handHistory.push(`[${street}] ${p.name}: ${callAmt === 0 ? 'Checks' : 'Calls ' + (amount / engine.bb).toFixed(1) + 'BB'} ${rangeEst}${expTrigger} - <${action.insight}>`);
               engine.actionHistory.push({ playerId: p.id, street, action: action.type, amount: amount });
 
               if (amount > 0 && !p.handState.didVpip) {
@@ -197,10 +198,10 @@ export async function runSimulation() {
               const totalBetOnStreet = p.currentBet + amount;
               const isActualRaise = totalBetOnStreet > potManager.currentRoundBet;
               const isAllIn = p.chips <= 0 || action.type === 'all_in';
-              const actionLabel = isAllIn ? 'All-In' : (isActualRaise ? 'Raises to' : 'Bets');
+              const actionLabel = isAllIn ? 'All-In' : (engine.currentStreetRaises > 0 || engine.street === 'PREFLOP' ? 'Raises to' : 'Bets');
 
-              engine.handHistory.push(`[${street}] ${p.name}: ${actionLabel} ${totalBetOnStreet}${rangeEst}${expTrigger} - <${action.insight}>`);
-              engine.actionHistory.push({ playerId: p.id, street, action: isAllIn ? 'all_in' : (isActualRaise ? 'raise' : 'bet'), amount: totalBetOnStreet });
+              engine.handHistory.push(`[${street}] ${p.name}: ${actionLabel} ${(totalBetOnStreet / engine.bb).toFixed(1)}BB / ${(potManager.pot / engine.bb).toFixed(1)}BB ${rangeEst}${expTrigger} - <${action.insight}>`);
+              engine.actionHistory.push({ playerId: p.id, street, action: isAllIn ? 'all_in' : (isActualRaise ? 'raise' : 'bet'), amount: `${(totalBetOnStreet / engine.bb).toFixed(1)}BB` });
 
               if (isActualRaise) {
                 engine.currentStreetRaises++;

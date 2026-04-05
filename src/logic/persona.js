@@ -128,7 +128,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'maniac',
-    name: 'Maniac', philosophy: 'Maniac', vPIP: .5, AF: 5, WTSD: .5, chipMultiply: 1.1, isAdvanced: false,
+    name: 'Maniac', philosophy: 'Maniac', vPIP: .35, AF: 5, WTSD: .35, chipMultiply: 1.1, isAdvanced: false,
     note_ko: '팟을 개판으로 만드는 주범입니다. 정말 미친놈 같습니다..',
     note_en: 'He is the main culprit who messes up the pot. He seems like a really crazy guy..',
 
@@ -142,7 +142,7 @@ export const CLASSES_ENEMY = [
   },
   {
     id: 'gangster',
-    name: 'Gangster', philosophy: 'LAG', vPIP: .32, AF: 4, WTSD: .44, chipMultiply: 1.5, isAdvanced: false,
+    name: 'Gangster', philosophy: 'LAG', vPIP: .32, AF: 4, WTSD: .4, chipMultiply: 1.5, isAdvanced: false,
     note_ko: 'KBT 출신의 갱단 일원으로, 무섭게 몰아붙이는 플레이 스타일이 특징입니다. 그의 베팅은 테이블 전체를 압박하는 폭력에 가깝습니다. 가끔 패가 안 풀리면 테이블을 엎고 싶어 하는 눈치니 조심하세요.',
     note_en: 'He\'s a member of the [KBT] gang, characterized by his intimidating and aggressive playstyle. His betting feels like violence, suffocating the entire table. Be careful—when the cards don\'t go his way, you can see him itching to flip the table.',
   },

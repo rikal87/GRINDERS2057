@@ -236,11 +236,12 @@ export const getHandCategory = (hand, board, evalResult) => {
       return result('WEAK');
     }
   }
-
-  if (percentile <= 0.10) return result('STRONG');
-  if (percentile <= 0.25) return result('GOOD');
-  if (percentile <= 0.45) return result('MARGINAL');
-  if (percentile <= 0.65) return result('WEAK');
+  if (percentile <= 0.02) return result('NUTS');
+  else if (percentile <= 0.05) return result('MONSTER');
+  else if (percentile <= 0.10) return result('STRONG');
+  else if (percentile <= 0.25) return result('GOOD');
+  else if (percentile <= 0.45) return result('MARGINAL');
+  else if (percentile <= 0.65) return result('WEAK');
 
   // 4. Low Value / Air
   const holeVal = hand.map(c => '23456789TJQKA'.indexOf(c[0])).sort((a, b) => b - a);
@@ -812,18 +813,37 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
 
   // 4: Three of a Kind
   if (rank === 4) {
-    if (isBoardTrips) return 'WEAK';
     let caseSum = 0;
     if (isBoardFlushPossible) caseSum++;
     if (isBoardStraightPossible) caseSum++;
     if (isBoardOnehandFlushPossible) caseSum++;
     if (isBoardOnehandStraightPossible) caseSum++;
-    if (isPocketPair) caseSum--;
+
+    if (isBoardTrips) {
+      const kicker = Math.max(...holeVal);
+      if (kicker < 10) return 'WEAK'; // Weak kicker on trips board is easily beaten
+      else if (kicker >= 12) caseSum += 1;
+      else caseSum += 2;
+    } else if (isPocketPair) {
+      if (handRanks[0] === boardRanks[0]) caseSum -= 2; // Top Set (Monster)
+      else caseSum -= 1; // Middle/Bottom Set
+    } else {
+      // Trips (Board is paired, we hold the trip card)
+      const pairedRank = boardRanks.find((r, i) => r === boardRanks[i+1]);
+      const myTripCard = holeVal.find(r => r === pairedRank);
+      if (myTripCard !== undefined) {
+        if (myTripCard === boardRanks[0]) caseSum -= 1; // Top Trips
+        
+        const kicker = holeVal.find(v => v !== myTripCard);
+        if (kicker < 10) caseSum += 2; // Weak kicker penalty
+        else if (kicker >= 12) caseSum -= 1; // Ace/King kicker bonus
+      }
+    }
 
     if (caseSum >= 3) return 'MARGINAL';
     else if (caseSum >= 2) return 'GOOD';
     else if (caseSum >= 0) return 'STRONG';
-    return 'MONSTER'; // SET 
+    return 'MONSTER';
   }
 
   // 3: Two Pair
@@ -846,8 +866,22 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
         else if (holeVal[0] > boardHigh2) caseSum += 1; // [v5.0] Middle pocket pair with Overcard (Marginalized)
         else caseSum += 4; // Underpair counterfeited (v5: Severe Penalty)
       } else {
-        if (hole1) caseSum -= 1; // Top Pair + Board Pair
-        else if (hole2) caseSum += 2; // [v5.0] 2nd Pair + Board Pair (Downgraded)
+        if (hole1) {
+          caseSum -= 1; // Top Pair + Board Pair
+          const kicker = holeVal.find(v => v !== boardHigh1);
+          if (kicker !== undefined) {
+            if (kicker < 10) caseSum += 2; // Weak kicker penalty
+            else if (kicker >= 12) caseSum -= 1; // Ace/King kicker bonus
+          }
+        }
+        else if (hole2) {
+          caseSum += 2; // [v5.0] 2nd Pair + Board Pair (Downgraded)
+          const kicker = holeVal.find(v => v !== boardHigh2);
+          if (kicker !== undefined) {
+            if (kicker < 10) caseSum += 1; // Weak kicker penalty
+            else if (kicker >= 12) caseSum -= 1; // Ace/King kicker bonus
+          }
+        }
         else caseSum += 4; // Weak Pair + Board Pair (v5: Severe Penalty)
       }
     } else {
@@ -888,20 +922,16 @@ export const getSimpleHandCategory = (hand, board, evalResult) => {
     if (isBoardOnehandFlushPossible) caseSum++;
     if (isBoardOnehandStraightPossible) caseSum++;
     if (isBoardPaired) caseSum++;
-
+    const overcards = boardRanks.filter(r => r > handRanks[0]).length;
+    if (overcards >= 2) caseSum += 3; // Severe penalty for 2+ overcards
+    else if (overcards === 1) caseSum += 1; // Standard penalty for 1 overcard
+    else caseSum += 1; // Middle pocket pair
     // Pair strength base weights
     if (isPocketPair) {
       if (handRanks[0] > maxBoard) caseSum -= 2; // High Overpair
-      else {
-        // [v28] Pocket Pair Overcard Penalty (Hand #35 fix)
-        const overcards = boardRanks.filter(r => r > handRanks[0]).length;
-        if (overcards >= 2) caseSum += 3; // Severe penalty for 2+ overcards
-        else if (overcards === 1) caseSum += 1; // Standard penalty for 1 overcard
-        else caseSum += 1; // Middle pocket pair
-      }
     } else {
       if (pairedRank === maxBoard) {
-        if (kicker < 7) caseSum += 2; // Weak Kicker Penalty
+        if (kicker < 10) caseSum += 2; // Weak Kicker Penalty
         else if (kicker >= 12) caseSum -= 1; // Ace/King Kicker Bonus
       }
       else if (pairedRank === boardRanks[1]) caseSum += 1; // Middle Pair
