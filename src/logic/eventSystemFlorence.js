@@ -82,8 +82,8 @@ export const COLLUSION_SIGNALS = {
     en: '[Weak Hand] My hand isn\'t good enough - stepping back.'
   },
   PLAYER_WEAK: {
-    ko: '[폴드 권고] 패를 보니 이번은 내려놓는게 나을 것 같아요.',
-    en: '[Fold Advice] From what I can tell, folding is the better play here.'
+    ko: '[폴드 권고] 상황봐서 폴드 하시는게 나을 것 같아요.',
+    en: '[Fold Advice] I think it\'s better to fold depending on the situation.'
   },
   SUPPORT_ME: {
     ko: '[팟 빌딩] 제 패가 좋아요. 상황 보면서 레이즈로 판 키워주시겠어요?',

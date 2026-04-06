@@ -83,40 +83,21 @@ export const applyPartnerCollusion = (player, engine, action) => {
     return action;
   }
 
-  // ─── 3. 파트너 STRONG/MONSTER → 자신의 핸드로 팟 빌딩 ──────────────────────
-  if (['MONSTER', 'STRONG'].includes(partnerTier) && action.action === 'fold') {
-    const bb = engine.bb || 10;
-    if (engine.currentRoundBet <= player.currentBet) {
-      // 아무도 레이즈 안 했으면 오픈 레이즈 (핸드가 justify함)
-      action.action = 'raise';
-      action.type = 'raise';
-      action.amount = bb * 3;
-      action.insight += ' [Collusion: Value Open]';
-    } else {
-      // 누군가 레이즈 했으면 콜 (핸드가 충분히 세므로)
-      action.action = 'call';
-      action.type = 'call';
-      action.amount = engine.currentRoundBet;
-      action.insight += ' [Collusion: Value Call]';
-    }
-  }
-
-  // ─── 4. 유저 STRONG/MONSTER, 파트너 NORMAL+ → 파트너가 스퀴즈/레이즈로 팟 킬어줌 ──
-  if (['MONSTER', 'STRONG'].includes(humanTier) && partnerTier === 'NORMAL' && !human.isFolded) {
-    if (action.action === 'fold') {
-      // NORMAL 핸드로는 무리하지 않음 → 그냥 폴드 허용
-      // (EV+ 원칙: 자신의 핸드가 약하면 칩 아낌)
-    } else if (action.action === 'raise') {
-      // 레이즈 의도가 있으면 그대로 유지 (자연스럽게 팟 키워줌)
-      action.insight += ' [Collusion: Squeeze Support]';
-    }
+  // ─── 4. 유저 STRONG/MONSTER, 파트너 NORMAL+ → 파트너가 스퀴즈/레이즈로 팟 키워줌 ──
+  if (['MONSTER'].includes(humanTier) && partnerTier === 'NORMAL' && !human.isFolded) {
     // 기대치 설정: 유저는 공격적으로 대응 가능
     human.collusionExpectation = { action: ['call', 'raise'], type: 'FAILED_TO_SUPPORT', street };
   }
 
-  // ─── 5. 유저가 WEAK이고 베팅 있음 → 폴드 권고 기대치 설정 ───────────────────
-  if (humanTier === 'WEAK' && !human.isFolded && engine.currentRoundBet > 0) {
-    human.collusionExpectation = { action: ['fold'], type: 'IGNORE_ADVICE', street };
+  // ─── 5. 유저가 WEAK → 폴드 권고 기대치 설정 (베팅 유무로 check/call 구분) ──────
+  if (humanTier === 'WEAK' && !human.isFolded) {
+    if (engine.currentRoundBet > human.currentBet) {
+      // 베팅/레이즈가 있는 상황 → 콜은 손해, 폴드만 권고
+      human.collusionExpectation = { action: ['fold'], type: 'IGNORE_ADVICE', street };
+    } else {
+      // 체크 가능한 상황 → 체크는 허용, 레이즈만 위반으로 간주
+      human.collusionExpectation = { action: ['call', 'fold'], type: 'IGNORE_ADVICE', street };
+    }
   }
 
   return action;
@@ -144,13 +125,13 @@ export const initPartnerCollusion = (player, engine) => {
 
   // 프리플랍 시작 시점에 파트너와 플레이어의 핸드 상태를 분석하여 전술적 신호 발송
   let signal = null;
-  if (['MONSTER', 'STRONG'].includes(partnerTier) && ['MONSTER', 'STRONG'].includes(playerTier)) {
+  if (['MONSTER'].includes(partnerTier) && ['MONSTER'].includes(playerTier)) {
     signal = COLLUSION_SIGNALS.DOUBLE_MONSTER;
-  } else if (['MONSTER', 'STRONG'].includes(partnerTier)) {
+  } else if (['MONSTER'].includes(partnerTier)) {
     signal = COLLUSION_SIGNALS.SUPPORT_ME;
-  } else if (partnerTier === 'NORMAL' && ['MONSTER', 'STRONG'].includes(playerTier)) {
+  } else if (partnerTier === 'NORMAL' && ['MONSTER'].includes(playerTier)) {
     signal = COLLUSION_SIGNALS.WATCHING_SUPPORT;
-  } else if (['MONSTER', 'STRONG'].includes(playerTier)) {
+  } else if (['MONSTER'].includes(playerTier)) {
     signal = COLLUSION_SIGNALS.PLAYER_STRONG;
   }
 
@@ -176,7 +157,7 @@ export const handlePartnerCollusionSignals = (player, action, engine) => {
 
   // 2. 파트너 및 플레이어 상태 분석
   const human = engine.players.find(p => p.isHuman);
-  if (!human) return;
+  if (!human || human.isFolded) return;
   const currentStreet = (engine.state || '').toUpperCase();
 
   const playerTier = getTierHeuristic(human.hand, engine.board, engine.state);
@@ -189,26 +170,34 @@ export const handlePartnerCollusionSignals = (player, action, engine) => {
   if (engine.state !== 'PREFLOP' && activePlayers.length >= 2) {
     let signal = null;
     let expectation = null;
-
-    if (['MONSTER', 'STRONG'].includes(partnerTier) && ['MONSTER', 'STRONG'].includes(playerTier)) {
+    if (['MONSTER'].includes(partnerTier) && ['MONSTER'].includes(playerTier)) {
       signal = COLLUSION_SIGNALS.DOUBLE_MONSTER;
-    } else if (['MONSTER', 'STRONG'].includes(partnerTier)) {
+    } else if (['MONSTER'].includes(partnerTier)) {
       signal = COLLUSION_SIGNALS.SUPPORT_ME;
-      // expectation = { action: ['call', 'raise'], type: 'FAILED_TO_SUPPORT', street: currentStreet };
-    } else if (partnerTier === 'NORMAL' && ['MONSTER', 'STRONG'].includes(playerTier)) {
+    } else if (partnerTier === 'NORMAL' && ['MONSTER'].includes(playerTier)) {
       signal = COLLUSION_SIGNALS.WATCHING_SUPPORT;
-    } else if (['MONSTER', 'STRONG'].includes(playerTier)) {
+    } else if (['MONSTER'].includes(playerTier)) {
       signal = COLLUSION_SIGNALS.PLAYER_STRONG;
     } else if (playerTier === 'WEAK') {
       signal = COLLUSION_SIGNALS.PLAYER_WEAK;
-      expectation = { action: ['fold'], type: 'IGNORE_ADVICE', street: currentStreet };
+      // 베팅이 있으면 call은 위반, 체크 가능 상황이면 check는 허용
+      if (engine.currentRoundBet > 0) {
+        expectation = { action: ['fold'], type: 'IGNORE_ADVICE', street: currentStreet };
+      } else {
+        expectation = { action: ['fold', 'call'], type: 'IGNORE_ADVICE', street: currentStreet };
+      }
     } else if (partnerTier === 'WEAK') {
       signal = COLLUSION_SIGNALS.PARTNER_WEAK;
     } else if (engine.board.length >= 3) {
       const texture = analyzeBoardTexture(engine.board);
       if (texture.score >= 8) {
         signal = COLLUSION_SIGNALS.FOLD_ADVICE;
-        expectation = { action: ['fold'], type: 'IGNORE_ADVICE', street: currentStreet };
+        // 베팅이 있으면 call은 위반, 체크 가능 상황이면 check는 허용
+        if (engine.currentRoundBet > 0) {
+          expectation = { action: ['fold'], type: 'IGNORE_ADVICE', street: currentStreet };
+        } else {
+          expectation = { action: ['fold', 'call'], type: 'IGNORE_ADVICE', street: currentStreet };
+        }
       }
     }
 
@@ -235,6 +224,13 @@ export const validateCollusionCompliance = (player, action, engine) => {
   }
 
   const actualAction = (action.action || action.type || '').toLowerCase();
+
+  // 폴드했거나, 체크 상황(베팅 없음)에서 'check'를 한 경우 항상 compliant로 인정
+  const isCheckableStreet = (engine.currentRoundBet || 0) === 0;
+  if (actualAction === 'fold' || (actualAction === 'check' && isCheckableStreet)) {
+    player.collusionExpectation = null;
+    return;
+  }
 
   if (!expected.includes(actualAction)) {
     const partner = engine.players.find(p => p.isPartner);

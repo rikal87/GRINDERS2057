@@ -11,7 +11,7 @@ export const FLORENCE_DIALOGUE = {
     ],
     ko: [
       "재미있게 만들어보자고.",
-      "따라오려면 서둘러야 할 거야, 달링.",
+      "따라오려면 서둘러야 할 거야, 자기.",
       "날 지루하게 만들지 마.",
       "이게 라스베이거스 스타일이지.",
       "밑천은 든든히 챙겨왔겠지?"
@@ -30,7 +30,7 @@ export const FLORENCE_DIALOGUE = {
       "방금 그게 블러핑이었어?",
       "기부금 고맙게 받을게.",
       "뻔하네.",
-      "미안해지려고 하네. 아주 조금."
+      "미안해지려고 하네."
     ]
   },
   [CHAT_TRIGGERS.WIN_SMALL]: {
@@ -50,7 +50,7 @@ export const FLORENCE_DIALOGUE = {
       "그 순간을 즐겨둬.",
       "운이 정말 좋았나 보네.",
       "그게 얼마나 갈지 두고 보자고.",
-      "좋아."
+      "뭐, 좋아."
     ]
   },
   [CHAT_TRIGGERS.LOSE_SMALL]: {
@@ -107,10 +107,10 @@ export const FLORENCE_DIALOGUE = {
     ],
     ko: [
       "너의 담력을 한번 테스트해볼까.",
-      "판 좀 키워볼게, 달링.",
+      "판 좀 키워볼게, 자기.",
       "게임을 좀 더 흥미롭게 만들어보자고.",
       "이게 라스베이거스식 레이즈야.",
-      "조금 아프게 해줄게."
+      "아프게 해줄게, 아주 조금이니깐 긴장 풀고."
     ]
   },
   [CHAT_TRIGGERS.CALL]: {
@@ -131,7 +131,7 @@ export const FLORENCE_DIALOGUE = {
   },
   [CHAT_TRIGGERS.CHECK]: {
     en: ["Check.", "Checking.", "Go ahead.", "Your turn, dear.", "Pass."],
-    ko: ["체크.", "체크할게.", "네 순서야.", "어디 한번 해봐, 달링.", "패스."]
+    ko: ["체크.", "체크할게.", "네 순서야.", "어디 한번 해봐, 자기.", "패스."]
   },
   [CHAT_TRIGGERS.ELIMINATED_SELF]: {
     en: [
@@ -175,7 +175,7 @@ export const FLORENCE_DIALOGUE = {
       "Tick-tock. Is it that hard to fold?"
     ],
     ko: [
-      "달링, 시간 가고 있잖아.",
+      "자기, 시간 가고 있잖아.",
       "여자를 기다리게 하는 건 매너가 아니지.",
       "도망칠 궁리 중이야? 소용없을 텐데.",
       "빨리 정해, 난 이 테이블 말고도 할 일이 많거든.",
@@ -207,7 +207,7 @@ export const FLORENCE_DIALOGUE = {
       "That was a expensive lesson for you, wasn't it?"
     ],
     ko: [
-      "네 연기 좀 어설펐어. 시도는 좋았어, 달링.",
+      "네 연기 좀 어설펐어. 시도는 좋았어, 자기.",
       "어려운 콜이었지만, 널 훤히 들여다보고 있었지.",
       "데이터는 블러핑이라고 말했고, 내 직감은 확신했어.",
       "보드 상황에 비해 너무 공격적이더라. 걸렸어.",
@@ -239,11 +239,11 @@ export const FLORENCE_DIALOGUE = {
       "Let's see if you can handle the crescendo. Reraise."
     ],
     ko: [
-      "그게 최선이야? 실망인걸, 달링. 리레이즈.",
+      "그게 최선이야? 실망인걸. 리레이즈.",
       "네 의도가 너무 뻔히 보여. 리레이즈.",
       "세련된 반격이지. 리레이즈.",
       "우아함 속에도 발톱은 숨겨져 있는 법이야. 리레이즈.",
-      "이 크레센도를 감당할 수 있겠어? 리레이즈."
+      "이 크레센도를 감당할 수 있을지 보자고. 리레이즈."
     ]
   },
   [CHAT_TRIGGERS.CHECK_GOOD]: {
@@ -252,30 +252,30 @@ export const FLORENCE_DIALOGUE = {
       "A graceful pause. Check.",
       "Free card? I'll accept this gift. Check back.",
       "Keeping the harmony for now. Check.",
-      "Your move. I'll watch for a moment. Check."
+      "I'll watch for a moment. Check back."
     ],
     ko: [
-      "체크백. 캔버스를 좀 관찰해 볼게, 달링.",
-      "우아한 쉼표라고 해둘까. 체크.",
-      "공짜 카드? 선물로 받아두지. 체크백.",
-      "일단은 조화를 유지해 보자고. 체크.",
-      "네 차례야. 잠깐 지켜보지. 체크."
+      "체크백. 판을 좀 관찰해 볼게, 자기.",
+      "우아한 쉼표라고 해두지. 체크백.",
+      "공짜 카드라. 선물로 받아두지. 체크백.",
+      "일단은 조화를 유지해 보자고. 첵굿.",
+      "잠깐 지켜보지. 첵굿."
     ]
   },
   [CHAT_TRIGGERS.FOLD_STRONG]: {
     en: [
-      "Even a masterpiece must be abandoned occasionally, darling. Fold.",
-      "A graceful exit, darling. Fold.",
-      "Strong hand, but the composition is flawed, dear. Fold.",
-      "I'll find a more perfect moment, darling. Fold.",
-      "Respecting your vision today, dear. Fold."
+      "Even a masterpiece must be abandoned occasionally, Fold.",
+      "A graceful exit, Fold.",
+      "Strong hand, but the composition is flawed, Fold.",
+      "I'll find a more perfect moment, Fold.",
+      "Respecting your vision today, Fold."
     ],
     ko: [
-      "걸작이라도 때로는 포기해야 할 때가 있는 법이야, 달링. 폴드.",
-      "우아한 퇴장이야, 달링. 폴드.",
-      "강한 패지만 구도에 결함이 있네, 달링. 폴드.",
-      "더 완벽한 순간을 찾아보겠어, 달링. 폴드.",
-      "오늘의 네 비전은 존중해주지, 달링. 폴드."
+      "걸작이라도 때로는 포기해야 할 때가 있는 법이야. 폴드.",
+      "우아한 퇴장이야. 폴드.",
+      "강한 패지만 구도에 결함이 있네, 폴드.",
+      "더 완벽한 순간을 찾아보겠어, 폴드.",
+      "오늘의 네 비전은 존중해주지, 폴드."
     ]
   }
 };

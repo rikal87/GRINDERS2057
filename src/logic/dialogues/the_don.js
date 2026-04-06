@@ -177,11 +177,13 @@ export const THE_DON_DIALOGUE = {
   },
   [CHAT_TRIGGERS.CHECK]: {
     en: [
+      "Checking. I'll let you speak first.",
       "Make a move.",
       "Waiting.",
       "Your turn."
     ],
     ko: [
+      "체크. 네 말을 먼저 들어보지.",
       "움직여 봐.",
       "기다려주지.",
       "네 차례다."
@@ -295,21 +297,19 @@ export const THE_DON_DIALOGUE = {
     ko: [
       "내 권위에 도전하는 건가? 리레이즈.",
       "여기 규칙은 내가 정한다. 리레이즈.",
-      "대담한 수군, 하지만 나는 더 대담하지. 다시 레이즈.",
+      "대담한 수군, 하지만 나는 더 대담하지. 리레이즈.",
       "이 배짱을 감당할 수 있는지 보지. 리레이즈.",
       "이 대화의 수위를 좀 높여볼까. 리레이즈."
     ]
   },
   [CHAT_TRIGGERS.CHECK_GOOD]: {
     en: [
-      "Checking. I'll let you speak first.",
       "Observation is key. Check back.",
       "I'll take the free card. No need to rush the inevitable. Check.",
       "Keeping the pot controlled. The old way. Check.",
       "Your move. Make it a good one. Check."
     ],
     ko: [
-      "체크. 네 말을 먼저 들어보지.",
       "관찰이 핵심이지. 체크백.",
       "공짜 카드는 고맙게 받겠다. 서두를 것 없지. 체크.",
       "팟을 정석대로 조절하지. 체크.",

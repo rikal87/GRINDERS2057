@@ -21,14 +21,12 @@ export const JNGL_MAN_DIALOGUE = {
     en: [
       "So easy.",
       "Total domination.",
-      "I own your soul now.",
       "Wooooo!",
       "The math doesn't lie."
     ],
     ko: [
       "너무 쉽군.",
       "완벽한 지배다.",
-      "이제 네 영혼은 내 거야.",
       "우오오오오!",
       "수학은 거짓말을 안 하지."
     ]
