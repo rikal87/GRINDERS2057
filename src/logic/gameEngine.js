@@ -8,6 +8,7 @@ import { PlayerFactory } from './playerFactory.js';
 import { HandHistoryManager } from './HandHistoryManager.js';
 import { audioManager } from './audioManager.js';
 import { PotManager } from './PotManager.js';
+import { generateToughCallThought } from './thinkingScriptGenerator.js';
 import { EventAdaptor } from './gameEngineEventAdaptor.js';
 import { getJoinedPartners } from './partnerSystem.js';
 import { shareBenefitForPartners, shareCollusion } from './partnerContractSystem.js';
@@ -238,6 +239,21 @@ export class GameEngine {
     // Completely shuffle the NPCs so guaranteed ones don't always sit right next to the player
     const shuffledNpcs = tableNpcs.sort(() => Math.random() - 0.5);
     players.push(...shuffledNpcs);
+
+    // De-duplicate names for players sharing the same persona
+    const nameCounts = {};
+    players.forEach(p => {
+      nameCounts[p.name] = (nameCounts[p.name] || 0) + 1;
+    });
+
+    const currentNameIndices = {};
+    players.forEach(p => {
+      const originalName = p.name;
+      if (nameCounts[originalName] > 1) {
+        currentNameIndices[originalName] = (currentNameIndices[originalName] || 0) + 1;
+        p.name = `${originalName} #${currentNameIndices[originalName]}`;
+      }
+    });
 
     if (this.isTutorial) {
       this.mentor = players.find(e => e.name === 'Max(Mentor)');
@@ -733,6 +749,25 @@ export class GameEngine {
 
     if (!withoutShowdownEvent) {
       this.state = 'SHOWDOWN';
+
+      // 1. Calculate final equity for active players to determine reveal order
+      calculateEquity(this.players, this.board);
+
+      // 2. Filter active players who need card reveal (exclude folded/eliminated/humans who are already visible)
+      const showdowers = this.players.filter(p => !p.isFolded && p.hand && p.hand.length === 2);
+      
+      // 3. Sort by equity ascending (lowest equity / losers open first to build tension)
+      showdowers.sort((a, b) => (a.equity || 0) - (b.equity || 0));
+
+      // 4. Reveal cards sequentially with a delay
+      for (const p of showdowers) {
+        if (!p.isHuman && !p.showHoleCards) {
+          p.showHoleCards = true;
+          audioManager.playSFX('ui-click-soft');
+          await sleep(1000); // 1.0s delay between card reveals
+        }
+      }
+
       eventAdaptor.showdown({ result, pot: currentPot, runoutInProgress: this.runoutInProgress, board: this.board, result })
       eventAdaptor.endStreet('SHOWDOWN');
     } else {
@@ -761,43 +796,51 @@ export class GameEngine {
       }
     } else {
       const isHuge = this.pot > (this.bb * 40);
+      let specialEventHandled = false;
+
+      // [NEW] Check for mutually exclusive special events (Bluff Caught)
+      if (this.state === 'SHOWDOWN' && !withoutShowdownEvent) {
+        // Find if someone was bluffing on the river and lost (Equity <= 30%)
+        const bluffer = this.players.find(p => !bestWinnersList.includes(p.id) && p.id === this.aggressor && p.lastActionStreet === 'RIVER' && ['raise', 'bet', 'all_in'].includes(p.lastActionType) && p.lastActionEquity <= 0.3);
+        
+        if (bluffer) {
+          // Find the catcher (a winner who called on the river)
+          const catcher = this.players.find(p => bestWinnersList.includes(p.id) && p.lastActionStreet === 'RIVER' && p.lastActionType === 'call');
+          
+          if (catcher && !catcher.isHuman && !catcher.isFolded && !catcher.isEliminated) {
+            // Priority 1: NPC catcher taunts the bluffer (User or another NPC)
+            chatAI(catcher, CHAT_TRIGGERS.BLUFF_CAUGHT_FOR_PLAYER, "", 0, this);
+            specialEventHandled = true;
+          } else if (bluffer && !bluffer.isHuman && !bluffer.isFolded && !bluffer.isEliminated) {
+            // Priority 2: NPC bluffer got caught and complains
+            chatAI(bluffer, CHAT_TRIGGERS.BLUFF_CAUGHT, "", 0, this);
+            specialEventHandled = true;
+          }
+        }
+      }
+
       // Process AI reactions and Tilt (Tilt only changes if they chat)
       this.players.forEach(p => {
         // Skip Humans, Folded players, and Eliminated players
         if (p.isHuman || p.isFolded || p.isEliminated) return;
 
         const isBestWinner = bestWinnersList.includes(p.id);
-        const chatPercentage = (isHuge ? 0.6 : 0.3) + (p.isDrunken ? 0.3 : 0.0);
 
-        // [NEW] Check for WIN_HERO_CALL and BLUFF_CAUGHT
-        let specificTrigger = null;
-        if (this.state === 'SHOWDOWN' && !withoutShowdownEvent) {
-          const isAggressiveAction = ['raise', 'bet', 'all_in'].includes(p.lastActionType);
-          const isCallAction = p.lastActionType === 'call';
-
-          // 1. WIN_HERO_CALL: NPC called on river and won with low equity
-          if (isBestWinner && p.lastActionStreet === 'RIVER' && isCallAction && p.lastActionPotOdds > 0) {
-            if (p.lastActionEquity < p.lastActionPotOdds) {
-              specificTrigger = CHAT_TRIGGERS.WIN_HERO_CALL;
-            }
-          }
-          // 2. BLUFF_CAUGHT: NPC was aggressor on river (actually bet/raised) and lost with low equity
-          if (!isBestWinner && p.id === this.aggressor && p.lastActionStreet === 'RIVER' && isAggressiveAction && p.lastActionEquity <= 0.3) {
-            specificTrigger = CHAT_TRIGGERS.BLUFF_CAUGHT;
-          }
+        // Tilt calculation
+        if (isBestWinner) {
+          p.tilt = Math.max(0, p.tilt - Math.round(maxWinAmount / this.bb));
+        } else {
+          p.tilt = Math.min(100, p.tilt + Math.round(this.pot / this.bb * 0.5));
         }
 
-        if (specificTrigger || Math.random() < chatPercentage) {
-          const trigger = specificTrigger || (isBestWinner ? (isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL) : (isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL));
-          chatAI(p, trigger, "", 0, this);
+        // If a special event handled the chat, suppress normal win/lose chat to avoid UI clutter
+        if (specialEventHandled) return;
 
-          if (isBestWinner) {
-            // Decrease tilt based on how much they actually won
-            p.tilt = Math.max(0, p.tilt - Math.round(maxWinAmount / this.bb));
-          } else {
-            // Increase tilt based on the total pot they lost out on
-            p.tilt = Math.min(100, p.tilt + Math.round(this.pot / this.bb * 0.5));
-          }
+        const chatPercentage = (isHuge ? 0.6 : 0.3) + (p.isDrunken ? 0.3 : 0.0);
+        
+        if (Math.random() < chatPercentage) {
+          const trigger = isBestWinner ? (isHuge ? CHAT_TRIGGERS.WIN_HUGE : CHAT_TRIGGERS.WIN_SMALL) : (isHuge ? CHAT_TRIGGERS.LOSE_HUGE : CHAT_TRIGGERS.LOSE_SMALL);
+          chatAI(p, trigger, "", 0, this);
         }
       });
     }
@@ -1070,14 +1113,13 @@ export class GameEngine {
 
   async startAllInShowdown() {
     this.runoutInProgress = true;
-    // Reveal Hands (Visually handled by UI checking isFolded/isAllIn, but we can flag it)
+    // Reveal all active hands for the All-In runout
     this.players.forEach(p => {
       if (!p.isFolded) {
-        // p.isFaceUp = true; // Optional: If UI needs explicit flag
+        p.showHoleCards = true;
         console.log(`[ALL - IN] Revealing hand for ${p.name}: `, p.hand);
       }
     });
-
 
     calculateEquity(this.players, this.board);
     // Notify System/UI
@@ -1097,14 +1139,17 @@ export class GameEngine {
     if (this.state === 'PREFLOP') {
       eventAdaptor.endStreet(this.state);
       this.dealFlop();
+      calculateEquity(this.players, this.board); // Recalculate equity after flop
       await this.runNextStep();
     } else if (this.state === 'FLOP') {
       eventAdaptor.endStreet(this.state);
       this.dealTurn();
+      calculateEquity(this.players, this.board); // Recalculate equity after turn
       await this.runNextStep();
     } else if (this.state === 'TURN') {
       eventAdaptor.endStreet(this.state);
       this.dealRiver();
+      calculateEquity(this.players, this.board); // Recalculate equity after river
       await this.runNextStep();
     } else if (this.state === 'RIVER') {
       await sleep(1500); // 1.5s delay
@@ -1220,7 +1265,22 @@ export class GameEngine {
       handlePartnerCollusionSignals(player, action, this);
     }
 
-    const delay = (action.delay || (1000 + Math.random() * 1000)) * (window.isFastFowardActive ? 0.2 : 1);
+    // [NEW] Inject Advanced Tough Call Monologues on the River
+    // Skip this if the user has folded and fast-forward is active
+    if (this.state === 'RIVER' && (engine.currentRoundBet - player.currentBet) > 0 && !window.isFastFowardActive) {
+      const advancedThoughtArray = generateToughCallThought(player, this, action);
+      if (advancedThoughtArray && Array.isArray(advancedThoughtArray) && advancedThoughtArray.length > 0) {
+        action.thoughtSequence = advancedThoughtArray;
+      }
+    }
+
+    let delay = (action.delay || (1000 + Math.random() * 1000)) * (window.isFastFowardActive ? 0.2 : 1);
+    
+    // If they have a narrative sequence, force a longer delay to read the text
+    if (action.thoughtSequence) {
+      const neededDelay = action.thoughtSequence.length * 2000; // 2 seconds per line
+      delay = Math.max(delay, neededDelay) * (window.isFastFowardActive ? 0.2 : 1);
+    }
     console.log(`[AI TURN] ${player.name} thinking for ${Math.floor(delay)}ms...${window.isFastFowardActive ? ' (FAST_FOLD)' : ''}`);
     // await sleep(delay); // Removed redundant sleep. Timer loop handles delay.
     // Safety check if state changed during delay
@@ -1229,14 +1289,34 @@ export class GameEngine {
     player.timeBankRemaining = player.maxTimeBank || 15; // Reset for visualization
     const step = 100;
     let elapsed = 0;
+    
+    // Thought sequence tracker
+    let thoughtIndex = -1;
+    let thoughtInterval = action.thoughtSequence ? delay / action.thoughtSequence.length : delay;
+
     // Animate the delay
     while (elapsed < delay) {
       if (this.checkSkipAction() || this.runoutInProgress) break;
       await sleep(step);
       elapsed += step;
+      
+      // Advance thought sequence based on elapsed time
+      if (action.thoughtSequence) {
+        const expectedIndex = Math.min(
+          Math.floor(elapsed / thoughtInterval), 
+          action.thoughtSequence.length - 1
+        );
+        if (expectedIndex !== thoughtIndex) {
+          thoughtIndex = expectedIndex;
+          player.lastThought = action.thoughtSequence[thoughtIndex];
+        }
+      }
+
       player.timeBankRemaining = Math.max(0, player.timeBankRemaining - (step / 1000));
     }
     if (this.checkSkipAction() || this.runoutInProgress) return;
+    
+    player.lastThought = null; // Clear thought right before taking action
     await this.handlePlayerAction(player, action);
   }
   checkSkipAction() {

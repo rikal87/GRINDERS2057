@@ -1,5 +1,5 @@
 import { reactive } from 'vue';
-import { createPlayRecordStats, GAME_RESULT_CODE, recordPlayStatsSessionForPlayer, PLAY_RECORD_STATS_TYPE } from './playRecordStats';
+import { createPlayRecordStats, GAME_RESULT_CODE, recordPlayStatsSessionForPlayer, PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
 import { hydrateStoreItems } from './items.js';
 import { get, set, del } from 'idb-keyval';
 import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';

@@ -1,6 +1,7 @@
 import { CLASSES } from './persona.js';
 import { store } from './store.js';
 import { ITEM_EFFECT_ID } from './constants.js';
+import { npcMemoryManager } from './npcMemoryManager.js';
 
 export class PlayerFactory {
   static createHumanPlayer(engine, humanClass) {
@@ -127,12 +128,22 @@ export class PlayerFactory {
     // Fallback if engine.buyIn is missing somehow (preventNaN)
     const engineBuyIn = engine.buyIn || 1000;
     const chips = engineBuyIn * (villan.chipMultiply || 1);
-    const genId = customId || crypto.randomUUID();
+    
+    let genId = customId || crypto.randomUUID();
+    let finalName = villan.name;
+
+    // Apply NPC Memory System for generic NPCs only (not partners, not bosses)
+    if (!villan.isPartner && !villan.isBoss && villan.id !== 'named_pro' && villan.id !== 'Max') {
+      const locale = store.settings?.language || 'ko'; // default to ko if missing
+      const npcMem = npcMemoryManager.generateAndRegisterNPC(villan, locale);
+      genId = npcMem.id;
+      finalName = `${npcMem.name}`; // Just use the generated name
+    }
 
     const aiPlayer = {
       id: genId,
       personaId: villan.id,
-      name: villan.name,
+      name: finalName,
       tempXPBonus: 0,
       class: villan,
       hand: [],

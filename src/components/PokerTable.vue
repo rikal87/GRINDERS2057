@@ -12,9 +12,9 @@
 
     <Transition name="fold-cards">
       <div v-if="!p.isFolded" :class="{ 'cards': true, 'is-human': p.isHuman }">
-        <!-- Human shows cards, others hidden until showdown -->
+        <!-- Cards are hidden for NPCs unless explicitly revealed (showHoleCards) -->
         <Card v-for="(c, i) in p.hand" :key="i" :code="c"
-          :hidden="!p.isHuman && engine.state !== 'SHOWDOWN' && !p.showHoleCards" />
+          :hidden="!p.isHuman && !p.showHoleCards" />
       </div>
     </Transition>
     <Transition name="fade">
@@ -102,6 +102,19 @@
         <Card v-for="(c, i) in engine.board" :key="i" :code="c" />
         <div v-for="i in (5 - engine.board.length)" :key="'p' + i" class="card-placeholder"></div>
       </div>
+      <!-- Live All-In Equity HUD -->
+      <div v-if="engine.runoutInProgress" class="allin-equity-hud">
+        <div class="equity-title">ALL-IN REALTIME EQUITY</div>
+        <div class="equity-players">
+          <div v-for="p in activeRunoutPlayers" :key="p.id" class="equity-row">
+            <span class="eq-name" :class="{ 'is-me': p.isHuman }">{{ p.name }}</span>
+            <div class="eq-bar-bg">
+              <div class="eq-bar-fill" :style="{ width: (shouldShowEquity(p) ? (p.equity || 0) : 0) + '%' }"></div>
+            </div>
+            <span class="eq-percent">{{ shouldShowEquity(p) ? (p.equity || 0).toFixed(0) + '%' : '?%' }}</span>
+          </div>
+        </div>
+      </div>
     </div>
     <!-- Players (Relative Positioning) -->
 
@@ -151,6 +164,16 @@ const props = defineProps({
   engine: Object
 });
 const emit = defineEmits(['openHistory']);
+
+const activeRunoutPlayers = computed(() => {
+  if (!props.engine || !props.engine.players) return [];
+  return props.engine.players.filter(p => !p.isFolded && p.hand && p.hand.length === 2);
+});
+
+const shouldShowEquity = (p) => {
+  // Always show for human. For AI, only show if they have been revealed (showHoleCards is true)
+  return p.isHuman || p.showHoleCards;
+};
 
 watch(() => props.engine?.state, (s) => {
   console.log('[PokerTable] State changed to:', s);
@@ -395,4 +418,102 @@ const isTimeCritical = (p, idx) => {
 @import '../styles/components/PokerTable.css';
 @import '../styles/components/PokerTable-layout-desktop.css';
 @import '../styles/components/PokerTable-layout-mobile.css';
+</style>
+
+<style scoped>
+.allin-equity-hud {
+  margin-top: 15px;
+  background: rgba(4, 8, 12, 0.95);
+  border: 1.5px solid var(--neon-cyan);
+  /* Cyberpunk cut corner style */
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.3), inset 0 0 10px rgba(0, 240, 255, 0.1);
+  padding: 12px 16px;
+  width: 290px;
+  box-sizing: border-box;
+  z-index: 10;
+  position: relative;
+}
+
+/* Subtle CRT Scanline overlay */
+.allin-equity-hud::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 240, 255, 0.08) 50%
+  );
+  background-size: 100% 3px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.equity-title {
+  font-family: 'Outfit', 'Consolas', monospace;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: var(--neon-cyan);
+  text-align: center;
+  margin-bottom: 10px;
+  text-shadow: 0 0 5px var(--neon-cyan);
+  text-transform: uppercase;
+}
+
+.equity-players {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.equity-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 0.8rem;
+}
+
+.eq-name {
+  width: 70px;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: bold;
+}
+
+.eq-name.is-me {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 4px rgba(0, 240, 255, 0.5);
+}
+
+.eq-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-radius: 0; /* Sharp sci-fi edges */
+  overflow: hidden;
+}
+
+.eq-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-cyan), #00ffaa);
+  box-shadow: 0 0 6px var(--neon-cyan);
+  transition: width 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border-radius: 0; /* Sharp sci-fi edges */
+}
+
+.eq-percent {
+  width: 40px;
+  text-align: right;
+  color: #fff;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
 </style>
