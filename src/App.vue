@@ -6,7 +6,16 @@ import { GameEngine } from './logic/gameEngine';
 import Intro from './components/Intro.vue';
 import Splash from './components/Splash.vue';
 import Lobby from './components/Lobby.vue';
+import TerminalLobby from './components/TerminalLobby.vue';
+import MeatspaceRoom from './components/MeatspaceRoom.vue';
+import AmbientSafeHouseProto from './components/AmbientSafeHouseProto.vue';
+import MarathonSafeHouse from './components/MarathonSafeHouse.vue';
+import TableSearchPage from './components/TableSearchPage.vue';
 import Shop from './components/Shop.vue';
+import PartnerNetPage from './components/PartnerNetPage.vue';
+import AiNexusPage from './components/AiNexusPage.vue';
+import ModuleDeckPage from './components/ModuleDeckPage.vue';
+import CommsInboxPage from './components/CommsInboxPage.vue';
 import SafeHouse from './components/SafeHouse.vue';
 import CryptoExchange from './components/CryptoExchange.vue';
 import PokerTable from './components/PokerTable.vue';
@@ -14,6 +23,7 @@ import ControlPanel from './components/ControlPanel.vue';
 import AudioPlayer from './components/AudioPlayer.vue';
 import HistoryPopup from './components/HistoryPopup.vue';
 import AgentTaskPopup from './components/AgentTaskPopup.vue';
+import { zones } from './logic/zone.js';
 import AiAgentPopup from './components/AiAgentPopup.vue';
 import SkillSelectorModal from './components/SkillSelectorModal.vue';
 import PlayStatsPopup from './components/PlayStatsPopup.vue';
@@ -121,6 +131,44 @@ onMounted(() => {
         searchPopupRef.value.open();
       }
     }
+  });
+
+  window.addEventListener('start-spectate-match', (e) => {
+    const { snapshot, heroId, locationId = 'high_grand_casino' } = e.detail || {};
+    window.isAtTable = true;
+    window.currentLocationId = locationId;
+
+    // Search zone.js for actual location config
+    let locationConfig = null;
+    for (const zone of zones) {
+      const loc = zone.locations.find(l => l.id === locationId);
+      if (loc) {
+        locationConfig = loc;
+        break;
+      }
+    }
+
+    const tableConfig = locationConfig?.tables || {};
+    const sb = tableConfig.sb || 50;
+    const bb = tableConfig.bb || 100;
+    const amount = tableConfig.amount || 10000;
+    const baseRake = tableConfig.baseRake !== undefined ? tableConfig.baseRake : 0.05;
+    const rakeCap = tableConfig.rakeCap || (bb * 10);
+
+    // Create spectating GameEngine session with guaranteed hero placement
+    engine.value = new GameEngine(
+      store.selectedClass, 6, sb, bb, amount, baseRake, rakeCap,
+      false, locationId, locationConfig?.level || 1, amount * 2, false, null, false,
+      {
+        isSpectateMode: true,
+        spectateHero: heroId || (snapshot ? snapshot.heroId : 'Max'),
+        snapshot
+      }
+    );
+    window.gameEngine = engine.value;
+    currentView.value = 'table';
+    audioManager.playTrackByZoneId(locationId);
+    engine.value.startNewHand(true);
   });
 
   window.addEventListener('trigger-cashout', () => {
@@ -249,7 +297,7 @@ const cancelReboot = () => {
 const handleStart = (mode) => {
   if (mode === 'new') resetStore();
   audioManager.playSFX('riser')
-  currentView.value = 'lobby';
+  currentView.value = 'home';
   audioManager.play();
   startTimeSystem();
 };
@@ -452,7 +500,7 @@ watch(currentView, (newView) => {
       </div>
       <!-- Settings Overlay -->
       <div v-else :key="currentView">
-        <header v-if="currentView !== 'intro' && currentView !== 'splash'" class="navbar">
+        <header v-if="!['intro', 'splash', 'lobby', 'home'].includes(currentView)" class="navbar">
           <div class="header-main">
             <div class="row">
               <h1 class="glitch-text logo" data-text="GRINDERS 2057">GRINDERS 2057</h1>
@@ -476,29 +524,75 @@ watch(currentView, (newView) => {
         <Intro v-else-if="currentView === 'intro'" @start="handleStart" @calibrate="toggleSettings"
           @quit="handleQuitApp" />
         <section v-else class="game-container">
-          <!-- Lobby View -->
-          <Lobby v-if="currentView === 'lobby'" @join="handleJoinTable" @view="handleView"
-            @openSearch="searchPopupRef?.open()" />
+          <!-- Cyberspace OS Main Lobby Terminal (Marathon Style - Primary Hub) -->
+          <TerminalLobby v-if="currentView === 'lobby' || currentView === 'home'" @join="handleJoinTable" @view="handleView"
+            @openSearch="searchPopupRef?.open()" @openAgentModal="handleOpenAgentModal" />
 
-          <!-- Shop View -->
-          <Shop v-else-if="currentView === 'shop'" @back="handleView('lobby')" />
+          <!-- Full-Screen Terminal OS Table Search Subview -->
+          <TableSearchPage v-else-if="currentView === 'table_search'" @join="handleJoinTable" @back="handleView('lobby')" />
 
-          <!-- Safe House View -->
-          <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" @sleep="handleSleepClick"
+          <!-- Marathon Style SafeHouse (Exact User Requirement) -->
+          <MarathonSafeHouse v-else-if="currentView === 'home'" @enter-terminal="handleView('lobby')" />
+
+          <!-- Pure Ambient Light SafeHouse Prototype (Preserved) -->
+          <AmbientSafeHouseProto v-else-if="currentView === 'ambient_proto'" @enter-terminal="handleView('lobby')"
+            @open-stats="showStatsModal = true" @open-catalog="showCatalog = true" />
+
+          <!-- Full Featured SafeHouse (Preserved for comparison) -->
+          <SafeHouse v-else-if="currentView === 'full_safehouse'" @enter-terminal="handleView('lobby')" @back="handleView('lobby')" @sleep="handleSleepClick"
             @open-task-selector="handleOpenTaskSelector" @open-agent-modal="handleOpenAgentModal"
             @open-skill-selector="handleOpenSkillSelector" @open-stats-modal="showStatsModal = true" />
+
+          <!-- Experimental Wireframe Room (Preserved for 3D View testing) -->
+          <MeatspaceRoom v-else-if="currentView === 'wireframe_room'" @enter-terminal="handleView('lobby')"
+            @open-stats="showStatsModal = true" @open-catalog="showCatalog = true" />
 
           <!-- c House View -->
           <!-- <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" @sleep="handleSleepClick" @open-task-selector="handleOpenTaskSelector" /> -->
 
           <!-- Crypto Exchange View -->
           <CryptoExchange v-else-if="currentView === 'crypto'" @back="handleView('lobby')" />
+          
+          <!-- Black Market View -->
+          <Shop v-else-if="currentView === 'shop'" @back="handleView('lobby')" />
+
+          <!-- Partner Net View -->
+          <PartnerNetPage v-else-if="currentView === 'partner_net'" @back="handleView('lobby')" />
+
+          <!-- AI Nexus View -->
+          <AiNexusPage v-else-if="currentView === 'ai_nexus'" @back="handleView('lobby')" />
+
+          <!-- Module Deck View -->
+          <ModuleDeckPage v-else-if="currentView === 'module_deck'" @back="handleView('lobby')" />
+
+          <!-- Comms Inbox View -->
+          <CommsInboxPage v-else-if="currentView === 'comms_inbox'" @back="handleView('lobby')" />
+
           <!-- Game Table View -->
           <div v-else-if="currentView === 'table'" class="game-container">
             <main>
               <PokerTable :engine="engine" @openHistory="showHistory = true" />
             </main>
-            <ControlPanel :engine="engine" @action="handleAction" @skill="handleSkill" />
+            <ControlPanel v-if="engine && !engine.isSpectateMode" :engine="engine" @action="handleAction" @skill="handleSkill" />
+
+            <!-- Spectator Cornerman Control Bar (Zero Roundedness & CMY Cyberpunk Style) -->
+            <div v-else-if="engine && engine.isSpectateMode" class="spectator-control-bar font-orbitron">
+              <div class="spectator-status-group">
+                <span class="cyan glitch-small">[SPECTATING_MODE]</span>
+                <span class="white">HERO: <b class="yellow">{{ engine.spectateHero || 'Max' }}</b></span>
+                <span class="meta-tag cyan">[LIVE_FEED_STABLE]</span>
+              </div>
+
+              <div class="spectator-actions-group">
+                <button class="btn-intervene-hook font-orbitron" title="Intervene / Corner Advice (Coming Soon)">
+                  <span class="btn-lbl">⚡ CORNERMAN_INTERVENE</span>
+                </button>
+
+                <button class="btn-leave-spectate font-orbitron" @click="handleView('comms_inbox')">
+                  <span class="btn-lbl">EXIT_SPECTATE ➔</span>
+                </button>
+              </div>
+            </div>
 
             <!-- Victory Overlay -->
             <Transition name="slide-up">
@@ -690,5 +784,72 @@ watch(currentView, (newView) => {
 
 
 <style>
-/* Global Styles moved to style.css */
+/* Global Layout Pure Black Background Integration */
+body, #app, .app-shell, .game-container, .layout-container {
+  background-color: #000000 !important;
+  margin: 0;
+  padding: 0;
+}
+
+/* 🤖 [GRINDERS 2057] Cyberspace OS Spectator Control Bar Styling */
+.spectator-control-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: #080808;
+  border-top: 2px solid var(--neon-cyan, #00f0ff);
+  border-radius: 0px !important;
+  box-shadow: 0 -4px 15px rgba(0, 240, 255, 0.15);
+  margin-top: auto;
+}
+
+.spectator-status-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.95rem;
+}
+
+.spectator-status-group .cyan {
+  color: var(--neon-cyan, #00f0ff);
+  font-weight: 900;
+}
+
+.spectator-status-group .yellow {
+  color: var(--neon-yellow, #ccff00);
+}
+
+.spectator-actions-group {
+  display: flex;
+  gap: 14px;
+}
+
+.btn-intervene-hook, .btn-leave-spectate {
+  border-radius: 0px !important;
+  border: 1px solid var(--neon-cyan, #00f0ff);
+  background: #000000;
+  color: var(--neon-cyan, #00f0ff);
+  padding: 8px 18px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.btn-intervene-hook:hover {
+  background: var(--neon-cyan, #00f0ff);
+  color: #000000;
+  box-shadow: 0 0 10px var(--neon-cyan, #00f0ff);
+}
+
+.btn-leave-spectate {
+  border-color: var(--neon-yellow, #ccff00);
+  color: var(--neon-yellow, #ccff00);
+}
+
+.btn-leave-spectate:hover {
+  background: var(--neon-yellow, #ccff00);
+  color: #000000;
+  box-shadow: 0 0 12px var(--neon-yellow, #ccff00);
+}
 </style>

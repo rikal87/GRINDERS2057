@@ -2,13 +2,13 @@ import { reactive } from 'vue';
 import { createPlayRecordStats, GAME_RESULT_CODE, recordPlayStatsSessionForPlayer, PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
 import { hydrateStoreItems } from './items.js';
 import { get, set, del } from 'idb-keyval';
-import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
-import { initializePartners, triggerBankruptRescueForPlayer, gainRelationship, joinPartner } from './partnerSystem';
+import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses.js';
+import { initializePartners, triggerBankruptRescueForPlayer, gainRelationship, joinPartner } from './partnerSystem.js';
 import { setLanguageGetter } from './persona.js';
-import { deleteMessage } from './messageSystem';
+import { deleteMessage } from './messageSystem.js';
 import { zones } from './zone.js';
 import { scheduleEvent, EVENT_ID } from './eventSystem.js';
-import { LOCATION_ID, PARTNER_ID, TYPE_CHANGE_BANKROLL } from './constants.js'
+import { LOCATION_ID, PARTNER_ID, TYPE_CHANGE_BANKROLL, ITEM_EFFECT_ID } from './constants.js'
 import { audioManager } from './audioManager.js';
 const SAVE_KEY = 'cyberpoker_save_v1';
 
@@ -246,11 +246,51 @@ export const getEffectiveMaxLT = () => {
   const modelId = agent.name;
   const planIdx = store.aiAgentTiers[modelId] !== undefined ? store.aiAgentTiers[modelId] : agent.price_plan_idx;
   const baseMax = AI_AGENT_MODEL_AND_PLAN_DATA[modelId]?.price_plan[planIdx]?.maxLt || 100;
-  const bonus = store.equippedItem?.effects?.reduce((sum, e) => (e.id === 'lt_max_plus') ? sum + e.value : sum, 0) || 0;
+  const bonus = getActivePluginEffectTotal(ITEM_EFFECT_ID.LT_MAX_PLUS);
   return baseMax + bonus;
 }
-export const getAgent = () => {
+export function getAgent() {
   return store.aiAgent;
+}
+
+export function getAgentSlots() {
+  const agent = store.aiAgent;
+  if (!agent) return ['T1']; // Default if no agent
+  const modelId = agent.name;
+  const planIdx = store.aiAgentTiers[modelId] !== undefined ? store.aiAgentTiers[modelId] : agent.price_plan_idx;
+  return AI_AGENT_MODEL_AND_PLAN_DATA[modelId]?.price_plan[planIdx]?.slot || ['T1'];
+}
+
+export function getActivePluginEffectTotal(effectId) {
+  if (!store.onWorkTasks || store.onWorkTasks.length === 0) return 0;
+  
+  // Define which effects should use Multiplicative Stacking (Diminishing Returns)
+  // Usually these are percentage reductions like Rake, Cooldown, etc.
+  const MULTIPLICATIVE_EFFECTS = [
+    ITEM_EFFECT_ID.RAKE_REDUCTION,
+    ITEM_EFFECT_ID.COOLDOWN_REDUCTION,
+    ITEM_EFFECT_ID.BLIND_DISCOUNT
+  ];
+
+  const isMultiplicative = MULTIPLICATIVE_EFFECTS.includes(effectId);
+
+  return store.onWorkTasks.reduce((total, taskInstance) => {
+    // Only check active tasks
+    if (taskInstance.task && (taskInstance.state === 'ACTIVE' || taskInstance.state?.status === 'ACTIVE')) {
+      const effect = taskInstance.task.effect?.find(e => e.type === effectId);
+      if (effect && effect.amount) {
+        if (isMultiplicative) {
+          // Multiplicative stacking logic: 1 - (1 - total) * (1 - amount)
+          // Assumes amount is a decimal e.g. 0.3 for 30%
+          return 1 - ((1 - total) * (1 - effect.amount));
+        } else {
+          // Additive stacking (default)
+          return total + effect.amount;
+        }
+      }
+    }
+    return total;
+  }, 0);
 }
 export const gainLT = (amount) => {
   store.ludusTokens = Math.max(0, Math.min(getEffectiveMaxLT(), store.ludusTokens + amount));

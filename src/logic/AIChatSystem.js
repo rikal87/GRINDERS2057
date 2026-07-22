@@ -58,8 +58,6 @@ export const getAIChatDialogue = (trigger = "FOLD", player) => {
         return textArray[Math.floor(Math.random() * textArray.length)];
       }
     }
-  }
-
   // 2. Fallback to Standard Persona Dialogues
   const personality = PERSONALITIES[playerClass] || PERSONALITIES.VANGUARD;
   const triggerData = personality[trigger.toUpperCase()];

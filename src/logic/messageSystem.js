@@ -1,9 +1,9 @@
 
-import { gainBankroll, store } from './store';
-import { zones } from './zone';
-import { getRndLoreSpamMessage } from './lore_spam_message';
-import { audioManager } from './audioManager';
-import { scheduleEvent } from './eventSystem';
+import { gainBankroll, store } from './store.js';
+import { zones } from './zone.js';
+import { getRndLoreSpamMessage } from './lore_spam_message.js';
+import { audioManager } from './audioManager.js';
+import { scheduleEvent } from './eventSystem.js';
 import { TYPE_CHANGE_BANKROLL } from './constants.js'
 import { debtRepayment, transferBankroll } from './partnerSystem.js';
 export const MESSAGE_TYPE = {
@@ -24,6 +24,7 @@ export const MESSAGE_ACTION_TYPE = {
   DEBT_REPAYMENT: 'DEBT_REPAYMENT',
   PAY_INCOME_TAX: 'PAY_INCOME_TAX',
   ACCEPT_INVITE: 'ACCEPT_INVITE',
+  SPECTATE_MATCH: 'SPECTATE_MATCH',
   INTERACT: 'INTERACT',
   DELETE_MESSAGE: 'DELETE_MESSAGE',
 }
@@ -34,6 +35,7 @@ export const MESSAGE_ACTION_LABEL_TYPE = {
   DEBT_REPAYMENT: 'REPAYMENT',
   PAY_INCOME_TAX: 'PAY',
   ACCEPT_INVITE: 'ACCEPT',
+  SPECTATE_MATCH: '관전 (SPECTATE)',
 }
 export const MESSAGE_ACTION_RESOLVE_TYPE = {
   ACCEPT: 'ACCEPT',
@@ -192,6 +194,15 @@ export const handleMessageAction = (msgId, actionIndex, isStory = false) => {
           }
         }));
       }
+      break;
+    case MESSAGE_ACTION_TYPE.SPECTATE_MATCH:
+      audioManager.playSFX('opening-door');
+      window.dispatchEvent(new CustomEvent('start-spectate-match', {
+        detail: {
+          snapshot: action.payload.snapshot,
+          heroId: action.payload.heroId
+        }
+      }));
       break;
     case MESSAGE_ACTION_TYPE.INTERACT:
       if (action.payload.resolveType === MESSAGE_ACTION_RESOLVE_TYPE.ACCEPT) {

@@ -1,7 +1,10 @@
-import { store, gainBankroll, getUnlockAchievements } from './store.js';
-import { ITEM_DATA, relinkItem } from './items.js';
-import { TYPE_CHANGE_BANKROLL } from "./constants.js";
+import { store, gainBankroll, getUnlockAchievements, getActivePluginEffectTotal } from './store.js';
+import { TYPE_CHANGE_BANKROLL, ITEM_EFFECT_ID } from "./constants.js";
 import { isItemUnlocked } from './achievementManager.js';
+import { AI_TASK_DATA } from './aiAgentTaskData.js';
+import { AGENT_MODULE_DATA } from './agentModules.js';
+import { ITEM_DATA } from './items.js';
+
 export const REFRESH_INTERVAL_MS = 12 * 60 * 60 * 1000; // 12 hours in game time
 
 export const getRefreshCost = () => {
@@ -17,7 +20,8 @@ export const canManualRefresh = () => {
 const selectWeightedItem = (pool, manualRefreshCount) => {
   const weightedPool = pool.map(item => {
     let weight = 100;
-    const tierNum = parseInt(item.tier.replace('T', ''));
+    const tierStr = (item && item.tier) ? String(item.tier) : 'T1';
+    const tierNum = parseInt(tierStr.replace('T', '')) || 1;
 
     if (tierNum >= 6) weight -= 25;
     if (tierNum >= 5) weight -= 20;
@@ -40,25 +44,14 @@ const selectWeightedItem = (pool, manualRefreshCount) => {
 };
 
 export const generateShopItems = () => {
-  let shadyDealBonus = 0;
-  if (store.equippedItem) {
-    shadyDealBonus = store.equippedItem.effects.filter(effect => effect.id === 'loyalty_card').reduce((sum, effect) => sum + effect.value, 0);
-  }
-  const count = 2 + (Math.round(Math.random() * shadyDealBonus))
+  let shadyDealBonus = getActivePluginEffectTotal(ITEM_EFFECT_ID.LOYALTY_CARD);
+  const count = 2 + (Math.round(Math.random() * shadyDealBonus));
 
   // Get current unlocked achievements for lock checking
   const unlockedAchievements = getUnlockAchievements();
 
-  // Filter items by tier, access key status, and achievement lock status
-  const availableItems = ITEM_DATA.filter(item => {
-    if (item.isAccessKey && store.unlockedLocations?.includes(item.id)) {
-      return false;
-    }
-    if (!isItemUnlocked(item, unlockedAchievements)) {
-      return false; // Item requires an achievement not yet earned
-    }
-    return true;
-  });
+  // Both integrated agent modules & legacy/passive items are available for black market listing
+  const availableItems = [...AGENT_MODULE_DATA, ...ITEM_DATA];
 
   const selected = [];
   const pool = [...availableItems];
@@ -70,7 +63,9 @@ export const generateShopItems = () => {
     const index = pool.findIndex(p => p.id === pickedItem.id);
     if (index > -1) pool.splice(index, 1);
 
-    const itemInstance = relinkItem(pickedItem);
+    // Basic relink for plugin instance
+    const itemInstance = JSON.parse(JSON.stringify(pickedItem));
+    itemInstance.instanceId = Math.random().toString(36).substr(2, 9);
 
     // 3rd after shady deal slot has a chance for "Special Offer"
     if (Math.random() < (shadyDealRateBonus)) {

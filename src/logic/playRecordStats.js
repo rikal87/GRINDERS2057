@@ -1,6 +1,6 @@
-import { store } from './store'
-import { TYPE_CHANGE_BANKROLL } from './constants'
-import { recordPlayStatsSessionForCPU } from './playRecordStatsForCPU'
+import { store } from './store.js'
+import { TYPE_CHANGE_BANKROLL } from './constants.js'
+import { recordPlayStatsSessionForCPU } from './playRecordStatsForCPU.js'
 export const PLAY_RECORD_STATS_TYPE = {
   ...TYPE_CHANGE_BANKROLL,
   LEVEL_REACHED: 'level_reached',

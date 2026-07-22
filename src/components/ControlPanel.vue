@@ -72,22 +72,30 @@
             {{ engine.exitReservationRounds >= 0 ? `EXIT IN ${engine.exitReservationRounds} ROUNDS` : 'RESERVE EXIT' }}
           </button>
         </div>
-        <!-- Item Effects -->
-        <div class="status-row" v-if="player.item">
-          <div class="protector-badge" :data-tooltip="player.item.desc">
-            {{ player.item.icon }}
-          </div>
-          <div v-if="player.item.effects && player.item.effects.length > 0" class="effect-hud">
-            <div v-for="eff in player.item.effects" :key="eff.id" class="effect-wrapper"
-              :data-tooltip="getEffectDesc(eff)">
-              <div class="effect-item" :class="{ 'cooldown': eff.cooldown > 0 }">
-                <div class="eff-icon">{{ eff.icon }}</div>
-                <div v-if="eff.cooldown > 0" class="cooldown-gauge"
-                  :style="{ height: (eff.maxCooldown ? (eff.cooldown / eff.maxCooldown * 100) : 100) + '%' }">
-                </div>
-                <div v-if="eff.stack >= 1" class="eff-stack">{{ eff.stack }}</div>
+        <!-- Agent Task Slots (Cyber Deck) -->
+        <div class="status-row cyber-deck">
+          <div v-for="(slotTier, idx) in agentSlots" :key="idx" class="cyber-deck-slot">
+            <!-- Occupied Slot -->
+            <template v-if="store.onWorkTasks[idx]">
+              <div class="protector-badge" :data-tooltip="store.onWorkTasks[idx].task.desc">
+                {{ store.onWorkTasks[idx].task.icon }}
               </div>
-            </div>
+              <div v-if="store.onWorkTasks[idx].task.effect && store.onWorkTasks[idx].task.effect.length > 0" class="effect-hud">
+                <div v-for="eff in store.onWorkTasks[idx].task.effect" :key="eff.type" class="effect-wrapper"
+                  :data-tooltip="getEffectDesc(eff)">
+                  <div class="effect-item">
+                    <div class="eff-icon">⚡</div>
+                    <div v-if="eff.amount > 1" class="eff-stack">{{ eff.amount }}</div>
+                  </div>
+                </div>
+              </div>
+            </template>
+            <!-- Empty Slot -->
+            <template v-else>
+              <div class="protector-badge empty-slot" :data-tooltip="`EMPTY SLOT [${slotTier}]`">
+                <span class="empty-icon">[ ]</span>
+              </div>
+            </template>
           </div>
         </div>
         <!-- HUD Stats -->
@@ -213,23 +221,30 @@
           {{ engine.exitReservationRounds >= 0 ? `EXIT IN ${engine.exitReservationRounds} ROUNDS` : 'RESERVE EXIT' }}
         </button>
       </div>
-      <!-- [MOVED] Protector Badge & Effects HUD -->
-      <div class="status-row" v-if="player.item">
-        <div class="protector-badge" :data-tooltip="player.item.desc">
-          {{ player.item.icon }}
-        </div>
-        <div v-if="player.item.effects && player.item.effects.length > 0" class="effect-hud">
-          <div v-for="eff in player.item.effects" :key="eff.id" class="effect-wrapper"
-            :data-tooltip="getEffectDesc(eff)">
-            <div class="effect-item" :class="{ 'cooldown': eff.cooldown > 0 }">
-              <div class="eff-icon">{{ eff.icon }}</div>
-              <!-- Cooldown Gauge Overlay -->
-              <div v-if="eff.cooldown > 0" class="cooldown-gauge"
-                :style="{ height: (eff.maxCooldown ? (eff.cooldown / eff.maxCooldown * 100) : 100) + '%' }">
-              </div>
-              <div v-if="eff.stack >= 1" class="eff-stack">{{ eff.stack }}</div>
+      <!-- Agent Task Slots (Cyber Deck) Desktop -->
+      <div class="status-row cyber-deck">
+        <div v-for="(slotTier, idx) in agentSlots" :key="'d'+idx" class="cyber-deck-slot">
+          <!-- Occupied Slot -->
+          <template v-if="store.onWorkTasks[idx]">
+            <div class="protector-badge" :data-tooltip="store.onWorkTasks[idx].task.desc">
+              {{ store.onWorkTasks[idx].task.icon }}
             </div>
-          </div>
+            <div v-if="store.onWorkTasks[idx].task.effect && store.onWorkTasks[idx].task.effect.length > 0" class="effect-hud">
+              <div v-for="eff in store.onWorkTasks[idx].task.effect" :key="eff.type" class="effect-wrapper"
+                :data-tooltip="getEffectDesc(eff)">
+                <div class="effect-item">
+                  <div class="eff-icon">⚡</div>
+                  <div v-if="eff.amount > 1" class="eff-stack">{{ eff.amount }}</div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <!-- Empty Slot -->
+          <template v-else>
+            <div class="protector-badge empty-slot" :data-tooltip="`EMPTY SLOT [${slotTier}]`">
+              <span class="empty-icon">[ ]</span>
+            </div>
+          </template>
         </div>
       </div>
       <!-- Victory Condition Display -->
@@ -300,8 +315,10 @@
 <script setup>
 import { ref, computed, watch, onMounted, nextTick } from 'vue';
 import { evaluateHand } from '../logic/poker.js';
-import { store, getEffectiveMaxStamina, getLanguage, isActiveHandHud, isActiveSuspicionHud, getCurrentSuspicion } from '../logic/store';
+import { store, getEffectiveMaxStamina, getLanguage, isActiveHandHud, isActiveSuspicionHud, getCurrentSuspicion, getAgentSlots } from '../logic/store';
 import { audioManager } from '../logic/audioManager.js';
+
+const agentSlots = computed(() => getAgentSlots());
 
 // ── 모바일 스와이프 패널 로직 ──
 const swipeContainer = ref(null);
@@ -352,25 +369,25 @@ const reserveExitTooltip = computed(() => {
     '지정된 라운드 후에 칩을 현금화하고 테이블을 떠납니다.(패널티 없음)'
     : 'Cash out and leave the table after the specified rounds. (No penalty)';
 });
-const player = computed(() => props.engine.players[0]);
+const player = computed(() => (props.engine?.players ? props.engine.players[0] : null));
 const isMyTurn = computed(() => {
-  return props.engine.myTurn && !props.engine.calculationInProgress && !props.engine.runoutInProgress;
+  return props.engine?.myTurn && !props.engine?.calculationInProgress && !props.engine?.runoutInProgress;
 });
-const playerChips = computed(() => player.value.chips);
-const playerTotalAvailable = computed(() => player.value.chips + player.value.currentBet);
+const playerChips = computed(() => player.value?.chips || 0);
+const playerTotalAvailable = computed(() => (player.value?.chips || 0) + (player.value?.currentBet || 0));
 const isAllInSelection = computed(() => {
   const remaining = playerTotalAvailable.value - currentBetValue.value;
-  return remaining < (props.engine.bb || 2);
+  return remaining < (props.engine?.bb || 2);
 });
 
-const callAmountRaw = computed(() => Math.min(props.engine.currentRoundBet - player.value.currentBet, playerChips.value));
+const callAmountRaw = computed(() => Math.min((props.engine?.currentRoundBet || 0) - (player.value?.currentBet || 0), playerChips.value));
 const minRaise = computed(() => {
-  const currentBet = props.engine.currentRoundBet || 0;
-  const bb = props.engine.bb || 2;
+  const currentBet = props.engine?.currentRoundBet || 0;
+  const bb = props.engine?.bb || 2;
   const logicalMin = Math.max(currentBet * 2, bb);
   return Math.min(logicalMin, playerTotalAvailable.value);
 });
-const currentBetValue = ref(minRaise.value);
+const currentBetValue = ref(minRaise.value || 0);
 
 const acquiredChips = computed(() => player.value.chips - player.value.totalBuyIn);
 

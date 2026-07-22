@@ -489,3 +489,24 @@ button:disabled {
     opacity: 1;
   }
 }
+.cyber-deck {
+  display: flex;
+  gap: 8px;
+}
+.cyber-deck-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.empty-slot {
+  opacity: 0.3;
+  border: 1px dashed var(--neon-cyan);
+  background: transparent !important;
+  color: var(--neon-cyan);
+}
+.empty-icon {
+  font-size: 1rem;
+  letter-spacing: 2px;
+}
+

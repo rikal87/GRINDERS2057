@@ -72,7 +72,7 @@ export const stopTimeSystem = () => {
   }
 }
 
-export const formatGameTime = (timestamp) => {
+export const formatGameTime = (timestamp = store.gameTime || Date.now()) => {
   const date = new Date(timestamp);
   return date.toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -81,13 +81,13 @@ export const formatGameTime = (timestamp) => {
   });
 };
 
-export const formatGameDate = (timestamp) => {
+export const formatGameDate = (timestamp = store.gameTime || Date.now()) => {
   const date = new Date(timestamp);
   // 2057-10-20
   return date.toISOString().split('T')[0];
 }
 
-export const formatGameDayOfWeek = (timestamp) => {
+export const formatGameDayOfWeek = (timestamp = store.gameTime || Date.now()) => {
   const date = new Date(timestamp);
   const options = { weekday: 'short' };
   return date.toLocaleDateString(store.settings.language === 'en' ? 'en-US' : 'ko-KR', options);

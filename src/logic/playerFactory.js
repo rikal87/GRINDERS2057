@@ -26,7 +26,6 @@ export class PlayerFactory {
       isMe: true,
       gainedXp: 0,
       effectCooldowns: {},
-      item: store.equippedItem,
       tempXPBonus: 0.0,
       buyInLimit: engine.buyInLimit,
       totalBuyIn: 0,

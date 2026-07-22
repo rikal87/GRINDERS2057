@@ -1,8 +1,13 @@
-import { CLASSES_PARTNER } from "./persona";
-import { store, gainBankroll, getCurrentBankroll } from "./store";
-import { scheduleEvent, EVENT_ID } from "./eventSystem";
-import { createContractObject, shareBenefit, breakContract, triggerBankruptcyRelief, requestBailout, triggerDebtRepaymentDue } from "./partnerContractSystem";
-import { PARTNER_ID, PARTNER_STATUS, CONTRACT_TYPE, TYPE_CHANGE_BANKROLL } from "./constants";
+import { CLASSES_PARTNER } from "./persona.js";
+import { store, gainBankroll, getCurrentBankroll } from "./store.js";
+import { scheduleEvent, EVENT_ID } from "./eventSystem.js";
+import { createContractObject, shareBenefit, breakContract, triggerBankruptcyRelief, requestBailout, triggerDebtRepaymentDue } from "./partnerContractSystem.js";
+import { PARTNER_ID, PARTNER_STATUS, CONTRACT_TYPE, TYPE_CHANGE_BANKROLL } from "./constants.js";
+import { MatchSimulator } from "./matchSimulator.js";
+import { sendMessage, MESSAGE_TYPE, MESSAGE_ACTION_TYPE, MESSAGE_ACTION_LABEL_TYPE } from "./messageSystem.js";
+import { zones } from "./zone.js";
+
+const matchSimulator = new MatchSimulator({ bb: 20, sb: 10, maxEventsPerTick: 1, cooldownMs: 180000 });
 
 export const getPartners = () => {
   return store.partners;
@@ -317,14 +322,46 @@ export const triggerBankruptRescueForPartner = (partner) => {
   }
   return isTriggered;
 }
+
 // for 1hr (in-game time)
 export const simulatePartnersBehavior = () => {
   getJoinedPartners().forEach((partner) => {
     simulatePartnersNetWorth(partner);
     updatePartnerStatusBySchedule(partner);
     triggerRelationshipChange(partner);
-  })
 
+    // Determine partner active casino location
+    const activeLocationId = partner.locationId || 'high_grand_casino';
+    let locationConfig = null;
+    for (const zone of zones) {
+      const loc = zone.locations.find(l => l.id === activeLocationId);
+      if (loc) { locationConfig = loc; break; }
+    }
+    const tableBb = locationConfig?.tables?.bb || 100;
+    matchSimulator.simulatePartnerCycle(partner, activeLocationId, tableBb);
+  });
+
+  // Consume queued big-pot notification events (1 per tick/cycle)
+  const events = matchSimulator.consumeEventsForTick();
+  events.forEach(evt => {
+    const snapshot = evt.snapshot || {};
+    const potBbRatio = snapshot.potBbRatio || Math.round((snapshot.potSize || 0) / (snapshot.bb || 100));
+    const locationId = snapshot.locationId || 'high_grand_casino';
+
+    sendMessage(
+      MESSAGE_TYPE.EVENT,
+      `🚨 [LIVE MATCH ALERT] ${evt.heroName}의 빅팟 경기 (${potBbRatio}BB)`,
+      `${evt.heroName}님이 대형 테이블에서 $${snapshot.potSize?.toLocaleString()} (${potBbRatio}BB) 크기의 빅팟 경기를 치르고 있습니다. 관전하시겠습니까?`,
+      [
+        {
+          label: MESSAGE_ACTION_LABEL_TYPE.SPECTATE_MATCH,
+          actionType: MESSAGE_ACTION_TYPE.SPECTATE_MATCH,
+          payload: { heroId: evt.heroId, locationId, snapshot }
+        }
+      ],
+      evt.heroId
+    );
+  });
 }
 export const simulatePartnersNetWorth = (partner) => {
   // 1. Simulated living expenses / consumption (prevents infinite wealth accumulation)
@@ -335,32 +372,16 @@ export const simulatePartnersNetWorth = (partner) => {
       gainPartnerBankroll(partner, -expenses, TYPE_CHANGE_BANKROLL.OTHER);
     }
   } else if (partner.status === PARTNER_STATUS.GAMBLING) {
-    // 2. Gambling simulation logic (Old logic preserved)
-    // 잔고가 0 이하(파산)인 경우 도박 종료
-    if (partner.bankroll <= 0) {
-      partner.status = PARTNER_STATUS.IDLE;
-      return;
-    }
-    if ((partner.vPIP + partner.WTSD) / 2 > Math.random()) {
-      // .36 + .31 / 2 = .335 (max)
-      // 73 * 3.5 * 100 = 25550 (max)
-      // (25550/2) * 0.53 = 6771.5
-      // .25 + .27 / 2 = .26 (florence)
-      // 73 * 3 * 100 = 19710 (florence)
-      // (19710/2) * 0.57 = 5612.45
-      //  * 0.53
-      const volatility = partner.AF * Math.max(partner.bankroll / 1000, 25) * Math.random();
-      let netWorthChange = 0;
-      // 승리 시
-      if (Math.random() < partner.W$SD) {
-        netWorthChange = Math.ceil(97 * volatility); // rake
-      } else { // 패배 시
-        netWorthChange = -Math.ceil(100 * volatility);
+    // 2. Integrated MatchSimulator for 100% full poker AI simulation on volatile spikes
+    const snapshot = matchSimulator.simulatePartnerCycle(partner);
+    if (!snapshot) {
+      // Low-volatility math fallback if no full match triggered
+      if ((partner.vPIP + partner.WTSD) / 2 > Math.random()) {
+        const volatility = partner.AF * Math.max(partner.bankroll / 1000, 25) * Math.random();
+        let netWorthChange = Math.random() < partner.W$SD ? Math.ceil(97 * volatility) : -Math.ceil(100 * volatility);
+        gainPartnerBankroll(partner, netWorthChange, TYPE_CHANGE_BANKROLL.GAMBLING);
+        partner.sessionNetWorth += netWorthChange;
       }
-      gainPartnerBankroll(partner, netWorthChange, TYPE_CHANGE_BANKROLL.GAMBLING);
-      partner.sessionNetWorth += netWorthChange;
-      console.info(partner.name, partner.sessionNetWorth);
-
     }
   }
 }

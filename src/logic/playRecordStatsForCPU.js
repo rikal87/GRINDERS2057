@@ -1,4 +1,4 @@
-import { PLAY_RECORD_STATS_TYPE } from './playRecordStats'
+import { PLAY_RECORD_STATS_TYPE } from './playRecordStats.js'
 
 export const recordPlayStatsSessionForCPU = (player, action, payload = {}) => {
   const sessionStats = player.stats;

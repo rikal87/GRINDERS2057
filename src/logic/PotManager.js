@@ -22,23 +22,14 @@ export class PotManager {
     player.totalWagered = (player.totalWagered || 0) + amount;
     this.pot += amount;
 
-    // A raise only occurs if the player's total currentBet EXCEEDS the previous high.
-    // An "all-in for less" call does not count as a raise.
     if (player.currentBet > this.currentRoundBet) {
       const isCleanRaise = amount > (this.currentRoundBet - (player.currentBet - amount));
-      if (!isCleanRaise) {
-        console.log(`[PotManager] All-In for less: Player ${player.id} chips: ${player.chips}`);
-      }
       this.currentRoundBet = player.currentBet;
       return isCleanRaise;
     }
     return false;
   }
-  /**
-   * Identifies uncalled bets (portion of highest wager exceeding second highest)
-   * and returns them to the player immediately.
-   * @returns {Object|null} { player, amount } if a return happened, otherwise null
-   */
+
   returnUncalledBets(players) {
     const sortedByWager = [...players].sort((a, b) => (b.totalWagered || 0) - (a.totalWagered || 0));
     
@@ -48,7 +39,6 @@ export class PotManager {
       const uncalled = topWager - secondWager;
       const player = sortedByWager[0];
 
-      console.log(`[PotManager] Returning uncalled bet: ${uncalled} to Player ${player.id}`);
       player.chips += uncalled;
       player.totalWagered -= uncalled;
       this.pot -= uncalled;
@@ -58,24 +48,15 @@ export class PotManager {
     return null;
   }
 
-  // apply rake only if flop is dealt
   resolveShowdown(players, board, isNoFlopNoDrop = false) {
-    // 1. Identify uncalled bets (Pre-showdown return - safety check)
     this.returnUncalledBets(players);
-
-    // 2. Identify all players involved (not folded)
     let activePlayers = players.filter(p => !p.isFolded);
 
-    // 3. Evaluate hands for everyone
     activePlayers.forEach(p => {
       p.handRank = evaluateHand([...p.hand, ...board]);
     });
 
-    // 4. Create pots container
-    // Structure: { amount: number, eligiblePlayers: object[] }
     let pots = [];
-
-    // Collect all players (including folded) to determine pot structure
     let allPlayers = [...players].sort((a, b) => (a.totalWagered || 0) - (b.totalWagered || 0));
     let lastWagered = 0;
 
@@ -86,7 +67,6 @@ export class PotManager {
         let diff = wager - lastWagered;
         let contributors = players.filter(pl => (pl.totalWagered || 0) >= wager);
         let potAmount = diff * contributors.length;
-        // Check if any active player is involved in this slice
         let eligibleActivePlayers = activePlayers.filter(ap => (ap.totalWagered || 0) >= wager);
         if (eligibleActivePlayers.length > 0) {
           pots.push({
@@ -98,82 +78,36 @@ export class PotManager {
       }
     }
 
-    // 5. Resolve each pot
     let winnings = {};
-    let playerRakeSaved = {}; // [NEW]
+    let playerRakeSaved = {};
     let contestedWins = {};
-    let detailedPots = []; // [NEW] For sequential UI visualization
+    let detailedPots = [];
     players.forEach(p => {
       winnings[p.id] = 0;
-      playerRakeSaved[p.id] = 0; // [NEW]
+      playerRakeSaved[p.id] = 0;
       contestedWins[p.id] = 0;
     });
-    // Track total rake collected for display/stats?
+
     let totalRakeCollected = 0;
-    let totalRakeSaved = 0; // [NEW] Track rake saved by items
+    let totalRakeSaved = 0;
     let remainingRakeCap = this.rakeCap;
 
     pots.forEach((pot, index) => {
       if (pot.amount <= 0) return;
 
-      // Find winner for this pot
       let contenders = pot.eligiblePlayers;
       contenders.sort((a, b) => {
-        // Prioritize Rank (Integer 1-10) to avoid any float/large number precision issues
         if (b.handRank.rank !== a.handRank.rank) {
           return b.handRank.rank - a.handRank.rank;
         }
         return b.handRank.total - a.handRank.total;
-      }); // Descending
+      });
 
-      // Check for ties
       let bestScore = contenders[0].handRank.total;
       let winners = contenders.filter(c => c.handRank.total === bestScore);
 
-      // [DEBUG] Showdown Analysis
-      console.group('SHOWDOWN_ANALYSIS_POT');
-      console.log(`Pot Amount: ${pot.amount}, Contenders: ${contenders.length}`);
-      contenders.forEach(c => {
-        console.log(`Player ${c.id}: ${c.handRank.name} (Rank: ${c.handRank.rank}, Total: ${c.handRank.total}) - ${c.handRank.cards.join(',')}`);
-      });
-      console.log(`Winner(s): ${winners.map(w => w.id).join(', ')}`);
-      // Sanity Check: If winner's rank < any loser's rank, something is WRONG.
-      // E.g. Winner One Pair (2) vs Loser Flush (6).
-      const winnerRank = winners[0].handRank.rank;
-      const maxRank = Math.max(...contenders.map(c => c.handRank.rank));
-      if (winnerRank < maxRank) {
-        console.error('[CRITICAL] SHOWDOWN BUG DETECTED: Winner has lower rank than a loser!');
-        // Force correction?
-        // This implies 'total' calculation was inconsistent with 'rank'.
-        // Re-sort via rank primary?
-        // contenders.sort((a,b) => (b.handRank.rank - a.handRank.rank) || (b.handRank.total - a.handRank.total));
-      }
-      console.groupEnd();
-
-      // Rake Calculation (Global per-hand cap)
       let theoreticalRake = isNoFlopNoDrop ? 0 : Math.min(pot.amount * this.rake, remainingRakeCap);
-
-      // Apply Rake Reduction (if winner has item)
       let maxReduction = 0;
-      winners.forEach(w => {
-        if (w.item && w.item.effects) {
-          // [FIX] Support both object and string formats in effects
-          const reductionEffect = w.item.effects.reduce((sum, e) => {
-            const effectObj = e.effect || (typeof e === 'object' ? e : null);
-            if (effectObj && effectObj.id === ITEM_EFFECT_ID.RAKE_REDUCTION) {
-              return sum + (effectObj.value || 0);
-            }
-            if (e === ITEM_EFFECT_ID.RAKE_REDUCTION) {
-              return sum + 0.25; // Default T2 reduction value
-            }
-            return sum;
-          }, 0);
-          maxReduction = Math.max(maxReduction, reductionEffect)
-        }
-      });
-
-      // Cap reduction at 100%
-      if (maxReduction > 1) maxReduction = 1;
 
       let finalRake = Math.floor(theoreticalRake * (1 - maxReduction));
       let rakeSaved = theoreticalRake - finalRake;
@@ -182,128 +116,43 @@ export class PotManager {
       totalRakeSaved += rakeSaved;
       remainingRakeCap = Math.max(0, remainingRakeCap - finalRake);
 
-      let distributable = Math.floor(pot.amount - finalRake); // [FIX] Ensure distributable is integer
-
-      if (distributable <= 0) return; // Should not happen unless rake > pot
+      let distributable = Math.floor(pot.amount - finalRake);
+      if (distributable <= 0) return;
 
       let share = Math.floor(distributable / winners.length);
       const isContested = contenders.length > 1;
 
-      // [NEW] Track detailed pot info
-      let potName;
-
-      // Re-eval name logic for clarity:
-      // Index 0 is always Main.
-      // Index > 0:
-      //   If 1 contender -> Returned
-      //   If >1 contenders -> Side Pot X
-
-      if (index === 0) {
-        potName = 'Main Pot';
-      } else if (contenders.length === 1) {
-        potName = 'Returned';
-      } else {
-        // Count how many "Side Pots" we have so far
-        const sidePotCount = detailedPots.filter(p => p.name.startsWith('Side Pot')).length;
-        potName = `Side Pot ${sidePotCount + 1}`;
-      }
-
+      let potName = index === 0 ? 'Main Pot' : (contenders.length === 1 ? 'Returned' : `Side Pot ${index}`);
       let potDetail = {
         name: potName,
         amount: distributable,
         winners: winners.map(w => w.id),
         winningHand: winners[0].handRank,
-        isContested: isContested,
+        isContested,
         rakeCollected: finalRake,
-        rakeSaved: rakeSaved
+        rakeSaved
       };
       detailedPots.push(potDetail);
 
       winners.forEach(w => {
         winnings[w.id] += share;
-        playerRakeSaved[w.id] += Math.floor(rakeSaved / winners.length); // [NEW]
-        if (isContested) {
-          contestedWins[w.id] += share;
-        }
+        playerRakeSaved[w.id] += Math.floor(rakeSaved / winners.length);
+        if (isContested) contestedWins[w.id] += share;
       });
 
-      // Remainder (1 chip) goes to first (simplified)
       let remainder = distributable % winners.length;
       if (remainder > 0) {
         winnings[winners[0].id] += remainder;
-        playerRakeSaved[winners[0].id] += (rakeSaved % winners.length); // [NEW]
-        if (isContested) {
-          contestedWins[winners[0].id] += remainder;
-        }
+        playerRakeSaved[winners[0].id] += (rakeSaved % winners.length);
+        if (isContested) contestedWins[winners[0].id] += remainder;
       }
     });
 
-    // [NEW] Post-process detailedPots to merge identical winner sets (for cleaner UI)
-    // We only merge "Side Pot" entries, or any pots really? 
-    // User requested: "If identical winners, group them".
-    // Strategy: Collapse consecutive pots if winners are identical.
-
-    if (detailedPots.length > 1) {
-      let mergedPots = [];
-      let currentGroup = null;
-
-      detailedPots.forEach(pot => {
-        if (!currentGroup) {
-          currentGroup = { ...pot };
-          return;
-        }
-
-        // Check if winners are effectively identical
-        // Sort both arrays to be sure, though they usually come from same object refs if same players
-        // But let's rely on ID string comparison
-        const w1 = currentGroup.winners.slice().sort().join(',');
-        const w2 = pot.winners.slice().sort().join(',');
-
-        if (w1 === w2) {
-          // Merge!
-          currentGroup.amount += pot.amount;
-          // Update Name
-          const isMainInGroup = currentGroup.name.includes('Main Pot');
-          const isMainInNew = pot.name.includes('Main Pot');
-          const isReturnedInGroup = currentGroup.name.includes('Returned');
-          const isReturnedInNew = pot.name.includes('Returned');
-          const isSideInGroup = currentGroup.name.includes('Side Pot');
-
-          if (isMainInGroup || isMainInNew) {
-            if (isReturnedInGroup || isReturnedInNew || activePlayers.length <= 2) {
-              // 1:1 situation or a returned amount should always result in a single "Main Pot"
-              currentGroup.name = 'Main Pot';
-            } else if (isSideInGroup || pot.name.includes('Side Pot')) {
-              currentGroup.name = 'Main Pot & Side Pots';
-            } else {
-              currentGroup.name = 'Main Pot';
-            }
-          } else if (isReturnedInGroup && isReturnedInNew) {
-            currentGroup.name = 'Returned';
-          } else {
-            currentGroup.name = 'Side Pots';
-          }
-        } else {
-          // Push current and start new
-          mergedPots.push(currentGroup);
-          currentGroup = { ...pot };
-        }
-      });
-      if (currentGroup) mergedPots.push(currentGroup);
-      detailedPots = mergedPots;
-    }
-
-    // 5. Apply winnings and generate result object
     activePlayers.forEach(p => {
       let amountWon = winnings[p.id];
-      if (amountWon > 0) {
-        p.chips += Math.floor(amountWon);
-      }
+      if (amountWon > 0) p.chips += Math.floor(amountWon);
     });
 
-    // Identify primary winner for UI highlights
-    // Use Net Profit (Amount Won - Total Wagered) to determine true winner
-    // This prevents "Refund Winners" (who bet huge, everyone else all-in small, they get refund > main pot) from being marked winner
     let maxNet = -Infinity;
     let bestWinners = [];
     activePlayers.forEach(p => {
@@ -317,30 +166,24 @@ export class PotManager {
     });
 
     let bestWinner = bestWinners.length > 0 ? bestWinners[0] : null;
-    // [v18] Fix Remainder-Chop Bug: If multiple winners tied in hand value in any pot, consider it a chop for history.
-    // [FIX] Use includes('Main Pot') to handle merged names like 'Main Pot & Side Pots'
     let isChop = bestWinners.length > 1 || (detailedPots.length > 0 && detailedPots.some(p => p.winners.length > 1 && p.name.includes('Main Pot')));
 
-    // Fallback: If nobody made profit (e.g. all equal loss due to rake?), use raw winnings
-    // But usually someone makes profit in poker unless rake > 100%.
-
-    // Return structured results for UI
     return {
       results: activePlayers.map(p => ({
         id: p.id,
         player: p,
         hand: p.handRank,
         isMe: p.isMe,
-        isWinner: contestedWins[p.id] > 0 || activePlayers.length === 1, // Mark as winner if they won a contested pot or are the last player standing
+        isWinner: contestedWins[p.id] > 0 || activePlayers.length === 1,
         amountWon: winnings[p.id],
-        rakeSaved: playerRakeSaved[p.id] // [NEW]
+        rakeSaved: playerRakeSaved[p.id]
       })),
       winnerId: bestWinner ? bestWinner.id : null,
-      isChop: isChop,
+      isChop,
       choppers: bestWinners.map(w => w.id),
       rake: totalRakeCollected,
-      rakeSaved: totalRakeSaved, // [NEW] Return total rake saved
-      detailedPots: detailedPots // [NEW] Return detailed pots
+      rakeSaved: totalRakeSaved,
+      detailedPots
     };
   }
 }

@@ -1,9 +1,5 @@
 <template>
   <div class="safe-house v5">
-    <!-- Pure Ambient Glow Background (Zero Image Asset) -->
-    <div class="ambient-bg-glow"></div>
-    <div class="ambient-fog-light"></div>
-
     <!-- Popup Inventory -->
     <transition name="fade">
       <div v-if="selectedSlotIndex !== null" class="v5-modal-overlay popup-overlay" style="z-index: 1000;" @click.self="selectedSlotIndex = null">
@@ -83,10 +79,10 @@
             </div>
           </div>
 
-          <!-- Bedside Alarm Clock & Sleep Control Panel -->
+          <!-- Core Vitality -->
           <div class="v5-panel v5-core-vitality">
             <div class="v5-panel-label">
-              <span class="label">BEDSIDE_ALARM_CLOCK // SLEEP_CONTROL</span>
+              <span class="label">CORE_STATUS</span>
               <button class="stats-btn" @click="$emit('open-stats-modal')">STATS</button>
             </div>
             <div class="v5-panel-inner">
@@ -132,25 +128,60 @@
             </div>
           </div>
 
-          <!-- HARDWARE & IMPLANTS STATUS (Replaced AI_AGENT which moved to Terminal) -->
-          <div class="v5-panel v5-hardware-summary">
+          <!-- Ai Agent Template -->
+          <div class="v5-panel v5-neural-template">
             <div class="v5-panel-label">
-              <span class="label">HARDWARE_&_IMPLANTS</span>
-              <button class="stats-btn" @click="$emit('open-catalog')">CATALOG</button>
+              <span>AI_AGENT</span>
+              <button class="set-up-agent-btn" @click="$emit('open-agent-modal')" v-if="store.aiAgent">SETUP</button>
+              <button class="boot-up-agent-btn" @click="bootAgentClick" :disabled="isBooting" v-else>
+                <span v-if="isBooting" class="boot-loading"></span>
+                {{ isBooting ? 'BOOTING...' : 'BOOT' }}
+              </button>
             </div>
-            <div class="v5-panel-inner">
-              <div class="hardware-info-box">
-                <div class="sub-label">// ACTIVE_EQUIPPED_MODULES</div>
-                <div v-if="store.onWorkTasks && store.onWorkTasks.length > 0" class="equipped-mini-list">
-                  <div v-for="(mod, idx) in store.onWorkTasks" :key="idx" class="mini-mod-card">
-                    <span class="mod-icon">⚡</span>
-                    <span class="mod-name">{{ mod.name }}</span>
-                    <span class="mod-tier">[T{{ mod.tier }}]</span>
+            <div class="v5-panel-inner" :class="{ 'is-booting': isBooting }">
+              <div class="v5-neural-hero">
+                <span class="v5-class-title">{{ store.aiAgent ? store.aiAgent.name : (isBooting ? 'INITIALIZING' :
+                  'OFFLINE') }}</span>
+                <p class="v5-class-desc qhd-only">
+                  {{ store.aiAgent ? store.aiAgent.model?.slogan : (isBooting ? 'LOADING_CORE_SYSTEMS' :
+                    'SYSTEM_READY_FOR_BOOT') }}
+                </p>
+                <div class="v5-stat-row">
+                  <div class="v5-stat-group">
+                    <span class="label">LUDUS_TOKENS</span>
+                    <span class="val cyan">{{ Math.floor(store.ludusTokens).toLocaleString() }}
+                      <small>LT</small></span>
                   </div>
                 </div>
-                <div v-else class="empty-hardware-msg">
-                  <span>NO MODULES EQUIPPED</span>
-                  <p class="sub-text">EQUIP ITEMS FROM THE INVENTORY TAB</p>
+                <div class="v5-status-badges qhd-only" v-if="store.aiAgent">
+                  <span class="v5-badge-mini"
+                    v-if="store.gameTime < store.aiAgent.subscriptionExpireAt">SYS_ACTIVE</span>
+                  <span class="v5-badge-mini" v-else style="color:var(--neon-red)">SYS_EXPIRED</span>
+                  <span class="v5-badge-mini">XK254015</span>
+                  <span class="v5-badge-mini">RAID_X</span>
+                </div>
+                <div class="v5-status-badges qhd-only" v-else>
+                  <span class="v5-badge-mini offline">OFFLINE</span>
+                </div>
+              </div>
+              <div class="v5-slot-list">
+                <div v-for="(slot, idx) in taskSlots" :key="idx" class="v5-slot-item" :class="{ locked: slot.isLocked }"
+                  @click="!slot.isLocked && !slot.task && openTaskSelector(idx)"
+                  @mousedown="!slot.isLocked && slot.task && startLongPress(idx)" @mouseup="cancelLongPress"
+                  @mouseleave="cancelLongPress" @touchstart="!slot.isLocked && slot.task && startLongPress(idx)"
+                  @touchend="cancelLongPress">
+
+                  <div class="v5-slot-meta">
+                    <span class="v5-slot-tier-tag"> {{ slot.tier }}</span>
+                    <span class="name">{{ slot.task ? slot.task.name : (slot.isLocked ? 'LOCKED' :
+                      'CLICK_TO_ASSIGN') }}</span>
+                    <div class="v5-slot-status" :class="getTaskStatusClass(slot)">
+                      {{ slot.statusText }}
+                    </div>
+                  </div>
+                  <!-- Progress bar for long press -->
+                  <div v-if="longPressIdx === idx" class="long-press-progress"
+                    :style="{ width: longPressProgress + '%' }"></div>
                 </div>
               </div>
             </div>
@@ -376,7 +407,7 @@
               <button class="set-up-agent-btn" @click="showAgentModal = true">SETUP</button>
             </div> -->
 
-          <div class="v5-panel-label inbox-label">PERSONAL_COMMUNICATOR // MESSAGES<small style="color:var(--neon-magenta)">[{{
+          <div class="v5-panel-label inbox-label">SECURE_COMMS<small style="color:var(--accent-red)">[{{
             unreadCount
           }} UNREAD]</small>
           </div>
@@ -878,120 +909,5 @@ const getNetWorthChartPath = (partner) => {
 .cyberlink-banner-panel:hover .btn-connect-terminal {
   background: #ffffff;
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
-}
-
-/* Hardware & Implants Summary Panel */
-.v5-hardware-summary {
-  margin-top: 1rem;
-  background: rgba(10, 15, 22, 0.8);
-  border: 1px solid rgba(0, 240, 255, 0.2);
-}
-
-.hardware-info-box {
-  padding: 1rem;
-}
-
-.hardware-info-box .sub-label {
-  font-size: 0.75rem;
-  color: var(--neon-cyan);
-  margin-bottom: 0.8rem;
-  letter-spacing: 0.1em;
-}
-
-.equipped-mini-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.mini-mod-card {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  background: rgba(0, 240, 255, 0.05);
-  border: 1px solid rgba(0, 240, 255, 0.2);
-  padding: 0.5rem 0.8rem;
-  font-size: 0.85rem;
-}
-
-.mini-mod-card .mod-icon { color: var(--neon-yellow); }
-.mini-mod-card .mod-name { flex: 1; color: #fff; font-weight: bold; }
-.mini-mod-card .mod-tier { color: var(--neon-cyan); font-size: 0.75rem; }
-
-.empty-hardware-msg {
-  text-align: center;
-  padding: 1.5rem 0;
-  color: #6c7a89;
-  font-size: 0.85rem;
-}
-
-.empty-hardware-msg .sub-text {
-  font-size: 0.75rem;
-  color: #405060;
-  margin-top: 0.3rem;
-}
-
-/* Pure Ambient Light Background (Zero Image Asset) */
-.safe-house.v5 {
-  position: relative;
-  background: #000000 !important;
-  overflow: hidden;
-}
-
-.ambient-bg-glow {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 20% 30%, rgba(0, 240, 255, 0.08) 0%, transparent 60%),
-    radial-gradient(circle at 80% 70%, rgba(248, 239, 0, 0.06) 0%, transparent 55%),
-    radial-gradient(circle at 50% 90%, rgba(255, 0, 60, 0.05) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-  animation: ambientPulse 8s ease-in-out infinite alternate;
-}
-
-.ambient-fog-light {
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(0, 240, 255, 0.03) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  animation: fogRotate 20s linear infinite;
-}
-
-@keyframes ambientPulse {
-  0% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.05); }
-  100% { opacity: 0.7; transform: scale(0.98); }
-}
-
-@keyframes fogRotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Global Cyberspace OS Typography & Mobile Responsive Utilities */
-.font-orbitron {
-  font-family: 'Orbitron', 'Pretendard Std', sans-serif !important;
-}
-
-@media screen and (max-width: 768px) {
-  .v5-body {
-    padding: 1rem;
-  }
-
-  .v5-main-col {
-    padding: 1rem;
-  }
-
-  .items-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
-  }
 }
 </style>

@@ -5,15 +5,17 @@
 @media screen and (min-width: 1024px) {
   .poker-table {
     border-radius: 999px;
-    /* Complete Ellipse */
+    /* Classic Elliptical Poker Felt with Deep Black Cyberspace Overlay */
+    background: radial-gradient(circle, #0e1217 0%, #000000 100%);
+    border: 2px solid rgba(0, 240, 255, 0.3);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), inset 0 0 60px rgba(0, 240, 255, 0.08);
   }
 
   /* Wide Screen / FHD Optimization */
   @media (min-width: 1200px) {
     .poker-table {
       height: 60vh;
-      border-width: 4px;
-      box-shadow: 0 0 50px rgba(0, 0, 0, 0.5), inset 0 0 100px rgba(0, 240, 255, 0.05);
+      border-width: 2px;
     }
   }
   .cards .poker-card,

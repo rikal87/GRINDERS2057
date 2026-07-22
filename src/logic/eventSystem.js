@@ -9,7 +9,8 @@ import { isJoinedPartner } from './partnerSystem.js'
 import { CONTRACT_SIGN_PREVENT_REASON, CONTRACT_SIGN_PREVENT_REASON_DESC } from './partnerContractSystem.js'
 import { getCurrentBankroll } from './store.js'
 import { MESSAGE_ACTION_RESOLVE_TYPE } from './messageSystem.js'
-import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
+import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses.js';
+import { zones } from './zone.js';
 const pay_rent_bill = 5000;
 
 export const EVENT_ID = {
@@ -495,9 +496,6 @@ export const processEvents = () => {
         if (!eventDef.repeatable) {
           store.completedEvents.push(pending.id);
         } else if (eventDef.timer !== undefined) {
-          // 반복 가능한 이벤트는 실행 후 타이머를 기반으로 다시 큐에 등록 (조건이 여전히 맞는지 검사하기 위해 딜레이 부여 후 다음 틱부터 재평가되거나 즉시 스케줄링)
-          // 여기서 pendingEvents에 바로 넣는 것이 아니라 '다음 프레임에 1번 항목에서 자동 스케줄링' 되도록 놔두는 것도 방법이지만,
-          // 반복성이 보장되도록 scheduleEvent를 명시적으로 호출합니다.
           if (eventDef.condition === undefined || eventDef.condition()) {
             scheduleEvent(eventDef.id, eventDef.timer);
           }
@@ -508,3 +506,86 @@ export const processEvents = () => {
     });
   }
 };
+
+/**
+ * 🛠️ [DEBUG COMMAND] Trigger Forced Big-Pot Alert & Dispatch Comms Message
+ * @param {string} heroId - Target partner/player ID (Default: 'Max')
+ * @param {number} bbRatio - Pot size in Big Blinds (Default: 50BB)
+ * @param {string} locationId - Target Zone ID (Default: LOCATION_ID.FREE_STREET_SHOP)
+ */
+export const triggerForceBigPotAlert = (
+  heroId = 'Max',
+  bbRatio = 50,
+  locationId = LOCATION_ID.FREE_STREET_SHOP
+) => {
+  let locationConfig = null;
+  for (const zone of zones) {
+    const loc = zone.locations.find(l => l.id === locationId);
+    if (loc) { locationConfig = loc; break; }
+  }
+  const tableBb = locationConfig?.tables?.bb || 10;
+  const potAmount = Math.round(bbRatio * tableBb);
+  const potBbRatio = bbRatio;
+
+  const mockSnapshot = {
+    timestamp: Date.now(),
+    locationId,
+    potSize: potAmount,
+    bb: tableBb,
+    potBbRatio,
+    // board: ['7s', '6s', '8d', '5s'], // Pre-set up to TURN street (Flop: 7s, 6s, 8d / Turn: 5s / River: Realtime AI)
+    board: ['7s', '6s'], // Pre-set up to flop (Flop: 7s, 6s, 8d / Turn: 5s / River: Realtime AI)
+    players: [
+      { id: heroId, name: heroId === 'Max' ? 'Max Houston' : heroId, hand: ['7c', '6c'], chips: potAmount },
+      { id: 'Fish_1', name: 'Fish #1', hand: ['5d', '6d'], chips: potAmount },
+      { id: 'Broke_2', name: 'Broke #2', hand: ['9h', 'Th'], chips: potAmount },
+      { id: 'MR_CALL_3', name: 'MR_CALL #3', hand: ['Ac', 'Kd'], chips: potAmount },
+      { id: 'Broke_4', name: 'Broke #4', hand: ['Qc', 'Qd'], chips: potAmount },
+      { id: 'MR_CALL_5', name: 'MR_CALL #5', hand: ['2s', '3s'], chips: potAmount }
+    ],
+    actionStream: [
+      // PREFLOP (Full 6-Player Action Sequence)
+      { street: 'PREFLOP', type: 'fold', player: 'Broke #2', playerId: 'Broke_2' },
+      { street: 'PREFLOP', type: 'fold', player: 'MR_CALL #3', playerId: 'MR_CALL_3' },
+      { street: 'PREFLOP', type: 'fold', player: 'Vanguard #4', playerId: 'Vanguard_4' },
+      { street: 'PREFLOP', type: 'fold', player: 'Maniac #5', playerId: 'Maniac_5' },
+      { street: 'PREFLOP', type: 'raise', player: heroId, playerId: heroId, amount: tableBb * 3 },
+      { street: 'PREFLOP', type: 'call', player: 'Fish #1', playerId: 'Fish_1', amount: tableBb * 3 },
+
+      // FLOP (7s, 6s, 8d)
+      { street: 'FLOP', type: 'check', player: heroId, playerId: heroId },
+      // { street: 'FLOP', type: 'raise', player: 'Fish #1', playerId: 'Fish_1', amount: tableBb * 8 },
+      // { street: 'FLOP', type: 'call', player: heroId, playerId: heroId, amount: tableBb * 8 },
+
+      // TURN (5s)
+      // { street: 'TURN', type: 'all_in', player: heroId, playerId: heroId, amount: potAmount },
+      // { street: 'TURN', type: 'call', player: 'Fish #1', playerId: 'Fish_1', amount: potAmount }
+    ],
+    isBigPot: potBbRatio >= 40,
+    isCooler: true,
+    isTriggered: true
+  };
+
+  console.log(`🚨 [DEBUG COMMAND] Triggering Forced Big-Pot Alert for ${heroId} ($${potAmount} / ${potBbRatio}BB @ ${locationId})`);
+
+  sendMessage(
+    MESSAGE_TYPE.EVENT,
+    `🚨 [LIVE MATCH ALERT] ${heroId}의 빅팟 경기 (${potBbRatio}BB)`,
+    `${heroId}님이 [${locationConfig?.name_ko || '길거리 상점'}] 테이블에서 $${potAmount.toLocaleString()} (${potBbRatio}BB) 크기의 대형 팟 경기를 치르고 있습니다. 관전하시겠습니까?`,
+    [
+      {
+        label: MESSAGE_ACTION_LABEL_TYPE.SPECTATE_MATCH,
+        actionType: MESSAGE_ACTION_TYPE.SPECTATE_MATCH,
+        payload: { heroId, locationId, snapshot: mockSnapshot }
+      }
+    ],
+    heroId
+  );
+
+  return mockSnapshot;
+};
+
+// Global Window Command Binding for Developer Console Execution
+if (typeof window !== 'undefined') {
+  window.triggerForceBigPotAlert = triggerForceBigPotAlert;
+}

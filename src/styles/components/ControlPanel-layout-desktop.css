@@ -1,5 +1,5 @@
 /* =============================================
-   CONTROLPANEL - DESKTOP LAYOUT
+   CONTROLPANEL - DESKTOP LAYOUT (Cyberspace OS Tone Alignment)
    ============================================= */
 
 /* 데스크톱에서만 모바일 전용 요소를 숨김 */
@@ -12,25 +12,92 @@
 
 @media (min-width: 1200px) {
   .control-panel {
+    display: flex;
     flex-direction: row;
     align-items: flex-start;
     justify-content: space-between;
-    padding: 20px;
-    background: rgba(5, 10, 14, 0.8);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--glass-border);
+    padding: 1.5rem 2.5rem;
+    background: #000000;
+    border-top: 1px solid rgba(0, 240, 255, 0.3);
+    gap: 2rem;
   }
 
-  .betting-interface {
+  .inbox-panel.desktop-only {
+    flex: 1.2;
+    max-width: 320px;
+    background: #000000;
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    padding: 1rem;
+  }
+
+  .betting-interface.desktop-only {
     flex: 2;
-    max-width: 600px;
+    max-width: 580px;
+    background: #000000;
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    padding: 1.2rem;
   }
-  .permanent-hud {
-    /* flex: 1.5; */
-    max-width: 500px;
+
+  .hud-and-skills.desktop-only {
+    flex: 1.2;
+    max-width: 380px;
+    background: #000000;
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    padding: 1rem;
   }
-  .skill-panel {
-    flex: 1.5;
-    max-width: 500px;
-  }
+}
+
+/* Slim Action Buttons */
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.actions button {
+  font-family: 'Orbitron', 'Pretendard Std', sans-serif !important;
+  font-weight: 900;
+  font-size: 0.95rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-fold {
+  background: var(--neon-magenta);
+  color: #ffffff !important;
+}
+
+.btn-fold:hover:not(:disabled) {
+  box-shadow: 0 0 15px rgba(255, 0, 92, 0.5);
+}
+
+.btn-call {
+  background: var(--neon-cyan);
+  color: #000000 !important;
+}
+
+.btn-call:hover:not(:disabled) {
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+}
+
+.btn-raise {
+  background: var(--neon-yellow);
+  color: #000000 !important;
+}
+
+.btn-raise:hover:not(:disabled) {
+  box-shadow: 0 0 15px rgba(204, 255, 0, 0.5);
+}
+
+.actions button:disabled {
+  background: #1a222a !important;
+  color: #405060 !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
 }

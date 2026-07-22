@@ -1,8 +1,9 @@
 <template>
-  <div v-for="(p, idx) in engine.players" :key="p.id" class="player-seat" :class="[`max${engine.tableSize}`, getSeatClass(idx), {
-    // 'folded': p.isFolded,
-    'winner-glow': showShowdown && isWinner(p.id)
-  }]" :style="{ filter: staminaBlur > 0 ? `blur(${staminaBlur}px)` : '' }">
+  <template v-if="engine && engine.players">
+    <div v-for="(p, idx) in engine.players" :key="p.id" class="player-seat" :class="[`max${engine.tableSize}`, getSeatClass(idx), {
+      // 'folded': p.isFolded,
+      'winner-glow': showShowdown && isWinner(p.id)
+    }]" :style="{ filter: staminaBlur > 0 ? `blur(${staminaBlur}px)` : '' }">
 
     <div class="dealer-btn" v-if="engine.dealerIndex === idx">D</div>
     <!-- <div class="chip-stack"> -->
@@ -85,7 +86,7 @@
     <!-- <div class="status-overlay" v-if="p.isFolded">FOLDED</div> -->
     <!-- Neural Insight (LLM Thought) -->
     <div class="neural-insight"
-      v-if="!p.isHuman && p.lastThought && !p.isFolded && engine.players.find(p => p.isMe).canReadSynapses">
+      v-if="!p.isHuman && p.lastThought && !p.isFolded && engine.players.find(p => p.isMe)?.canReadSynapses">
       <span class="prefix">>></span> {{ p.lastThought }}
     </div>
   </div>
@@ -151,6 +152,7 @@
     <span class="icon">🗘</span>
     <span class="label">HISTORY</span>
   </div>
+  </template>
 </template>
 
 <script setup>
@@ -232,13 +234,13 @@ const visualTotalPot = ref(0);
 const currentPotName = ref('');
 const visualChips = ref({}); // [NEW] For chip sync animation
 
-watch(() => props.engine.pot, (newPot) => {
-  if (!showShowdown.value) {
+watch(() => props.engine?.pot, (newPot) => {
+  if (!showShowdown.value && newPot !== undefined) {
     visualTotalPot.value = newPot;
   }
 });
 
-watch(() => props.engine.showdownResults, async (newResults) => {
+watch(() => props.engine?.showdownResults, async (newResults) => {
   if (newResults) {
     showShowdown.value = true;
     activePotWinner.value = null;

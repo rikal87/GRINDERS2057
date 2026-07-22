@@ -33,7 +33,7 @@ const eventAdaptor = new EventAdaptor();
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 export class GameEngine {
   constructor(playerClass = 'VANGUARD', tableSize = 2, sb = 1, bb = 2, buyin = 1000, rake = 0.05, rakeCap = 50, isAdvanced = false
-    , locationId = 'micro_street_shop', locationLV = 1, buyInLimit = 999999, isMonitoring = false, inviteId = null, isDeathmatch = false) {
+    , locationId = 'micro_street_shop', locationLV = 1, buyInLimit = 999999, isMonitoring = false, inviteId = null, isDeathmatch = false, options = {}) {
     this.exited = false;
     this.locationId = locationId;
     this.tableSize = tableSize;
@@ -75,12 +75,9 @@ export class GameEngine {
     this.suspicion = 0;
     this.infamy = 0;
     this.playersPools = [];
-    this.isMonitoring = isMonitoring;
-    this.isDeathmatch = isDeathmatch;
-    this.myTurn = false;
-    this.waitingTriggered = false; // [NEW] Track if waiting dialogue already triggered this turn
-    this.bigPotTensionTriggered = false; // [NEW] Track if big pot tension already triggered this hand
-    // this.partners = [];
+    this.options = options || {};
+    this.isSpectateMode = options.isSpectateMode || false;
+    this.spectateHero = options.spectateHero || (options.snapshot ? options.snapshot.heroId : null);
     this.players = this.initializePlayers(playerClass, tableSize);
   }
 
@@ -93,9 +90,11 @@ export class GameEngine {
   initializePlayers(humanClass, size) {
     const players = [];
 
-    const YOU = PlayerFactory.createHumanPlayer(this, humanClass);
-    this.processBuyIn(YOU)
-    players.push(YOU)
+    if (!this.isSpectateMode) {
+      const YOU = PlayerFactory.createHumanPlayer(this, humanClass);
+      this.processBuyIn(YOU);
+      players.push(YOU);
+    }
 
     // Build spawn requirements from store.activeBoosts
     const spawnBoosts = store.activeBoosts
@@ -125,8 +124,17 @@ export class GameEngine {
     // For now we'll allow forced spawns to override loc allowedNames
     console.log('this.buyInLimit', this.buyInLimit);
     let enemiesToPlace = [];
+
+    // Spectating Mode: Ensure the Hero (e.g. 'Max') is guaranteed at the table
+    if (this.isSpectateMode && this.spectateHero) {
+      const heroTemplate = [...CLASSES_PARTNER, ...CLASSES_ENEMY].find(e => e.id === this.spectateHero || e.name === this.spectateHero);
+      if (heroTemplate) {
+        enemiesToPlace.push({ ...heroTemplate });
+      }
+    }
+
     // 0. partners Spawns (Top Priority from zone.js config)
-    if (!this.inviteId) {
+    if (!this.inviteId && !this.isSpectateMode) {
       const joinedPartners = getJoinedPartners();
       joinedPartners.forEach(partner => {
         const validContract = partner.contracts.find(contract => contract.type === CONTRACT_TYPE.COLLUSION && contract.active);
@@ -226,18 +234,19 @@ export class GameEngine {
     const tableNpcs = [];
 
     // First put the guaranteed enemies (Partners, Guests, Forced) up to the table limit
-    for (let i = 0; i < enemiesToPlace.length && tableNpcs.length < size - 1; i++) {
+    const targetNpcCount = this.isSpectateMode ? size : size - 1;
+    for (let i = 0; i < enemiesToPlace.length && tableNpcs.length < targetNpcCount; i++) {
       tableNpcs.push(this.createAIPlayerFromTemplate(enemiesToPlace[i], `cpu_${i + 1}`));
     }
 
     // Fill the empty seats with random NPCs from the pool
     let cpuCount = enemiesToPlace.length + 1;
-    while (tableNpcs.length < size - 1) {
+    while (tableNpcs.length < targetNpcCount) {
       tableNpcs.push(this.createAIPlayer(`cpu_${cpuCount++}`));
     }
 
-    // Completely shuffle the NPCs so guaranteed ones don't always sit right next to the player
-    const shuffledNpcs = tableNpcs.sort(() => Math.random() - 0.5);
+    // In normal mode, shuffle NPCs. In spectate mode, maintain exact snapshot seat order.
+    const shuffledNpcs = this.isSpectateMode ? tableNpcs : tableNpcs.sort(() => Math.random() - 0.5);
     players.push(...shuffledNpcs);
 
     // De-duplicate names for players sharing the same persona
@@ -254,6 +263,21 @@ export class GameEngine {
         p.name = `${originalName} #${currentNameIndices[originalName]}`;
       }
     });
+
+    // Spectating Mode: Override players array with exact snapshot player roster and IDs
+    const snapshot = this.options?.snapshot;
+    if (this.isSpectateMode && snapshot && snapshot.players && Array.isArray(snapshot.players)) {
+      players.length = 0; // Clear generated default players
+      snapshot.players.forEach((sp, idx) => {
+        const aiPlayer = PlayerFactory.createAIPlayer(this, sp.id || `snap_${idx}`);
+        aiPlayer.id = sp.id || aiPlayer.id;
+        aiPlayer.name = sp.name || aiPlayer.name;
+        aiPlayer.chips = sp.chips || (this.bb * 100);
+        players.push(aiPlayer);
+      });
+      console.log('🎥 [SPECTATE ENGINE] Exact Snapshot Player Roster Constructed:', players.map(p => `${p.name} (${p.id})`));
+      return players;
+    }
 
     if (this.isTutorial) {
       this.mentor = players.find(e => e.name === 'Max(Mentor)');
@@ -280,6 +304,46 @@ export class GameEngine {
     this.currentStreetRaises = 0; // [FIX] Reset raises for new hand
     this.aggressor = null;
     this.historyManager.actionHistory = []; // Keep local access clean
+
+    // 🎥 [SPECTATE REPLAY SNAPSHOT ENGINE]
+    // Restore preset community board & player hole cards from offline snapshot
+    const snapshot = this.options?.snapshot;
+    if (this.isSpectateMode && snapshot) {
+      console.log('🎥 [SPECTATE ENGINE] Restoring Preset Snapshot Match:', snapshot);
+
+      // 1. Remove preset snapshot cards from the active deck to avoid duplicate dealing
+      if (snapshot.board && Array.isArray(snapshot.board)) {
+        snapshot.board.forEach(card => {
+          const idx = this.deck.indexOf(card);
+          if (idx !== -1) this.deck.splice(idx, 1);
+        });
+      }
+
+      if (snapshot.players && Array.isArray(snapshot.players)) {
+        snapshot.players.forEach(sp => {
+          if (sp.hand && Array.isArray(sp.hand)) {
+            sp.hand.forEach(card => {
+              const idx = this.deck.indexOf(card);
+              if (idx !== -1) this.deck.splice(idx, 1);
+            });
+          }
+        });
+      }
+
+      // 2. Restore past actionStream (Preflop ~ Turn) into historyManager for accurate AI context & UI history
+      if (snapshot.actionStream && Array.isArray(snapshot.actionStream)) {
+        snapshot.actionStream.forEach(act => {
+          const targetPlayer = this.players.find(p => p.id === act.playerId || p.name === act.player) || { id: act.playerId || 'unknown', name: act.player, chips: 0 };
+          this.historyManager.recordAction(act.street || 'PREFLOP', targetPlayer, act.type, act.amount || 0, act.potSize || snapshot.potSize || 0);
+
+          // Track aggressor for AI range calculations
+          if (act.type === 'raise' || act.type === 'all_in') {
+            this.aggressor = targetPlayer;
+          }
+        });
+        console.log('🎥 [SPECTATE ENGINE] Action Stream Restored:', snapshot.actionStream.length, 'actions');
+      }
+    }
     if (this.exitReservationRounds > 0) {
       this.exitReservationRounds--;
     } else if (this.exitReservationRounds === 0) {
@@ -288,14 +352,46 @@ export class GameEngine {
       return;
     }
 
-    this.players.forEach(p => {
-      p.hand = [this.deck.pop(), this.deck.pop()];
-      p.isFolded = p.chips <= 0; // Out of game if no chips
+    this.players.forEach((p, pIdx) => {
+      // Spectating Mode: Override hand from preset snapshot by ID, Name, or Seat Index
+      let presetHand = null;
+      if (this.isSpectateMode && snapshot && snapshot.players && snapshot.players.length > 0) {
+        // 1. Exact ID or Name match first
+        let snapPlayer = snapshot.players.find(sp => sp && (sp.id === p.id || sp.name === p.name));
+        
+        // 2. Exact seat index match if available
+        if (!snapPlayer && snapshot.players[pIdx]) {
+          snapPlayer = snapshot.players[pIdx];
+        }
+
+        if (snapPlayer && snapPlayer.hand && snapPlayer.hand.length === 2) {
+          presetHand = [...snapPlayer.hand];
+        }
+      }
+
+      p.hand = presetHand || [this.deck.pop(), this.deck.pop()];
+      if (presetHand) {
+        console.log(`🎥 [SPECTATE ENGINE] Hand Assigned for Seat ${pIdx} (${p.name}):`, presetHand);
+      }
+
+      // Check if player folded in preset snapshot stream
+      let presetFolded = false;
+      if (this.isSpectateMode && snapshot && snapshot.actionStream) {
+        const hasFoldedInStream = snapshot.actionStream.some(act => 
+          act.type === 'fold' && (act.playerId === p.id || act.player === p.name || (p.name && p.name.startsWith(act.player)))
+        );
+        if (hasFoldedInStream) {
+          presetFolded = true;
+          console.log(`🎥 [SPECTATE ENGINE] Preset FOLD Applied for ${p.name}`);
+        }
+      }
+
+      p.isFolded = presetFolded || (p.chips <= 0); // Out of game if folded in snapshot or no chips
       p.currentBet = 0;
       p.totalWagered = 0;
       p.isBlind = false; // Reset blind status
       p.isJoinPot = false; // Reset VPIP tracker
-      p.showHoleCards = false; // reset show hole cards
+      p.showHoleCards = this.isSpectateMode; // In spectate mode, reveal cards for live insight
       // [FIX] Reset AF to initial before applying tilt modifiers
       if (p.class && !p.isBoss && !p.isAdvanced) {
         p.class.vPIP = p.initialVPIP;
@@ -889,12 +985,33 @@ export class GameEngine {
     });
     // this.street = 'ROUND_END';
     eventAdaptor.roundEnd({ players: this.players, bestWinner, street: this.street });
+    // Sync live match chip results back to partner store bankrolls
+    if (this.isSpectateMode) {
+      result.results.forEach(res => {
+        const partnerData = store.partners.find(p => p.id === res.id || p.id === res.player.id || p.name === res.player.name);
+        if (partnerData) {
+          const netGainLoss = res.amountWon - res.player.totalWagered;
+          partnerData.bankroll = Math.max(0, partnerData.bankroll + netGainLoss);
+          if (partnerData.sessionNetWorth !== undefined) partnerData.sessionNetWorth += netGainLoss;
+          console.log(`🎥 [SPECTATE BANKROLL SYNC] Synced ${partnerData.name}'s bankroll: Net ${netGainLoss >= 0 ? '+' : ''}${netGainLoss} => New Total: $${partnerData.bankroll}`);
+        }
+      });
+    }
+
     const sleepTime = (this.showdownResults?.detailedPots?.length || 1) * 4000 + 1000;
     // saveStore();
     await sleep(sleepTime);
     await this.checkBusted(bestWinner);
     if (this.suspicion >= 40 && this.checkTriggerCasinoInvestigation()) return;
     this.calculationInProgress = false;
+    
+    // Spectating Mode: Continuous Live Game Transition
+    // After replaying preset snapshot hand, consume the snapshot so subsequent hands play dynamically with live AI
+    if (this.options && this.options.snapshot) {
+      console.log('🎥 [SPECTATE ENGINE] Preset snapshot hand completed. Transitioning to continuous live AI simulation.');
+      this.options.snapshot = null;
+    }
+
     this.startNewHand();
   }
 
@@ -1047,24 +1164,46 @@ export class GameEngine {
   }
 
   dealFlop() {
-    this.deck.pop();
-    this.board.push(this.deck.pop(), this.deck.pop(), this.deck.pop());
+    const snapshotBoard = this.options?.snapshot?.board;
+    this.board = [];
+
+    // Pull up to 3 cards from snapshot.board queue via shift(), fill remaining from deck
+    for (let i = 0; i < 3; i++) {
+      if (this.isSpectateMode && snapshotBoard && snapshotBoard.length > 0) {
+        this.board.push(snapshotBoard.shift());
+      } else {
+        if (i === 0) this.deck.pop(); // Burn card on first draw
+        this.board.push(this.deck.pop());
+      }
+    }
+
+    console.log('🎥 [SPECTATE ENGINE] Flop Dealt:', this.board);
     this.state = 'FLOP';
     audioManager.playSFX('card-dealt&fold');
-    // this.checkSkillTriggers('flop_start');
-    // eventAdaptor.startStreet(this.state); // Moved to nextStreet
   }
 
   dealTurn() {
-    this.deck.pop();
-    this.board.push(this.deck.pop());
+    const snapshotBoard = this.options?.snapshot?.board;
+    if (this.isSpectateMode && snapshotBoard && snapshotBoard.length > 0) {
+      this.board.push(snapshotBoard.shift());
+      console.log('🎥 [SPECTATE ENGINE] Preset Turn Dealt:', this.board);
+    } else {
+      this.deck.pop(); // Burn card
+      this.board.push(this.deck.pop());
+    }
     this.state = 'TURN';
     audioManager.playSFX('card-dealt&fold');
-
   }
+
   dealRiver() {
-    this.deck.pop();
-    this.board.push(this.deck.pop());
+    const snapshotBoard = this.options?.snapshot?.board;
+    if (this.isSpectateMode && snapshotBoard && snapshotBoard.length > 0) {
+      this.board.push(snapshotBoard.shift());
+      console.log('🎥 [SPECTATE ENGINE] Preset River Dealt:', this.board);
+    } else {
+      this.deck.pop(); // Burn card
+      this.board.push(this.deck.pop());
+    }
     this.state = 'RIVER';
     audioManager.playSFX('card-dealt&fold');
   }
@@ -1249,25 +1388,60 @@ export class GameEngine {
     player.lastDialogue = null
     player.lastThought = null
     // AI Turn
-    // [PHASE 3] Timing Tells
-    // We get the action first to determine the delay (Thinking Time/Hollywooding)
     let action;
-    const isGTO = (player.class && player.class.isBoss);
-    if (isGTO) {
-      action = getAdvancedAIAction(player, this);
-    } else {
-      action = getAIAction(player, this);
+
+    // 🎥 [SPECTATE ENGINE] Preset ActionStream Replay Override
+    const snapshot = this.options?.snapshot;
+    let presetActionInStream = null;
+    if (this.isSpectateMode && snapshot && snapshot.actionStream && snapshot.actionStream.length > 0) {
+      const pNameLower = player.name ? player.name.split('#')[0].trim().toLowerCase() : '';
+      const pIdLower = player.id ? player.id.split('_')[0].toLowerCase() : '';
+
+      // Find the next unconsumed preset action for this street and player
+      presetActionInStream = snapshot.actionStream.find(act => {
+        if (act.consumed || act.street !== this.state) return false;
+
+        const actNameLower = act.player ? act.player.split('#')[0].trim().toLowerCase() : '';
+        const actIdLower = act.playerId ? act.playerId.split('_')[0].toLowerCase() : '';
+
+        return (act.playerId === player.id || act.player === player.name) ||
+               (pNameLower && actNameLower && (pNameLower.includes(actNameLower) || actNameLower.includes(pNameLower))) ||
+               (pIdLower && actIdLower && (pIdLower.includes(actIdLower) || actIdLower.includes(pIdLower)));
+      });
+
+      if (presetActionInStream) {
+        presetActionInStream.consumed = true; // Mark action as consumed
+        action = {
+          type: presetActionInStream.type,
+          action: presetActionInStream.type,
+          amount: presetActionInStream.amount || 0,
+          insight: `[PRESET_REPLAY] Executing ${presetActionInStream.type.toUpperCase()}`,
+          delay: 800 + Math.random() * 400
+        };
+        console.log(`🎥 [SPECTATE ENGINE] Executed Preset Action for ${player.name} (${player.id}):`, action.type, action.amount);
+      } else {
+        console.warn(`🎥 [SPECTATE ENGINE] No Preset Action Found for ${player.name} (${player.id}) on ${this.state}. Falling back to AI Engine.`);
+      }
     }
 
-    // [NEW] Collusion Strategy
-    if (player.isPartner) {
-      action = applyPartnerCollusion(player, this, action);
-      handlePartnerCollusionSignals(player, action, this);
+    if (!presetActionInStream) {
+      const isGTO = (player.class && player.class.isBoss);
+      if (isGTO) {
+        action = getAdvancedAIAction(player, this);
+      } else {
+        action = getAIAction(player, this);
+      }
+
+      // [NEW] Collusion Strategy
+      if (player.isPartner) {
+        action = applyPartnerCollusion(player, this, action);
+        handlePartnerCollusionSignals(player, action, this);
+      }
     }
 
     // [NEW] Inject Advanced Tough Call Monologues on the River
     // Skip this if the user has folded and fast-forward is active
-    if (this.state === 'RIVER' && (engine.currentRoundBet - player.currentBet) > 0 && !window.isFastFowardActive) {
+    if (this.state === 'RIVER' && (this.currentRoundBet - player.currentBet) > 0 && !window.isFastFowardActive) {
       const advancedThoughtArray = generateToughCallThought(player, this, action);
       if (advancedThoughtArray && Array.isArray(advancedThoughtArray) && advancedThoughtArray.length > 0) {
         action.thoughtSequence = advancedThoughtArray;
@@ -1376,6 +1550,9 @@ export class GameEngine {
       this.handlePlayerAction(player, { type: 'fold' });
     }
   }
+}
 
+if (typeof window !== 'undefined') {
+  window.GameEngineClass = GameEngine;
 }
 

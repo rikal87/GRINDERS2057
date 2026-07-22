@@ -1,7 +1,7 @@
 import { getPartners, gainPartnerBankroll, gainRelationship } from "./partnerSystem.js";
 import { store, gainBankroll, getCurrentBankroll, getGameTime } from "./store.js";
-import { audioManager } from "./audioManager";
-import { scheduleEvent, EVENT_ID } from "./eventSystem";
+import { audioManager } from "./audioManager.js";
+import { scheduleEvent, EVENT_ID } from "./eventSystem.js";
 import { CONTRACT_TYPE, TYPE_CHANGE_BANKROLL, PARTNER_ID } from "./constants.js";
 export const CONTRACT_SIGN_PREVENT_REASON = {
   BENEFIT_SHARE_MAX_COUNT: 'BENEFIT_SHARE_MAX_COUNT',
