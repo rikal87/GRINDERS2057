@@ -1,11 +1,10 @@
-
-import { store, getPlayStatsCount, gainBankroll, getCurrentLT, gainLT, getCurrentBankroll, getAgent, getLocalizedText, getEnemyBustCount, getEnemyMetCount, } from './store';
-import { sendMessage, MESSAGE_TYPE } from './messageSystem';
-import { AI_TASK_DATA, TASK_EFFECT_TYPE } from './aiAgentTaskData';
-import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses';
-import { zones } from './zone';
+import { store, getPlayStatsCount, gainBankroll, getCurrentLT, gainLT, getCurrentBankroll, getAgent, getLocalizedText, getEnemyBustCount, getEnemyMetCount, } from './store.js';
+import { sendMessage, MESSAGE_TYPE } from './messageSystem.js';
+import { AI_TASK_DATA, TASK_EFFECT_TYPE } from './aiAgentTaskData.js';
+import { AI_AGENT_MODEL_ENUM, AI_AGENT_MODEL_AND_PLAN_DATA } from './aiAgentModelClasses.js';
+import { zones } from './zone.js';
 import { TYPE_CHANGE_BANKROLL } from './constants.js'
-import { PLAY_RECORD_STATS_TYPE } from './playRecordStats';
+import { PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
 // Task Definitions
 // Logic to process tasks every game tick (e.g. hourly)
 // Actually we can process minutely, but probability is per hour.

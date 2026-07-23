@@ -95,7 +95,7 @@ onMounted(() => {
   background: #050a0e;
   overflow: hidden;
   position: relative;
-  font-family: 'Pretendard Std', 'Share Tech Mono', monospace;
+  font-family: 'Orbitron', 'Pretendard Std', monospace;
 }
 
 /* Global Scanline Overlay */
@@ -116,7 +116,7 @@ onMounted(() => {
 }
 
 .logo-area {
-  font-family: 'Orbitron', 'Share Tech Mono', monospace;
+  font-family: 'Orbitron', 'Pretendard Std', monospace;
   position: relative;
   margin-bottom: 4rem;
   z-index: 10;

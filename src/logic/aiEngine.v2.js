@@ -136,7 +136,7 @@ function getProbabilisticAction(player, engine) {
     if (drawCategory === 'DRAW_MONSTER') drawBonus = 0.7;
     else if (drawCategory === 'DRAW_STRONG') drawBonus = 0.5;
     else if (drawCategory === 'DRAW_WEAK') drawBonus = 0.3;
-    if (player.personaId.toUpperCase() === 'GAMBLER') drawBonus *= 1.2 // they like to draw bonus more 
+    if ((player.personaId || '').toUpperCase() === 'GAMBLER') drawBonus *= 1.2; // they like to draw bonus more 
     if (AF >= 3) afMod = drawBonus;
     drawBonus *= (streetsLeft / 2);
     estimatedEquity = Math.max(estimatedEquity, drawBonus);

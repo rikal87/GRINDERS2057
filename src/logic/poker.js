@@ -249,13 +249,16 @@ export const getHandCategory = (hand, board, evalResult) => {
   return result('AIR');
 };
 
-const scoreFiveCards = (cards) => {
+const scoreFiveCards = (cardsInput) => {
+  const cards = (cardsInput || []).filter(c => typeof c === 'string' && c.length >= 2);
+  if (cards.length === 0) return { rank: 0, subRank: 0, name: 'AIR' };
+
   const ranks = cards.map(c => {
     const idx = RANKS.indexOf(c[0]);
     if (idx === -1) console.error(`[POKER] Invalid card rank: ${c}`);
-    return idx;
+    return idx >= 0 ? idx : 0;
   }).sort((a, b) => b - a);
-  const suits = cards.map(c => c[1]);
+  const suits = cards.map(c => c[1] || 'h');
 
   const counts = {};
   ranks.forEach(r => counts[r] = (counts[r] || 0) + 1);
@@ -458,7 +461,10 @@ export const calculateEquity = (players, board, iterations = 1000) => {
   // board: Array of cards (0 to 5)
   // Returns: Object { [playerId]: equity (0-1) }
 
-  const activePlayers = players.filter(p => !p.isFolded && p.hand && p.hand.length === 2);
+  const activePlayers = (players || []).filter(p => 
+    p && !p.isFolded && p.hand && Array.isArray(p.hand) && p.hand.length === 2 &&
+    typeof p.hand[0] === 'string' && typeof p.hand[1] === 'string'
+  );
   if (activePlayers.length === 0) return {};
   if (activePlayers.length === 1) {
     return { [activePlayers[0].id]: 1.0 };
@@ -680,10 +686,10 @@ export const getDrawCategory = (hand, board) => {
 export const getSimpleHandCategory = (hand, board, evalResult) => {
   const rank = evalResult.rank;
 
-  // Get Rank Values
-  const getRankVal = c => '23456789TJQKA'.indexOf(c[0]);
-  const handRanks = hand.map(getRankVal).sort((a, b) => b - a);
-  const boardRanks = board.map(getRankVal).sort((a, b) => b - a);
+  // Get Rank Values Safely
+  const getRankVal = c => (c && typeof c === 'string' && c.length >= 1) ? '23456789TJQKA'.indexOf(c[0]) : 0;
+  const handRanks = (hand || []).filter(c => typeof c === 'string' && c.length >= 1).map(getRankVal).sort((a, b) => b - a);
+  const boardRanks = (board || []).filter(c => typeof c === 'string' && c.length >= 1).map(getRankVal).sort((a, b) => b - a);
 
   // Board Texture Flags
   const texture = analyzeBoardTexture(board);

@@ -8,8 +8,7 @@
 }
 
 @font-face {
-  font-family: 'Share Tech Mono';
-  src: url('../../assets/fonts/ShareTechMono-Regular.ttf') format('truetype');
+  font-family: 'Orbitron';
   font-weight: normal;
   font-style: normal;
 }
@@ -66,7 +65,7 @@
   --glass-border: rgba(0, 240, 255, 0.2);
   --panel-border: rgba(255, 255, 255, 0.05);
 
-  font-family: 'Share Tech Mono', 'Pretendard Std', monospace;
+  font-family: var(--font-os-root) !important;
   line-height: 1.6;
   font-weight: 400;
 
@@ -155,7 +154,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Orbitron', 'Share Tech Mono', 'Pretendard Std', monospace;
+  font-family: 'Orbitron', 'Pretendard Std', monospace;
 }
 html,
 body,
@@ -1152,7 +1151,7 @@ footer {
   width: max-content;
   max-width: min(250px, 90vw);
   text-align: left;
-  font-family: 'Share Tech Mono', 'Pretendard Std', monospace;
+  font-family: 'Orbitron', 'Pretendard Std', monospace;
   word-break: keep-all;
 }
 

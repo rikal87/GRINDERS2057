@@ -365,7 +365,7 @@ input[type="range"].v5-stamina-range::-webkit-slider-thumb {
 }
 .v5-xp-text.sleep-info {
   margin-top: 8px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Orbitron', monospace;
   font-size: 0.55rem;
   color: #8090a0;
 }

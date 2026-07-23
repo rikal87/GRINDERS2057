@@ -404,3 +404,280 @@ export const initializePartners = () => {
   });
   return partners;
 }
+
+/**
+ * 1-Click 자금 주입 (Direct Capital Staking Injection)
+ */
+export const stakeCapitalToPartner = (partnerId, amount = 5000, isLoan = false) => {
+  const partner = getPartner(partnerId) || store.partners.find(p => p.id === partnerId);
+  if (!partner || store.bankroll < amount || amount <= 0) return false;
+
+  gainBankroll(-amount);
+  partner.bankroll = (partner.bankroll || 0) + amount;
+
+  if (isLoan) {
+    partner.makeupDebt = (partner.makeupDebt || 0) + amount;
+  } else {
+    partner.agencyLoyalty = Math.min(100, (partner.agencyLoyalty || 80) + 15);
+    partner.relationship = Math.min(1000, (partner.relationship || 500) + 100);
+  }
+  return true;
+};
+
+/**
+ * 바이아웃 매각 (Buyout Cash-out)
+ */
+export const calculatePartnerBuyoutValue = (partner) => {
+  if (!partner) return 0;
+  const ovr = partner.ovr || 50;
+  const stardom = partner.stardomRating || 50;
+  const debt = partner.makeupDebt || 0;
+  return Math.max(5000, (ovr * 1000) + (stardom * 500) - debt);
+};
+
+export const cashoutPartnerBuyout = (partnerId) => {
+  const partner = getPartner(partnerId) || store.partners.find(p => p.id === partnerId);
+  if (!partner) return false;
+
+  const buyoutVal = calculatePartnerBuyoutValue(partner);
+  gainBankroll(buyoutVal);
+  partner.isJoined = false;
+  partner.status = 'GONE';
+  return buyoutVal;
+};
+
+/**
+ * 카지노 파견 및 긴급 회수 (Deploy & Recall)
+ */
+export const deployPartnerToCasino = (partnerId, locationId) => {
+  const partner = getPartner(partnerId) || store.partners.find(p => p.id === partnerId);
+  if (!partner) return false;
+
+  partner.status = PARTNER_STATUS.GAMBLING;
+  partner.currentLocationId = locationId;
+  return true;
+};
+
+export const recallPartnerFromCasino = (partnerId) => {
+  const partner = getPartner(partnerId) || store.partners.find(p => p.id === partnerId);
+  if (!partner) return false;
+
+  partner.status = PARTNER_STATUS.IDLE;
+  partner.currentLocationId = null;
+  return true;
+};
+
+/**
+ * 카지노 블랙리스트 신분 세탁 (Laundering)
+ */
+export const launderPartnerBlacklist = (partnerId, cost = 15000) => {
+  const partner = getPartner(partnerId) || store.partners.find(p => p.id === partnerId);
+  if (!partner || store.bankroll < cost) return false;
+
+  gainBankroll(-cost);
+  partner.isBlacklisted = false;
+  return true;
+};
+
+/**
+ * 4D 스탯 수식 & CRT 블록 바 생성 헬퍼 (Clean Domain Helpers)
+ */
+export const calculatePartnerOvr = (partner) => {
+  if (!partner) return 50;
+  const skill = partner.skillRating || 75;
+  const guts = partner.gutsRating || 80;
+  const mental = partner.mentalRating || 70;
+  const stardom = partner.stardomRating || 60;
+  return Math.round((skill * 0.35) + (guts * 0.25) + (mental * 0.25) + (stardom * 0.15));
+};
+
+export const renderCRTBlockGauge = (val = 70) => {
+  const totalBlocks = 10;
+  const filled = Math.min(totalBlocks, Math.max(0, Math.floor(val / 10)));
+  const empty = totalBlocks - filled;
+  
+  if (val > 100) {
+    const overflow = Math.floor((val - 100) / 10);
+    return '🟨'.repeat(overflow) + '█'.repeat(totalBlocks - overflow);
+  }
+  return '█'.repeat(filled) + '░'.repeat(empty);
+};
+
+export const getPartnerTraitsList = (partner) => {
+  if (!partner || !partner.traits) {
+    return [
+      { id: 'calm_mind', name: '침착한 자', icon: '🧘', category: 'PERK' },
+      { id: 'prodigy', name: '유망주', icon: '🌟', category: 'PERK' }
+    ];
+  }
+  return partner.traits.map(t => {
+    const id = typeof t === 'string' ? t : t.id;
+    return typeof t === 'object' && t.name ? t : { id, name: id, icon: '♠', category: 'PERK' };
+  });
+};
+
+export const getPartnerCareersList = (partner) => {
+  if (!partner || !partner.careers || partner.careers.length === 0) {
+    return [
+      { id: 'origin_1', title: '에이전시 창립 멤버' },
+      { id: 'milestone_1', title: '메이크업 빚 전액 청산자' }
+    ];
+  }
+  return partner.careers;
+};
+
+export const getFilteredAndSortedPartners = (partners = [], filterStatus = 'ALL', sortBy = 'ovr') => {
+  let list = [...partners];
+
+  // 1. Filter
+  if (filterStatus === 'GAMBLING') {
+    list = list.filter(p => p.status === 'GAMBLING');
+  } else if (filterStatus === 'IDLE') {
+    list = list.filter(p => p.status !== 'GAMBLING' && p.status !== 'REHAB' && !p.isBlacklisted);
+  } else if (filterStatus === 'RISKS') {
+    list = list.filter(p => p.status === 'REHAB' || p.isBlacklisted || (p.agencyLoyalty || 100) < 40);
+  }
+
+  // 2. Sort
+  list.sort((a, b) => {
+    if (sortBy === 'ovr') {
+      return (b.ovr || calculatePartnerOvr(b)) - (a.ovr || calculatePartnerOvr(a));
+    }
+    if (sortBy === 'pnl') {
+      return (b.sessionNetWorth || 0) - (a.sessionNetWorth || 0);
+    }
+    if (sortBy === 'debt') {
+      return (b.makeupDebt || 0) - (a.makeupDebt || 0);
+    }
+    if (sortBy === 'loyalty') {
+      return (a.agencyLoyalty || 80) - (b.agencyLoyalty || 80);
+    }
+    return 0;
+  });
+
+  return list;
+};
+
+/**
+ * 턴 마감 일일 파견 결과 정산 및 리포트 가공 (Zone Config-based Turn Settlement Engine)
+ */
+export const processTurnPartnerResults = () => {
+  const partners = getPartners();
+  let totalDailyAgencyShare = 0;
+  let totalDailyPlayerPnL = 0;
+  const partnerResults = [];
+
+  partners.forEach(partner => {
+    if (partner.status === 'GAMBLING') {
+      const locationId = partner.currentLocationId || 'micro_warehouse';
+      
+      // 1. Resolve Zone Metadata Config from zone.js
+      let zoneBuyIn = 1000;
+      let zoneBb = 10;
+      let reqSkill = 50;
+      let zoneName = locationId;
+
+      for (const z of zones) {
+        const loc = (z.locations || []).find(l => l.id === locationId);
+        if (loc) {
+          const cfg = loc.tables || loc.tableConfig || {};
+          zoneBuyIn = cfg.amount || 1000;
+          zoneBb = cfg.bb || 10;
+          reqSkill = loc.reqSkill || 50;
+          zoneName = loc.name || locationId;
+          break;
+        }
+      }
+
+      // 2. 200-Hand Poker Math Model: Base EV in bb/100 + Luck Variance Spike
+      const partnerSkill = partner.skillRating || 75;
+      const partnerGuts = partner.gutsRating || 75;
+      const partnerMental = partner.mentalRating || 75;
+      const isTilting = partner.isTilting || partnerMental < 30;
+
+      // Base EV in bb/100 hands
+      const evBaseBb = (partnerSkill - reqSkill) * 0.8;
+      const gutsFactor = 0.8 + (partnerGuts / 250); // 0.8 ~ 1.2x multiplier
+      const mentalPenalty = isTilting ? -15.0 : 0.0;
+      
+      // Luck Variance Delta (-35 bb to +45 bb)
+      const luckVarianceBb = (Math.random() * 80) - 35;
+      const totalBbChange = (2 * (evBaseBb + mentalPenalty) * gutsFactor) + luckVarianceBb;
+
+      // 3. Final Daily Session PnL (CR)
+      const sessionPnL = Math.floor(totalBbChange * zoneBb);
+
+      partner.sessionNetWorth = (partner.sessionNetWorth || 0) + sessionPnL;
+      totalDailyPlayerPnL += sessionPnL;
+
+      const isWin = sessionPnL > 0;
+
+      // 4. Mental & Tilt Calculation on Loss
+      if (!isWin) {
+        partner.mentalRating = Math.max(10, (partner.mentalRating || 75) - (6 + zoneLv));
+        if (partner.mentalRating < 30) {
+          partner.isTilting = true;
+        }
+      } else {
+        partner.mentalRating = Math.min(100, (partner.mentalRating || 75) + 3);
+      }
+
+      // 5. Generate Top 3 Daily Clean Highlights (Scaled by Zone BB)
+      partner.dailyTopHighlights = [
+        {
+          handId: `hand_${partner.id}_top1`,
+          title: `[TOP_01_WIN] ${zoneName} $${(zoneBb * 2400).toLocaleString()} CR 대형 팟 올인 승리`,
+          potSize: zoneBb * 2400,
+          winAmount: Math.floor(zoneBb * 1800),
+          isUserObserved: false
+        },
+        {
+          handId: `hand_${partner.id}_top2`,
+          title: `[TOP_02_WIN] ${zoneName} $${(zoneBb * 1200).toLocaleString()} CR 카운터 블러핑 성공`,
+          potSize: zoneBb * 1200,
+          winAmount: Math.floor(zoneBb * 900),
+          isUserObserved: false
+        },
+        {
+          handId: `hand_${partner.id}_top3`,
+          title: `[TOP_03_WIN] ${zoneName} $${(zoneBb * 600).toLocaleString()} CR Triple Pot 콜 다운`,
+          potSize: zoneBb * 600,
+          winAmount: Math.floor(zoneBb * 450),
+          isUserObserved: false
+        }
+      ];
+
+      // 6. Agency Cut Share (Default 30%)
+      const agencyCutRate = (partner.agencyShareTarget || 30) / 100;
+      const agencyShareAmount = sessionPnL > 0 ? Math.floor(sessionPnL * agencyCutRate) : 0;
+      totalDailyAgencyShare += agencyShareAmount;
+
+      partnerResults.push({
+        id: partner.id,
+        name: partner.name,
+        locationId: locationId,
+        zoneName: zoneName,
+        sessionPnL: sessionPnL,
+        agencyShare: agencyShareAmount,
+        mentalAfter: partner.mentalRating,
+        isWin: isWin
+      });
+    }
+  });
+
+  // Inject Agency Share into Store Bankroll
+  if (totalDailyAgencyShare > 0) {
+    gainBankroll(totalDailyAgencyShare);
+  }
+
+  return {
+    day: store.gameDay || 1,
+    totalAgencyShare: totalDailyAgencyShare,
+    totalPlayerPnL: totalDailyPlayerPnL,
+    deployedCount: partnerResults.length,
+    partnerResults: partnerResults
+  };
+};
+
+
+

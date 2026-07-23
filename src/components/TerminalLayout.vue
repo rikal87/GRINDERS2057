@@ -1,5 +1,18 @@
 <template>
   <div class="terminal-layout-wrapper">
+    <!-- Ultra-Subtle CRT Scanline Lens Overlay (Toggleable) -->
+    <div v-if="store.settings?.crtEnabled !== false" class="fui-scanline-lens"></div>
+
+    <!-- MARATHON-STYLE VERTICAL 90-DEGREE SIDE TELEMETRY RAIL (Right Edge) -->
+    <aside class="fui-vertical-side-rail">
+      <div class="side-rail-content">
+        <div class="rail-fui-symbols font-orbitron">+ IIIIIIII X ⦿ 28 93 ⨉</div>
+        <div class="rail-vert-title yellow glow-yellow font-orbitron">GRINDERS 2057™</div>
+        <div class="rail-sub-telemetry font-orbitron">HORIZON RELAY // 0.783±0.012 M⦿ // "ESCAPE WILL MAKE ME GOD"</div>
+        <div class="rail-bottom-mark font-orbitron">+</div>
+      </div>
+    </aside>
+
     <!-- FUI Grid Overlay -->
     <div class="fui-grid-base">
       <div class="fui-spade-grid">
@@ -15,17 +28,24 @@
     <!-- Header Bar -->
     <header class="sys-header">
       <div class="sys-id cyan">
-        <span class="pulse-cyan"></span>
-        <span class="meta-txt">{{ headerNode || 'TERMINAL_NODE_01' }} // {{ headerSystem || 'CYBERSPACE_OS' }}</span>
+        <span class="pulse-cyan blink-fast"></span>
+        <span class="meta-txt glow-cyan pulse-neon-cyan">{{ headerNode || 'TERMINAL_NODE_01' }} // {{ headerSystem || 'CYBERSPACE_OS' }}</span>
+        <span class="telemetry-chip">[SYS_TICK: {{ sysTickCount }}s]</span>
       </div>
       
+      <!-- Quick CRT FX Toggle Button -->
+      <button class="crt-toggle-chip instant-flash-btn" @click="store.settings.crtEnabled = store.settings.crtEnabled === false ? true : false">
+        [CRT_FX: {{ store.settings?.crtEnabled !== false ? 'ON' : 'OFF' }}]
+      </button>
+
       <!-- High-tech Solid Rect Back Button -->
-      <button v-if="showBack" class="btn-back-os" @click="$emit('back')">
+      <button v-if="showBack" class="btn-back-os instant-flash-btn" @click="$emit('back')">
         ◀ RETURN_TO_MAIN_OS
       </button>
 
       <div class="sys-time">
-        <span class="yellow">{{ formatGameDate(store.gameTime) }}</span>
+        <span class="telemetry-chip yellow-glow">[TRAFFIC: {{ liveTraffic }} KB/s]</span>
+        <span class="yellow glow-yellow">{{ formatGameDate(store.gameTime) }}</span>
         <span class="dim">//</span>
         <span>{{ formatGameTime(store.gameTime) }}</span>
       </div>
@@ -39,9 +59,11 @@
     <!-- Footer Bar -->
     <footer class="sys-footer">
       <div class="footer-left">
-        <span class="yellow">BANKROLL: {{ (store.bankroll || 0).toLocaleString() }} CR</span>
+        <span class="yellow glow-yellow pulse-neon-yellow">BANKROLL: {{ (store.bankroll || 0).toLocaleString() }} CR</span>
         <span class="dim">|</span>
-        <span>LEVEL {{ store.level || 1 }}</span>
+        <span class="cyan glow-cyan">AGENCY_TIER: 03 (CLASS_C)</span>
+        <span class="dim">|</span>
+        <span class="cyan glow-cyan">[EV_ENGINE: ONLINE]</span>
       </div>
       <div class="footer-right">
         <span>POWERED BY GRINDERS_ENGINE // 2057</span>
@@ -51,6 +73,7 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
 import { store } from '../logic/store';
 import { formatGameTime, formatGameDate } from '../logic/timeSystem';
 
@@ -64,27 +87,92 @@ defineProps({
 });
 
 defineEmits(['back']);
+
+// 실시간 텔레메트리 틱 반응성 수치
+const sysTickCount = ref('0.00');
+const liveTraffic = ref('124.5');
+let timerId = null;
+
+onMounted(() => {
+  let tick = 0;
+  timerId = setInterval(() => {
+    tick += 0.1;
+    sysTickCount.value = tick.toFixed(1);
+    liveTraffic.value = (100 + Math.random() * 50).toFixed(1);
+  }, 100);
+});
+
+onUnmounted(() => {
+  if (timerId) clearInterval(timerId);
+});
 </script>
 
 <style scoped>
 @import '../assets/fonts/pretendard-std.css';
 @import '../assets/css/theme-os.css';
 
-.cyan { color: var(--neon-cyan) !important; }
-.yellow { color: var(--neon-yellow) !important; }
-
 .terminal-layout-wrapper {
   position: relative;
   width: 100vw;
   height: 100vh;
-  background: #000000;
-  color: #ffffff;
-  font-family: 'Orbitron', 'Pretendard Std', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  background-color: var(--os-bg-black);
+  color: var(--os-text-main);
+  font-family: 'Orbitron', 'Pretendard Std', -apple-system, sans-serif !important;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
+/* MARATHON-STYLE VERTICAL 90-DEGREE SIDE TELEMETRY RAIL */
+.fui-vertical-side-rail {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50px;
+  background: #000000;
+  border-left: 2px solid var(--neon-yellow);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  pointer-events: none;
+}
+
+.side-rail-content {
+  transform: rotate(90deg);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  white-space: nowrap;
+}
+
+.rail-fui-symbols {
+  font-size: 0.8rem;
+  color: var(--neon-yellow);
+  letter-spacing: 0.2em;
+}
+
+.rail-vert-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: var(--neon-yellow);
+}
+
+.rail-sub-telemetry {
+  font-size: 0.68rem;
+  color: #506070;
+  letter-spacing: 0.1em;
+}
+
+.rail-bottom-mark {
+  font-size: 1.2rem;
+  color: var(--neon-yellow);
+}
+
+/* Base FUI Overlay */
 .fui-grid-base {
   position: absolute;
   inset: 0;
@@ -94,115 +182,136 @@ defineEmits(['back']);
 
 .fui-spade-grid {
   position: absolute;
-  top: 15px;
+  top: 10px;
   left: 20px;
-  right: 20px;
   display: flex;
-  justify-content: space-between;
+  gap: 8px;
   opacity: 0.15;
-  font-size: 0.75rem;
+  font-size: 10px;
   color: var(--neon-cyan);
 }
 
 .fui-side-bar {
   position: absolute;
-  right: 15px;
-  top: 100px;
-  bottom: 60px;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  align-items: flex-end;
-  opacity: 0.25;
-  font-size: 0.7rem;
+  gap: 40px;
+  opacity: 0.3;
+  font-size: 9px;
   color: var(--neon-cyan);
-  font-weight: 800;
+  font-family: monospace;
 }
 
 .side-title-vert {
   writing-mode: vertical-rl;
-  letter-spacing: 0.2em;
+  text-orientation: mixed;
+  letter-spacing: 4px;
 }
 
+/* Header */
 .sys-header {
-  height: 55px;
-  padding: 0 2rem;
-  background: rgba(8, 12, 16, 0.95);
-  border-bottom: 1px solid rgba(0, 240, 255, 0.25);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   position: relative;
   z-index: 10;
+  height: 48px;
+  background: rgba(4, 6, 8, 0.95);
+  border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  padding-right: 60px;
+  font-size: 0.85rem;
 }
 
 .sys-id {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 0.85rem;
-  font-weight: 900;
-  letter-spacing: 0.05em;
+  font-weight: 800;
 }
 
-.pulse-cyan {
-  width: 8px;
-  height: 8px;
-  background: var(--neon-cyan);
-  box-shadow: 0 0 10px var(--neon-cyan);
+.telemetry-chip {
+  font-size: 0.72rem;
+  color: #506070;
+  font-family: monospace;
+  margin-left: 0.4rem;
+}
+
+.crt-toggle-chip {
+  background: transparent;
+  border: 1px solid var(--neon-yellow);
+  color: var(--neon-yellow);
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.2rem 0.5rem;
+  font-family: inherit;
 }
 
 .btn-back-os {
-  background: transparent;
-  border: 1px solid var(--neon-cyan);
-  color: var(--neon-cyan);
-  padding: 0.45rem 1.2rem;
+  background: var(--neon-cyan);
+  color: #000000;
+  border: none;
   font-family: inherit;
   font-weight: 900;
   font-size: 0.8rem;
-  cursor: pointer;
+  padding: 0.3rem 0.8rem;
+
+  letter-spacing: 0.05em;
   border-radius: 0px;
-  transition: all 0.2s ease;
 }
 
 .btn-back-os:hover {
-  background: var(--neon-cyan);
-  color: #000000;
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+  background: #ffffff;
+  box-shadow: 0 0 15px #ffffff;
 }
 
 .sys-time {
-  font-size: 0.85rem;
-  font-weight: 900;
   display: flex;
+  align-items: center;
   gap: 0.5rem;
+  font-weight: 800;
 }
 
-.dim { color: #506070; }
-
+/* Main Viewport */
 .terminal-main-viewport {
-  flex: 1;
-  overflow-y: auto;
   position: relative;
   z-index: 5;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 50px;
 }
 
+/* Footer */
 .sys-footer {
-  height: 40px;
-  padding: 0 2rem;
-  background: rgba(8, 12, 16, 0.95);
-  border-top: 1px solid rgba(0, 240, 255, 0.2);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.78rem;
-  font-weight: 900;
   position: relative;
   z-index: 10;
+  height: 36px;
+  background: rgba(4, 6, 8, 0.95);
+  border-top: 1px solid rgba(0, 240, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  padding-right: 60px;
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
 .footer-left {
   display: flex;
+  align-items: center;
   gap: 0.8rem;
 }
+
+.footer-right {
+  color: #506070;
+  font-size: 0.72rem;
+}
+
+.cyan { color: var(--neon-cyan); }
+.yellow { color: var(--neon-yellow); }
+.dim { color: #405060; }
 </style>

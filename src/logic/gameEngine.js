@@ -75,6 +75,7 @@ export class GameEngine {
     this.suspicion = 0;
     this.infamy = 0;
     this.playersPools = [];
+    this.exitReservationRounds = null;
     this.options = options || {};
     this.isSpectateMode = options.isSpectateMode || false;
     this.spectateHero = options.spectateHero || (options.snapshot ? options.snapshot.heroId : null);
@@ -292,6 +293,99 @@ export class GameEngine {
   createAIPlayer(customId = null) {
     return PlayerFactory.createAIPlayer(this, customId);
   }
+
+  forceFoldCurrentHand() {
+    if (!this.players || this.players.length === 0) return false;
+    const hero = this.players[0];
+    if (hero && !hero.folded) {
+      hero.folded = true;
+      console.info(`[STRATEGIC_COACHING] Force fold executed for ${hero.name}`);
+      return true;
+    }
+    return false;
+  }
+
+  forceRaiseCurrentHand(amount = 5000) {
+    if (!this.players || this.players.length === 0) return false;
+    const hero = this.players[0];
+    if (hero && !hero.folded) {
+      hero.currentBet = (hero.currentBet || 0) + amount;
+      console.info(`[STRATEGIC_COACHING] Force raise executed for ${hero.name}`);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * [DECISIVE MOMENT INJECTION]
+   * MatchSimulator에서 캡처한 capturePoint를 주입하여 Phase 1(PREFLOP부터 고속 자동 연출)을 시작.
+   * 결정적 순간 스트릿(FLOP/TURN)에 도달하면 자동으로 일시정지되어 Phase 2(유저 개입)로 전환.
+   */
+  injectCapturePoint(capturePoint) {
+    if (!capturePoint) return;
+    console.info(`🎯 [DECISIVE_MOMENT_ENGINE] injectCapturePoint Executed! Starting Phase 1 Replay from PREFLOP -> target: ${capturePoint.currentStreet}`);
+
+    this.capturePoint = capturePoint;
+    this.deck = createDeck(); // Initialize valid 52-card deck
+    this.board = []; // Start empty for visual dealing in Phase 1
+    this.state = 'PREFLOP'; // Start from PREFLOP so user watches history
+    this.potManager.resetHand();
+    this.potManager.pot = capturePoint.sb + capturePoint.bb; // Initial blind pot
+
+    // Remove snapshot cards (hole cards + board cards) from active deck to prevent duplicate/undefined dealing
+    if (capturePoint.board && Array.isArray(capturePoint.board)) {
+      capturePoint.board.forEach(card => {
+        const idx = this.deck.indexOf(card);
+        if (idx !== -1) this.deck.splice(idx, 1);
+      });
+    }
+    if (capturePoint.players && Array.isArray(capturePoint.players)) {
+      capturePoint.players.forEach(sp => {
+        if (sp.hand && Array.isArray(sp.hand)) {
+          sp.hand.forEach(card => {
+            const idx = this.deck.indexOf(card);
+            if (idx !== -1) this.deck.splice(idx, 1);
+          });
+        }
+      });
+    }
+
+    // Restore players' hole cards (Hero is always Seat 0)
+    if (capturePoint.players && Array.isArray(capturePoint.players)) {
+      this.players.forEach((p, idx) => {
+        const cpPlayer = capturePoint.players[idx];
+        if (cpPlayer) {
+          if (cpPlayer.hand && cpPlayer.hand.length === 2) {
+            p.hand = [...cpPlayer.hand];
+          }
+          p.isFolded = false; // Reset folded state for PREFLOP replay start
+          if (cpPlayer.chips !== undefined) p.chips = cpPlayer.chips;
+        }
+        p.currentBet = 0;
+        p.showHoleCards = this.isSpectateMode;
+      });
+    }
+
+    // Restore phase1Stream into historyManager
+    if (capturePoint.phase1Stream && Array.isArray(capturePoint.phase1Stream)) {
+      capturePoint.phase1Stream.forEach(act => {
+        const targetPlayer = this.players.find(p => p.id === act.playerId || p.name === act.player)
+          || { id: act.playerId || 'unknown', name: act.player || '', chips: 0 };
+        this.historyManager.recordAction(act.street || 'PREFLOP', targetPlayer, act.type, act.amount || 0, act.potSize || capturePoint.pot || 0);
+      });
+    }
+
+    this.playersActedCount = 0;
+    this.potManager.currentRoundBet = 0;
+    this.currentPlayerIndex = 0;
+
+    // Enable Phase 1 replay mode: High-speed auto-playback until target street
+    this.isPhase1Replay = true;
+
+    // Start Phase 1 replay loop
+    this.processTurns();
+  }
+
   async startNewHand(isFirstHand = false) {
     if (this.exited) return;
     audioManager.disableTensionMode();
@@ -301,92 +395,57 @@ export class GameEngine {
     this.playersActedCount = 0;
     this.waitingTriggered = false;
     this.bigPotTensionTriggered = false;
-    this.currentStreetRaises = 0; // [FIX] Reset raises for new hand
+    this.currentStreetRaises = 0;
     this.aggressor = null;
-    this.historyManager.actionHistory = []; // Keep local access clean
+    this.historyManager.actionHistory = [];
 
-    // 🎥 [SPECTATE REPLAY SNAPSHOT ENGINE]
-    // Restore preset community board & player hole cards from offline snapshot
-    const snapshot = this.options?.snapshot;
-    if (this.isSpectateMode && snapshot) {
-      console.log('🎥 [SPECTATE ENGINE] Restoring Preset Snapshot Match:', snapshot);
-
-      // 1. Remove preset snapshot cards from the active deck to avoid duplicate dealing
-      if (snapshot.board && Array.isArray(snapshot.board)) {
-        snapshot.board.forEach(card => {
-          const idx = this.deck.indexOf(card);
-          if (idx !== -1) this.deck.splice(idx, 1);
+    // [DECISIVE MOMENT INJECTION] capturePoint 기반 상태 주입
+    // 기존 actionStream 리플레이 방식을 완전히 대체
+    const capturePoint = this.options?.capturePoint;
+    if (this.isSpectateMode && capturePoint) {
+      console.log('🎥 [DECISIVE_MOMENT_ENGINE] capturePoint 감지 — Phase 1 자동 리플레이 진입:', capturePoint.currentStreet);
+      this.isPhase1Replay = true;
+      this.capturePoint = capturePoint;
+      // phase1Stream을 historyManager에 기록 (AI 컨텍스트용)
+      if (capturePoint.phase1Stream && Array.isArray(capturePoint.phase1Stream)) {
+        capturePoint.phase1Stream.forEach(act => {
+          const targetPlayer = this.players.find(p => p.id === act.playerId || p.name === act.player)
+            || { id: act.playerId || 'unknown', name: act.player || '', chips: 0 };
+          this.historyManager.recordAction(act.street || 'PREFLOP', targetPlayer, act.type, act.amount || 0, act.potSize || capturePoint.pot || 0);
+          if (act.type === 'raise' || act.type === 'all_in') this.aggressor = targetPlayer;
         });
+        console.log('🎥 [DECISIVE_MOMENT_ENGINE] phase1Stream 복원 완료:', capturePoint.phase1Stream.length, 'actions');
       }
-
-      if (snapshot.players && Array.isArray(snapshot.players)) {
-        snapshot.players.forEach(sp => {
-          if (sp.hand && Array.isArray(sp.hand)) {
-            sp.hand.forEach(card => {
-              const idx = this.deck.indexOf(card);
-              if (idx !== -1) this.deck.splice(idx, 1);
-            });
-          }
-        });
-      }
-
-      // 2. Restore past actionStream (Preflop ~ Turn) into historyManager for accurate AI context & UI history
-      if (snapshot.actionStream && Array.isArray(snapshot.actionStream)) {
-        snapshot.actionStream.forEach(act => {
-          const targetPlayer = this.players.find(p => p.id === act.playerId || p.name === act.player) || { id: act.playerId || 'unknown', name: act.player, chips: 0 };
-          this.historyManager.recordAction(act.street || 'PREFLOP', targetPlayer, act.type, act.amount || 0, act.potSize || snapshot.potSize || 0);
-
-          // Track aggressor for AI range calculations
-          if (act.type === 'raise' || act.type === 'all_in') {
-            this.aggressor = targetPlayer;
-          }
-        });
-        console.log('🎥 [SPECTATE ENGINE] Action Stream Restored:', snapshot.actionStream.length, 'actions');
-      }
+    } else {
+      this.isPhase1Replay = false;
+      this.capturePoint = null;
     }
-    if (this.exitReservationRounds > 0) {
+    if (typeof this.exitReservationRounds === 'number' && this.exitReservationRounds > 0) {
       this.exitReservationRounds--;
-    } else if (this.exitReservationRounds === 0) {
+    } else if (typeof this.exitReservationRounds === 'number' && this.exitReservationRounds === 0) {
       // Time to exit
       this.cashOut();
       return;
     }
 
     this.players.forEach((p, pIdx) => {
-      // Spectating Mode: Override hand from preset snapshot by ID, Name, or Seat Index
+      // [DECISIVE MOMENT] capturePoint 기반 홀카드/폴드 상태 직접 주입 (index 0 = Hero 고정)
       let presetHand = null;
-      if (this.isSpectateMode && snapshot && snapshot.players && snapshot.players.length > 0) {
-        // 1. Exact ID or Name match first
-        let snapPlayer = snapshot.players.find(sp => sp && (sp.id === p.id || sp.name === p.name));
-        
-        // 2. Exact seat index match if available
-        if (!snapPlayer && snapshot.players[pIdx]) {
-          snapPlayer = snapshot.players[pIdx];
-        }
-
-        if (snapPlayer && snapPlayer.hand && snapPlayer.hand.length === 2) {
-          presetHand = [...snapPlayer.hand];
+      let presetFolded = false;
+      if (this.isSpectateMode && capturePoint && capturePoint.players && capturePoint.players.length > 0) {
+        const snapPlayer = capturePoint.players[pIdx];
+        if (snapPlayer) {
+          if (snapPlayer.hand && snapPlayer.hand.length === 2) {
+            presetHand = [...snapPlayer.hand];
+            console.log(`🎥 [DECISIVE_MOMENT_ENGINE] Seat ${pIdx} (${p.name}) 홀카드 주입:`, presetHand);
+          }
+          presetFolded = !!snapPlayer.isFolded;
+          if (presetFolded) console.log(`🎥 [DECISIVE_MOMENT_ENGINE] Seat ${pIdx} (${p.name}) FOLD 상태 복원`);
         }
       }
 
       p.hand = presetHand || [this.deck.pop(), this.deck.pop()];
-      if (presetHand) {
-        console.log(`🎥 [SPECTATE ENGINE] Hand Assigned for Seat ${pIdx} (${p.name}):`, presetHand);
-      }
-
-      // Check if player folded in preset snapshot stream
-      let presetFolded = false;
-      if (this.isSpectateMode && snapshot && snapshot.actionStream) {
-        const hasFoldedInStream = snapshot.actionStream.some(act => 
-          act.type === 'fold' && (act.playerId === p.id || act.player === p.name || (p.name && p.name.startsWith(act.player)))
-        );
-        if (hasFoldedInStream) {
-          presetFolded = true;
-          console.log(`🎥 [SPECTATE ENGINE] Preset FOLD Applied for ${p.name}`);
-        }
-      }
-
-      p.isFolded = presetFolded || (p.chips <= 0); // Out of game if folded in snapshot or no chips
+      p.isFolded = presetFolded || (p.chips <= 0);
       p.currentBet = 0;
       p.totalWagered = 0;
       p.isBlind = false; // Reset blind status
@@ -1005,11 +1064,16 @@ export class GameEngine {
     if (this.suspicion >= 40 && this.checkTriggerCasinoInvestigation()) return;
     this.calculationInProgress = false;
     
-    // Spectating Mode: Continuous Live Game Transition
-    // After replaying preset snapshot hand, consume the snapshot so subsequent hands play dynamically with live AI
-    if (this.options && this.options.snapshot) {
-      console.log('🎥 [SPECTATE ENGINE] Preset snapshot hand completed. Transitioning to continuous live AI simulation.');
-      this.options.snapshot = null;
+    // Spectating / Decisive Moment Mode: Hand complete, auto-exit to OS and unlock simulation
+    if (this.isSpectateMode || this.options?.capturePoint || this.capturePoint) {
+      console.log('🎥 [DECISIVE_MOMENT_ENGINE] 관전/개입 핸드가 완료되었습니다. 시뮬레이션을 언락하고 OS로 복귀합니다.');
+      this.isSpectateMode = false;
+      this.capturePoint = null;
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('resume-simulation-unlock'));
+        window.dispatchEvent(new CustomEvent('exit-spectate-to-lobby'));
+      }
+      return; // Do NOT start new hand continuously!
     }
 
     this.startNewHand();
@@ -1164,49 +1228,68 @@ export class GameEngine {
   }
 
   dealFlop() {
-    const snapshotBoard = this.options?.snapshot?.board;
+    // [DECISIVE MOMENT ENGINE] capturePoint.board 기반 보드 카드 주입
+    const cpBoard = this.capturePoint?.board;
     this.board = [];
 
-    // Pull up to 3 cards from snapshot.board queue via shift(), fill remaining from deck
-    for (let i = 0; i < 3; i++) {
-      if (this.isSpectateMode && snapshotBoard && snapshotBoard.length > 0) {
-        this.board.push(snapshotBoard.shift());
-      } else {
-        if (i === 0) this.deck.pop(); // Burn card on first draw
+    if (this.isSpectateMode && cpBoard && cpBoard.length >= 3) {
+      this.board.push(cpBoard[0], cpBoard[1], cpBoard[2]);
+      console.log('[DECISIVE_MOMENT_ENGINE] Flop Dealt from capturePoint:', this.board);
+    } else {
+      for (let i = 0; i < 3; i++) {
+        if (i === 0) this.deck.pop(); // Burn card
         this.board.push(this.deck.pop());
       }
     }
 
-    console.log('🎥 [SPECTATE ENGINE] Flop Dealt:', this.board);
     this.state = 'FLOP';
+    this._checkPhase1Transition('FLOP');
     audioManager.playSFX('card-dealt&fold');
   }
 
   dealTurn() {
-    const snapshotBoard = this.options?.snapshot?.board;
-    if (this.isSpectateMode && snapshotBoard && snapshotBoard.length > 0) {
-      this.board.push(snapshotBoard.shift());
-      console.log('🎥 [SPECTATE ENGINE] Preset Turn Dealt:', this.board);
+    const cpBoard = this.capturePoint?.board;
+    if (this.isSpectateMode && cpBoard && cpBoard.length >= 4) {
+      this.board.push(cpBoard[3]);
+      console.log('[DECISIVE_MOMENT_ENGINE] Turn Dealt from capturePoint:', this.board);
     } else {
       this.deck.pop(); // Burn card
       this.board.push(this.deck.pop());
     }
     this.state = 'TURN';
+    this._checkPhase1Transition('TURN');
     audioManager.playSFX('card-dealt&fold');
   }
 
   dealRiver() {
-    const snapshotBoard = this.options?.snapshot?.board;
-    if (this.isSpectateMode && snapshotBoard && snapshotBoard.length > 0) {
-      this.board.push(snapshotBoard.shift());
-      console.log('🎥 [SPECTATE ENGINE] Preset River Dealt:', this.board);
+    const cpBoard = this.capturePoint?.board;
+    if (this.isSpectateMode && cpBoard && cpBoard.length >= 5) {
+      this.board.push(cpBoard[4]);
+      console.log('[DECISIVE_MOMENT_ENGINE] River Dealt from capturePoint:', this.board);
     } else {
       this.deck.pop(); // Burn card
       this.board.push(this.deck.pop());
     }
     this.state = 'RIVER';
+    this._checkPhase1Transition('RIVER');
     audioManager.playSFX('card-dealt&fold');
   }
+
+  /**
+   * [DECISIVE MOMENT ENGINE] Phase 1 → Phase 2 전환 감지
+   * capturePoint.currentStreet에 도달하면 isPhase1Replay = false 전환
+   * → App.vue의 isPhase2Ready computed가 true가 되어 Phase 2 선택 UI 노출
+   */
+  _checkPhase1Transition(currentStreet) {
+    if (!this.isPhase1Replay || !this.capturePoint) return;
+    if (currentStreet === this.capturePoint.currentStreet) {
+      console.info(`[DECISIVE_MOMENT_ENGINE] Phase 1 완료: ${currentStreet} 도달 — Phase 2 대기 상태로 전환`);
+      this.isPhase1Replay = false;
+      // capturePoint는 유지: Phase 2 UI가 이를 참조함
+    }
+  }
+
+
   checkEnteredBigPotTension() {
     if (this.bigPotTensionTriggered) return;
 
@@ -1390,54 +1473,22 @@ export class GameEngine {
     // AI Turn
     let action;
 
-    // 🎥 [SPECTATE ENGINE] Preset ActionStream Replay Override
-    const snapshot = this.options?.snapshot;
-    let presetActionInStream = null;
-    if (this.isSpectateMode && snapshot && snapshot.actionStream && snapshot.actionStream.length > 0) {
-      const pNameLower = player.name ? player.name.split('#')[0].trim().toLowerCase() : '';
-      const pIdLower = player.id ? player.id.split('_')[0].toLowerCase() : '';
-
-      // Find the next unconsumed preset action for this street and player
-      presetActionInStream = snapshot.actionStream.find(act => {
-        if (act.consumed || act.street !== this.state) return false;
-
-        const actNameLower = act.player ? act.player.split('#')[0].trim().toLowerCase() : '';
-        const actIdLower = act.playerId ? act.playerId.split('_')[0].toLowerCase() : '';
-
-        return (act.playerId === player.id || act.player === player.name) ||
-               (pNameLower && actNameLower && (pNameLower.includes(actNameLower) || actNameLower.includes(pNameLower))) ||
-               (pIdLower && actIdLower && (pIdLower.includes(actIdLower) || actIdLower.includes(pIdLower)));
-      });
-
-      if (presetActionInStream) {
-        presetActionInStream.consumed = true; // Mark action as consumed
-        action = {
-          type: presetActionInStream.type,
-          action: presetActionInStream.type,
-          amount: presetActionInStream.amount || 0,
-          insight: `[PRESET_REPLAY] Executing ${presetActionInStream.type.toUpperCase()}`,
-          delay: 800 + Math.random() * 400
-        };
-        console.log(`🎥 [SPECTATE ENGINE] Executed Preset Action for ${player.name} (${player.id}):`, action.type, action.amount);
-      } else {
-        console.warn(`🎥 [SPECTATE ENGINE] No Preset Action Found for ${player.name} (${player.id}) on ${this.state}. Falling back to AI Engine.`);
-      }
+    // [DECISIVE MOMENT ENGINE] Phase 1 (자동 리플레이): phase1Stream 기반 고속 AI 액션
+    // Phase 2 (라이브): isPhase1Replay === false, 정상 AI/유저 플로우
+    // presetActionInStream 방식은 완전 폐기
+    const isGTO = (player.class && player.class.isBoss);
+    if (isGTO) {
+      action = getAdvancedAIAction(player, this);
+    } else {
+      action = getAIAction(player, this);
     }
 
-    if (!presetActionInStream) {
-      const isGTO = (player.class && player.class.isBoss);
-      if (isGTO) {
-        action = getAdvancedAIAction(player, this);
-      } else {
-        action = getAIAction(player, this);
-      }
-
-      // [NEW] Collusion Strategy
-      if (player.isPartner) {
-        action = applyPartnerCollusion(player, this, action);
-        handlePartnerCollusionSignals(player, action, this);
-      }
+    // [NEW] Collusion Strategy
+    if (player.isPartner) {
+      action = applyPartnerCollusion(player, this, action);
+      handlePartnerCollusionSignals(player, action, this);
     }
+
 
     // [NEW] Inject Advanced Tough Call Monologues on the River
     // Skip this if the user has folded and fast-forward is active
@@ -1448,7 +1499,7 @@ export class GameEngine {
       }
     }
 
-    let delay = (action.delay || (1000 + Math.random() * 1000)) * (window.isFastFowardActive ? 0.2 : 1);
+    let delay = (action.delay || (1000 + Math.random() * 1000)) * ((window.isFastFowardActive || this.isPhase1Replay) ? 0.15 : 1);
     
     // If they have a narrative sequence, force a longer delay to read the text
     if (action.thoughtSequence) {

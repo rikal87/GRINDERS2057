@@ -20,9 +20,9 @@
 
           <!-- 1-Column Accordion Card List inside Zone -->
           <div class="accordion-card-list">
-            <div v-for="(loc, lIdx) in zone.locations" :key="loc.id" 
-              class="accordion-card-item" :class="{ unfolded: expandedGlobalId === loc.id, blacklisted: isBlacklisted(loc.id) }">
-              
+            <div v-for="(loc, lIdx) in zone.locations" :key="loc.id" class="accordion-card-item"
+              :class="{ unfolded: expandedGlobalId === loc.id, blacklisted: isBlacklisted(loc.id) }">
+
               <!-- Card Header Bar -->
               <div class="card-header-bar" @click="toggleAccordion(loc.id)">
                 <span class="card-num">0{{ lIdx + 1 }} //</span>
@@ -31,7 +31,8 @@
                   <span class="card-zone-sub cyan">{{ zone.name || 'SECTOR_NODE' }}</span>
                 </div>
                 <div class="card-meta-right">
-                  <span class="card-stake-tag yellow">{{ (loc.tables || loc.tableConfig || {}).amount_fmt || '1K' }} CR</span>
+                  <span class="card-stake-tag yellow">{{ (loc.tables || loc.tableConfig || {}).amount_fmt || '1K' }}
+                    CR</span>
                   <span class="card-unfold-icon">{{ expandedGlobalId === loc.id ? '▲' : '▼' }}</span>
                 </div>
 
@@ -39,62 +40,101 @@
                 <div class="card-hover-lens" :style="{ backgroundImage: `url(${loc.imgSrc})` }"></div>
               </div>
 
-              <!-- Unfolded Detail Panel (Physical Height Animation) -->
+              <!-- Unfolded Panel: Visual Lens, 5-Column Specs Grid, & Deployment Console -->
               <div class="card-unfold-content" v-if="expandedGlobalId === loc.id">
                 <div class="unfold-inner-body">
-                  <!-- Dark Scanline Lens Visual Banner -->
+
+                  <!-- Top 3D Visual Lens Image Banner -->
                   <div class="unfold-visual-banner" :style="{ backgroundImage: `url(${loc.imgSrc})` }">
                     <div class="banner-gradient"></div>
-                    <div class="scanline-lens"></div>
+                    <div class="banner-overlay-txt font-orbitron">{{ loc.desc }}</div>
+                  </div>
 
-                    <div class="banner-info">
-                      <span v-if="isBlacklisted(loc.id)" class="status-tag magenta">STATUS: BLACKLISTED // RESTRICTED</span>
-                      <span v-else class="status-tag cyan">STATUS: ACTIVE_NODE // ONLINE</span>
-                      <p class="banner-desc">{{ getLocalizedText(loc, 'description') }}</p>
+                  <!-- 5-Column Specs Grid (Perfect Symmetry & Balance) -->
+                  <div class="specs-matrix-grid">
+                    <div class="spec-box">
+                      <span class="spec-lbl cyan font-orbitron">BUY_IN</span>
+                      <span class="spec-val yellow font-orbitron">${{ (loc.tables || loc.tableConfig || {}).amount ?
+                        (loc.tables || loc.tableConfig || {}).amount.toLocaleString() : '1,000' }}
+                        <small>CR</small></span>
+                    </div>
+
+                    <div class="spec-box">
+                      <span class="spec-lbl cyan font-orbitron">BLINDS</span>
+                      <span class="spec-val cyan font-orbitron">{{ (loc.tables || loc.tableConfig || {}).sb || 5 }}/{{
+                        (loc.tables || loc.tableConfig || {}).bb || 10 }}</span>
+                    </div>
+
+                    <div class="spec-box">
+                      <span class="spec-lbl cyan font-orbitron">RAKE</span>
+                      <span class="spec-val font-orbitron">{{ ((loc.tables || loc.tableConfig || {}).rake || 0.05) * 100
+                      }}%</span>
+                    </div>
+
+                    <div class="spec-box">
+                      <span class="spec-lbl cyan font-orbitron">RULES</span>
+                      <span class="spec-val magenta font-orbitron"
+                        v-if="(loc.tables || loc.tableConfig || {}).isDeathmatch">DEATHMATCH</span>
+                      <span class="spec-val cyan font-orbitron" v-else-if="loc.isDrunken">🍺 DRUNKEN</span>
+                      <span class="spec-val cyan font-orbitron" v-else>STANDARD</span>
+                    </div>
+
+                    <div class="spec-box yellow-spec">
+                      <span class="spec-lbl yellow font-orbitron">REQ_SKILL</span>
+                      <span class="spec-val yellow font-orbitron">{{ loc.reqSkill || 50 }}+</span>
                     </div>
                   </div>
 
-                  <!-- Detailed Table Specs Grid -->
-                  <div class="specs-grid">
-                    <div class="spec-card">
-                      <span class="lbl font-orbitron">BUY_IN</span>
-                      <span class="val yellow font-orbitron">{{ (loc.tables || loc.tableConfig || {}).amount_fmt || '1K' }} CR</span>
-                    </div>
-                    <div class="spec-card">
-                      <span class="lbl font-orbitron">BLINDS</span>
-                      <span class="val cyan font-orbitron">{{ ((loc.tables || loc.tableConfig || {}).sb || 10).toLocaleString() }} / {{ ((loc.tables || loc.tableConfig || {}).bb || 20).toLocaleString() }}</span>
-                    </div>
-                    <div class="spec-card">
-                      <span class="lbl font-orbitron">RAKE</span>
-                      <span class="val font-orbitron">{{ (((loc.tables || loc.tableConfig || {}).baseRake || 0.05) * 100).toFixed(1) }}%</span>
-                    </div>
-                    <div class="spec-card">
-                      <span class="lbl font-orbitron">RULES</span>
-                      <span class="val magenta font-orbitron" v-if="(loc.tables || loc.tableConfig || {}).isDeathmatch">DEATHMATCH</span>
-                      <span class="val cyan font-orbitron" v-else-if="loc.isDrunken">🍺 DRUNKEN</span>
-                      <span class="val cyan font-orbitron" v-else>STANDARD</span>
-                    </div>
-                  </div>
-
-                  <!-- Table Size & Target Lock-on Initiate Button Bar -->
-                  <div class="unfold-action-bar">
-                    <div class="capacity-selector">
-                      <span class="cap-lbl font-orbitron">CAPACITY:</span>
-                      <div class="cap-btn-group">
-                        <button v-for="size in (loc.tables || loc.tableConfig || {}).available || [2, 6, 9]" :key="size" 
-                          class="btn-cap font-orbitron" :class="{ active: selectedSize === size }" @click="selectedSize = size">
-                          {{ size === 2 ? 'HEADS_UP (2P)' : `${size}-MAX` }}
-                        </button>
-                      </div>
-                    </div>
-
-                    <button class="btn-initiate-link target-lockon-btn font-orbitron" 
+                  <!-- Hero Direct Table Join Action Bar -->
+                  <!--필요없음-->
+                  <!-- <div class="unfold-action-bar">
+                    <button class="btn-initiate-link target-lockon-btn yellow-solid font-orbitron instant-flash-btn" 
                       :disabled="!canAffordLoc(loc) || isBlacklisted(loc.id)" @click="confirmJoinLoc(loc)">
                       <span class="btn-txt-layer" v-if="isBlacklisted(loc.id)">ACCESS_DENIED</span>
-                      <span class="btn-txt-layer" v-else-if="canAffordLoc(loc)">[ JOIN_TABLE ] ➔</span>
+                      <span class="btn-txt-layer" v-else-if="canAffordLoc(loc)">[ HERO_JOIN_TABLE (6-MAX) ] ➔</span>
                       <span class="btn-txt-layer" v-else>INSUFFICIENT_FUNDS</span>
                       <div class="btn-image-lens" :style="{ backgroundImage: `url(${loc.imgSrc})` }"></div>
                     </button>
+                  </div> -->
+
+                  <!-- Sector Roster Deployment Console -->
+                  <div class="sector-roster-deploy-panel fui-cctv-frame">
+                    <div class="panel-hdr-row">
+                      <span class="cyan font-orbitron">// SECTOR_ROSTER_DEPLOYMENT_CONSOLE</span>
+                      <span class="dim font-orbitron">[ACTIVE_UNITS: {{ (getDeployedPartnersInSector(loc.id) ||
+                        []).length }}]</span>
+                    </div>
+
+                    <!-- IDLE Roster Unit Relay Cards Grid (Touch/Click to Deploy Instantly) -->
+                    <div class="roster-unit-cards-grid" v-if="(idlePartners || []).length > 0">
+                      <div v-for="p in idlePartners" :key="p.id"
+                        class="roster-unit-card instant-flash-btn fui-cctv-frame"
+                        @click="handleDeployPartnerToSector(p, loc.id)">
+                        <div class="unit-lens-bg" :style="{ backgroundImage: `url(${getPartnerImage(p.id)})` }"></div>
+                        <div class="unit-card-info">
+                          <span class="unit-name font-orbitron">{{ p.name.toUpperCase() }}</span>
+                          <span class="unit-ovr yellow font-orbitron">SKILL: {{ p.skillRating || 75 }}</span>
+                          <small v-if="(p.skillRating || 75) < (loc.reqSkill || 50)" class="magenta font-orbitron">⚠️ REQ_UNMET</small>
+                        </div>
+                        <button class="btn-unit-deploy font-orbitron">[ ▶ DEPLOY ]</button>
+                      </div>
+                    </div>
+
+                    <div v-else class="empty-roster-txt dim font-orbitron">
+                      // NO_IDLE_UNITS_AVAILABLE_FOR_DEPLOYMENT
+                    </div>
+
+                    <!-- Currently Deployed Partners List in this Sector (Sleek Brutalist Unit Tags) -->
+                    <div class="deployed-units-chips-flex"
+                      v-if="(getDeployedPartnersInSector(loc.id) || []).length > 0">
+                      <span class="lbl yellow font-orbitron">ACTIVE_UNITS_IN_SECTOR:</span>
+                      <div v-for="dp in getDeployedPartnersInSector(loc.id)" :key="dp.id" class="deployed-unit-chip">
+                        <span class="unit-status-dot"></span>
+                        <span class="unit-name font-orbitron">{{ dp.name.toUpperCase() }}</span>
+                        <button class="btn-chip-recall font-orbitron instant-flash-btn"
+                          @click="handleRecallPartner(dp)">[ RECALL_UNIT ]</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -108,8 +148,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { store, isBlacklisted, getLocalizedText } from '../logic/store.js';
+import { getPartners } from '../logic/partnerSystem.js';
 import { zones } from '../logic/zone.js';
 import { audioManager } from '../logic/audioManager.js';
 import TerminalLayout from './TerminalLayout.vue';
@@ -118,6 +159,24 @@ const emit = defineEmits(['join', 'back']);
 
 const expandedGlobalId = ref(null);
 const selectedSize = ref(6);
+
+const idlePartners = computed(() => {
+  const list = getPartners ? getPartners() : (store.partners || []);
+  return (list || []).filter(p => p.status !== 'GAMBLING' && p.status !== 'REHAB' && !p.isBlacklisted);
+});
+
+const getDeployedPartnersInSector = (sectorId) => {
+  const list = getPartners ? getPartners() : (store.partners || []);
+  return (list || []).filter(p => p.status === 'GAMBLING' && p.currentLocationId === sectorId);
+};
+
+const handleRecallPartner = (partner) => {
+  if (partner) {
+    partner.status = 'IDLE';
+    partner.currentLocationId = null;
+    audioManager.playSFX('ui-click');
+  }
+};
 
 const toggleAccordion = (locId) => {
   audioManager.playSFX('ui-click');
@@ -139,8 +198,20 @@ const confirmJoinLoc = (loc) => {
   audioManager.playSFX('chip-ship-it');
   emit('join', {
     locationId: loc.id,
-    tableSize: selectedSize.value
+    tableSize: 6 // Hardcoded 6-MAX Format
   });
+};
+
+const getPartnerImage = (id) => {
+  return new URL(`../assets/image/partner/${id}.jpg`, import.meta.url).href;
+};
+
+const handleDeployPartnerToSector = (partner, sectorId) => {
+  if (partner) {
+    partner.status = 'GAMBLING';
+    partner.currentLocationId = sectorId;
+    audioManager.playSFX('coin-throw');
+  }
 };
 </script>
 
@@ -149,9 +220,76 @@ const confirmJoinLoc = (loc) => {
 @import '../assets/css/theme-os.css';
 
 /* Colors */
-.cyan { color: var(--neon-cyan) !important; }
-.yellow { color: var(--neon-yellow) !important; }
-.magenta { color: var(--neon-magenta) !important; }
+.cyan {
+  color: var(--neon-cyan) !important;
+}
+.yellow {
+  color: var(--neon-yellow) !important;
+}
+/* 5-Column Specs Grid (Perfect Balance) */
+.specs-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.spec-box {
+  background: #04080c;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  padding: 0.8rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.spec-box.yellow-spec {
+  border-color: var(--neon-yellow);
+  background: rgba(204, 255, 0, 0.05);
+}
+
+.spec-lbl {
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+.spec-val {
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+.spec-val small {
+  font-size: 0.75rem;
+}
+
+.panel-hdr-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.unit-status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--neon-cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--neon-cyan);
+}
+
+.btn-chip-recall {
+  background: var(--neon-magenta);
+  border: none;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  border-radius: 0px;
+}
+
+@media (max-width: 1024px) {
+  .specs-matrix-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
 
 /* Main Accordion Layout */
 .page-main-accordion {
@@ -174,7 +312,9 @@ const confirmJoinLoc = (loc) => {
   text-transform: uppercase;
 }
 
-.yellow-dot { color: var(--neon-yellow); }
+.yellow-dot {
+  color: var(--neon-yellow);
+}
 
 .sub-log {
   font-size: 0.85rem;
@@ -212,7 +352,7 @@ const confirmJoinLoc = (loc) => {
 .category-deco-line {
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, var(--neon-cyan) 0%, rgba(255,255,255,0.02) 100%);
+  background: linear-gradient(90deg, var(--neon-cyan) 0%, rgba(255, 255, 255, 0.02) 100%);
 }
 
 /* 1-Column Accordion List */
@@ -338,10 +478,19 @@ const confirmJoinLoc = (loc) => {
   background: var(--neon-cyan);
 }
 
-.accordion-card-item:not(.unfolded) .card-header-bar:hover .card-num { color: var(--neon-magenta); }
-.accordion-card-item:not(.unfolded) .card-header-bar:hover .card-main-title { color: #000000; }
-.accordion-card-item:not(.unfolded) .card-header-bar:hover .card-zone-sub { color: #111111; font-weight: bold; }
-.accordion-card-item:not(.unfolded) .card-header-bar:hover .card-stake-tag { color: #000000; }
+.accordion-card-item:not(.unfolded) .card-header-bar:hover .card-num {
+  color: var(--neon-magenta);
+}
+.accordion-card-item:not(.unfolded) .card-header-bar:hover .card-main-title {
+  color: #000000;
+}
+.accordion-card-item:not(.unfolded) .card-header-bar:hover .card-zone-sub {
+  color: #111111;
+  font-weight: bold;
+}
+.accordion-card-item:not(.unfolded) .card-header-bar:hover .card-stake-tag {
+  color: #000000;
+}
 
 /* Unfolded Body Area */
 .card-unfold-content {
@@ -360,6 +509,72 @@ const confirmJoinLoc = (loc) => {
 .unfold-visual-banner {
   position: relative;
   height: 220px;
+  /* Brutalist Roster Unit Relay Cards (No Select Box!) */
+  .roster-unit-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.8rem;
+    margin-top: 0.4rem;
+  }
+
+  .roster-unit-card {
+    position: relative;
+    background: #020406;
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    padding: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.2s ease;
+  }
+
+  .roster-unit-card:hover {
+    border-color: var(--neon-yellow);
+    box-shadow: 0 0 15px rgba(204, 255, 0, 0.3);
+  }
+
+  .unit-lens-bg {
+    width: 44px;
+    height: 44px;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--neon-cyan);
+    flex-shrink: 0;
+  }
+
+  .unit-card-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .unit-name {
+    font-size: 0.88rem;
+    font-weight: 900;
+    color: #ffffff;
+  }
+  .unit-ovr {
+    font-size: 0.75rem;
+    font-weight: 900;
+  }
+
+  .btn-unit-deploy {
+    background: var(--neon-yellow);
+    border: none;
+    color: #000000;
+    font-size: 0.72rem;
+    font-weight: 900;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0px;
+    cursor: pointer;
+  }
+
+  .empty-roster-txt {
+    font-size: 0.8rem;
+    padding: 0.5rem 0;
+  }
   background-size: cover;
   background-position: center;
   border: 1px solid rgba(0, 240, 255, 0.2);
@@ -377,7 +592,7 @@ const confirmJoinLoc = (loc) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.85) 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.85) 100%);
   z-index: 1;
 }
 
@@ -403,8 +618,14 @@ const confirmJoinLoc = (loc) => {
   font-weight: 900;
   padding: 0.2rem 0.6rem;
 }
-.status-tag.cyan { border: 1px solid var(--neon-cyan); color: var(--neon-cyan); }
-.status-tag.magenta { border: 1px solid var(--neon-magenta); color: var(--neon-magenta); }
+.status-tag.cyan {
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+.status-tag.magenta {
+  border: 1px solid var(--neon-magenta);
+  color: var(--neon-magenta);
+}
 
 .banner-desc {
   font-size: 0.9rem;
@@ -427,8 +648,17 @@ const confirmJoinLoc = (loc) => {
   border: 1px solid rgba(0, 240, 255, 0.25);
 }
 
-.spec-card .lbl { font-size: 0.72rem; color: #506070; font-weight: bold; letter-spacing: 0.05em; }
-.spec-card .val { font-size: 1.15rem; font-weight: 900; margin-top: 0.4rem; }
+.spec-card .lbl {
+  font-size: 0.72rem;
+  color: #506070;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+.spec-card .val {
+  font-size: 1.15rem;
+  font-weight: 900;
+  margin-top: 0.4rem;
+}
 
 /* Unfold Action Bar */
 .unfold-action-bar {
@@ -444,8 +674,15 @@ const confirmJoinLoc = (loc) => {
   gap: 1rem;
 }
 
-.cap-lbl { font-size: 0.85rem; color: #8090a0; font-weight: bold; }
-.cap-btn-group { display: flex; gap: 0.6rem; }
+.cap-lbl {
+  font-size: 0.85rem;
+  color: #8090a0;
+  font-weight: bold;
+}
+.cap-btn-group {
+  display: flex;
+  gap: 0.6rem;
+}
 
 .btn-cap {
   background: rgba(255, 255, 255, 0.02);
@@ -488,7 +725,10 @@ const confirmJoinLoc = (loc) => {
   transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
-.btn-txt-layer { z-index: 3; position: relative; }
+.btn-txt-layer {
+  z-index: 3;
+  position: relative;
+}
 
 .btn-image-lens {
   position: absolute;
@@ -525,8 +765,14 @@ const confirmJoinLoc = (loc) => {
 }
 
 @keyframes unfoldDown {
-  0% { opacity: 0; transform: translateY(-10px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 900px) {

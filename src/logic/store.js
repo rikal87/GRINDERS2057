@@ -68,7 +68,8 @@ const getDefaultState = () => ({
     ],
     fourColorMode: false,
     showAsBB: false,
-    fastFoward: false
+    fastFoward: false,
+    crtEnabled: true
   },
   shop: {
     items: [],

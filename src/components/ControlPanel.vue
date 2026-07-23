@@ -76,9 +76,9 @@
         <div class="status-row cyber-deck">
           <div v-for="(slotTier, idx) in agentSlots" :key="idx" class="cyber-deck-slot">
             <!-- Occupied Slot -->
-            <template v-if="store.onWorkTasks[idx]">
-              <div class="protector-badge" :data-tooltip="store.onWorkTasks[idx].task.desc">
-                {{ store.onWorkTasks[idx].task.icon }}
+            <template v-if="store.onWorkTasks[idx] && store.onWorkTasks[idx].task">
+              <div class="protector-badge" :data-tooltip="store.onWorkTasks[idx].task?.desc || ''">
+                {{ store.onWorkTasks[idx].task?.icon || '🤖' }}
               </div>
               <div v-if="store.onWorkTasks[idx].task.effect && store.onWorkTasks[idx].task.effect.length > 0" class="effect-hud">
                 <div v-for="eff in store.onWorkTasks[idx].task.effect" :key="eff.type" class="effect-wrapper"
@@ -399,10 +399,21 @@ const formatUnit = (val) => {
 };
 
 const currentHandRank = computed(() => {
-  if (!player.value.hand.length) return 'N/A';
-  const evalResult = evaluateHand([...player.value.hand, ...props.engine.board]);
-  // Returning shorter rank name for HUD
-  return evalResult.name;
+  const pHand = player.value?.hand;
+  const board = props.engine?.board || [];
+  if (!pHand || !Array.isArray(pHand) || pHand.length < 2) return 'N/A';
+  
+  // Filter out any invalid/undefined card strings
+  const validCards = [...pHand, ...board].filter(c => typeof c === 'string' && c.length >= 2);
+  if (validCards.length < 2) return 'N/A';
+
+  try {
+    const evalResult = evaluateHand(validCards);
+    return evalResult?.name || 'N/A';
+  } catch (err) {
+    console.warn('[ControlPanel] evaluateHand safely caught error:', err);
+    return 'N/A';
+  }
 });
 
 const getStaminaColor = computed(() => {

@@ -34,6 +34,7 @@ export const zones = [
         "atmosphere": "어두움, 가벼운 분위기, 가끔 절박함",
         "requirements": null,
         "level": 1,
+        "reqSkill": 20,
         "npcs": [
           "Fish",
           "Broke",
@@ -81,36 +82,8 @@ export const zones = [
           "boxShadow": "0 0 20px rgba(185, 197, 9, 0.8)"
         },
         'bgMusic': [TRACK_ENUM.Kaazoom_DrivingHome, TRACK_ENUM.Nightscape]
-      },
-      {
-        "id": LOCATION_ID.FREE_STREET_SHOP_WITH_MAX,
-        "name_ko": "길거리 상점 뒷편",
-        "name_en": "Street Shop Backroom",
-        "imgSrc": imgMicroStreetShop,
-        "isHidden": true,
-        "description_ko": "맥스가 포커를 가르쳐주겠다고 제안했습니다.",
-        "description_en": "Max offered to teach you how to play poker.",
-        "atmosphere": "어두움, 가벼운 분위기, 가끔 절박함",
-        "requirements": null,
-        "level": 1,
-        guests: ['Max(Mentor)'],
-        "npcs": [
-          "Fish",
-          "Broke"
-        ],
-        "tables": {
-          buyInLimit: 1,
-          amount: 1000, amount_fmt: '1K', amount_min_fmt: '500', sb: 5, bb: 10, available: [
-            6
-          ], baseRake: 0.00, rakeCap: 50
-        },
-        "theme": {
-          "background": "radial-gradient(circle, #2c2c2c 0%, #1a1a1a 100%)",
-          "borderColor": "#555",
-          "boxShadow": "0 0 20px rgba(0,0,0,0.8)"
-        },
-        'bgMusic': [TRACK_ENUM.Nightscape, TRACK_ENUM.Placebo]
       }
+
     ]
   },
   {

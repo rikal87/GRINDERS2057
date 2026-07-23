@@ -7,9 +7,7 @@ import Intro from './components/Intro.vue';
 import Splash from './components/Splash.vue';
 import Lobby from './components/Lobby.vue';
 import TerminalLobby from './components/TerminalLobby.vue';
-import MeatspaceRoom from './components/MeatspaceRoom.vue';
 import AmbientSafeHouseProto from './components/AmbientSafeHouseProto.vue';
-import MarathonSafeHouse from './components/MarathonSafeHouse.vue';
 import TableSearchPage from './components/TableSearchPage.vue';
 import Shop from './components/Shop.vue';
 import PartnerNetPage from './components/PartnerNetPage.vue';
@@ -134,18 +132,15 @@ onMounted(() => {
   });
 
   window.addEventListener('start-spectate-match', (e) => {
-    const { snapshot, heroId, locationId = 'high_grand_casino' } = e.detail || {};
+    // [DECISIVE MOMENT ENGINE] capturePoint 기반 관전 진입 (snapshot 레거시 전환)
+    const { capturePoint, heroId, locationId = 'high_grand_casino' } = e.detail || {};
     window.isAtTable = true;
     window.currentLocationId = locationId;
 
-    // Search zone.js for actual location config
     let locationConfig = null;
     for (const zone of zones) {
       const loc = zone.locations.find(l => l.id === locationId);
-      if (loc) {
-        locationConfig = loc;
-        break;
-      }
+      if (loc) { locationConfig = loc; break; }
     }
 
     const tableConfig = locationConfig?.tables || {};
@@ -155,20 +150,27 @@ onMounted(() => {
     const baseRake = tableConfig.baseRake !== undefined ? tableConfig.baseRake : 0.05;
     const rakeCap = tableConfig.rakeCap || (bb * 10);
 
-    // Create spectating GameEngine session with guaranteed hero placement
+    // Hero is always players[0] in capturePoint (Seat 0 Hardlock)
+    const heroName = capturePoint?.players?.[0]?.name || heroId || 'HERO';
+
     engine.value = new GameEngine(
       store.selectedClass, 6, sb, bb, amount, baseRake, rakeCap,
       false, locationId, locationConfig?.level || 1, amount * 2, false, null, false,
       {
         isSpectateMode: true,
-        spectateHero: heroId || (snapshot ? snapshot.heroId : 'Max'),
-        snapshot
+        spectateHero: heroName,
+        capturePoint: capturePoint || null  // [NEW] capturePoint replaces snapshot
       }
     );
     window.gameEngine = engine.value;
     currentView.value = 'table';
     audioManager.playTrackByZoneId(locationId);
-    engine.value.startNewHand(true);
+
+    if (capturePoint) {
+      engine.value.injectCapturePoint(capturePoint);
+    } else {
+      engine.value.startNewHand(true);
+    }
   });
 
   window.addEventListener('trigger-cashout', () => {
@@ -213,6 +215,12 @@ onMounted(() => {
   });
   window.addEventListener('open-item-catalog', () => {
     showCatalog.value = true;
+  });
+  window.addEventListener('direct-spectate-join', (e) => {
+    console.info('🚀 [APP_HIGHWAY] Received direct-spectate-join payload:', e.detail);
+    if (e.detail) {
+      handleJoinTable(e.detail);
+    }
   });
 
   // Global shop refresh check every 10 seconds
@@ -305,19 +313,61 @@ const handleJoinTable = async (payload) => {
   // Save current state before entering a poker session to allow rollback if interrupted
   await saveStore();
 
-  const { inviteId, size, buyIn, rake, rakeCap, isAdvanced, sb, bb, locationId, locationLV, buyInLimit, isMonitoring, isDeathmatch } = payload;
+  const { inviteId, size, buyIn, rake, rakeCap, isAdvanced, sb, bb, locationId, locationLV, buyInLimit, isMonitoring, isDeathmatch, isSpectateMode, spectateHero, capturePoint } = payload;
+  
   // [CLEANUP] Ensure previous engine is destroyed
   if (engine.value) {
-    // engine.value.exitGame();
     engine.value = null;
   }
+  
   // Initialize session stats
   store.play_stats_session = createPlayRecordStats();
-  // Use passed rake or default
-  const finalRake = rake !== undefined ? rake : 0.05;
-  const finalRakeCap = rakeCap !== undefined ? rakeCap : (bb * 10);
+  
+  // Auto-resolve Zone Metadata Specs from zone.js if missing
+  let resolvedSb = sb;
+  let resolvedBb = bb;
+  let resolvedBuyIn = buyIn;
+  let resolvedRake = rake;
+  const targetLocationId = locationId || 'micro_warehouse';
 
-  engine.value = new GameEngine(store.selectedClass, size, sb, bb, buyIn, finalRake, finalRakeCap, isAdvanced, locationId, locationLV, buyInLimit, isMonitoring, inviteId, isDeathmatch);
+  for (const z of zones) {
+    const loc = (z.locations || []).find(l => l.id === targetLocationId);
+    if (loc) {
+      const cfg = loc.tables || loc.tableConfig || {};
+      if (!resolvedSb) resolvedSb = cfg.sb || 5;
+      if (!resolvedBb) resolvedBb = cfg.bb || 10;
+      if (!resolvedBuyIn) resolvedBuyIn = cfg.amount || 1000;
+      if (resolvedRake === undefined) resolvedRake = cfg.rake || 0.05;
+      break;
+    }
+  }
+
+  const finalRake = resolvedRake !== undefined ? resolvedRake : 0.05;
+  const finalRakeCap = rakeCap !== undefined ? rakeCap : ((resolvedBb || 10) * 10);
+  
+  const gameEngineOptions = {
+    isSpectateMode: !!isSpectateMode,
+    spectateHero: spectateHero || (capturePoint?.players?.[0]?.name) || 'HERO',
+    capturePoint: capturePoint || null  // [NEW] capturePoint replaces snapshot
+  };
+
+  engine.value = new GameEngine(
+    store.selectedClass, 
+    size || 6, 
+    resolvedSb || 5, 
+    resolvedBb || 10, 
+    resolvedBuyIn || 1000, 
+    finalRake, 
+    finalRakeCap, 
+    isAdvanced, 
+    targetLocationId, 
+    locationLV || 1, 
+    buyInLimit, 
+    isMonitoring, 
+    inviteId, 
+    isDeathmatch, 
+    gameEngineOptions
+  );
 
   const equipped = store.equippedItem;
   if (equipped) {
@@ -329,6 +379,74 @@ const handleJoinTable = async (payload) => {
   currentView.value = 'table';
 
   await engine.value.startNewHand(true);
+};
+
+// [DECISIVE MOMENT] Phase 2 ready: Phase 1 replay completed, waiting for user decision
+// engine.isPhase1Replay becomes false when the engine reaches the capturePoint street
+const isPhase2Ready = computed(() =>
+  engine.value?.isSpectateMode &&
+  !engine.value?.isPhase1Replay &&
+  !!engine.value?.capturePoint
+);
+
+const handleExitSpectateAndUnlock = () => {
+  console.info('[SIMULATION_UNLOCK] Exiting spectate mode and resuming turn simulation...');
+  if (engine.value) {
+    engine.value = null;
+  }
+  window.dispatchEvent(new CustomEvent('resume-simulation-unlock'));
+  currentView.value = 'lobby';
+};
+
+// [Phase 2] User chooses to directly control the decisive street
+const handleEnterPhase2 = () => {
+  if (!engine.value) return;
+  console.info('[DECISIVE_MOMENT] User entering direct control — Phase 2 LIVE');
+
+  // 1. Disable spectate mode & clear capture point lock
+  engine.value.isSpectateMode = false;
+  engine.value.isPhase1Replay = false;
+  engine.value.capturePoint = null;
+
+  // 2. Mark Seat 0 (Hero) as Human User
+  const hero = engine.value.players[0];
+  if (hero) {
+    hero.isHuman = true;
+    hero.isPartner = false;
+  }
+
+  // 3. Conceal all opponent cards (Poker Tension Rule)
+  engine.value.players.forEach((p, idx) => {
+    if (idx !== 0) {
+      p.isHuman = false;
+      p.showHoleCards = false;
+    }
+  });
+
+  // 4. Force turn to Hero if Hero is alive and hasn't acted yet this street
+  if (hero && !hero.isFolded && !hero.isEliminated) {
+    const heroIdx = engine.value.players.indexOf(hero);
+    if (heroIdx !== -1) {
+      engine.value.currentPlayerIndex = heroIdx;
+    }
+  }
+
+  // 5. Trigger processTurns to pause for Human Input and show ControlPanel
+  engine.value.processTurns();
+};
+
+// Listen for hand completion auto-exit event
+window.addEventListener('exit-spectate-to-lobby', () => {
+  console.info('🎥 [APP] exit-spectate-to-lobby event received');
+  handleExitSpectateAndUnlock();
+});
+
+// [Phase 2] User delegates to AI — engine resumes AI decisions and exits spectate after hand
+const handleDelegateToAI = () => {
+  if (!engine.value) return;
+  console.info('[DECISIVE_MOMENT] Delegating to AI — Phase 2 AI_AUTO');
+  engine.value.isPhase1Replay = false;
+  engine.value.capturePoint = null;
 };
 
 const handleView = (view) => {
@@ -531,9 +649,6 @@ watch(currentView, (newView) => {
           <!-- Full-Screen Terminal OS Table Search Subview -->
           <TableSearchPage v-else-if="currentView === 'table_search'" @join="handleJoinTable" @back="handleView('lobby')" />
 
-          <!-- Marathon Style SafeHouse (Exact User Requirement) -->
-          <MarathonSafeHouse v-else-if="currentView === 'home'" @enter-terminal="handleView('lobby')" />
-
           <!-- Pure Ambient Light SafeHouse Prototype (Preserved) -->
           <AmbientSafeHouseProto v-else-if="currentView === 'ambient_proto'" @enter-terminal="handleView('lobby')"
             @open-stats="showStatsModal = true" @open-catalog="showCatalog = true" />
@@ -542,10 +657,6 @@ watch(currentView, (newView) => {
           <SafeHouse v-else-if="currentView === 'full_safehouse'" @enter-terminal="handleView('lobby')" @back="handleView('lobby')" @sleep="handleSleepClick"
             @open-task-selector="handleOpenTaskSelector" @open-agent-modal="handleOpenAgentModal"
             @open-skill-selector="handleOpenSkillSelector" @open-stats-modal="showStatsModal = true" />
-
-          <!-- Experimental Wireframe Room (Preserved for 3D View testing) -->
-          <MeatspaceRoom v-else-if="currentView === 'wireframe_room'" @enter-terminal="handleView('lobby')"
-            @open-stats="showStatsModal = true" @open-catalog="showCatalog = true" />
 
           <!-- c House View -->
           <!-- <SafeHouse v-else-if="currentView === 'home'" @back="handleView('lobby')" @sleep="handleSleepClick" @open-task-selector="handleOpenTaskSelector" /> -->
@@ -575,21 +686,44 @@ watch(currentView, (newView) => {
             </main>
             <ControlPanel v-if="engine && !engine.isSpectateMode" :engine="engine" @action="handleAction" @skill="handleSkill" />
 
-            <!-- Spectator Cornerman Control Bar (Zero Roundedness & CMY Cyberpunk Style) -->
+            <!-- Phase 1: REPLAY_MODE 배너 (자동 리플레이 진행 중) -->
+            <div v-else-if="engine && engine.isSpectateMode && engine.isPhase1Replay" class="spectator-control-bar font-orbitron phase1-bar">
+              <div class="spectator-status-group">
+                <span class="cyan glitch-small">[REPLAY_MODE]</span>
+                <span class="white">PREFLOP ➔ {{ engine.capturePoint?.currentStreet || 'TURN' }}</span>
+                <span class="meta-tag yellow">[WATCH_ONLY // SIMULATION_LOCKED]</span>
+              </div>
+              <div class="spectator-actions-group">
+                <span class="replay-hint">결정적 순간까지 자동 재생 중...</span>
+              </div>
+            </div>
+
+            <!-- Phase 2: DECISIVE_MOMENT — 직접 개입 또는 AI 위임 선택 -->
+            <div v-else-if="engine && engine.isSpectateMode && isPhase2Ready" class="spectator-control-bar font-orbitron phase2-bar">
+              <div class="spectator-status-group">
+                <span class="magenta glitch-small">[DECISIVE_MOMENT // {{ engine.capturePoint?.currentStreet || 'RIVER' }}]</span>
+                <span class="white">POT: <b class="yellow">${{ engine.pot?.toLocaleString() || '??' }} CR</b></span>
+              </div>
+              <div class="spectator-actions-group">
+                <button class="btn-intervene-hook font-orbitron" @click="handleEnterPhase2">
+                  <span class="btn-lbl">[ DIRECT_INTERVENE ]</span>
+                </button>
+                <button class="btn-leave-spectate font-orbitron" @click="handleDelegateToAI">
+                  <span class="btn-lbl">[ AI_DELEGATE ]</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Default: Spectator Watch-Only Bar -->
             <div v-else-if="engine && engine.isSpectateMode" class="spectator-control-bar font-orbitron">
               <div class="spectator-status-group">
                 <span class="cyan glitch-small">[SPECTATING_MODE]</span>
-                <span class="white">HERO: <b class="yellow">{{ engine.spectateHero || 'Max' }}</b></span>
+                <span class="white">HERO: <b class="yellow">{{ engine.spectateHero || 'HERO' }}</b></span>
                 <span class="meta-tag cyan">[LIVE_FEED_STABLE]</span>
               </div>
-
               <div class="spectator-actions-group">
-                <button class="btn-intervene-hook font-orbitron" title="Intervene / Corner Advice (Coming Soon)">
-                  <span class="btn-lbl">⚡ CORNERMAN_INTERVENE</span>
-                </button>
-
-                <button class="btn-leave-spectate font-orbitron" @click="handleView('comms_inbox')">
-                  <span class="btn-lbl">EXIT_SPECTATE ➔</span>
+                <button class="btn-leave-spectate font-orbitron instant-flash-btn" @click="handleExitSpectateAndUnlock">
+                  <span class="btn-lbl">[ EXIT_SPECTATE_TO_OS ] ➔</span>
                 </button>
               </div>
             </div>
@@ -665,6 +799,13 @@ watch(currentView, (newView) => {
               <button @click="store.settings.fastFoward = !store.settings.fastFoward"
                 :class="{ 'is-on': store.settings.fastFoward }">
                 {{ store.settings.fastFoward ? 'ON' : 'OFF' }}
+              </button>
+            </div>
+            <div class="setting-item">
+              <span class="label">CRT_SCANLINE_FX:</span>
+              <button @click="store.settings.crtEnabled = store.settings.crtEnabled === false ? true : false"
+                :class="{ 'is-on': store.settings.crtEnabled !== false }">
+                {{ store.settings.crtEnabled !== false ? 'ON' : 'OFF' }}
               </button>
             </div>
             <div class="setting-item">
@@ -851,5 +992,34 @@ body, #app, .app-shell, .game-container, .layout-container {
   background: var(--neon-yellow, #ccff00);
   color: #000000;
   box-shadow: 0 0 12px var(--neon-yellow, #ccff00);
+}
+
+/* Phase 1: Watch-Only Replay Banner */
+.phase1-bar {
+  border-top-color: var(--neon-yellow, #ccff00) !important;
+  box-shadow: 0 -4px 15px rgba(204, 255, 0, 0.12);
+}
+
+/* Phase 2: Decisive Moment Action Bar */
+.phase2-bar {
+  border-top-color: var(--neon-magenta, #ff00cc) !important;
+  box-shadow: 0 -4px 20px rgba(255, 0, 204, 0.2);
+  animation: phase2-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes phase2-pulse {
+  0%, 100% { box-shadow: 0 -4px 20px rgba(255, 0, 204, 0.2); }
+  50% { box-shadow: 0 -4px 35px rgba(255, 0, 204, 0.45); }
+}
+
+.replay-hint {
+  color: var(--neon-yellow, #ccff00);
+  font-size: 0.8rem;
+  opacity: 0.75;
+  font-weight: 700;
+}
+
+.magenta {
+  color: var(--neon-magenta, #ff00cc);
 }
 </style>

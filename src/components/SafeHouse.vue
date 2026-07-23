@@ -846,7 +846,7 @@ const getNetWorthChartPath = (partner) => {
 }
 
 .cyberlink-title {
-  font-family: 'Share Tech Mono', 'Orbitron', monospace;
+  font-family: 'Orbitron', monospace;
   font-size: 1.1rem;
   font-weight: 900;
   color: var(--neon-yellow);
@@ -864,7 +864,7 @@ const getNetWorthChartPath = (partner) => {
   color: #000;
   border: none;
   padding: 0.6rem 1.2rem;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Orbitron', monospace;
   font-weight: 900;
   font-size: 0.85rem;
   letter-spacing: 0.1em;

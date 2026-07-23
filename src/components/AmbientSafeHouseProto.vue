@@ -153,7 +153,7 @@ const handleSleep = async () => {
   height: 100vh;
   background: #000000;
   color: #ffffff;
-  font-family: 'Share Tech Mono', 'Orbitron', monospace;
+  font-family: 'Orbitron', monospace;
   overflow: hidden;
   display: flex;
   flex-direction: column;

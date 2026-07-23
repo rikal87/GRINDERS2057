@@ -1,6 +1,6 @@
-import { store, getEffectiveMaxStamina } from './store';
-import { audioManager } from './audioManager';
-import { recordPlayStatsSessionForPlayer, PLAY_RECORD_STATS_TYPE } from './playRecordStats';
+import { store, getEffectiveMaxStamina } from './store.js';
+import { audioManager } from './audioManager.js';
+import { recordPlayStatsSessionForPlayer, PLAY_RECORD_STATS_TYPE } from './playRecordStats.js';
 const DEPOSITION_RATE_IDLE = 2 / 60; // 2 per hour = 2/60 per minute
 const DEPOSITION_RATE_TABLE = 4 / 60; // 4 per hour = 4/60 per minute
 

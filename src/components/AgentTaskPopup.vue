@@ -288,7 +288,7 @@ onMounted(() => {
   height: 300px;
   width: 300px;
   color: var(--neon-red);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Orbitron', monospace;
   text-align: center;
   border: 1px dashed var(--neon-red);
 }

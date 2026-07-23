@@ -5,153 +5,131 @@
       'winner-glow': showShowdown && isWinner(p.id)
     }]" :style="{ filter: staminaBlur > 0 ? `blur(${staminaBlur}px)` : '' }">
 
-    <div class="dealer-btn" v-if="engine.dealerIndex === idx">D</div>
-    <!-- <div class="chip-stack"> -->
-    <div v-if="p.currentBet > 0" class="chip-stack">
-      <ChipStack :amount="p.currentBet" :bb="engine.bb" labelPosition="bottom" />
-    </div>
+      <div class="dealer-btn" v-if="engine.dealerIndex === idx">D</div>
+      <!-- <div class="chip-stack"> -->
+      <div v-if="p.currentBet > 0" class="chip-stack">
+        <ChipStack :amount="p.currentBet" :bb="engine.bb" labelPosition="bottom" />
+      </div>
 
-    <Transition name="fold-cards">
-      <div v-if="!p.isFolded" :class="{ 'cards': true, 'is-human': p.isHuman }">
-        <!-- Cards are hidden for NPCs unless explicitly revealed (showHoleCards) -->
-        <Card v-for="(c, i) in p.hand" :key="i" :code="c"
-          :hidden="!p.isHuman && !p.showHoleCards" />
-      </div>
-    </Transition>
-    <Transition name="fade">
-      <div class="dialogue-bubble" v-if="p.lastDialogue">
-        <div class="bubble-content">{{ p.lastDialogue }}</div>
-        <div class="bubble-arrow"></div>
-      </div>
-    </Transition>
-    <div class="player-info" :class="{
-      'active': engine.currentPlayerIndex === idx,
-      'time-critical': isTimeCritical(p, idx),
-      'bust': p.isEliminated
-    }"
-      :style="isTimeCritical(p, idx) ? { borderColor: 'var(--neon-red)', boxShadow: '0 0 15px var(--neon-red)' } : {}">
-      <!-- Time Gauge Background -->
-      <div class="time-gauge" :style="getTimeGaugeStyle(p, idx)"></div>
-      <div v-if="store.isActiveHud && !p.isHuman" class="hud-badge">
-        <span class="vpip-val">{{ p.stats.vPIP.toFixed(0) }}</span>
-        <div class="hud-tooltip">
-          <div class="tooltip-row">
-            <span class="label">VPIP</span>
-            <span class="val cyan">{{ p.stats.vPIP.toFixed(1) }}%</span>
-          </div>
-          <div class="tooltip-row">
-            <span class="label">PFR</span>
-            <span class="val yellow">{{ p.stats.pfr.toFixed(1) }}%</span>
-          </div>
-          <div class="tooltip-row">
-            <span class="label">3-BET</span>
-            <span class="val magenta">{{ p.stats.threeBet.toFixed(1) }}%</span>
-          </div>
-          <div class="tooltip-row">
-            <span class="label">4-BET+</span>
-            <span class="val magenta">{{ p.stats.fourBetOrMore.toFixed(1) }}%</span>
-          </div>
-          <div class="tooltip-row">
-            <span class="label">AF</span>
-            <span class="val white">{{ p.stats.aggressionFactor.toFixed(1) }}</span>
+      <Transition name="fold-cards">
+        <div v-if="!p.isFolded" :class="{ 'cards': true, 'is-human': p.isHuman }">
+          <!-- Cards are visible for Human, Spectate Mode Hero, or Revealed NPCs -->
+          <Card v-for="(c, i) in p.hand" :key="i" :code="c"
+            :hidden="!p.isHuman && !engine.isSpectateMode && !p.showHoleCards" />
+        </div>
+      </Transition>
+      <Transition name="fade">
+        <div class="dialogue-bubble" v-if="p.lastDialogue">
+          <div class="bubble-content">{{ p.lastDialogue }}</div>
+          <div class="bubble-arrow"></div>
+        </div>
+      </Transition>
+      <div class="player-info" :class="{
+        'active': engine.currentPlayerIndex === idx,
+        'time-critical': isTimeCritical(p, idx),
+        'bust': p.isEliminated
+      }"
+        :style="isTimeCritical(p, idx) ? { borderColor: 'var(--neon-red)', boxShadow: '0 0 15px var(--neon-red)' } : {}">
+        <!-- Time Gauge Background -->
+        <div class="time-gauge" :style="getTimeGaugeStyle(p, idx)"></div>
+        <div v-if="store.isActiveHud && !p.isHuman" class="hud-badge">
+          <span class="vpip-val">{{ p.stats.vPIP.toFixed(0) }}</span>
+          <div class="hud-tooltip">
+            <div class="tooltip-row">
+              <span class="label">VPIP</span>
+              <span class="val cyan">{{ p.stats.vPIP.toFixed(1) }}%</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="label">PFR</span>
+              <span class="val yellow">{{ p.stats.pfr.toFixed(1) }}%</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="label">3-BET</span>
+              <span class="val magenta">{{ p.stats.threeBet.toFixed(1) }}%</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="label">4-BET+</span>
+              <span class="val magenta">{{ p.stats.fourBetOrMore.toFixed(1) }}%</span>
+            </div>
+            <div class="tooltip-row">
+              <span class="label">AF</span>
+              <span class="val white">{{ p.stats.aggressionFactor.toFixed(1) }}</span>
+            </div>
           </div>
         </div>
-      </div>
-      <!-- Character Dialogue Bubble -->
+        <!-- Character Dialogue Bubble -->
 
-      <div class="meta">
-        <span class="name" :class="{ 'companion': p.isPartner }">
-          <span class="tilted" v-if="p.tilt >= 75" :data-tooltip="getTiltTooltip(p.tilt)">😡</span>
-          <span class="tilted" v-else-if="p.tilt >= 50" :data-tooltip="getTiltTooltip(p.tilt)">😠</span>
-          <span class="tilted" v-else-if="p.tilt >= 25" :data-tooltip="getTiltTooltip(p.tilt)">😒</span>
-          <span class="drunken" v-if="p.isDrunken" :data-tooltip="getDrunkTooltip()">🍺</span>
-          {{ p.name }}
-        </span>
-        <!-- no more need to show class tag -->
-        <!-- <span class="class-tag" v-if="p.isHuman">{{ p.class?.name }}</span> -->
-      </div>
-      <div class="balance">
-        <!-- [MOVED] Protector Badge -->
-        <span class="chips">
-          {{ formatUnit(showShowdown ? visualChips[p.id] : p.chips) }}
-        </span>
-      </div>
-      <!-- RAM Bar for Human -->
-      <!-- <div v-if="p.isHuman" class="ram-meter">
+        <div class="meta">
+          <span class="name" :class="{ 'companion': p.isPartner }">
+            <span class="tilted" v-if="p.tilt >= 75" :data-tooltip="getTiltTooltip(p.tilt)">😡</span>
+            <span class="tilted" v-else-if="p.tilt >= 50" :data-tooltip="getTiltTooltip(p.tilt)">😠</span>
+            <span class="tilted" v-else-if="p.tilt >= 25" :data-tooltip="getTiltTooltip(p.tilt)">😒</span>
+            <span class="drunken" v-if="p.isDrunken" :data-tooltip="getDrunkTooltip()">🍺</span>
+            {{ p.name }}
+          </span>
+          <!-- no more need to show class tag -->
+          <!-- <span class="class-tag" v-if="p.isHuman">{{ p.class?.name }}</span> -->
+        </div>
+        <div class="balance">
+          <!-- [MOVED] Protector Badge -->
+          <span class="chips">
+            {{ formatUnit(showShowdown ? visualChips[p.id] : p.chips) }}
+          </span>
+        </div>
+        <!-- RAM Bar for Human -->
+        <!-- <div v-if="p.isHuman" class="ram-meter">
         <div class="ram-fill" :style="{ width: ramPercent + '%' }"></div>
       </div> -->
 
-    </div>
-    <!-- [MOVED] Effect HUD -->
-    <!-- <div class="status-overlay" v-if="p.isFolded">FOLDED</div> -->
-    <!-- Neural Insight (LLM Thought) -->
-    <div class="neural-insight"
-      v-if="!p.isHuman && p.lastThought && !p.isFolded && engine.players.find(p => p.isMe)?.canReadSynapses">
-      <span class="prefix">>></span> {{ p.lastThought }}
-    </div>
-  </div>
-  <div class="poker-table" v-if="engine" :style="tableStyleWithBlur">
-    <!-- Pot Display (Center) -->
-    <div class="center-area">
-      <div class="pot-display">
-        <b class="neon-text glitch-small">{{ currentPotName || 'POT' }}</b>
-        <ChipStack :amount="showShowdown ? visualTotalPot : engine.pot"
-          :bb="engine.buyIn ? (engine.buyIn / 100) : engine.bb" :showLabel="true" labelPosition="bottom"
-          :collecting="isPotCollecting" :winnerSeat="activePotWinnerSeat" />
       </div>
-      <div class="board-cards">
-        <Card v-for="(c, i) in engine.board" :key="i" :code="c" />
-        <div v-for="i in (5 - engine.board.length)" :key="'p' + i" class="card-placeholder"></div>
+      <!-- [MOVED] Effect HUD -->
+      <!-- <div class="status-overlay" v-if="p.isFolded">FOLDED</div> -->
+      <!-- Neural Insight (LLM Thought) -->
+      <div class="neural-insight"
+        v-if="!p.isHuman && p.lastThought && !p.isFolded && engine.players.find(p => p.isMe)?.canReadSynapses">
+        <span class="prefix">>></span> {{ p.lastThought }}
       </div>
-      <!-- Live All-In Equity HUD -->
-      <div v-if="engine.runoutInProgress" class="allin-equity-hud">
-        <div class="equity-title">ALL-IN REALTIME EQUITY</div>
-        <div class="equity-players">
-          <div v-for="p in activeRunoutPlayers" :key="p.id" class="equity-row">
-            <span class="eq-name" :class="{ 'is-me': p.isHuman }">{{ p.name }}</span>
-            <div class="eq-bar-bg">
-              <div class="eq-bar-fill" :style="{ width: (shouldShowEquity(p) ? (p.equity || 0) : 0) + '%' }"></div>
+    </div>
+    <div class="poker-table" v-if="engine" :style="tableStyleWithBlur">
+      <!-- Pot Display (Center) -->
+      <div class="center-area">
+        <div class="pot-display">
+          <b class="neon-text glitch-small">{{ currentPotName || 'POT' }}</b>
+          <ChipStack :amount="showShowdown ? visualTotalPot : engine.pot"
+            :bb="engine.buyIn ? (engine.buyIn / 100) : engine.bb" :showLabel="true" labelPosition="bottom"
+            :collecting="isPotCollecting" :winnerSeat="activePotWinnerSeat" />
+        </div>
+        <div class="board-cards">
+          <Card v-for="(c, i) in engine.board" :key="i" :code="c" />
+          <div v-for="i in (5 - engine.board.length)" :key="'p' + i" class="card-placeholder"></div>
+        </div>
+        <!-- Live All-In Equity HUD -->
+        <div v-if="engine.runoutInProgress" class="allin-equity-hud">
+          <div class="equity-title">ALL-IN REALTIME EQUITY</div>
+          <div class="equity-players">
+            <div v-for="p in activeRunoutPlayers" :key="p.id" class="equity-row">
+              <span class="eq-name" :class="{ 'is-me': p.isHuman }">{{ p.name }}</span>
+              <div class="eq-bar-bg">
+                <div class="eq-bar-fill" :style="{ width: (shouldShowEquity(p) ? (p.equity || 0) : 0) + '%' }"></div>
+              </div>
+              <span class="eq-percent">{{ shouldShowEquity(p) ? (p.equity || 0).toFixed(0) + '%' : '?%' }}</span>
             </div>
-            <span class="eq-percent">{{ shouldShowEquity(p) ? (p.equity || 0).toFixed(0) + '%' : '?%' }}</span>
           </div>
         </div>
       </div>
+      <!-- Players (Relative Positioning) -->
+
+      <!-- [IMPROVEMENT] Winning Hand HUD (Bottom) -->
+      <Transition name="fade">
+        <div v-if="showShowdown && winnerHandInfo" class="hud-winner-hand">
+          <!-- <div class="winner-label">WINNER_IDENTIFIED //</div> -->
+          <div class="winner-label">{{ winnerHandInfo.player.name }}</div>
+          <div class="winner-hand">{{ props.engine.state === 'SHOWDOWN' ? winnerHandInfo.hand.name : 'UNCONTESTED' }}
+          </div>
+        </div>
+      </Transition>
+
     </div>
-    <!-- Players (Relative Positioning) -->
-
-    <!-- [IMPROVEMENT] Winning Hand HUD (Bottom) -->
-    <Transition name="fade">
-      <div v-if="showShowdown && winnerHandInfo" class="hud-winner-hand">
-        <!-- <div class="winner-label">WINNER_IDENTIFIED //</div> -->
-        <div class="winner-label">{{ winnerHandInfo.player.name }}</div>
-        <div class="winner-hand">{{ props.engine.state === 'SHOWDOWN' ? winnerHandInfo.hand.name : 'UNCONTESTED' }}
-        </div>
-      </div>
-    </Transition>
-
-    <!-- [IMPROVEMENT] Player Current Hand HUD (Right) -->
-    <!-- <div v-if="!engine.players[0].isFolded" class="hud-player-hand">
-      <div class="hud-label">NEURAL_ANALYSIS // CURRENT_HAND</div>
-      <div class="hud-hand-name">{{ playerHandEval?.name || 'ANALYZING...' }}</div>
-    </div> -->
-
-    <!-- Item Activation Toast -->
-    <!-- <Transition name="slide-up">
-      <div v-if="itemToast" class="item-toast">
-        <div class="toast-icon">⚡</div>
-        <div class="toast-content">
-          <div class="toast-label">ITEM_ACTIVATED</div>
-          <div class="toast-name">{{ itemToast.name }}</div>
-        </div>
-      </div>
-    </Transition> -->
-  </div>
-
-  <!-- Move replay-trigger here to ensure it's on top of everything -->
-  <div class="replay-trigger" @click="$emit('openHistory')" :style="{ filter: staminaBlur > 0 ? `blur(${staminaBlur}px)` : '' }">
-    <span class="icon">🗘</span>
-    <span class="label">HISTORY</span>
-  </div>
   </template>
 </template>
 
@@ -445,10 +423,8 @@ const isTimeCritical = (p, idx) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    rgba(18, 16, 16, 0) 50%, 
-    rgba(0, 240, 255, 0.08) 50%
-  );
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%,
+      rgba(0, 240, 255, 0.08) 50%);
   background-size: 100% 3px;
   pointer-events: none;
   z-index: 2;
@@ -499,7 +475,8 @@ const isTimeCritical = (p, idx) => {
   height: 6px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(0, 240, 255, 0.2);
-  border-radius: 0; /* Sharp sci-fi edges */
+  border-radius: 0;
+  /* Sharp sci-fi edges */
   overflow: hidden;
 }
 
@@ -508,7 +485,8 @@ const isTimeCritical = (p, idx) => {
   background: linear-gradient(90deg, var(--neon-cyan), #00ffaa);
   box-shadow: 0 0 6px var(--neon-cyan);
   transition: width 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
-  border-radius: 0; /* Sharp sci-fi edges */
+  border-radius: 0;
+  /* Sharp sci-fi edges */
 }
 
 .eq-percent {

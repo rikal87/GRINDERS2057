@@ -6,22 +6,80 @@
   --neon-magenta: #ff005c;
   --bg-pure-black: #000000;
   
-  /* Futuristic Font Stack: Orbitron (EN/Numbers) + Pretendard Std (KR) */
-  --font-os: 'Orbitron', 'Pretendard Std', 'Share Tech Mono', monospace;
-  --font-os-futuristic: 'Orbitron', 'Pretendard Std', sans-serif;
+  /* High-Contrast Neon Glow Tokens */
+  --glow-cyan: 0 0 10px rgba(0, 240, 255, 0.8), 0 0 20px rgba(0, 240, 255, 0.35);
+  --glow-yellow: 0 0 10px rgba(204, 255, 0, 0.8), 0 0 20px rgba(204, 255, 0, 0.35);
+  --glow-magenta: 0 0 10px rgba(255, 0, 92, 0.8), 0 0 20px rgba(255, 0, 92, 0.35);
 
-  /* Global Responsive Breakpoint & Viewport Tokens */
-  --os-breakpoint-mobile: 768px;
-  --os-breakpoint-tablet: 1024px;
-  --os-viewport-padding-desktop: 1.5rem 4rem;
-  --os-viewport-padding-mobile: 1rem;
-  --os-container-max-width: 1350px;
+  /* ==========================================================================
+     THE ULTIMATE ROOT FONT STACK (프로젝트 전체 무조건 1순위 Orbitron, 2순위 Pretendard)
+     ========================================================================== */
+  --font-os-root: 'Orbitron', 'Pretendard Std', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-ui-english: var(--font-os-root);
+  --font-body-korean: 'Pretendard Std', -apple-system, sans-serif;
+  --font-code-mono: 'Orbitron', monospace;
+
+  /* Global Token Aliases */
+  --font-os: var(--font-os-root);
+  --font-os-futuristic: var(--font-os-root);
 }
 
-/* Global Font Utility */
-.font-futuristic,
-.font-orbitron {
-  font-family: var(--font-os-futuristic) !important;
+/* ==========================================================================
+   GLOBAL ULTIMATE FONT RESET (근본 전역 1순위 Orbitron / 2순위 Pretendard)
+   ========================================================================== */
+html,
+body,
+#app,
+*,
+*::before,
+*::after,
+button,
+input,
+select,
+option,
+textarea {
+  font-family: var(--font-os-root) !important;
+}
+
+/* ==========================================================================
+   MOBILE-FIRST TOUCH UX & INSTANT TOUCH FEEDBACK
+   Replacing Desktop-only :hover dependencies with Mobile-first :active feedback
+   ========================================================================== */
+.instant-flash-btn {
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease, filter 0.1s ease, background-color 0.15s ease;
+}
+
+/* Touch Device Active Feedback (Instant Flash & Micro Scale-down) */
+.instant-flash-btn:active {
+  transform: scale(0.97) !important;
+  filter: brightness(1.3) !important;
+  background-color: var(--neon-yellow) !important;
+  color: #000000 !important;
+}
+
+/* Hover effects enabled ONLY on pointer devices with real mouse hover */
+@media (hover: hover) and (pointer: fine) {
+  .instant-flash-btn:hover {
+    filter: brightness(1.25);
+    box-shadow: 0 0 15px rgba(204, 255, 0, 0.4);
+  }
+}
+
+.glow-cyan {
+  color: var(--neon-cyan) !important;
+  text-shadow: var(--glow-cyan);
+}
+
+.glow-yellow {
+  color: var(--neon-yellow) !important;
+  text-shadow: var(--glow-yellow);
+}
+
+.glow-magenta {
+  color: var(--neon-magenta) !important;
+  text-shadow: var(--glow-magenta);
 }
 
 /* Global Responsive Page Viewport Token Utility */
@@ -47,23 +105,30 @@
   background: transparent;
 }
 .os-scrollbar-custom::-webkit-scrollbar-thumb {
-  background: rgba(0, 240, 255, 0.25);
+  background: rgba(0, 240, 255, 0.4);
   border-radius: 0px;
+  box-shadow: 0 0 6px var(--neon-cyan);
   transition: background 0.2s ease;
 }
 .os-scrollbar-custom::-webkit-scrollbar-thumb:hover {
   background: var(--neon-cyan);
 }
 
-/* FUI Scanline Utility */
+/* FUI CRT Ultra-Subtle Scanline Lens Overlay (Ultra-low Opacity to retain 100% CMY Vibrancy) */
 .fui-scanline-lens {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
-  background-size: 100% 3px;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.08),
+    rgba(0, 0, 0, 0.08) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  mix-blend-mode: overlay;
   pointer-events: none;
   z-index: 2;
 }
@@ -85,7 +150,86 @@
   grid-template-rows: repeat(4, 1fr);
   width: 100%;
   height: 100%;
-  opacity: 0.08;
+  opacity: 0.12;
   padding: 3rem;
   box-sizing: border-box;
+}
+
+/* --- High-Vibrancy Neon Pulse Animations --- */
+@keyframes neonPulseCyan {
+  0% { opacity: 0.85; text-shadow: 0 0 4px var(--neon-cyan); }
+  100% { opacity: 1.0; text-shadow: var(--glow-cyan); }
+}
+
+@keyframes neonPulseYellow {
+  0% { opacity: 0.85; text-shadow: 0 0 4px var(--neon-yellow); }
+  100% { opacity: 1.0; text-shadow: var(--glow-yellow); }
+}
+
+@keyframes neonBlinkFast {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 6px var(--neon-magenta)); }
+  50% { opacity: 0.3; filter: none; }
+}
+
+.pulse-neon-cyan {
+  animation: neonPulseCyan 1.8s infinite alternate ease-in-out;
+}
+
+.pulse-neon-yellow {
+  animation: neonPulseYellow 1.2s infinite alternate ease-in-out;
+}
+
+.blink-fast {
+  animation: neonBlinkFast 0.8s infinite;
+}
+
+/* --- Instant Flash Interaction Utility --- */
+.instant-flash-btn {
+  border-radius: 0px !important;
+  transition: none !important;
+  cursor: pointer;
+}
+
+.instant-flash-btn:hover {
+  background-color: var(--neon-cyan) !important;
+  color: #000000 !important;
+  box-shadow: 0 0 18px var(--neon-cyan);
+}
+
+.instant-flash-btn:active {
+  background-color: var(--neon-yellow) !important;
+  color: #000000 !important;
+  box-shadow: 0 0 20px var(--neon-yellow);
+  transform: translate(-1px, -1px);
+}
+
+/* --- FUI CRT Rectangular Frame Decorator --- */
+.fui-cctv-frame {
+  position: relative;
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  background: rgba(4, 8, 12, 0.95);
+  box-sizing: border-box;
+  box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.08);
+}
+
+.fui-cctv-frame::before {
+  content: '┌';
+  position: absolute;
+  top: -6px; left: -6px;
+  color: var(--neon-cyan);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 8px var(--neon-cyan);
+}
+
+.fui-cctv-frame::after {
+  content: '┘';
+  position: absolute;
+  bottom: -6px; right: -6px;
+  color: var(--neon-cyan);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 8px var(--neon-cyan);
 }

@@ -1,14 +1,28 @@
-# 📄 [기획 설계서] 프로젝트: GRINDERS 2057 // CYBER-AGENCY MANAGER
+---
+id: SPEC-MASTER-cyber-agency-manager
+title: GRINDERS 2057 마스터 게임 기획서 (Cyber Agency Manager Master GDD)
+status: MASTER_GDD
+related_specs: ["SPEC-260723-roster-stat-system"]
+target_files: ["src/App.vue", "src/logic/partnerSystem.js", "src/logic/persona.js"]
+---
 
-> **문서 버전:** v2.0 (전환 및 시스템 구체화 반영)  
-> **저장 일시:** 2026-07-22  
+# 🎯 [MASTER GDD] GRINDERS 2057: CYBER-AGENCY MANAGER
+
+> **문서 상태:** MASTER_GDD (Single Source of Truth)  
+> **최종 갱신일:** 2026-07-23  
 > **장르:** 사이버펑크 느와르 포커 에이전시 매니지먼트 & 관전 시뮬레이션 (FM/FC 스타일 + 다크웹 공작)  
 
 ---
 
-## 1. UI / UX Dual-Theme Architecture (이중 공간 레이어)
+## 1. 개요 및 장르 전환 정의 (Genre Pivot Definition)
 
-[cyberspace-os-standard](file:///d:/github-repository/CyberPoker2077/.agents/skills/cyberspace-os-standard/SKILL.md) 디자인 헌장(100% Zero Radius, CMY 3원색 배색, Pretendard Std 900)을 유지하되, 현실과 공간의 대비를 시각적으로 분리합니다.
+본 프로젝트는 플레이어가 직접 1인칭으로 카드 핸드를 플레이하던 단순 포커 덱빌딩 게임에서, **디스토피아 에이전시 대표로서 포커 선수(Roster)를 발굴·계약·육성하고 멀티 세션 경기를 관전/공작하는 "사이버펑크 포커 매니지먼트 시뮬레이션"**으로 마스터 장르 전환을 단행합니다.
+
+---
+
+## 2. UI / UX Dual-Theme Architecture (이중 공간 레이어)
+
+[cyberspace-os-standard](file:///d:/github-repository/CyberPoker2077/.agents/skills/cyberspace-os-standard/SKILL.md) 디자인 헌장(100% Zero Radius, CMY 3원색 배색, Pretendard Std 900)을 준수하며 현실과 사이버 공간을 완전 이원화합니다.
 
 ```text
 ┌───────────────────────────────────────────────────────────┐
@@ -28,15 +42,17 @@
 └───────────────────────────────────────────────────────────┘
 ```
 
+** 해당 문서는 계획서이며 실제 적용된 내용과 다를수있음!!!!
+
 ---
 
-## 2. Core Game Loop & Broadcast System (관전 & 경기 시스템)
+## 3. Core Game Loop & Broadcast System (관전 & 경기 시스템)
 
 플레이어가 직접 포커를 치는 것이 아닌, **"스포츠 중계/경마 감성의 관전 및 베팅 마스터"** 시점으로 진행됩니다.
 
 ### ① 속도 2원화 시뮬레이션 (Speed Two-Tier Engine)
 - **일반 핸드 (Skipped Fast Log):** 어두운 터미널 콘솔에서 초당 수십 줄의 포커 연산 로그가 0.5초 만에 빠르게 지나감 (`HAND #102: FOLD...`).
-- **빅팟 / 올인 / TILT 핸드 (The Live Broadcast):** 🚨 경고음과 함께 2D HUD 관전 화면이 켜지며 **"슬로우 모션 텐션 중계"**로 자동/수동 전환.
+- **빅팟 / 올인 / TILT 핸드 (The Live Broadcast):** 경고음과 함께 2D HUD 관전 화면이 켜지며 **"슬로우 모션 텐션 중계"**로 자동/수동 전환.
 
 ### ② 빅팟 관전 HUD & 정적의 텐션 연출
 - 무의미한 대사는 들어내고, **[선수 심장박동 HUD] + [동공 확장 수치] + [타임뱅크 카운트다운]**으로 정적의 몰입감 제공.
@@ -44,31 +60,34 @@
 
 ---
 
-## 3. 선수(NPC) 시스템 & 스카우팅 (Roster & Scouting)
+## 4. 선수(NPC) 시스템 & 스카우팅 (Roster & Scouting)
 
-### ① 스탯 구조
-- **기술 스탯:** GTO 연산력 / 블러핑(Bluff) / Tell 포착력 / 팟 오즈 계산력
-- **성향 & 결함 스탯:** 공격성 / TILT(급발진) 저항력 / 약물 의존도 / 에이전시 복종도
-- **가치 공식:** $\text{선수 몸값} = (\text{기술 스탯}) \times \text{티어} - (\text{결함 감가}) + (\text{인수 빚/메이크업})$
+상세 능력치 연산식 및 스킹 경제 매커니즘은 [SPEC-260723-roster-stat-system.md](file:///d:/github-repository/CyberPoker2077/docs/specs/SPEC-260723-roster-stat-system.md)를 상시 참조합니다.
 
-### ② 3대 선수 페르소나
-1. **정석형 AI 사이보그:** 고비용, 저리스크, 안정적 수익 (고성능 기본 카드).
-2. **시한폭탄 기복형:** 저비용, 고리스크, 극단적 폭발력 (리스크 카드).
-3. **왕귀형 똥캐 (Gems in the Rough):** 초반엔 온갖 억까/지옥의 결함 ➔ 투자·치료·사채 탕감 시 도박판을 씹어먹는 괴물로 각성.
+### ① 4차원 스탯 아키텍처
+- **기술 스탯:** `solverPrecision` / `aggressionFactor` / `exploitativeRead` / `tellShield`
+- **멘탈 & 결함:** `tiltThreshold` / `substanceAddiction` / `staminaMax` / `agencyLoyalty`
+- **스테이킹 경제:** `profitSplitRatio` (수익 분배율), `makeupDebt` (손실 대납 빚), `weeklyRetainer` (주급)
+
+### ② 4대 선수 페르소나 아키타입
+1. **TAG (Tight Aggressive):** 정석 AI 사이보그. 고비용, 저리스크.
+2. **LAG (Loose Aggressive):** 공격형 팟 제조기. 높은 폭발력과 멘탈 위험.
+3. **ROCK (NIT):** 극보수적 안전빵. 손실 방어 위주.
+4. **MANIAC (도박꾼):** 약물/빚 중독자. 극단적 대파산 또는 슈퍼 팟 제조.
 
 ---
 
-## 4. 메신저(Comms) 및 비즈니스 시스템
+## 5. 메신저(Comms) 및 비즈니스 시스템
 
 선수와의 마모되는 대화 선택지를 배제하고, **"명확한 리스크/리턴의 비즈니스 단말기"**로 단순화.
 
 - **이적 & 빚 인수 협상:** "몸값을 30% 깎아줄 테니, 내 사채 빚을 대신 갚아달라."
-- **사보타주 & 다크웹 거래:** 딜러 매수 청탁, 상대 에이전스 선수 해킹 바이러스 주입.
+- **사보타주 & 다크웹 거래:** 딜러 매수 청탁, 상대 에이전시 선수 해킹 바이러스 주입.
 - **사생활 사건/사고(Events):** "선수 A가 카지노 도박장에서 인질로 잡혔습니다. 몸값을 송금하시겠습니까?"
 
 ---
 
-## 5. 단계별 장비 & 코너맨 해금 시스템 (Progression Tree)
+## 6. 단계별 장비 & 코너맨 해금 시스템 (Progression Tree)
 
 유저의 실시간 경기 개입은 **"고티어 장비 및 특수 기술 해금"**을 통해서만 제한적으로 허용됩니다.
 
@@ -90,11 +109,8 @@
 
 ---
 
-## 6. 기존 장르와의 차별화 (Competitive Edge)
+## 7. 세부 기획 참조 연동 지도 (Specification Sitemap)
 
-| 구분 | 일반 덱빌딩 / 매니저 장르 | 본 프로젝트 (GRINDERS 2057) |
-| :--- | :--- | :--- |
-| **시점 & 역할** | 내가 직접 포커 플레이 | 에이전시 대표 / 경기 관전 & 베팅 / 비열한 코너맨 |
-| **자원 형태** | 말 잘 듣는 카드 / 스탯 덩어리 | 결함 있고 급발진하는 디스토피아 포커 선수들 |
-| **개입 방식** | 직접 수치 및 카드 조작 | 딜러 매수, 약물 투여, 뇌파 수신호 (제한적 해금) |
-| **UI 톤앤매너** | 단일 다크 또는 단일 라이트 | 다크 터미널 OS (계산) ↔ 차가운 세라믹 오프화이트 메신저 (현실) |
+- ♠ **선수 능력치 및 포커 AI 수식 상세**: [SPEC-260723-roster-stat-system.md](file:///d:/github-repository/CyberPoker2077/docs/specs/SPEC-260723-roster-stat-system.md)
+- ♦ **로스터 & 인력 시장 구현 계획서**: [IP-260722-roster-market-engine.md](file:///d:/github-repository/CyberPoker2077/docs/plans/IP-260722-roster-market-engine.md)
+- ♦ **에이전트 모듈 장착 구현 계획서**: [IP-260722-agent-module-unification.md](file:///d:/github-repository/CyberPoker2077/docs/plans/IP-260722-agent-module-unification.md)

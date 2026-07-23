@@ -1,13 +1,18 @@
 import { createDeck, evaluateHand } from './poker.js';
 import { PotManager } from './PotManager.js';
-import { getUnifiedAction } from './aiEngine/aiBrainHub.js';
+import { getAIAction } from './aiEngine.v2.js';
 import { PARTNER_STATUS } from './constants.js';
 import { zones } from './zone.js';
 import { CLASSES_ENEMY, CLASSES_PARTNER } from './persona.js';
 
 /**
- * [GRINDERS 2057] Component 0: Match Replay & Snapshot Simulator Engine
- * Clean isolation for Node.js ESM Harness & Browser Runtime
+ * [GRINDERS 2057] MatchSimulator — Decisive Moment Injection Engine
+ * 
+ * 핵심 변경사항:
+ * - simulateHand()가 FLOP/TURN/RIVER 시작 직전 팟 20BB+ 감지 시
+ *   핸드를 즉시 중단하고 capturePoint 스냅샷을 반환 (Decisive Moment Injection)
+ * - Hero는 항상 players[0] 고정 (Seat 0 Hardlock)
+ * - Phase 1 리플레이용 phase1Stream (PREFLOP ~ 결정 지점 직전)을 capturePoint에 포함
  */
 export class MatchSimulator {
   constructor(options = {}) {
@@ -16,18 +21,14 @@ export class MatchSimulator {
     this.rake = options.rake || 0.05;
     this.rakeCap = options.rakeCap || 50;
     this.potManager = new PotManager(this.rake, this.rakeCap);
-    
-    // Event Rate Throttling Settings
     this.eventBuffer = [];
     this.maxEventsPerTick = options.maxEventsPerTick || 1;
     this.cooldownMap = new Map();
-    this.cooldownMs = options.cooldownMs || 180000; // 3분 쿨다운
+    this.cooldownMs = options.cooldownMs || 180000;
   }
 
   simulatePartnerCycle(partner, locationId = 'high_grand_casino', tableBb = 100) {
-    if (partner.status !== PARTNER_STATUS.GAMBLING || partner.bankroll <= 0) {
-      return null;
-    }
+    if (partner.status !== PARTNER_STATUS.GAMBLING || partner.bankroll <= 0) return null;
 
     this.bb = tableBb || this.bb;
     this.sb = Math.round(this.bb / 2);
@@ -37,13 +38,10 @@ export class MatchSimulator {
 
     const volatility = partner.AF * Math.max(partner.bankroll / 1000, 25) * Math.random();
     const estimatedPot = Math.ceil(100 * volatility);
-
-    // Strict BB Ratio Check: Pot must exceed 50BB for a true Big-Pot spike
     const minBigPotBbRatio = 50;
     const isVolatileSpike = estimatedPot >= (this.bb * minBigPotBbRatio) || (partner.relationship !== undefined && partner.relationship < 300);
 
     if (isVolatileSpike) {
-      // Build realistic 6-player table roster matching zone configuration
       let locationConfig = null;
       for (const zone of zones) {
         const loc = zone.locations.find(l => l.id === locationId);
@@ -52,24 +50,30 @@ export class MatchSimulator {
 
       const tableNpcs = locationConfig?.npcs || ['Fish', 'Broke', 'MR_CALL'];
       const availableTemplates = [...CLASSES_PARTNER, ...CLASSES_ENEMY];
-      
-      const roster = [{ ...partner, chips: Math.round(partner.bankroll * 0.8) }];
+
+      // [HERO SEAT 0 HARDLOCK] Hero always at index 0
+      const roster = [{
+        ...partner,
+        personaId: partner.id || partner.name || 'HERO',
+        chips: Math.round((partner.bankroll || 2000) * 0.8),
+        isHero: true
+      }];
       const usedIds = new Set([partner.id]);
 
-      // Fill remaining 5 seats with real NPC personas
       let count = 1;
       while (roster.length < 6) {
         const npcName = tableNpcs[(count - 1) % tableNpcs.length];
         const template = availableTemplates.find(t => t.id === npcName || t.name === npcName) || availableTemplates[count % availableTemplates.length];
-        
         const candidateId = `${template.id}_${count}`;
         if (!usedIds.has(candidateId)) {
           usedIds.add(candidateId);
           roster.push({
             ...template,
             id: candidateId,
+            personaId: template.id || template.name || 'NPC',
             name: `${template.name} #${count}`,
-            chips: Math.round(this.bb * (50 + Math.floor(Math.random() * 100)))
+            chips: Math.round(this.bb * (50 + Math.floor(Math.random() * 100))),
+            isHero: false
           });
         }
         count++;
@@ -103,27 +107,20 @@ export class MatchSimulator {
     }));
 
     const engine = {
-      bb: this.bb,
-      sb: this.sb,
-      board: [],
-      aggressor: null,
-      players,
-      dealerIndex: 0,
-      currentRoundBet: 0,
-      state: 'PREFLOP',
-      currentStreetRaises: 0,
-      preflopRaises: 0,
-      pot: 0
+      bb: this.bb, sb: this.sb,
+      board: [], aggressor: null, players,
+      dealerIndex: 0, currentRoundBet: 0,
+      state: 'PREFLOP', currentStreetRaises: 0,
+      preflopRaises: 0, pot: 0
     };
 
-    const actionStream = []; // Action Snapshot Buffer
+    const actionStream = [];
     const dealerIdx = 0;
 
     potManager.placeBet(players[(dealerIdx + 1) % players.length], engine.sb);
-    actionStream.push({ street: 'PREFLOP', type: 'blind', player: players[(dealerIdx + 1) % players.length].name, amount: engine.sb });
-
+    actionStream.push({ street: 'PREFLOP', type: 'blind', player: players[(dealerIdx + 1) % players.length].name, playerId: players[(dealerIdx + 1) % players.length].id, amount: engine.sb });
     potManager.placeBet(players[(dealerIdx + 2) % players.length], engine.bb);
-    actionStream.push({ street: 'PREFLOP', type: 'blind', player: players[(dealerIdx + 2) % players.length].name, amount: engine.bb });
+    actionStream.push({ street: 'PREFLOP', type: 'blind', player: players[(dealerIdx + 2) % players.length].name, playerId: players[(dealerIdx + 2) % players.length].id, amount: engine.bb });
 
     let actingIdx = (dealerIdx + 3) % players.length;
 
@@ -131,28 +128,22 @@ export class MatchSimulator {
       engine.state = street;
       engine.currentStreetRaises = 0;
       players.forEach(p => p.actedThisStreet = false);
-
       let attempts = 0;
       while (attempts < 100) {
         attempts++;
         const activePlayers = players.filter(p => !p.isFolded);
         const playersWithChips = activePlayers.filter(p => p.chips > 0);
-
         if (activePlayers.length <= 1 || playersWithChips.length === 0) break;
-
         const missingAction = playersWithChips.find(p => !p.actedThisStreet || p.currentBet < potManager.currentRoundBet);
         if (!missingAction) break;
 
         const p = players[actingIdx];
-
         if (!p.isFolded && p.chips > 0) {
           const callAmt = potManager.currentRoundBet - p.currentBet;
           engine.currentRoundBet = potManager.currentRoundBet;
           engine.pot = potManager.pot;
-
-          const action = getUnifiedAction(p, engine);
+          const action = getAIAction(p, engine);
           let amount = 0;
-
           if (action.type === 'fold') {
             actionStream.push({ street, type: 'fold', player: p.name, playerId: p.id });
             p.isFolded = true;
@@ -168,16 +159,7 @@ export class MatchSimulator {
             if (amount > p.chips) amount = p.chips;
             const isAllIn = p.chips <= amount;
             potManager.placeBet(p, amount);
-
-            actionStream.push({ 
-              street, 
-              type: isAllIn ? 'all_in' : 'raise', 
-              player: p.name, 
-              playerId: p.id, 
-              amount: p.currentBet,
-              potSize: potManager.pot 
-            });
-
+            actionStream.push({ street, type: isAllIn ? 'all_in' : 'raise', player: p.name, playerId: p.id, amount: p.currentBet, potSize: potManager.pot });
             if (street === 'PREFLOP') engine.preflopRaises++;
             players.forEach(px => px.actedThisStreet = false);
             p.actedThisStreet = true;
@@ -185,7 +167,6 @@ export class MatchSimulator {
         }
         actingIdx = (actingIdx + 1) % players.length;
       }
-
       players.forEach(p => p.currentBet = 0);
       potManager.currentRoundBet = 0;
     };
@@ -193,77 +174,70 @@ export class MatchSimulator {
     // PREFLOP
     runBettingRound('PREFLOP');
 
-    // STREETS
+    // POST-FLOP STREETS — Decisive Moment Injection
     const streets = ['FLOP', 'TURN', 'RIVER'];
     for (const street of streets) {
       if (players.filter(p => !p.isFolded).length <= 1) break;
 
       if (street === 'FLOP') engine.board.push(deck.pop(), deck.pop(), deck.pop());
       else engine.board.push(deck.pop());
-
       actionStream.push({ street, type: 'board_deal', board: [...engine.board] });
+
+      const potBbRatio = Math.round(potManager.pot / this.bb);
+      // Hero is always index 0 (Seat 0 Hardlock)
+      const heroPlayer = players[0];
+      const isHeroActive = heroPlayer && !heroPlayer.isFolded;
+
+      // [DECISIVE MOMENT INJECTION] Pot >= 20BB + Hero alive = capture & pause
+      if (potBbRatio >= 20 && isHeroActive) {
+        console.info(`🎯 [DECISIVE_MOMENT] ${heroPlayer.name} @ ${street}: Pot $${potManager.pot.toLocaleString()} CR (${potBbRatio} BB) — capturePoint 생성`);
+
+        return {
+          capturePoint: {
+            timestamp: timestamp || Date.now(),
+            locationId,
+            bb: this.bb,
+            sb: this.sb,
+            pot: potManager.pot,
+            potBbRatio,
+            board: [...engine.board],
+            currentStreet: street,
+            decisiveStreet: street,
+            // Hero is always index 0 (Seat 0 Hardlock)
+            players: players.map((p, idx) => ({
+              id: p.id,
+              name: p.name,
+              hand: [...(p.hand || [])],
+              chips: p.chips,
+              isFolded: p.isFolded,
+              isHero: idx === 0,
+              personaId: p.personaId || p.id,
+              seatIndex: idx
+            })),
+            // Full action history PREFLOP ~ this street (for Phase 1 auto-replay)
+            phase1Stream: [...actionStream],
+            isBigPot: true,
+            isCooler: this.detectCoolerScenario(players, engine.board)
+          }
+        };
+      }
+
       actingIdx = (dealerIdx + 1) % players.length;
       runBettingRound(street);
     }
 
-    // SHOWDOWN
-    const showdownResult = potManager.resolveShowdown(players, engine.board, engine.board.length === 0);
-
-    const potBbRatio = Math.round(potManager.pot / this.bb);
-    const isBigPot = potBbRatio >= 50; // Strict Heuristic: Pot >= 50BB
-    const isCooler = this.detectCoolerScenario(players, engine.board);
-
-    const snapshot = {
-      timestamp: timestamp || Date.now(),
-      locationId,
-      potSize: potManager.pot,
-      bb: this.bb,
-      potBbRatio,
-      board: engine.board,
-      players: players.map(p => ({ id: p.id, name: p.name, hand: p.hand, chips: p.chips, isFolded: p.isFolded })),
-      actionStream,
-      showdownResult,
-      isBigPot,
-      isCooler,
-      isTriggered: isBigPot || isCooler
-    };
-
-    if (snapshot.isTriggered) {
-      this.enqueueNotificationEvent(snapshot);
-    }
-
-    return snapshot;
+    return null; // No decisive moment this cycle
   }
 
   detectCoolerScenario(players, board) {
     const active = players.filter(p => !p.isFolded && p.hand && p.hand.length === 2);
     if (active.length < 2) return false;
-
     let strongHandCount = 0;
     active.forEach(p => {
       const evalRes = evaluateHand([...p.hand, ...board]);
       if (evalRes.rank >= 3) strongHandCount++;
     });
-
     return strongHandCount >= 2;
-  }
-
-  enqueueNotificationEvent(snapshot) {
-    const heroPlayer = snapshot.players.find(p => p.id && !p.id.startsWith('unknown'));
-    if (!heroPlayer) return;
-
-    const currentTime = snapshot.timestamp || Date.now();
-    const lastAlert = this.cooldownMap.get(heroPlayer.id) || 0;
-    if (currentTime - lastAlert < this.cooldownMs) return;
-
-    this.cooldownMap.set(heroPlayer.id, currentTime);
-    this.eventBuffer.push({
-      id: `evt_${currentTime}_${heroPlayer.id}`,
-      heroId: heroPlayer.id,
-      heroName: heroPlayer.name,
-      potSize: snapshot.potSize,
-      snapshot
-    });
   }
 
   consumeEventsForTick() {
